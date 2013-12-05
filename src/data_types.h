@@ -20,4 +20,10 @@ enum PredEnum
   FAST_LINEAR
 };
 
+enum NormEnum
+{
+    L1_NORM,
+    L2_NORM
+};
+
 #endif
