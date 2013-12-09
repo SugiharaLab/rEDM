@@ -14,8 +14,7 @@ class LNLP: public ForecastMachine
     LNLP();
     LNLP(const NumericVector data, const NumericMatrix lib, const NumericMatrix pred, 
            const int norm_type, const int pred_type, const double exclusion_radius, 
-           const NumericVector E, const NumericVector tau, const NumericVector tp, 
-           const NumericVector num_neighbors);
+           const int E, const int tau, const int tp, const int num_neighbors);
     
     // *** methods *** //
     void make_vectors();
@@ -28,7 +27,9 @@ class LNLP: public ForecastMachine
     void set_params(const int E, const int tau, const int tp, const int nn);
     
   private:
+    void set_indices_from_range(vector<bool>& indices, const NumericMatrix range);
     vector<double> time_series;
+    int max_lag, tp;
     
     
 };

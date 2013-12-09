@@ -4,14 +4,8 @@ ForecastMachine::ForecastMachine()
 {
 }
 
-void ForecastMachine::setup_lib_and_pred()
-{
-    return;
-}
-
 void ForecastMachine::forecast()
 {
-    setup_lib_and_pred();
     compute_distances();
     
     switch(pred_mode)
@@ -30,65 +24,44 @@ void ForecastMachine::forecast()
 
 // *** PRIVATE METHODS FOR INTERNAL USE ONLY *** //
 
-void ForecastMachine::set_indices_from_range(vector<bool>& indices,
-                                             const vector<time_range>& range)
-{
-    int start_of_range, end_of_range;
-    indices.assign(num_vectors, false); // initialize indices
-    for(vector<time_range>::const_iterator curr_range = range.begin();
-        curr_range != range.end(); ++curr_range)
-    {
-        start_of_range = curr_range->first-1;
-        end_of_range = curr_range->last-1;
-        if(start_of_range < 0) // check start of range
-        {
-            LOG_WARNING("beginning of time_range was less than 1; corrected.");
-            start_of_range = 0;
-        }
-        if(end_of_range > (num_vectors-1)) // check end of range
-        {
-            LOG_WARNING("end of time_range was greater than the number of vectors; corrected");
-            end_of_range = num_vectors-1;
-        }
-        
-		for(int vec_index = start_of_range; vec_index <= end_of_range; ++vec_index) // loop through time_range
-		{
-            indices[vec_index] = is_vec_valid(vec_index);
-		}
-	}
-	return;
-}
-
 void ForecastMachine::compute_distances()
 {
-    double (*dist)(const vec&, const vec&);
+    double (*dist_func)(const vec&, const vec&);
     
     // select distance function
     switch(norm_mode)
     {
         case L1_NORM:
-            dist = &l1_distance_func;
+            dist_func = &l1_distance_func;
             break;
         case L2_NORM:
-            dist = &l2_distance_func;
+            dist_func = &l2_distance_func;
             break;
         default:
             throw std::domain_error("Unknown norm type");
     }
     
     // compute distances
+    distances.resize(which_pred.size());
+    for(int i = 0; i < int(which_pred.size()); ++i)
+    {
+        distances[i].resize(which_lib.size());
+        for(int j = 0; j < int(which_lib.size()); ++j)
+        {
+            distances[i][j] = dist_func(data_vectors[which_pred[i]], 
+                                        data_vectors[which_lib[j]]);
+        }
+    }
     
     return;
 }
 
 void ForecastMachine::simplex_forecast()
 {
-    vector<int> which_preds = which_indices_true(pred_indices);
-    
     if(CROSS_VALIDATION)
     {
-        for(vector<int>::iterator curr_pred = which_preds.begin();
-            curr_pred != which_preds.end(); ++ curr_pred)
+        for(vector<int>::iterator curr_pred = which_pred.begin();
+            curr_pred != which_pred.end(); ++ curr_pred)
         {
             make_lib(*curr_pred); // adjust library for cross-validation
             simplex_prediction(*curr_pred);
@@ -97,8 +70,8 @@ void ForecastMachine::simplex_forecast()
     else
     {
         make_lib();
-        for(vector<int>::iterator curr_pred = which_preds.begin();
-            curr_pred != which_preds.end(); ++ curr_pred)
+        for(vector<int>::iterator curr_pred = which_pred.begin();
+            curr_pred != which_pred.end(); ++ curr_pred)
         {
 			simplex_prediction(*curr_pred);
 		}
@@ -108,10 +81,8 @@ void ForecastMachine::simplex_forecast()
 
 void ForecastMachine::smap_forecast()
 {
-    vector<int> which_preds = which_indices_true(pred_indices);
-    
-    for(vector<int>::iterator curr_pred = which_preds.begin();
-        curr_pred != which_preds.end(); ++ curr_pred)
+    for(vector<int>::iterator curr_pred = which_pred.begin();
+        curr_pred != which_pred.end(); ++ curr_pred)
     {
         make_lib(*curr_pred); // adjust library for cross-validation
         smap_prediction(*curr_pred);
@@ -160,7 +131,7 @@ bool ForecastMachine::is_vec_valid(const int vec_index)
 
 void ForecastMachine::LOG_WARNING(const char* warning_text)
 {
-    cerr << "WARNING (ForecastMachine): " << warning_text << "\n";
+    cerr << "WARNING: " << warning_text << "\n";
 }
 
 vector<int> which_indices_true(const vector<bool>& indices)

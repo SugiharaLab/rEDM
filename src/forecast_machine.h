@@ -15,16 +15,16 @@ protected:
     ForecastMachine();
     
     // *** methods *** //
-    void setup_lib_and_pred();
     void forecast();
-    
+    void LOG_WARNING(const char* warning_text);
     
     // *** variables *** //
-    vector<time_range> lib;
-    vector<time_range> pred;
     vector<bool> valid_lib_indices;
     vector<bool> lib_indices;
     vector<bool> pred_indices;
+    vector<int> which_lib;
+    vector<int> which_pred;
+    
     vector<vec> data_vectors;
     vector<double> target_vals;
     vector<double> predicted;
@@ -37,7 +37,6 @@ protected:
     
 private:
     // *** methods *** //
-    void set_indices_from_range(vector<bool>& indices, const vector<time_range>& range);
     void compute_distances();
     
     // forecasting
@@ -51,7 +50,9 @@ private:
     void smap_prediction(const int curr_pred);
     
     bool is_vec_valid(const int vec_index);
-    void LOG_WARNING(const char* warning_text);
+    
+    // *** data *** //
+    vector<vector<double> > distances;
     
 };
 

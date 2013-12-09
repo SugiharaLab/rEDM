@@ -1,6 +1,6 @@
-simplex <- function(data, lib = c(1, NROW(data)), pred = c(1, NROW(data)), norm_type = c("L2 norm", "L1 norm"), 
-                    exclusion_radius = NULL, E = 1:10, tau = 1, tp = 1, num_neighbors = "e+1", 
-                    epsilon = NULL)
+simplex <- function(data, lib = c(1, NROW(data)), pred = c(1, NROW(data)), 
+                    norm_type = c("L2 norm", "L1 norm"), exclusion_radius = NULL, 
+                    E = 1:10, tau = 1, tp = 1, num_neighbors = "e+1", epsilon = NULL)
 {
     # make new model object    
     my_lnlp <- new(LNLP)
