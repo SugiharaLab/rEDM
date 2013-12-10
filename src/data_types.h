@@ -5,13 +5,14 @@ using namespace std;
 
 // shortcut name for vector<double> for in attractor reconstruction
 typedef vector<double> vec;
+typedef pair<size_t, size_t> time_range;
 
 // which prediction method to use
 enum PredEnum
 {
-  SIMPLEX,
-  SMAP,
-  FAST_LINEAR
+    SIMPLEX,
+    SMAP,
+    FAST_LINEAR
 };
 
 enum NormEnum
