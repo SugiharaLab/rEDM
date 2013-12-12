@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <numeric>
 #include <math.h>
 #include "data_types.h"
 
@@ -15,9 +16,11 @@ protected:
     ForecastMachine();
     
     // *** methods *** //
+    void init_distances();
     void compute_distances();
     void sort_neighbors();
     void forecast();
+    bool is_vec_valid(const size_t vec_index);
     void LOG_WARNING(const char* warning_text);
     
     // *** variables *** //
@@ -29,9 +32,10 @@ protected:
     
     vector<double> time;
     vector<vec> data_vectors;
-    vector<double> target_vals;
+    vector<double> observed;
     vector<double> predicted;
     size_t num_vectors;
+    double (*dist_func)(const vec&, const vec&);
     vector<vector<double> > distances;
     vector<vector<size_t> > neighbors;
     
@@ -40,24 +44,20 @@ protected:
     PredEnum pred_mode;
     NormEnum norm_mode;
     int nn;
+    double exclusion_radius;
     vector<time_range> lib_ranges;
     vector<time_range> pred_ranges;
+    static const double qnan;
     
 private:
     // *** methods *** //
-    
-    // forecasting
     void simplex_forecast();
     void smap_forecast();
-    
-    void make_lib();
-    void make_lib(const size_t curr_pred);
-    
     void simplex_prediction(const size_t curr_pred);
     void smap_prediction(const size_t curr_pred);
     
-    bool is_vec_valid(const size_t vec_index);
-    
+    void adjust_lib();
+    void adjust_lib(const size_t curr_pred);
 };
 
 vector<size_t> which_indices_true(const vector<bool>& indices);

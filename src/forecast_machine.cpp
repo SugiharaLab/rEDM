@@ -1,34 +1,23 @@
 #include "forecast_machine.h"
 
 static const double min_weight = 0.000001;
-static const double qnan = std::numeric_limits<double>::quiet_NaN();
+const double ForecastMachine::qnan = std::numeric_limits<double>::quiet_NaN();
 
-ForecastMachine::ForecastMachine()
+ForecastMachine::ForecastMachine(): valid_lib_indices(vector<bool>()), 
+lib_indices(vector<bool>()), pred_indices(vector<bool>()), 
+which_lib(vector<size_t>()), which_pred(vector<size_t>()), 
+time(vector<double>()), data_vectors(vector<vec>()), 
+observed(vector<double>()), predicted(vector<double>()), 
+num_vectors(0), 
+distances(vector<vector<double> >()), neighbors(vector<vector<size_t> >()), 
+CROSS_VALIDATION(false), pred_mode(SIMPLEX), norm_mode(L2_NORM), 
+nn(0), exclusion_radius(0), 
+lib_ranges(vector<time_range>()), pred_ranges(vector<time_range>())
 {
 }
 
-void ForecastMachine::forecast()
-{    
-    switch(pred_mode)
-    {
-        case SIMPLEX:
-            simplex_forecast();
-            break;
-        case SMAP:
-            smap_forecast();
-            break;
-        default:
-            throw std::domain_error("Unknown pred type");
-    }
-    return;
-}
-
-// *** PRIVATE METHODS FOR INTERNAL USE ONLY *** //
-
-void ForecastMachine::compute_distances()
+void ForecastMachine::init_distances()
 {
-    double (*dist_func)(const vec&, const vec&);
-    
     // select distance function
     switch(norm_mode)
     {
@@ -42,9 +31,13 @@ void ForecastMachine::compute_distances()
             throw std::domain_error("Unknown norm type");
     }
     
-    // compute distances
-    distances.resize(num_vectors, vector<double>(num_vectors, qnan)); // initialize distance matrix
-    
+    // initialize distance matrix
+    distances.assign(num_vectors, vector<double>(num_vectors, qnan));
+    return;
+}
+
+void ForecastMachine::compute_distances()
+{
     for(auto& curr_pred: which_pred)
     {
         for(auto& curr_lib: which_lib)
@@ -65,19 +58,56 @@ void ForecastMachine::sort_neighbors()
     return;
 }
 
+void ForecastMachine::forecast()
+{
+    predicted.assign(num_vectors, qnan); // initialize predictions
+    switch(pred_mode)
+    {
+        case SIMPLEX:
+            simplex_forecast();
+            break;
+        case SMAP:
+            smap_forecast();
+            break;
+        default:
+            throw std::domain_error("Unknown pred type");
+    }
+    return;
+}
+
+bool ForecastMachine::is_vec_valid(const size_t vec_index)
+{
+    // check data vector
+    for(auto& val: data_vectors[vec_index])
+        if(isnan(val)) return false;
+    
+    // check target value
+    if(isnan(observed[vec_index])) return false;
+
+    // if all is good, then:
+    return true;
+}
+
+void ForecastMachine::LOG_WARNING(const char* warning_text)
+{
+    cerr << "WARNING: " << warning_text << "\n";
+}
+
+// *** PRIVATE METHODS FOR INTERNAL USE ONLY *** //
+
 void ForecastMachine::simplex_forecast()
 {
     if(CROSS_VALIDATION)
     {
         for(auto& curr_pred: which_pred)
         {
-            make_lib(curr_pred); // adjust library for cross-validation
+            adjust_lib(curr_pred); // adjust library for cross-validation
             simplex_prediction(curr_pred);
         }
     }
     else
     {
-        make_lib();
+        adjust_lib();
         for(auto& curr_pred: which_pred)
 			simplex_prediction(curr_pred);
     }
@@ -86,51 +116,48 @@ void ForecastMachine::simplex_forecast()
 
 void ForecastMachine::smap_forecast()
 {
-    for(auto& curr_pred: which_pred)
+    if(CROSS_VALIDATION)
     {
-        make_lib(curr_pred); // adjust library for cross-validation
-        smap_prediction(curr_pred);
+        for(auto& curr_pred: which_pred)
+        {
+            adjust_lib(curr_pred); // adjust library for cross-validation
+            smap_prediction(curr_pred);
+        }
     }
-    return;
-}
-
-void ForecastMachine::make_lib()
-{
-    
-    return;
-}
-
-void ForecastMachine::make_lib(const size_t curr_pred)
-{
-    // go through lib
-    // remove lib vectors that are within exclusion
-    
+    else
+    {
+        adjust_lib();
+        for(auto& curr_pred: which_pred)
+    		smap_prediction(curr_pred);
+    }
     return;
 }
 
 void ForecastMachine::simplex_prediction(const size_t curr_pred)
 {
-    vector<size_t> nearest_neighbors; // cleared by default
-        
+    vector<size_t> nearest_neighbors(nn, 0); // cleared by default
+    
     // find nearest neighbors
     size_t j = 0;
-    double tie_distance;
-    while(int(nearest_neighbors.size()) < nn)
+    for(auto& index_of_neighbor: neighbors[curr_pred])
     {
-        if(valid_lib_indices[neighbors[curr_pred][j]]) // is this vector in library?
+        if(valid_lib_indices[index_of_neighbor])
         {
-            nearest_neighbors.push_back(j);
+            nearest_neighbors[j] = index_of_neighbor;
             ++j;
+            if(j >= nn)
+                break;
         }
     }
-            
+    double tie_distance = distances[curr_pred][nearest_neighbors.back()];
+    
+    /*
     // check for ties
-    double prev_distance = distances[curr_pred][j-1];
     bool done_checking_ties = false;
     int effective_lib_size;
     while(!done_checking_ties && nearest_neighbors.size() < effective_lib_size)
     {
-        if(lib_indices[neighbors[curr_pred][j]]) // is this vector in library?
+        if(valid_lib_indices[neighbors[curr_pred][j]]) // is this vector in library?
         {
             if(distances[curr_pred][j] == prev_distance) // distance is the same
             {
@@ -142,16 +169,17 @@ void ForecastMachine::simplex_prediction(const size_t curr_pred)
         }
         ++j;
     }
+    */
     
     // compute weights
     double min_distance = distances[curr_pred][nearest_neighbors[0]];
-    vector<double> weights;
+    size_t effective_nn = nearest_neighbors.size();
+    vector<double> weights(effective_nn, min_weight);
     if(min_distance == 0)
     {
-        weights.assign(nearest_neighbors.size(), min_weight);
-        for(size_t k = 0; k < nearest_neighbors.size(); k++)
+        for(size_t k = 0; k < effective_nn; ++k)
         {
-            if(distances[curr_pred][nearest_neighbors[k]] == 0)
+            if(distances[curr_pred][nearest_neighbors[k]] == min_distance)
                 weights[k] = 1;
             else
                 break;
@@ -159,47 +187,38 @@ void ForecastMachine::simplex_prediction(const size_t curr_pred)
     }
     else
     {
-        weights.assign(nearest_neighbors.size(), 0);
-        for(size_t k = 0; k < nearest_neighbors.size(); k++)
+        for(size_t k = 0; k < effective_nn; ++k)
         {
-            weights[k] = exp(-distances[curr_pred][nearest_neighbors[k]] / min_distance);
-            if(weights[k] < min_weight)
-                weights[k] = min_weight;
+            weights[k] = max(exp(-distances[curr_pred][nearest_neighbors[k]] / min_distance), 
+                             min_weight);
         }
     }
         
     // identify ties and adjust weights
-    int num_ties = 0;
-    int neighbor_slots_used_for_ties;
-    double tie_adj_factor;
-    if(nearest_neighbors.size() > nn) // ties exist
+    if(effective_nn > nn) // ties exist
     {
         // count ties
-        for(int k = 0; k < nearest_neighbors.size(); k++)
-        {
-            if(distances[curr_pred][nearest_neighbors[k]] == tie_distance)
+        int num_ties = 0;
+        for(auto& neighbor_index: nearest_neighbors)
+            if(distances[curr_pred][neighbor_index] == tie_distance)
                 num_ties++;
-        }
-        neighbor_slots_used_for_ties = nn - (nearest_neighbors.size() - num_ties);
-        tie_adj_factor = double(neighbor_slots_used_for_ties) / double(num_ties);
+
+        int neighbor_slots_used_for_ties = nn - (effective_nn - num_ties);
+        double tie_adj_factor = double(neighbor_slots_used_for_ties) / double(num_ties);
         
         // adjust weights
-        for(int k = 0; k < nearest_neighbors.size(); k++)
-        {
+        for(size_t k = 0; k < nearest_neighbors.size(); ++k)
             if(distances[curr_pred][nearest_neighbors[k]] == tie_distance)
                 weights[k] *= tie_adj_factor;
-        }
     }
-        
+    
     // make prediction
-    double total_weight = 0;
-    predicted[curr_pred] = 0;
-    for(int k = 0; k < nearest_neighbors.size(); k++)
-    {
-        predicted[curr_pred] += weights[k] * target_vals[neighbors[curr_pred][nearest_neighbors[k]]];
-        total_weight += weights[k];
-    }
+    double total_weight = accumulate(weights.begin(), weights.end(), 0.0);
+    predicted[curr_pred] = 0;    
+    for(size_t k = 0; k < effective_nn; ++k)
+        predicted[curr_pred] += weights[k] * observed[nearest_neighbors[k]];
     predicted[curr_pred] = predicted[curr_pred] / total_weight;
+
     return;
 }
 
@@ -214,15 +233,24 @@ void ForecastMachine::smap_prediction(const size_t curr_pred)
     return;
 }
 
-bool ForecastMachine::is_vec_valid(const size_t vec_index)
+void ForecastMachine::adjust_lib()
 {
-    // check dims and target vals
-    return true;
+    valid_lib_indices = lib_indices;
+    return;
 }
 
-void ForecastMachine::LOG_WARNING(const char* warning_text)
+void ForecastMachine::adjust_lib(const size_t curr_pred)
 {
-    cerr << "WARNING: " << warning_text << "\n";
+    valid_lib_indices = lib_indices;
+    double start_time = time[curr_pred] - exclusion_radius;
+    double end_time = time[curr_pred] + exclusion_radius;
+    
+    // go through lib and remove lib vectors that are within exclusion
+    for(size_t i = 0; i < num_vectors; ++i)
+        if(lib_indices[i] && time[i] >= start_time && time[i] <= end_time)
+            valid_lib_indices[i] = false;
+
+    return;
 }
 
 vector<size_t> which_indices_true(const vector<bool>& indices)
@@ -230,7 +258,7 @@ vector<size_t> which_indices_true(const vector<bool>& indices)
     vector<size_t> which;
     int index = 0;
     for(vector<bool>::const_iterator iter = indices.begin();
-        iter != indices.end(); ++iter, ++ index)
+        iter != indices.end(); ++iter, ++index)
     {
         if(*iter)
             which.push_back(index);
