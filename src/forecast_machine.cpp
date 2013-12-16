@@ -11,7 +11,7 @@ observed(vector<double>()), predicted(vector<double>()),
 num_vectors(0), 
 distances(vector<vector<double> >()), neighbors(vector<vector<size_t> >()), 
 CROSS_VALIDATION(false), pred_mode(SIMPLEX), norm_mode(L2_NORM), 
-nn(0), exclusion_radius(0), 
+nn(0), exclusion_radius(-1), 
 lib_ranges(vector<time_range>()), pred_ranges(vector<time_range>())
 {
 }
@@ -138,12 +138,13 @@ void ForecastMachine::simplex_prediction(const size_t curr_pred)
     vector<size_t> nearest_neighbors(nn, 0); // cleared by default
     
     // find nearest neighbors
+    size_t i;
     size_t j = 0;
-    for(auto& index_of_neighbor: neighbors[curr_pred])
+    for(i = 0; i < neighbors[curr_pred].size(); ++i)
     {
-        if(valid_lib_indices[index_of_neighbor])
+        if(valid_lib_indices[neighbors[curr_pred][i]])
         {
-            nearest_neighbors[j] = index_of_neighbor;
+            nearest_neighbors[j] = neighbors[curr_pred][i];
             ++j;
             if(j >= nn)
                 break;
@@ -151,25 +152,14 @@ void ForecastMachine::simplex_prediction(const size_t curr_pred)
     }
     double tie_distance = distances[curr_pred][nearest_neighbors.back()];
     
-    /*
     // check for ties
-    bool done_checking_ties = false;
-    int effective_lib_size;
-    while(!done_checking_ties && nearest_neighbors.size() < effective_lib_size)
+    for(i; i < neighbors[curr_pred].size(); ++i)
     {
-        if(valid_lib_indices[neighbors[curr_pred][j]]) // is this vector in library?
-        {
-            if(distances[curr_pred][j] == prev_distance) // distance is the same
-            {
-                tie_distance = prev_distance;
-                nearest_neighbors.push_back(j);
-            }
-            else
-                done_checking_ties = true;
-        }
-        ++j;
+        if(distances[curr_pred][i] > tie_distance) // distance is bigger
+            break;
+        if(valid_lib_indices[neighbors[curr_pred][i]]) // valid lib
+            nearest_neighbors.push_back(j); // add to nearest neighbors
     }
-    */
     
     // compute weights
     double min_distance = distances[curr_pred][nearest_neighbors[0]];
@@ -242,14 +232,20 @@ void ForecastMachine::adjust_lib()
 void ForecastMachine::adjust_lib(const size_t curr_pred)
 {
     valid_lib_indices = lib_indices;
-    double start_time = time[curr_pred] - exclusion_radius;
-    double end_time = time[curr_pred] + exclusion_radius;
     
-    // go through lib and remove lib vectors that are within exclusion
-    for(size_t i = 0; i < num_vectors; ++i)
-        if(lib_indices[i] && time[i] >= start_time && time[i] <= end_time)
-            valid_lib_indices[i] = false;
-
+    // go through lib and remove lib vectors that are within exclusion radius
+    if(exclusion_radius >= 0)
+    {
+        double start_time = time[curr_pred] - exclusion_radius;
+        double end_time = time[curr_pred] + exclusion_radius;
+        for(size_t i = 0; i < num_vectors; ++i)
+        {
+            if(lib_indices[i] && time[i] >= start_time && time[i] <= end_time)
+                valid_lib_indices[i] = false;
+        }
+    }
+    
+    valid_lib_indices[curr_pred] = false; // always remove vector that we are predicting
     return;
 }
 

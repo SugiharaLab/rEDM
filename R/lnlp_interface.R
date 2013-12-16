@@ -1,7 +1,69 @@
-simplex <- function(data, lib = c(1, NROW(data)), pred = c(1, NROW(data)), 
-                    norm_type = c("L2 norm", "L1 norm"), exclusion_radius = NULL, 
-                    E = 1:10, tau = 1, tp = 1, num_neighbors = "e+1", epsilon = NULL, 
-                    stats_only = FALSE)
+#' Perform univariate forecasting using simplex projection
+#'
+#' \code{simplex} uses time delay embedding on a single time series to 
+#' generate an attractor reconstruction, and then applies the simplex 
+#' projection algorithm to make forecasts. This method is typically applied, 
+#' and the embedding dimension varied, to find an optimal embedding dimension 
+#' for the data.
+#' 
+#' The default parameters are set so that passing a time series as the only 
+#' argument will do a search over E = 1:10 (embedding dimension), using 
+#' leave-one-out cross-validation over the whole time series, and returning 
+#' just the forecast statistics.
+#' 
+#' norm_type "L2 norm" (default) uses the typical Euclidean distance:
+#' \deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}}{distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
+#' norm_type "L1 norm" uses the Manhattan distance:
+#' \deqn{distance(a,b) := \sum_i{|a_i - b_i|}}{distance(a, b) := \sum|a_i - b_i|}
+#' 
+#' @param time_series either a vector to be used as the time series, or a 
+#'   data.frame or matrix with at least 2 columns (in which case the first column 
+#'   will be used as the time index, and the second column as the time series)
+#' @param lib a 2-column matrix (or 2-element vector) where each row specifes the 
+#'   first and last *rows* of the time series to use for attractor reconstruction
+#' @param pred (same format as lib), but specifying the sections of the time 
+#'   series to forecast.
+#' @param norm_type the distance function to use. see 'Details'
+#' @param E the embedding dimensions to use for time delay embedding
+#' @param tau the lag to use for time delay embedding
+#' @param tp the prediction horizon (how far ahead to forecast)
+#' @param num_neighbors the number of nearest neighbors to use (any of "e+1", 
+#'   "E+1", "e + 1", "E + 1" will peg this parameter to E+1 for each run)
+#' @param stats_only specify whether to output just the forecast statistics or 
+#'   the raw predictions for each run
+#' @param exclusion_radius excludes vectors from the search space of nearest 
+#'   neighbors if their *time index* is within exclusion_radius (NULL turns 
+#'   this option off)
+#' @param epsilon excludes vectors from the search space of nearest neighbors 
+#'   if their *distance* is farther away than epsilon (NULL turns this option 
+#'   off)
+#' @return If stats_only, then a data.frame with components for the parameters 
+#'   and forecast statistics:
+#' \tabular{ll}{
+#'   E \tab embedding dimension\cr
+#'   tau \tab time lag\cr
+#'   tp \tab prediction horizon\cr
+#'   nn \tab number of neighbors\cr
+#'   num_pred \tab number of predictions\cr
+#'   rho \tab correlation coefficient between observations and predictions\cr
+#'   mae \tab mean absolute error\cr
+#'   rmse \tab root mean square error
+#' }
+#' Otherwise, a list where the number of elements is equal to the number of runs 
+#'   (unique parameter combinations). Each element is a list with the following 
+#'   components:
+#' \tabular{ll}{
+#'   params \tab data.frame of parameters (E, tau, tp, nn)\cr
+#'   model_output \tab data.frame with columns for the time index, observations, 
+#'     and predictions\cr
+#'   stats \tab data.frame of forecast statistics (num_pred, rho, mae, rmse)\cr
+#' }
+#' @export 
+
+simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = c(1, NROW(time_series)), 
+                    norm_type = c("L2 norm", "L1 norm"), E = 1:10, tau = 1, 
+                    tp = 1, num_neighbors = "e+1", stats_only = TRUE, 
+                    exclusion_radius = NULL, epsilon = NULL)
 {
     # check inputs?
     
@@ -9,41 +71,44 @@ simplex <- function(data, lib = c(1, NROW(data)), pred = c(1, NROW(data)),
     my_lnlp <- new(LNLP)
     
     # setup data
-    if(is.vector(data))
-    {
-        time <- seq_along(data)
-        ts <- data
-    } else {
-        time <- data[,1]
-        ts <- data[,2]
+    if (is.vector(time_series)) {
+        time <- seq_along(time_series)
+    } else if ((is.matrix(time_series) || is.data.frame(time_series)) && NCOL(time_series) >= 2) {
+        time <- time_series[,1]
+        time_series <- time_series[,2]
     }
     my_lnlp$set_time(time)
-    my_lnlp$set_time_series(ts)
+    my_lnlp$set_time_series(time_series)
            
     # setup norm and pred types
     my_lnlp$set_norm_type(switch(match.arg(norm_type), "L2 norm" = 2, "L1 norm" = 1))
     my_lnlp$set_pred_type(2) # 2 = simplex
     
     # setup lib and pred ranges
-    if(is.vector(lib))
+    if (is.vector(lib))
         lib <- matrix(lib, ncol = 2, byrow = TRUE)
-    if(is.vector(pred))
+    if (is.vector(pred))
         pred <- matrix(pred, ncol = 2, byrow = TRUE)
     my_lnlp$set_lib(lib)
     my_lnlp$set_pred(pred)
     
-    # TODO: handle exclusion radius
+    # handle exclusion radius
+    if (is.null(exclusion_radius))
+        exclusion_radius = -1;
+    my_lnlp$set_exclusion_radius(exclusion_radius)
+    
     # TODO: handle epsilon
     
     # setup other params in data.frame
-    params = expand.grid(E, tau, tp, num_neighbors)
-    names(params) = c("E", "tau", "tp", "nn")
-    e_plus_1_index = match(num_neighbors, c("e+1", "E+1", "e + 1", "E + 1"))
-    if(any(e_plus_1_index, na.rm = TRUE))
+    params <- expand.grid(tp, num_neighbors, tau, E)
+    names(params) <- c("tp", "nn", "tau", "E")
+    params <- params[,c("E", "tau", "tp", "nn")]
+    e_plus_1_index <- match(num_neighbors, c("e+1", "E+1", "e + 1", "E + 1"))
+    if (any(e_plus_1_index, na.rm = TRUE))
         params$nn <- params$E+1
         
     # apply model prediction function to params
-    if(stats_only)
+    if (stats_only)
     {
         stats <- lapply(1:NROW(params), function(i) {
             my_lnlp$set_params(params$E[i], params$tau[i], params$tp[i], params$nn[i])

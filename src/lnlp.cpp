@@ -79,6 +79,8 @@ void LNLP::set_pred(const NumericMatrix pred)
 void LNLP::set_exclusion_radius(const double new_exclusion_radius)
 {
     exclusion_radius = new_exclusion_radius;
+    if(exclusion_radius >= 0)
+        CROSS_VALIDATION = true;
     return;
 }
 
@@ -234,12 +236,15 @@ void LNLP::set_indices_from_range(vector<bool>& indices, const vector<time_range
 void LNLP::check_cross_validation()
 {
     CROSS_VALIDATION = true;
-    for(size_t i = 0; i < num_vectors; ++i) // see if all lib indices == pred_indices
+    if (exclusion_radius < 0) // if exclusion_radius is set, always do cross_validation
     {
-        if(lib_indices[i] != pred_indices[i])
+        for (size_t i = 0; i < num_vectors; ++i) // see if all lib indices == pred_indices
         {
-            CROSS_VALIDATION = false;
-            break;
+            if(lib_indices[i] != pred_indices[i])
+            {
+                CROSS_VALIDATION = false;
+                break;
+            }
         }
     }
     
@@ -269,6 +274,7 @@ RCPP_MODULE(lnlp_module)
     .method("set_pred_type", &LNLP::set_pred_type)
     .method("set_lib", &LNLP::set_lib)
     .method("set_pred", &LNLP::set_pred)
+    .method("set_exclusion_radius", &LNLP::set_exclusion_radius)
     .method("set_params", &LNLP::set_params)
     .method("run", &LNLP::run)
     .method("get_output", &LNLP::get_output)

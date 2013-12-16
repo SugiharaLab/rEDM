@@ -8,5 +8,6 @@ Maintainer: Hao Ye <hye@ucsd.edu>
 Description: More about what it does (maybe more than one line)
 License: LGPL-3
 Depends: Rcpp (>= 0.10.6)
+NeedsCompilation: yes
 LinkingTo: Rcpp
 RcppModules: lnlp_module
