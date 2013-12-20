@@ -6,7 +6,9 @@
 #include <numeric>
 #include <math.h>
 #include "data_types.h"
+#include <Eigen/Dense>
 
+using namespace Eigen;
 using namespace std;
 
 class ForecastMachine
@@ -19,6 +21,7 @@ protected:
     void init_distances();
     void compute_distances();
     void sort_neighbors();
+    vector<size_t> find_nearest_neighbors(const size_t curr_pred);
     void forecast();
     bool is_vec_valid(const size_t vec_index);
     void LOG_WARNING(const char* warning_text);
@@ -44,6 +47,7 @@ protected:
     PredEnum pred_mode;
     NormEnum norm_mode;
     int nn;
+    double theta;
     double exclusion_radius;
     vector<time_range> lib_ranges;
     vector<time_range> pred_ranges;

@@ -58,6 +58,37 @@ void ForecastMachine::sort_neighbors()
     return;
 }
 
+vector<size_t> ForecastMachine::find_nearest_neighbors(const size_t curr_pred)
+{
+    vector<size_t> nearest_neighbors(nn, 0); // cleared by default
+    vector<size_t>::iterator curr_lib;
+    
+    // find nearest neighbors
+    size_t j = 0;
+    for(curr_lib = neighbors[curr_pred].begin(); curr_lib != neighbors[curr_pred].end(); ++curr_lib)
+    {
+        if(valid_lib_indices[*curr_lib])
+        {
+            nearest_neighbors[j] = *curr_lib;
+            ++j;
+            if(j >= nn)
+                break;
+        }
+    }
+    double tie_distance = distances[curr_pred][nearest_neighbors.back()];
+    
+    // check for ties
+    for(; curr_lib != neighbors[curr_pred].end(); ++curr_lib)
+    {
+        if(distances[curr_pred][*curr_lib] > tie_distance) // distance is bigger
+            break;
+        if(valid_lib_indices[*curr_lib]) // valid lib
+            nearest_neighbors.push_back(*curr_lib); // add to nearest neighbors
+    }
+    
+    return nearest_neighbors;
+}
+
 void ForecastMachine::forecast()
 {
     predicted.assign(num_vectors, qnan); // initialize predictions
@@ -135,39 +166,16 @@ void ForecastMachine::smap_forecast()
 
 void ForecastMachine::simplex_prediction(const size_t curr_pred)
 {
-    vector<size_t> nearest_neighbors(nn, 0); // cleared by default
-    
-    // find nearest neighbors
-    size_t i;
-    size_t j = 0;
-    for(i = 0; i < neighbors[curr_pred].size(); ++i)
-    {
-        if(valid_lib_indices[neighbors[curr_pred][i]])
-        {
-            nearest_neighbors[j] = neighbors[curr_pred][i];
-            ++j;
-            if(j >= nn)
-                break;
-        }
-    }
-    double tie_distance = distances[curr_pred][nearest_neighbors.back()];
-    
-    // check for ties
-    for(i; i < neighbors[curr_pred].size(); ++i)
-    {
-        if(distances[curr_pred][i] > tie_distance) // distance is bigger
-            break;
-        if(valid_lib_indices[neighbors[curr_pred][i]]) // valid lib
-            nearest_neighbors.push_back(j); // add to nearest neighbors
-    }
+    // get nearest neighbors
+    vector<size_t> nearest_neighbors = find_nearest_neighbors(curr_pred);
+    int effective_nn = int(nearest_neighbors.size());
     
     // compute weights
     double min_distance = distances[curr_pred][nearest_neighbors[0]];
-    size_t effective_nn = nearest_neighbors.size();
     vector<double> weights(effective_nn, min_weight);
     if(min_distance == 0)
     {
-        for(size_t k = 0; k < effective_nn; ++k)
+        for(int k = 0; k < effective_nn; ++k)
         {
             if(distances[curr_pred][nearest_neighbors[k]] == min_distance)
                 weights[k] = 1;
@@ -177,7 +185,7 @@ void ForecastMachine::simplex_prediction(const size_t curr_pred)
     }
     else
     {
-        for(size_t k = 0; k < effective_nn; ++k)
+        for(int k = 0; k < effective_nn; ++k)
         {
             weights[k] = max(exp(-distances[curr_pred][nearest_neighbors[k]] / min_distance), 
                              min_weight);
@@ -187,6 +195,8 @@ void ForecastMachine::simplex_prediction(const size_t curr_pred)
     // identify ties and adjust weights
     if(effective_nn > nn) // ties exist
     {
+        double tie_distance = distances[curr_pred][nearest_neighbors.back()];
+
         // count ties
         int num_ties = 0;
         for(auto& neighbor_index: nearest_neighbors)
@@ -197,7 +207,7 @@ void ForecastMachine::simplex_prediction(const size_t curr_pred)
         double tie_adj_factor = double(neighbor_slots_used_for_ties) / double(num_ties);
         
         // adjust weights
-        for(size_t k = 0; k < nearest_neighbors.size(); ++k)
+        for(int k = 0; k < nearest_neighbors.size(); ++k)
             if(distances[curr_pred][nearest_neighbors[k]] == tie_distance)
                 weights[k] *= tie_adj_factor;
     }
@@ -205,7 +215,7 @@ void ForecastMachine::simplex_prediction(const size_t curr_pred)
     // make prediction
     double total_weight = accumulate(weights.begin(), weights.end(), 0.0);
     predicted[curr_pred] = 0;    
-    for(size_t k = 0; k < effective_nn; ++k)
+    for(int k = 0; k < effective_nn; ++k)
         predicted[curr_pred] += weights[k] * observed[nearest_neighbors[k]];
     predicted[curr_pred] = predicted[curr_pred] / total_weight;
 
@@ -214,9 +224,69 @@ void ForecastMachine::simplex_prediction(const size_t curr_pred)
 
 void ForecastMachine::smap_prediction(const size_t curr_pred)
 {
+    vector<size_t> nearest_neighbors;
+	
+    // get nearest neighbors
+    if(nn < 1)
+    {
+        for(auto& curr_lib: neighbors[curr_pred])
+            if(valid_lib_indices[curr_lib])
+                nearest_neighbors.push_back(curr_lib);
+    }
+    else
+    {
+        nearest_neighbors = find_nearest_neighbors(curr_pred);
+    }
+    
+    // compute average distance
+    double avg_distance = 0;
+    int effective_nn = int(nearest_neighbors.size());
+    for(auto& neighbor: nearest_neighbors)
+    {
+        avg_distance += distances[curr_pred][neighbor];
+    }
+    avg_distance /= nearest_neighbors.size();
+
+    // compute weights
+    vector<double> weights(effective_nn, min_weight);
+    for(int i = 0; i < effective_nn; ++i)
+        weights[i] = exp(-theta * distances[curr_pred][nearest_neighbors[i]] / avg_distance);
+	    
+	// setup matrices for SVD
+    int E = int(data_vectors[nearest_neighbors[0]].size());
+    MatrixXd A(effective_nn, E+1);
+    VectorXd B(effective_nn);
+    
+	for(int i = 0; i < effective_nn; ++i)
+	{
+        B(i) = weights[i] * observed[nearest_neighbors[i]];
+        
+		for(int j = 0; j < E; ++j)
+            A(i, j) = weights[i] * data_vectors[nearest_neighbors[i]][j];
+        A(i, E) = weights[i];
+	}
+	
+	// perform SVD
+    JacobiSVD<MatrixXd> svd(A, ComputeThinU | ComputeThinV);
+    
+    // remove singular values close to 0
+    VectorXd S = svd.singularValues();
+    MatrixXd S_inv = MatrixXd::Zero(E+1, E+1);
+	double max_s = S(0) * 1e-5;
+    
+	for(int j = 0; j <= E; ++j)
+	{
+		if(S(j) >= max_s)
+            S_inv(j, j) = 1/S(j);
+	}
+    
+    // perform back-substitution to solve
+    VectorXd x = svd.matrixV() * S_inv * svd.matrixU().transpose() * B;
+    
     double pred = 0;
-    // compute smap
-    // compute predicted value
+    for(int j = 0; j < E; ++j)
+        pred += x(j) * data_vectors[curr_pred][j];
+    pred += x(E);
     
     // save prediction
     predicted[curr_pred] = pred;

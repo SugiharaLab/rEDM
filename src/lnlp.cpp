@@ -100,6 +100,12 @@ void LNLP::set_params(const int new_E, const int new_tau, const int new_tp, cons
     return;
 }
 
+void LNLP::set_theta(const double new_theta)
+{
+    theta = new_theta;
+    return;
+}
+
 void LNLP::run()
 {
     // check parameters
@@ -155,8 +161,6 @@ DataFrame LNLP::get_stats()
 
 void LNLP::prepare_forecast()
 {
-    max_lag = (E-1)*tau;
-    
     if(remake_vectors)
     {
         make_vectors();
@@ -218,7 +222,7 @@ void LNLP::set_indices_from_range(vector<bool>& indices, const vector<time_range
     indices.assign(num_vectors, false); // initialize indices
     for(auto& range_iter: range)
     {
-        start_of_range = range_iter.first + max_lag;
+        start_of_range = range_iter.first + (E-1)*tau;
         end_of_range = range_iter.second - max(0, tp);
         if(end_of_range >= num_vectors) // check end of range
         {
@@ -276,6 +280,7 @@ RCPP_MODULE(lnlp_module)
     .method("set_pred", &LNLP::set_pred)
     .method("set_exclusion_radius", &LNLP::set_exclusion_radius)
     .method("set_params", &LNLP::set_params)
+    .method("set_theta", &LNLP::set_theta)
     .method("run", &LNLP::run)
     .method("get_output", &LNLP::get_output)
     .method("get_stats", &LNLP::get_stats)

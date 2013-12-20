@@ -1,11 +1,12 @@
-\name{simplex}
-\alias{simplex}
+\name{s_map}
+\alias{s_map}
 \title{Perform univariate forecasting using simplex projection}
 \usage{
-simplex(time_series, lib = c(1, NROW(time_series)), pred = c(1,
+s_map(time_series, lib = c(1, NROW(time_series)), pred = c(1,
   NROW(time_series)), norm_type = c("L2 norm", "L1 norm"), E = 1:10,
-  tau = 1, tp = 1, num_neighbors = "e+1", stats_only = TRUE,
-  exclusion_radius = NULL, epsilon = NULL)
+  tau = 1, tp = 1, num_neighbors = -1, theta = c(0, 1e-04, 3e-04, 0.001,
+  0.003, 0.01, 0.03, 0.1, 0.3, 0.5, 0.75, 1, 1.5, 2, 3, 4, 6, 8),
+  stats_only = TRUE, exclusion_radius = NULL, epsilon = NULL)
 }
 \arguments{
   \item{time_series}{either a vector to be used as the time
@@ -36,6 +37,10 @@ simplex(time_series, lib = c(1, NROW(time_series)), pred = c(1,
   parameter to E+1 for each run, any value < 1 will use all
   possible neighbors.)}
 
+  \item{theta}{the nonlinear tuning parameter (note tthat
+  theta = 0 is equivalent to an autoregressive model of
+  order E.)}
+
   \item{stats_only}{specify whether to output just the
   forecast statistics or the raw predictions for each run}
 
@@ -51,33 +56,34 @@ simplex(time_series, lib = c(1, NROW(time_series)), pred = c(1,
 If stats_only, then a data.frame with components for the
 parameters and forecast statistics: \tabular{ll}{ E \tab
 embedding dimension\cr tau \tab time lag\cr tp \tab
-prediction horizon\cr nn \tab number of neighbors\cr
-num_pred \tab number of predictions\cr rho \tab correlation
-coefficient between observations and predictions\cr mae
-\tab mean absolute error\cr rmse \tab root mean square
-error } Otherwise, a list where the number of elements is
-equal to the number of runs (unique parameter
-combinations). Each element is a list with the following
-components: \tabular{ll}{ params \tab data.frame of
-parameters (E, tau, tp, nn)\cr model_output \tab data.frame
-with columns for the time index, observations, and
-predictions\cr stats \tab data.frame of forecast statistics
-(num_pred, rho, mae, rmse)\cr }
+prediction horizon\cr nn \tab number of neighbors\cr theta
+\tab nonlinear weighting parameter\cr num_pred \tab number
+of predictions\cr rho \tab correlation coefficient between
+observations and predictions\cr mae \tab mean absolute
+error\cr rmse \tab root mean square error } Otherwise, a
+list where the number of elements is equal to the number of
+runs (unique parameter combinations). Each element is a
+list with the following components: \tabular{ll}{ params
+\tab data.frame of parameters (E, tau, tp, nn, theta)\cr
+model_output \tab data.frame with columns for the time
+index, observations, and predictions\cr stats \tab
+data.frame of forecast statistics (num_pred, rho, mae,
+rmse)\cr }
 }
 \description{
-\code{simplex} uses time delay embedding on a single time
+\code{s_map} uses time delay embedding on a single time
 series to generate an attractor reconstruction, and then
-applies the simplex projection algorithm to make forecasts.
-This method is typically applied, and the embedding
-dimension varied, to find an optimal embedding dimension
-for the data.
+applies the s-map algorithm to make forecasts. This method
+is typically applied, with fixed embedding dimension, and
+theta varied, to test for nonlinear dynamics in the data.
 }
 \details{
 The default parameters are set so that passing a time
-series as the only argument will run over E = 1:10
-(embedding dimension), using leave-one-out cross-validation
-over the whole time series, and returning just the forecast
-statistics.
+series as the only argument will run over a default list of
+thetas (0, 0.0001, 0.0003, 0.001, 0.003, 0.01, 0.03, 0.1,
+0.3, 0.5, 0.75, 1.0, 1.5, 2, 3, 4, 6, and 8), using E = 1,
+leave-one-out cross-validation over the whole time series,
+and returning just the forecast statistics.
 
 norm_type "L2 norm" (default) uses the typical Euclidean
 distance: \deqn{distance(a,b) := \sqrt{\sum_i{(a_i -

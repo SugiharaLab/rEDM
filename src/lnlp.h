@@ -25,6 +25,7 @@ public:
     void set_pred(const NumericMatrix pred);
     void set_exclusion_radius(const double new_exclusion_radius);
     void set_params(const int new_E, const int new_tau, const int new_tp, const int new_nn);
+    void set_theta(const double new_theta);
     void run();
     DataFrame get_output();
     DataFrame get_stats();
@@ -38,7 +39,7 @@ private:
     vector<double> time_series;
     
     // *** local parameters *** //
-    int E, tau, max_lag, tp;
+    int E, tau, tp;
     bool remake_vectors;
     bool remake_targets;
     bool remake_ranges;
