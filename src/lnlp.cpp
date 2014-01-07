@@ -5,9 +5,9 @@ LNLP::LNLP(): remake_vectors(true), remake_targets(true), remake_ranges(true)
 {
 }
 
-void LNLP::set_time(const NumericVector time)
+void LNLP::set_time(const NumericVector new_time)
 {
-    this->time = as<std::vector<double> >(time);
+    time = as<std::vector<double> >(new_time);
     return;
 }
 
@@ -30,7 +30,7 @@ void LNLP::set_norm_type(const int norm_type)
             norm_mode = L2_NORM;
             break;
         default:
-            Rcpp::stop("unknown norm type selected");
+            throw(std::domain_error("unknown norm type selected"));
     }
     return;
 }
@@ -49,7 +49,7 @@ void LNLP::set_pred_type(const int pred_type)
             pred_mode = FAST_LINEAR;
             break;
         default:
-            Rcpp::stop("unknown pred type selected");
+            throw(std::domain_error("unknown pred type selected"));
     }
     return;
 }
@@ -108,10 +108,7 @@ void LNLP::set_theta(const double new_theta)
 
 void LNLP::run()
 {
-    // check parameters
-    prepare_forecast();
-    
-    // forecast
+    prepare_forecast(); // check parameters
     forecast(); // forecast code is in forecast_machine
     return;
 }
@@ -172,8 +169,8 @@ void LNLP::prepare_forecast()
     
     if(remake_ranges)
     {
-        set_indices_from_range(lib_indices, lib_ranges);
-        set_indices_from_range(pred_indices, pred_ranges);
+        set_indices_from_range(lib_indices, lib_ranges, (E-1)*tau, -max(0, tp), true);
+        set_indices_from_range(pred_indices, pred_ranges, (E-1)*tau, -max(0, tp), false);
 
         check_cross_validation();
 
@@ -193,14 +190,14 @@ void LNLP::make_vectors()
     data_vectors.assign(num_vectors, vector<double>(E, qnan));
 
     // beginning of lagged vectors cannot lag before start of time series
-    for(int i = 0; i < (E-1)*tau; ++i)
-        for(int j = 0; j < E; ++j)
-            if((i - j*tau) >= 0)
+    for(size_t i = 0; i < (E-1)*tau; ++i)
+        for(size_t j = 0; j < E; ++j)
+            if(i >= j*tau)
                 data_vectors[i][j] = time_series[i - j * tau];
     
     // remaining lagged vectors
     for(size_t i = (E-1)*tau; i < num_vectors; ++i)
-        for(int j = 0; j < E; ++j)
+        for(size_t j = 0; j < E; ++j)
             data_vectors[i][j] = time_series[i - j * tau];
             
     remake_vectors = false;
@@ -214,27 +211,6 @@ void LNLP::make_targets()
     
     remake_targets = false;
     return;
-}
-
-void LNLP::set_indices_from_range(vector<bool>& indices, const vector<time_range>& range)
-{
-    size_t start_of_range, end_of_range;
-    indices.assign(num_vectors, false); // initialize indices
-    for(auto& range_iter: range)
-    {
-        start_of_range = range_iter.first + (E-1)*tau;
-        end_of_range = range_iter.second - max(0, tp);
-        if(end_of_range >= num_vectors) // check end of range
-        {
-            cerr << "end_of_range = " << end_of_range << ", but num_vectors = " << num_vectors << "\n";
-            LOG_WARNING("end of time_range was greater than the number of vectors; corrected");
-            end_of_range = num_vectors-1;
-        }
-        
-        for(size_t j = start_of_range; j <= end_of_range; ++j)
-            indices[j] = true;
-	}
-	return;
 }
 
 void LNLP::check_cross_validation()

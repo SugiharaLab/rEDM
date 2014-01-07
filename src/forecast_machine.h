@@ -8,23 +8,25 @@
 #include "data_types.h"
 #include <Eigen/Dense>
 
-using namespace Eigen;
 using namespace std;
+using namespace Eigen;
 
 class ForecastMachine
 {
 protected:
     // *** constructors *** //
-    ForecastMachine();
+    ForecastMachine();    
     
-    // *** methods *** //
+    // *** computational methods *** //
     void init_distances();
     void compute_distances();
     void sort_neighbors();
     vector<size_t> find_nearest_neighbors(const size_t curr_pred);
     void forecast();
+    void set_indices_from_range(vector<bool>& indices, const vector<time_range>& range, 
+                                  int start_shift, int end_shift, bool check_target);
     bool is_vec_valid(const size_t vec_index);
-    void LOG_WARNING(const char* warning_text);
+    bool is_target_valid(const size_t vec_index);
     
     // *** variables *** //
     vector<bool> valid_lib_indices;
@@ -68,5 +70,7 @@ vector<size_t> which_indices_true(const vector<bool>& indices);
 double l1_distance_func(const vec& A, const vec& B);
 double l2_distance_func(const vec& A, const vec& B);
 vector<size_t> sort_indices(const vector<double>& v, const vector<size_t> idx);
+
+void LOG_WARNING(const char* warning_text);
 
 #endif

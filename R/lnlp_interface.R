@@ -69,7 +69,7 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = c(1, NROW
     # check inputs?
     
     # make new model object
-    my_lnlp <- new(LNLP)
+    model <- new(LNLP)
     
     # setup data
     if (is.vector(time_series)) {
@@ -78,25 +78,25 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = c(1, NROW
         time <- time_series[,1]
         time_series <- time_series[,2]
     }
-    my_lnlp$set_time(time)
-    my_lnlp$set_time_series(time_series)
+    model$set_time(time)
+    model$set_time_series(time_series)
            
     # setup norm and pred types
-    my_lnlp$set_norm_type(switch(match.arg(norm_type), "L2 norm" = 2, "L1 norm" = 1))
-    my_lnlp$set_pred_type(2) # 2 = simplex
+    model$set_norm_type(switch(match.arg(norm_type), "L2 norm" = 2, "L1 norm" = 1))
+    model$set_pred_type(2) # 2 = simplex
     
     # setup lib and pred ranges
     if (is.vector(lib))
         lib <- matrix(lib, ncol = 2, byrow = TRUE)
     if (is.vector(pred))
         pred <- matrix(pred, ncol = 2, byrow = TRUE)
-    my_lnlp$set_lib(lib)
-    my_lnlp$set_pred(pred)
+    model$set_lib(lib)
+    model$set_pred(pred)
     
     # handle exclusion radius
     if (is.null(exclusion_radius))
         exclusion_radius = -1;
-    my_lnlp$set_exclusion_radius(exclusion_radius)
+    model$set_exclusion_radius(exclusion_radius)
     
     # TODO: handle epsilon
     
@@ -112,20 +112,20 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = c(1, NROW
     if (stats_only)
     {
         stats <- lapply(1:NROW(params), function(i) {
-            my_lnlp$set_params(params$E[i], params$tau[i], params$tp[i], params$nn[i])
-            my_lnlp$run()
-            return(my_lnlp$get_stats())
+            model$set_params(params$E[i], params$tau[i], params$tp[i], params$nn[i])
+            model$run()
+            return(model$get_stats())
         })
         return(cbind(params, do.call(rbind, stats)))
     }
     
     # else
     output <- lapply(1:NROW(params), function(i) {
-        my_lnlp$set_params(params$E[i], params$tau[i], params$tp[i], params$nn[i])
-        my_lnlp$run()
+        model$set_params(params$E[i], params$tau[i], params$tp[i], params$nn[i])
+        model$run()
         return(list(params = params[i,], 
-                    model_output = my_lnlp$get_output(), 
-                    stats = my_lnlp$get_stats()))
+                    model_output = model$get_output(), 
+                    stats = model$get_stats()))
     })
     return(output)
 }
@@ -206,7 +206,7 @@ s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = c(1, NROW(t
     # check inputs?
     
     # make new model object
-    my_lnlp <- new(LNLP)
+    model <- new(LNLP)
     
     # setup data
     if (is.vector(time_series)) {
@@ -215,25 +215,25 @@ s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = c(1, NROW(t
         time <- time_series[,1]
         time_series <- time_series[,2]
     }
-    my_lnlp$set_time(time)
-    my_lnlp$set_time_series(time_series)
+    model$set_time(time)
+    model$set_time_series(time_series)
     
     # setup norm and pred types
-    my_lnlp$set_norm_type(switch(match.arg(norm_type), "L2 norm" = 2, "L1 norm" = 1))
-    my_lnlp$set_pred_type(1) # 1 = s-map
+    model$set_norm_type(switch(match.arg(norm_type), "L2 norm" = 2, "L1 norm" = 1))
+    model$set_pred_type(1) # 1 = s-map
     
     # setup lib and pred ranges
     if (is.vector(lib))
         lib <- matrix(lib, ncol = 2, byrow = TRUE)
     if (is.vector(pred))
         pred <- matrix(pred, ncol = 2, byrow = TRUE)
-    my_lnlp$set_lib(lib)
-    my_lnlp$set_pred(pred)
+    model$set_lib(lib)
+    model$set_pred(pred)
     
     # handle exclusion radius
     if (is.null(exclusion_radius))
         exclusion_radius = -1;
-    my_lnlp$set_exclusion_radius(exclusion_radius)
+    model$set_exclusion_radius(exclusion_radius)
     
     # TODO: handle epsilon
     
@@ -249,21 +249,21 @@ s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = c(1, NROW(t
     if (stats_only)
     {
         stats <- lapply(1:NROW(params), function(i) {
-            my_lnlp$set_params(params$E[i], params$tau[i], params$tp[i], params$nn[i])
-            my_lnlp$set_theta(params$theta[i])
-            my_lnlp$run()
-            return(my_lnlp$get_stats())
+            model$set_params(params$E[i], params$tau[i], params$tp[i], params$nn[i])
+            model$set_theta(params$theta[i])
+            model$run()
+            return(model$get_stats())
         })
         return(cbind(params, do.call(rbind, stats)))
     }
     
     # else
     output <- lapply(1:NROW(params), function(i) {
-        my_lnlp$set_params(params$E[i], params$tau[i], params$tp[i], params$nn[i])
-        my_lnlp$run()
+        model$set_params(params$E[i], params$tau[i], params$tp[i], params$nn[i])
+        model$run()
         return(list(params = params[i,], 
-                    model_output = my_lnlp$get_output(), 
-                    stats = my_lnlp$get_stats()))
+                    model_output = model$get_output(), 
+                    stats = model$get_stats()))
     })
     return(output)
 }
