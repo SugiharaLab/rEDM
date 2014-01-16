@@ -3,9 +3,9 @@ Type: Package
 Title: Applications of empirical dynamic modeling from time series.
 Version: 1.0
 Date: 2013-11-26
-Author: Hao Ye
+Author: Hao Ye <hye@ucsd.edu>
 Maintainer: Hao Ye <hye@ucsd.edu>
-Description: More about what it does (maybe more than one line)
+Description: The Redm package provides an interface from R to C++ compiled objects that use time delay embedding to perform state-space reconstruction and nonlinear forecasting.
 License: LGPL-3
 Depends: Rcpp (>= 0.10.6)
 NeedsCompilation: yes

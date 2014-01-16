@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <numeric>
+#include <thread>
 #include <math.h>
 #include "data_types.h"
 #include <Eigen/Dense>
@@ -21,15 +22,16 @@ protected:
     void init_distances();
     void compute_distances();
     void sort_neighbors();
-    vector<size_t> find_nearest_neighbors(const size_t curr_pred);
+    vector<size_t> find_nearest_neighbors(const size_t curr_pred, const vector<bool>& valid_lib_indices);
+
     void forecast();
     void set_indices_from_range(vector<bool>& indices, const vector<time_range>& range, 
                                   int start_shift, int end_shift, bool check_target);
     bool is_vec_valid(const size_t vec_index);
     bool is_target_valid(const size_t vec_index);
+    PredStats compute_stats();
     
     // *** variables *** //
-    vector<bool> valid_lib_indices;
     vector<bool> lib_indices;
     vector<bool> pred_indices;
     vector<size_t> which_lib;
@@ -59,11 +61,11 @@ private:
     // *** methods *** //
     void simplex_forecast();
     void smap_forecast();
-    void simplex_prediction(const size_t curr_pred);
-    void smap_prediction(const size_t curr_pred);
+    void simplex_prediction(const size_t start, const size_t end);
+    void smap_prediction(const size_t start, const size_t end);
+    vector<bool> adjust_lib(const size_t curr_pred);
     
-    void adjust_lib();
-    void adjust_lib(const size_t curr_pred);
+    int num_threads;
 };
 
 vector<size_t> which_indices_true(const vector<bool>& indices);

@@ -21,4 +21,12 @@ enum NormEnum
     L2_NORM
 };
 
+struct PredStats
+{
+    size_t num_pred;
+    double rho;
+    double mae;
+    double rmse;
+};
+
 #endif

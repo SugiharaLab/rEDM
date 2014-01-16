@@ -1,25 +1,31 @@
-#include "lnlp.h"
+#include "block_lnlp.h"
 
 /*** Constructors ***/
-LNLP::LNLP(): remake_vectors(true), remake_targets(true), remake_ranges(true)
+BlockLNLP::BlockLNLP(): remake_vectors(true), remake_targets(true), remake_ranges(true)
 {
 }
 
-void LNLP::set_time(const NumericVector new_time)
+void BlockLNLP::set_time(const NumericVector new_time)
 {
     time = as<std::vector<double> >(new_time);
     return;
 }
 
-void LNLP::set_time_series(const NumericVector data)
+void BlockLNLP::set_block(const NumericMatrix new_block)
 {
-    time_series = as<std::vector<double> >(data);
-    num_vectors = time_series.size();
+    block.resize(new_block.ncol());
+    num_vectors = new_block.nrow();
+    for(size_t i = 0; i < new_block.ncol(); ++i)
+    {
+        block[i].resize(num_vectors);
+        for(size_t j = 0; j < num_vectors; ++j)
+            block[i][j] = new_block(j,i);
+    }
     init_distances();
     return;
 }
 
-void LNLP::set_norm_type(const int norm_type)
+void BlockLNLP::set_norm_type(const int norm_type)
 {
     switch(norm_type)
     {
@@ -35,7 +41,7 @@ void LNLP::set_norm_type(const int norm_type)
     return;
 }
 
-void LNLP::set_pred_type(const int pred_type)
+void BlockLNLP::set_pred_type(const int pred_type)
 {
     switch(pred_type)
     {
@@ -54,7 +60,7 @@ void LNLP::set_pred_type(const int pred_type)
     return;
 }
 
-void LNLP::set_lib(const NumericMatrix lib)
+void BlockLNLP::set_lib(const NumericMatrix lib)
 {
     lib_ranges.resize(lib.nrow());
     for(size_t i = 0; i < lib.nrow(); ++i)
@@ -66,7 +72,7 @@ void LNLP::set_lib(const NumericMatrix lib)
     return;
 }
 
-void LNLP::set_pred(const NumericMatrix pred)
+void BlockLNLP::set_pred(const NumericMatrix pred)
 {
     pred_ranges.resize(pred.nrow());
     for(size_t i = 0; i < pred.nrow(); ++i)
@@ -78,7 +84,7 @@ void LNLP::set_pred(const NumericMatrix pred)
     return;
 }
 
-void LNLP::set_exclusion_radius(const double new_exclusion_radius)
+void BlockLNLP::set_exclusion_radius(const double new_exclusion_radius)
 {
     exclusion_radius = new_exclusion_radius;
     if(exclusion_radius >= 0)
@@ -86,43 +92,54 @@ void LNLP::set_exclusion_radius(const double new_exclusion_radius)
     return;
 }
 
-void LNLP::set_params(const int new_E, const int new_tau, const int new_tp, const int new_nn)
+void BlockLNLP::set_embedding(const NumericVector new_embedding)
 {
-    if(E != new_E || tau != new_tau)
-        remake_vectors = true;
+    embedding = as<std::vector<size_t> >(new_embedding);
+    E = embedding.size();
+    remake_vectors = true;
+    return;
+}
+
+void BlockLNLP::set_target_column(const size_t new_target)
+{
+    target = new_target;
+    remake_targets = true;
+    return;
+}
+
+void BlockLNLP::set_params(const int new_tp, const int new_nn)
+{
     if(tp != new_tp)
         remake_targets = true;
     if(remake_vectors || remake_targets)
         remake_ranges = true;
     
-    E = new_E;
-    tau = new_tau;
     tp = new_tp;
     nn = new_nn;    
     return;
 }
 
-void LNLP::set_theta(const double new_theta)
+void BlockLNLP::set_theta(const double new_theta)
 {
     theta = new_theta;
     return;
 }
 
-void LNLP::run()
+void BlockLNLP::run()
 {
     prepare_forecast(); // check parameters
     forecast(); // forecast code is in forecast_machine
     return;
 }
 
-DataFrame LNLP::get_output()
+DataFrame BlockLNLP::get_output()
 {
     return DataFrame::create( Named("time") = time, 
                               Named("obs") = observed, 
                               Named("pred") = predicted);
 }
 
-DataFrame LNLP::get_short_output()
+DataFrame BlockLNLP::get_short_output()
 {
     vector<double> short_time(which_pred.size(), qnan);
     vector<double> short_obs(which_pred.size(), qnan);
@@ -140,7 +157,7 @@ DataFrame LNLP::get_short_output()
                               Named("pred") = short_pred);
 }
 
-DataFrame LNLP::get_stats()
+DataFrame BlockLNLP::get_stats()
 {
     PredStats output = compute_stats();
     return DataFrame::create( Named("num_pred") = output.num_pred, 
@@ -151,7 +168,7 @@ DataFrame LNLP::get_stats()
 
 // *** PRIVATE METHODS FOR INTERNAL USE ONLY *** //
 
-void LNLP::prepare_forecast()
+void BlockLNLP::prepare_forecast()
 {
     if(remake_vectors)
     {
@@ -161,11 +178,11 @@ void LNLP::prepare_forecast()
     
     if(remake_targets)
         make_targets();
-    
+        
     if(remake_ranges)
     {
-        set_indices_from_range(lib_indices, lib_ranges, (E-1)*tau, -max(0, tp), true);
-        set_indices_from_range(pred_indices, pred_ranges, (E-1)*tau, -max(0, tp), false);
+        set_indices_from_range(lib_indices, lib_ranges, 0, -max(0, tp), true);
+        set_indices_from_range(pred_indices, pred_ranges, 0, -max(0, tp), false);
 
         check_cross_validation();
 
@@ -177,38 +194,48 @@ void LNLP::prepare_forecast()
     
     compute_distances();
     sort_neighbors();
+    
     return;
 }
 
-void LNLP::make_vectors()
+void BlockLNLP::make_vectors()
 {
     data_vectors.assign(num_vectors, vector<double>(E, qnan));
+    for(size_t i = 0; i < num_vectors; ++i)
+    {
+        for(size_t j = 0; j < E; ++j)
+        {
+            data_vectors[i][j] = block[embedding[j]-1][i];
+        }
+    }
 
-    // beginning of lagged vectors cannot lag before start of time series
-    for(size_t i = 0; i < (E-1)*tau; ++i)
-        for(size_t j = 0; j < E; ++j)
-            if(i >= j*tau)
-                data_vectors[i][j] = time_series[i - j * tau];
-    
-    // remaining lagged vectors
-    for(size_t i = (E-1)*tau; i < num_vectors; ++i)
-        for(size_t j = 0; j < E; ++j)
-            data_vectors[i][j] = time_series[i - j * tau];
-            
     remake_vectors = false;
     return;
 }
 
-void LNLP::make_targets()
+void BlockLNLP::make_targets()
 {
-    observed.assign(time_series.begin()+tp, time_series.end());
-    observed.insert(observed.end(), tp, qnan);
+    if((target < 1) || (target-1 >= block.size()))
+    {
+        throw std::domain_error("invalid target column");
+    }
     
+    observed.clear();
+    if(tp >= 0)
+    {
+        observed.assign(block[target-1].begin()+tp, block[target-1].end());
+        observed.insert(observed.end(), tp, qnan);
+    }
+    else
+    {
+        observed.assign(block[target-1].begin(), block[target-1].end()+tp);
+        observed.insert(observed.begin(), -tp, qnan);
+    }
     remake_targets = false;
     return;
 }
 
-void LNLP::check_cross_validation()
+void BlockLNLP::check_cross_validation()
 {
     CROSS_VALIDATION = true;
     if (exclusion_radius < 0) // if exclusion_radius is set, always do cross_validation
@@ -237,24 +264,26 @@ void LNLP::check_cross_validation()
     return;
 }
 
-RCPP_MODULE(lnlp_module)
+RCPP_MODULE(block_lnlp_module)
 {
-    class_<LNLP>("LNLP")
+    class_<BlockLNLP>("BlockLNLP")
     
     .constructor()
     
-    .method("set_time", &LNLP::set_time)
-    .method("set_time_series", &LNLP::set_time_series)
-    .method("set_norm_type", &LNLP::set_norm_type)
-    .method("set_pred_type", &LNLP::set_pred_type)
-    .method("set_lib", &LNLP::set_lib)
-    .method("set_pred", &LNLP::set_pred)
-    .method("set_exclusion_radius", &LNLP::set_exclusion_radius)
-    .method("set_params", &LNLP::set_params)
-    .method("set_theta", &LNLP::set_theta)
-    .method("run", &LNLP::run)
-    .method("get_output", &LNLP::get_output)
-    .method("get_short_output", &LNLP::get_short_output)
-    .method("get_stats", &LNLP::get_stats)
+    .method("set_time", &BlockLNLP::set_time)
+    .method("set_block", &BlockLNLP::set_block)
+    .method("set_norm_type", &BlockLNLP::set_norm_type)
+    .method("set_pred_type", &BlockLNLP::set_pred_type)
+    .method("set_lib", &BlockLNLP::set_lib)
+    .method("set_pred", &BlockLNLP::set_pred)
+    .method("set_exclusion_radius", &BlockLNLP::set_exclusion_radius)
+    .method("set_embedding", &BlockLNLP::set_embedding)
+    .method("set_target_column", &BlockLNLP::set_target_column)
+    .method("set_params", &BlockLNLP::set_params)
+    .method("set_theta", &BlockLNLP::set_theta)
+    .method("run", &BlockLNLP::run)
+    .method("get_output", &BlockLNLP::get_output)
+    .method("get_short_output", &BlockLNLP::get_short_output)
+    .method("get_stats", &BlockLNLP::get_stats)
     ;
 }

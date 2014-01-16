@@ -38,6 +38,7 @@
 #'   value < 1 will use all possible neighbors.)
 #' @param columns either a vector with the columns to use (indices or names), 
 #'   or a list of such columns
+#' @param target_column the index (or name) of the column to forecast
 #' @param stats_only specify whether to output just the forecast statistics or 
 #'   the raw predictions for each run
 #' @param exclusion_radius excludes vectors from the search space of nearest 
@@ -73,9 +74,22 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
                        method = c("simplex", "s-map"), 
                        tp = 1, num_neighbors = "e+1", columns = NULL, 
                        target_column = 1, stats_only = TRUE, first_column_time = FALSE, 
-                       exclusion_radius = NULL, epsilon = NULL)
+                       exclusion_radius = NULL, epsilon = NULL, theta = NULL)
 {
-    # check inputs?
+    convert_to_column_indices <- function(columns, col_names, max_column)
+    {
+        if(is.numeric(columns))
+        {
+            if(any(columns > max_column))
+                message("Warning: some column indices exceed the number of columns and were ignored.")
+            return(columns[columns <= max_column])
+        }
+        # else
+        indices <- match(columns, col_names)
+        if(any(is.na(indices)))
+            message("Warning: some column names could not be matched and were ignored.")
+        return(indices[is.finite(indices)])
+    }
     
     # make new model object
     model <- new(BlockLNLP)
@@ -104,12 +118,17 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
             time <- 1:NROW(block)
     }
     model$set_time(time)
-    model$set_block(block)
+    model$set_block(as.matrix(block))
     model$set_target_column(target_column)
     
     # setup norm and pred types
     model$set_norm_type(switch(match.arg(norm_type), "L2 norm" = 2, "L1 norm" = 1))
     model$set_pred_type(switch(match.arg(method), "simplex" = 2, "s-map" = 1))
+    if(match.arg(method) == "s-map")
+    {
+        if(is.null(theta))
+            theta <- 0        
+    }
     
     # setup lib and pred ranges
     if (is.vector(lib))
@@ -133,54 +152,83 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
     }
     if(is.null(columns)) {
         columns = list(1:NCOL(block))
-    } else if(is.vector(columns)) {
-        columns = list(convert_to_column_indices(columns, col_names))
     } else if(is.list(columns)) {
         columns = lapply(columns, function(columns) {
-            convert_to_column_indices(columns, col_names)
+            convert_to_column_indices(columns, col_names, NCOL(block))
         })
+    } else if(is.vector(columns)) {
+        columns = list(convert_to_column_indices(columns, col_names, NCOL(block)))
     }
     embedding_index <- seq_along(columns)
     
     # setup other params in data.frame
-    params <- expand.grid(tp, num_neighbors, embedding_index)
-    names(params) <- c("tp", "nn", "embedding")
-    params <- params[,c("embedding", "tp", "nn")]
-    e_plus_1_index <- match(num_neighbors, c("e+1", "E+1", "e + 1", "E + 1"))
-    if (any(e_plus_1_index, na.rm = TRUE))
-        params$nn <- 1 + sapply(columns, length)
-    # apply model prediction function to params
-    if (stats_only)
+    if(match.arg(method) == "s-map")
     {
-        stats <- lapply(1:NROW(params), function(i) {
-            model$set_params(params$tp[i], params$nn[i])
-            model$set_embedding(columns[[params$embedding[i]]])
-            model$run()
-            return(model$get_stats())
-        })
-        params$embedding <- sapply(params$embedding, function(i) {
-            paste(columns[[i]], sep = "", collapse = ", ")})
-        output <- cbind(params, do.call(rbind, stats))
-    } else {
-        output <- lapply(1:NROW(params), function(i) {
-            model$set_params(params$tp[i], params$nn[i])
-            model$set_embedding(columns[[params$embedding[i]]])
-            model$run()
-            
-            return(list(params = params[i,], 
-                        embedding = paste(columns[[params$embedding[i]]], sep = "", collapse = ", "), 
-                        model_output = model$get_output(), 
-                        stats = model$get_stats()))
-        })
+        params <- expand.grid(tp, num_neighbors, theta, embedding_index)
+        names(params) <- c("tp", "nn", "theta", "embedding")
+        params <- params[,c("embedding", "tp", "nn", "theta")]
+        e_plus_1_index <- match(num_neighbors, c("e+1", "E+1", "e + 1", "E + 1"))
+        if (any(e_plus_1_index, na.rm = TRUE))
+            params$nn <- 1 + sapply(columns, length)
+        # apply model prediction function to params
+        if (stats_only)
+        {
+            stats <- lapply(1:NROW(params), function(i) {
+                model$set_params(params$tp[i], params$nn[i])
+                model$set_theta(params$theta[i])
+                model$set_embedding(columns[[params$embedding[i]]])
+                model$run()
+                return(model$get_stats())
+            })
+            params$embedding <- sapply(params$embedding, function(i) {
+                paste(columns[[i]], sep = "", collapse = ", ")})
+            output <- cbind(params, do.call(rbind, stats))
+        } else {
+            output <- lapply(1:NROW(params), function(i) {
+                model$set_params(params$tp[i], params$nn[i])
+                model$set_theta(params$theta[i])
+                model$set_embedding(columns[[params$embedding[i]]])
+                model$run()
+                
+                return(list(params = params[i,], 
+                            embedding = paste(columns[[params$embedding[i]]], sep = "", collapse = ", "), 
+                            model_output = model$get_output(), 
+                            stats = model$get_stats()))
+            })
+        }
     }
-    
+    else
+    {
+        params <- expand.grid(tp, num_neighbors, embedding_index)
+        names(params) <- c("tp", "nn", "embedding")
+        params <- params[,c("embedding", "tp", "nn")]
+        e_plus_1_index <- match(num_neighbors, c("e+1", "E+1", "e + 1", "E + 1"))
+        if (any(e_plus_1_index, na.rm = TRUE))
+            params$nn <- 1 + sapply(columns, length)
+        # apply model prediction function to params
+        if (stats_only)
+        {
+            stats <- lapply(1:NROW(params), function(i) {
+                model$set_params(params$tp[i], params$nn[i])
+                model$set_embedding(columns[[params$embedding[i]]])
+                model$run()
+                return(model$get_stats())
+            })
+            params$embedding <- sapply(params$embedding, function(i) {
+                paste(columns[[i]], sep = "", collapse = ", ")})
+            output <- cbind(params, do.call(rbind, stats))
+        } else {
+            output <- lapply(1:NROW(params), function(i) {
+                model$set_params(params$tp[i], params$nn[i])
+                model$set_embedding(columns[[params$embedding[i]]])
+                model$run()
+                
+                return(list(params = params[i,], 
+                            embedding = paste(columns[[params$embedding[i]]], sep = "", collapse = ", "), 
+                            model_output = model$get_output(), 
+                            stats = model$get_stats()))
+            })
+        }
+    }
     return(output)
-}
-
-convert_to_column_indices <- function(columns, col_names)
-{
-    if(is.numeric(columns))
-        return(columns)
-    indices <- match(columns, col_names)
-    return(indices[is.finite(indices)])
 }
