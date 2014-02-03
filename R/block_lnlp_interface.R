@@ -41,12 +41,16 @@
 #' @param target_column the index (or name) of the column to forecast
 #' @param stats_only specify whether to output just the forecast statistics or 
 #'   the raw predictions for each run
+#' @param first_column_time indicates whether the first column of the given 
+#'   block is a time column (and therefore excluded when indexing)
 #' @param exclusion_radius excludes vectors from the search space of nearest 
 #'   neighbors if their *time index* is within exclusion_radius (NULL turns 
 #'   this option off)
 #' @param epsilon excludes vectors from the search space of nearest neighbors 
 #'   if their *distance* is farther away than epsilon (NULL turns this option 
 #'   off)
+#' @param theta the nonlinear tuning parameter (theta is only relevant if 
+#'   method == "s-map")
 #' @return If stats_only, then a data.frame with components for the parameters 
 #'   and forecast statistics:
 #' \tabular{ll}{
@@ -76,13 +80,13 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
                        target_column = 1, stats_only = TRUE, first_column_time = FALSE, 
                        exclusion_radius = NULL, epsilon = NULL, theta = NULL)
 {
-    convert_to_column_indices <- function(columns, col_names, max_column)
+    convert_to_column_indices <- function(columns)
     {
         if(is.numeric(columns))
         {
-            if(any(columns > max_column))
+            if(any(columns > NCOL(block)))
                 message("Warning: some column indices exceed the number of columns and were ignored.")
-            return(columns[columns <= max_column])
+            return(columns[columns <= NCOL(block)])
         }
         # else
         indices <- match(columns, col_names)
@@ -154,13 +158,13 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
         columns = list(1:NCOL(block))
     } else if(is.list(columns)) {
         columns = lapply(columns, function(columns) {
-            convert_to_column_indices(columns, col_names, NCOL(block))
+            convert_to_column_indices(columns)
         })
     } else if(is.vector(columns)) {
-        columns = list(convert_to_column_indices(columns, col_names, NCOL(block)))
+        columns = list(convert_to_column_indices(columns))
     }
     embedding_index <- seq_along(columns)
-    
+
     # setup other params in data.frame
     if(match.arg(method) == "s-map")
     {

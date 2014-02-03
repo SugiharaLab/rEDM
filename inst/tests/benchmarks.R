@@ -42,7 +42,7 @@ block_old <- function() {
 }
 
 # benchmarks
-if(FALSE)
+if(TRUE)
 {
     microbenchmark(simplex_new(), simplex_old(), times = 20)
     microbenchmark(smap_new(), smap_old(), times = 20)

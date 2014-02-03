@@ -2,6 +2,7 @@
 .Rhistory
 .RData
 .DS_Store
+.Rd
 src/*.o
 src/*.so
 src/*.dll

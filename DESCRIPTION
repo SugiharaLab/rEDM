@@ -1,13 +1,14 @@
 Package: Redm
 Type: Package
 Title: Applications of empirical dynamic modeling from time series.
-Version: 1.0
+Version: 0.1
 Date: 2013-11-26
 Author: Hao Ye <hye@ucsd.edu>
 Maintainer: Hao Ye <hye@ucsd.edu>
-Description: The Redm package provides an interface from R to C++ compiled objects that use time delay embedding to perform state-space reconstruction and nonlinear forecasting.
+Description: The Redm package contains C++ compiled objects that use time delay embedding to perform state-space reconstruction and nonlinear forecasting and an R interface to those objects using Rcpp. It supports both the simplex projection (Sugihara 1990) and s-map forecasting algorithms (Sugihara 1994), with implementations of convergent cross mapping (Sugihara 2012).
 License: LGPL-3
 Depends: Rcpp (>= 0.10.6)
 NeedsCompilation: yes
+Suggests: testthat
 LinkingTo: Rcpp
 RcppModules: lnlp_module, block_lnlp_module

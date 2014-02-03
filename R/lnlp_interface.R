@@ -162,7 +162,7 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = c(1, NROW
 #' @param num_neighbors the number of nearest neighbors to use (any of "e+1", 
 #'   "E+1", "e + 1", "E + 1" will peg this parameter to E+1 for each run, any
 #'   value < 1 will use all possible neighbors.)
-#' @param theta the nonlinear tuning parameter (note tthat theta = 0 is 
+#' @param theta the nonlinear tuning parameter (note that theta = 0 is 
 #'   equivalent to an autoregressive model of order E.)
 #' @param stats_only specify whether to output just the forecast statistics or 
 #'   the raw predictions for each run

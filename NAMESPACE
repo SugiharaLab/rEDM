@@ -1,3 +1,2 @@
 useDynLib(Redm)
-#export(simplex)
 exportPattern("^[[:alpha:]]+")
