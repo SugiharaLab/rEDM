@@ -60,7 +60,7 @@ void ForecastMachine::compute_distances()
                                          curr_pred = which_pred[i];
                                          for(auto& curr_lib: which_lib)
                                          {
-                                             if(isnan(distances[curr_pred][curr_lib]))
+                                             if(std::isnan(distances[curr_pred][curr_lib]))
                                                  distances[curr_pred][curr_lib] = dist_func(data_vectors[curr_pred],
                                                                                             data_vectors[curr_lib]);
                                          }
@@ -174,7 +174,7 @@ bool ForecastMachine::is_vec_valid(const size_t vec_index)
 {
     // check data vector
     for(auto& val: data_vectors[vec_index])
-        if(isnan(val)) return false;
+        if(std::isnan(val)) return false;
     
     // if all is good, then:
     return true;
@@ -183,7 +183,7 @@ bool ForecastMachine::is_vec_valid(const size_t vec_index)
 bool ForecastMachine::is_target_valid(const size_t vec_index)
 {
     // check target value
-    if(isnan(observed[vec_index])) return false;
+    if(std::isnan(observed[vec_index])) return false;
     
     // if all is good, then:
     return true;
@@ -202,7 +202,7 @@ PredStats ForecastMachine::compute_stats()
     
     for(size_t k = 0; k < num_vectors; ++k)
     {
-        if(!isnan(observed[k]) && !isnan(predicted[k]))
+        if(!std::isnan(observed[k]) && !std::isnan(predicted[k]))
         {
             ++ num_pred;
             sum_errors += fabs(observed[k] - predicted[k]);
