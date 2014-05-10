@@ -73,6 +73,8 @@
 #' }
 #' @export 
 
+# KNOWN BUGS: NaN flags are set based on first embedding, so order of embeddings can influence results
+
 block_lnlp <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)), 
                        norm_type = c("L2 norm", "L1 norm"), 
                        method = c("simplex", "s-map"), 

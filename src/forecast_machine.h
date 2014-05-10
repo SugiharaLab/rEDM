@@ -5,6 +5,7 @@
 #include <vector>
 #include <numeric>
 #include <thread>
+#include <stdexcept>
 #include <math.h>
 #include "data_types.h"
 #include <Eigen/Dense>

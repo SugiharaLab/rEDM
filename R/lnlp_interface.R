@@ -260,6 +260,7 @@ s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = c(1, NROW(t
     # else
     output <- lapply(1:NROW(params), function(i) {
         model$set_params(params$E[i], params$tau[i], params$tp[i], params$nn[i])
+        model$set_theta(params$theta[i])
         model$run()
         return(list(params = params[i,], 
                     model_output = model$get_output(), 
