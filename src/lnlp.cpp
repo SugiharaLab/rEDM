@@ -108,6 +108,13 @@ void LNLP::set_theta(const double new_theta)
     return;
 }
 
+void LNLP::suppress_warnings()
+{
+    SUPPRESS_WARNINGS = true;
+    return;
+}
+
+
 void LNLP::run()
 {
     prepare_forecast(); // check parameters
@@ -208,35 +215,6 @@ void LNLP::make_targets()
     return;
 }
 
-void LNLP::check_cross_validation()
-{
-    CROSS_VALIDATION = true;
-    if (exclusion_radius < 0) // if exclusion_radius is set, always do cross_validation
-    {
-        for (size_t i = 0; i < num_vectors; ++i) // see if all lib indices == pred_indices
-        {
-            if(lib_indices[i] != pred_indices[i])
-            {
-                CROSS_VALIDATION = false;
-                break;
-            }
-        }
-    }
-    
-    if(!CROSS_VALIDATION) // some difference -> resolve any equal cases
-    {
-        for(size_t i = 0; i < num_vectors; ++i)
-        {
-            if(lib_indices[i] && pred_indices[i])
-            {
-                lib_indices[i] = true;
-                pred_indices[i] = false;
-            }
-        }
-    }
-    return;
-}
-
 RCPP_MODULE(lnlp_module)
 {
     class_<LNLP>("LNLP")
@@ -252,6 +230,7 @@ RCPP_MODULE(lnlp_module)
     .method("set_exclusion_radius", &LNLP::set_exclusion_radius)
     .method("set_params", &LNLP::set_params)
     .method("set_theta", &LNLP::set_theta)
+    .method("suppress_warnings", &LNLP::suppress_warnings)
     .method("run", &LNLP::run)
     .method("get_output", &LNLP::get_output)
     .method("get_short_output", &LNLP::get_short_output)

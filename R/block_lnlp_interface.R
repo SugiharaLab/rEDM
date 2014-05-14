@@ -80,7 +80,7 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
                        method = c("simplex", "s-map"), 
                        tp = 1, num_neighbors = "e+1", columns = NULL, 
                        target_column = 1, stats_only = TRUE, first_column_time = FALSE, 
-                       exclusion_radius = NULL, epsilon = NULL, theta = NULL)
+                       exclusion_radius = NULL, epsilon = NULL, theta = NULL, silent = FALSE)
 {
     convert_to_column_indices <- function(columns)
     {
@@ -151,19 +151,25 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
     
     # TODO: handle epsilon
     
+    # handle silent flag
+    if (silent)
+        model$suppress_warnings()
+    
     # convert embeddings to column indices
     col_names <- colnames(block)
     if(is.null(col_names)) {
         col_names <- paste("ts_", seq_len(NCOL(block)))
     }
     if(is.null(columns)) {
-        columns = list(1:NCOL(block))
+        columns <- list(1:NCOL(block))
     } else if(is.list(columns)) {
-        columns = lapply(columns, function(columns) {
-            convert_to_column_indices(columns)
+        columns <- lapply(columns, function(embedding) {
+            convert_to_column_indices(embedding)
         })
     } else if(is.vector(columns)) {
-        columns = list(convert_to_column_indices(columns))
+        columns <- list(convert_to_column_indices(columns))
+    } else if(is.matrix(columns)) {
+        columns <- lapply(1:NROW(columns), function(i) convert_to_column_indices(columns[i,]))
     }
     embedding_index <- seq_along(columns)
 

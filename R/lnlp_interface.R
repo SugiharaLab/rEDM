@@ -64,7 +64,7 @@
 simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = c(1, NROW(time_series)), 
                     norm_type = c("L2 norm", "L1 norm"), E = 1:10, tau = 1, 
                     tp = 1, num_neighbors = "e+1", stats_only = TRUE, 
-                    exclusion_radius = NULL, epsilon = NULL)
+                    exclusion_radius = NULL, epsilon = NULL, silent = FALSE)
 {
     # check inputs?
     
@@ -99,6 +99,10 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = c(1, NROW
     model$set_exclusion_radius(exclusion_radius)
     
     # TODO: handle epsilon
+    
+    # handle silent flag
+    if (silent)
+        model$suppress_warnings()
     
     # setup other params in data.frame
     params <- expand.grid(tp, num_neighbors, tau, E)
@@ -201,7 +205,8 @@ s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = c(1, NROW(t
                   tp = 1, num_neighbors = -1, 
                   theta = c(0, 0.0001, 0.0003, 0.001, 0.003, 0.01, 0.03, 0.1, 
                             0.3, 0.5, 0.75, 1.0, 1.5, 2, 3, 4, 6, 8), 
-                  stats_only = TRUE, exclusion_radius = NULL, epsilon = NULL)
+                  stats_only = TRUE, exclusion_radius = NULL, epsilon = NULL, 
+                  silent = FALSE)
 {
     # check inputs?
     
@@ -236,6 +241,10 @@ s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = c(1, NROW(t
     model$set_exclusion_radius(exclusion_radius)
     
     # TODO: handle epsilon
+    
+    # handle silent flag
+    if (silent)
+        model$suppress_warnings()
     
     # setup other params in data.frame
     params <- expand.grid(theta, tp, num_neighbors, tau, E)

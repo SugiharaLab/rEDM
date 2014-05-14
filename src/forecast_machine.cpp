@@ -10,7 +10,7 @@ time(vector<double>()), data_vectors(vector<vec>()),
 observed(vector<double>()), predicted(vector<double>()),
 num_vectors(0),
 distances(vector<vector<double> >()), neighbors(vector<vector<size_t> >()),
-CROSS_VALIDATION(false), pred_mode(SIMPLEX), norm_mode(L2_NORM),
+CROSS_VALIDATION(false), SUPPRESS_WARNINGS(false), pred_mode(SIMPLEX), norm_mode(L2_NORM),
 nn(0), exclusion_radius(-1),
 lib_ranges(vector<time_range>()), pred_ranges(vector<time_range>()),
 num_threads(1)
@@ -152,6 +152,11 @@ void ForecastMachine::set_indices_from_range(vector<bool>& indices, const vector
     indices.assign(num_vectors, false); // initialize indices
     for(auto& range_iter: range)
     {
+        if(start_shift < 0) // check beginning of range
+        {
+            LOG_WARNING("adjustment to beginning of ts was < 0; corrected");
+            start_shift = 0;
+        }
         start_of_range = range_iter.first + start_shift;
         end_of_range = range_iter.second + end_shift;
         if(end_of_range >= num_vectors) // check end of range
@@ -168,6 +173,53 @@ void ForecastMachine::set_indices_from_range(vector<bool>& indices, const vector
         }
     }
 	return;
+}
+
+void ForecastMachine::check_cross_validation()
+{
+    if (exclusion_radius >= 0) // if exclusion_radius is set, always do cross_validation
+    {
+        CROSS_VALIDATION = true;
+        return;
+    }
+    // else
+    for (size_t i = 0; i < num_vectors; ++i) // see if lib indices overlap with pred_indices
+    {
+        if(lib_indices[i] && pred_indices[i])
+        {
+            CROSS_VALIDATION = true; // don't change flags, just enable cross-validation to deal with overlaps
+            exclusion_radius = 0; // exclusion_radius < 0 due to above check
+            LOG_WARNING("Found overlap between lib and pred. Enabling cross-validation with exclusion radius = 0.");
+            return;
+        }
+    }
+    
+    /*
+    if (exclusion_radius < 0) // if exclusion_radius is set, always do cross_validation
+    {
+        for (size_t i = 0; i < num_vectors; ++i) // see if all lib indices == pred_indices
+        {
+            if(lib_indices[i] != pred_indices[i])
+            {
+                CROSS_VALIDATION = false;
+                break;
+            }
+        }
+        // lib == pred   
+    }
+    if(!CROSS_VALIDATION) // some difference -> resolve any equal cases
+    {
+        for(size_t i = 0; i < num_vectors; ++i)
+        {
+            if(lib_indices[i] && pred_indices[i])
+            {
+                lib_indices[i] = true;
+                pred_indices[i] = false;
+            }
+        }
+    }
+    */
+    return;
 }
 
 bool ForecastMachine::is_vec_valid(const size_t vec_index)
@@ -225,6 +277,14 @@ PredStats ForecastMachine::compute_stats()
     
     return output;
 }
+
+void ForecastMachine::LOG_WARNING(const char* warning_text)
+{
+    if(!SUPPRESS_WARNINGS)
+        cerr << "WARNING: " << warning_text << "\n";
+    return;
+}
+
 // *** PRIVATE METHODS FOR INTERNAL USE ONLY *** //
 
 void ForecastMachine::simplex_forecast()
@@ -499,10 +559,4 @@ vector<size_t> sort_indices(const vector<double>& v, vector<size_t> idx)
     sort(idx.begin(), idx.end(),
          [&v](size_t i1, size_t i2) {return v[i1] < v[i2];});
     return idx;
-}
-
-void LOG_WARNING(const char* warning_text)
-{
-    cerr << "WARNING: " << warning_text << "\n";
-    return;
 }

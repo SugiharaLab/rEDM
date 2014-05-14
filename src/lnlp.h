@@ -23,6 +23,7 @@ public:
     void set_exclusion_radius(const double new_exclusion_radius);
     void set_params(const int new_E, const int new_tau, const int new_tp, const int new_nn);
     void set_theta(const double new_theta);
+    void suppress_warnings();
     void run();
     DataFrame get_output();
     DataFrame get_short_output();
@@ -32,7 +33,6 @@ private:
     void prepare_forecast();
     void make_vectors();
     void make_targets();
-    void check_cross_validation();
     vector<double> time_series;
     
     // *** local parameters *** //

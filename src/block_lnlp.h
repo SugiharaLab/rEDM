@@ -26,6 +26,7 @@ public:
     void set_target_column(const size_t new_target);
     void set_params(const int new_tp, const int new_nn);
     void set_theta(const double new_theta);
+    void suppress_warnings();
     void run();
     DataFrame get_output();
     DataFrame get_short_output();
@@ -35,7 +36,6 @@ private:
     void prepare_forecast();
     void make_vectors();
     void make_targets();
-    void check_cross_validation();
     vector<vec> block;
     
     // *** local parameters *** //

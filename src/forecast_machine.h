@@ -28,9 +28,11 @@ protected:
     void forecast();
     void set_indices_from_range(vector<bool>& indices, const vector<time_range>& range, 
                                   int start_shift, int end_shift, bool check_target);
+    void check_cross_validation();
     bool is_vec_valid(const size_t vec_index);
     bool is_target_valid(const size_t vec_index);
     PredStats compute_stats();
+    void LOG_WARNING(const char* warning_text);
     
     // *** variables *** //
     vector<bool> lib_indices;
@@ -49,6 +51,7 @@ protected:
     
     // *** parameters *** //
     bool CROSS_VALIDATION;
+    bool SUPPRESS_WARNINGS;
     PredEnum pred_mode;
     NormEnum norm_mode;
     int nn;
@@ -73,7 +76,5 @@ vector<size_t> which_indices_true(const vector<bool>& indices);
 double l1_distance_func(const vec& A, const vec& B);
 double l2_distance_func(const vec& A, const vec& B);
 vector<size_t> sort_indices(const vector<double>& v, const vector<size_t> idx);
-
-void LOG_WARNING(const char* warning_text);
 
 #endif
