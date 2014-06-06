@@ -4,7 +4,6 @@
 #include <Rcpp.h>
 #include "forecast_machine.h"
 
-using namespace std;
 using namespace Rcpp;
 
 class LNLP: public ForecastMachine
@@ -33,7 +32,7 @@ private:
     void prepare_forecast();
     void make_vectors();
     void make_targets();
-    vector<double> time_series;
+    vec time_series;
     
     // *** local parameters *** //
     int E, tau, tp;

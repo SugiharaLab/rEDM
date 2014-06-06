@@ -1,11 +1,9 @@
 #ifndef DATA_TYPES_H
 #define DATA_TYPES_H
 
-using namespace std;
-
 // shortcut name for vector<double> for in attractor reconstruction
-typedef vector<double> vec;
-typedef pair<size_t, size_t> time_range;
+typedef std::vector<double> vec;
+typedef std::pair<size_t, size_t> time_range;
 
 // which prediction method to use
 enum PredEnum

@@ -147,9 +147,9 @@ DataFrame BlockLNLP::get_output()
 
 DataFrame BlockLNLP::get_short_output()
 {
-    vector<double> short_time(which_pred.size(), qnan);
-    vector<double> short_obs(which_pred.size(), qnan);
-    vector<double> short_pred(which_pred.size(), qnan);
+    vec short_time(which_pred.size(), qnan);
+    vec short_obs(which_pred.size(), qnan);
+    vec short_pred(which_pred.size(), qnan);
     
     for(size_t i = 0; i < which_pred.size(); ++i)
     {
@@ -187,8 +187,8 @@ void BlockLNLP::prepare_forecast()
         
     if(remake_ranges)
     {
-        set_indices_from_range(lib_indices, lib_ranges, 0, -max(0, tp), true);
-        set_indices_from_range(pred_indices, pred_ranges, 0, -max(0, tp), false);
+        set_indices_from_range(lib_indices, lib_ranges, 0, -std::max(0, tp), true);
+        set_indices_from_range(pred_indices, pred_ranges, 0, -std::max(0, tp), false);
 
         check_cross_validation();
 
@@ -206,7 +206,7 @@ void BlockLNLP::prepare_forecast()
 
 void BlockLNLP::make_vectors()
 {
-    data_vectors.assign(num_vectors, vector<double>(E, qnan));
+    data_vectors.assign(num_vectors, vec(E, qnan));
     for(size_t i = 0; i < num_vectors; ++i)
     {
         for(size_t j = 0; j < E; ++j)

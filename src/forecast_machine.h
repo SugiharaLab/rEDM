@@ -10,7 +10,6 @@
 #include "data_types.h"
 #include <Eigen/Dense>
 
-using namespace std;
 using namespace Eigen;
 
 class ForecastMachine
@@ -23,10 +22,10 @@ protected:
     void init_distances();
     void compute_distances();
     void sort_neighbors();
-    vector<size_t> find_nearest_neighbors(const size_t curr_pred, const vector<bool>& valid_lib_indices);
+    std::vector<size_t> find_nearest_neighbors(const size_t curr_pred, const std::vector<bool>& valid_lib_indices);
 
     void forecast();
-    void set_indices_from_range(vector<bool>& indices, const vector<time_range>& range, 
+    void set_indices_from_range(std::vector<bool>& indices, const std::vector<time_range>& range, 
                                   int start_shift, int end_shift, bool check_target);
     void check_cross_validation();
     bool is_vec_valid(const size_t vec_index);
@@ -35,19 +34,19 @@ protected:
     void LOG_WARNING(const char* warning_text);
     
     // *** variables *** //
-    vector<bool> lib_indices;
-    vector<bool> pred_indices;
-    vector<size_t> which_lib;
-    vector<size_t> which_pred;
+    std::vector<bool> lib_indices;
+    std::vector<bool> pred_indices;
+    std::vector<size_t> which_lib;
+    std::vector<size_t> which_pred;
     
-    vector<double> time;
-    vector<vec> data_vectors;
-    vector<double> observed;
-    vector<double> predicted;
+    vec time;
+    std::vector<vec> data_vectors;
+    vec observed;
+    vec predicted;
     size_t num_vectors;
     double (*dist_func)(const vec&, const vec&);
-    vector<vector<double> > distances;
-    vector<vector<size_t> > neighbors;
+    std::vector<vec > distances;
+    std::vector<std::vector<size_t> > neighbors;
     
     // *** parameters *** //
     bool CROSS_VALIDATION;
@@ -57,8 +56,8 @@ protected:
     int nn;
     double theta;
     double exclusion_radius;
-    vector<time_range> lib_ranges;
-    vector<time_range> pred_ranges;
+    std::vector<time_range> lib_ranges;
+    std::vector<time_range> pred_ranges;
     static const double qnan;
     
 private:
@@ -67,14 +66,14 @@ private:
     void smap_forecast();
     void simplex_prediction(const size_t start, const size_t end);
     void smap_prediction(const size_t start, const size_t end);
-    vector<bool> adjust_lib(const size_t curr_pred);
+    std::vector<bool> adjust_lib(const size_t curr_pred);
     
     int num_threads;
 };
 
-vector<size_t> which_indices_true(const vector<bool>& indices);
+std::vector<size_t> which_indices_true(const std::vector<bool>& indices);
 double l1_distance_func(const vec& A, const vec& B);
 double l2_distance_func(const vec& A, const vec& B);
-vector<size_t> sort_indices(const vector<double>& v, const vector<size_t> idx);
+std::vector<size_t> sort_indices(const std::vector<double>& v, const std::vector<size_t> idx);
 
 #endif

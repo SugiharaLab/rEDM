@@ -4,18 +4,18 @@ static const double min_weight = 0.000001;
 const double ForecastMachine::qnan = std::numeric_limits<double>::quiet_NaN();
 
 ForecastMachine::ForecastMachine():
-lib_indices(vector<bool>()), pred_indices(vector<bool>()),
-which_lib(vector<size_t>()), which_pred(vector<size_t>()),
-time(vector<double>()), data_vectors(vector<vec>()),
-observed(vector<double>()), predicted(vector<double>()),
+lib_indices(std::vector<bool>()), pred_indices(std::vector<bool>()),
+which_lib(std::vector<size_t>()), which_pred(std::vector<size_t>()),
+time(vec()), data_vectors(std::vector<vec>()),
+observed(vec()), predicted(vec()),
 num_vectors(0),
-distances(vector<vector<double> >()), neighbors(vector<vector<size_t> >()),
+distances(std::vector<vec>()), neighbors(std::vector<std::vector<size_t> >()),
 CROSS_VALIDATION(false), SUPPRESS_WARNINGS(false), pred_mode(SIMPLEX), norm_mode(L2_NORM),
 nn(0), exclusion_radius(-1),
-lib_ranges(vector<time_range>()), pred_ranges(vector<time_range>()),
+lib_ranges(std::vector<time_range>()), pred_ranges(std::vector<time_range>()),
 num_threads(1)
 {
-    num_threads = thread::hardware_concurrency();
+    num_threads = std::thread::hardware_concurrency();
 }
 
 void ForecastMachine::init_distances()
@@ -34,7 +34,7 @@ void ForecastMachine::init_distances()
     }
     
     // initialize distance matrix
-    distances.assign(num_vectors, vector<double>(num_vectors, qnan));
+    distances.assign(num_vectors, vec(num_vectors, qnan));
     return;
 }
 
@@ -45,14 +45,14 @@ void ForecastMachine::compute_distances()
     size_t start = 0;
     size_t end = rows;
     
-    vector<thread> workers;
+    std::vector<std::thread> workers;
     for(int t = 1; t <= num_threads; ++t)
     {
         if(t == num_threads)
             end += extra;
         
         // set up calculations to be done
-        workers.push_back(thread([start, end, this]()
+        workers.push_back(std::thread([start, end, this]()
                                  {
                                      size_t curr_pred;
                                      for(size_t i = start; i < end; ++i)
@@ -87,9 +87,9 @@ void ForecastMachine::sort_neighbors()
     return;
 }
 
-vector<size_t> ForecastMachine::find_nearest_neighbors(const size_t curr_pred, const vector<bool>& valid_lib_indices)
+std::vector<size_t> ForecastMachine::find_nearest_neighbors(const size_t curr_pred, const std::vector<bool>& valid_lib_indices)
 {
-    vector<size_t> nearest_neighbors;
+    std::vector<size_t> nearest_neighbors;
     
     if(nn < 1)
     {
@@ -100,7 +100,7 @@ vector<size_t> ForecastMachine::find_nearest_neighbors(const size_t curr_pred, c
     }
     // else
     nearest_neighbors.assign(nn, 0);
-    vector<size_t>::iterator curr_lib;
+    std::vector<size_t>::iterator curr_lib;
     
     // find nearest neighbors
     size_t j = 0;
@@ -145,7 +145,7 @@ void ForecastMachine::forecast()
     return;
 }
 
-void ForecastMachine::set_indices_from_range(vector<bool>& indices, const vector<time_range>& range,
+void ForecastMachine::set_indices_from_range(std::vector<bool>& indices, const std::vector<time_range>& range,
                                              int start_shift, int end_shift, bool check_target)
 {
     size_t start_of_range, end_of_range;
@@ -161,7 +161,11 @@ void ForecastMachine::set_indices_from_range(vector<bool>& indices, const vector
         end_of_range = range_iter.second + end_shift;
         if(end_of_range >= num_vectors) // check end of range
         {
-            cerr << "end_of_range = " << end_of_range << ", but num_vectors = " << num_vectors << "\n";
+            std::string temp = "end_of_range = ";
+            temp += std::to_string(end_of_range);
+            temp += ", but num_vectors = ";
+            temp += std::to_string(num_vectors);
+            LOG_WARNING(temp.c_str());
             LOG_WARNING("end of time_range was greater than the number of vectors; corrected");
             end_of_range = num_vectors-1;
         }
@@ -281,7 +285,7 @@ PredStats ForecastMachine::compute_stats()
 void ForecastMachine::LOG_WARNING(const char* warning_text)
 {
     if(!SUPPRESS_WARNINGS)
-        cerr << "WARNING: " << warning_text << "\n";
+        std::cerr << "WARNING: " << warning_text << "\n";
     return;
 }
 
@@ -293,7 +297,7 @@ void ForecastMachine::simplex_forecast()
     size_t extra = which_pred.size() % num_threads;
     size_t start = 0;
     size_t end = rows;
-    vector<thread> workers;
+    std::vector<std::thread> workers;
     
     for(int t = 1; t <= num_threads; ++t)
     {
@@ -301,7 +305,7 @@ void ForecastMachine::simplex_forecast()
             end += extra;
         
         // set up calculations to be done
-        workers.push_back(thread(&ForecastMachine::simplex_prediction, this, start, end));
+        workers.push_back(std::thread(&ForecastMachine::simplex_prediction, this, start, end));
         
         // set up rows for next calc
         start = end;
@@ -321,7 +325,7 @@ void ForecastMachine::smap_forecast()
     size_t extra = which_pred.size() % num_threads;
     size_t start = 0;
     size_t end = rows;
-    vector<thread> workers;
+    std::vector<std::thread> workers;
     
     for(int t = 1; t <= num_threads; ++t)
     {
@@ -329,7 +333,7 @@ void ForecastMachine::smap_forecast()
             end += extra;
         
         // set up calculations to be done
-        workers.push_back(thread(&ForecastMachine::smap_prediction, this, start, end));
+        workers.push_back(std::thread(&ForecastMachine::smap_prediction, this, start, end));
         
         // set up rows for next calc
         start = end;
@@ -347,8 +351,8 @@ void ForecastMachine::simplex_prediction(const size_t start, const size_t end)
 {
     size_t curr_pred, effective_nn, num_ties;
     double min_distance, tie_distance;
-    vector<double> weights;
-    vector<size_t> nearest_neighbors;
+    vec weights;
+    std::vector<size_t> nearest_neighbors;
     double tie_adj_factor;
     double total_weight;
     
@@ -384,7 +388,7 @@ void ForecastMachine::simplex_prediction(const size_t start, const size_t end)
         {
             for(size_t k = 0; k < effective_nn; ++k)
             {
-                weights[k] = max(exp(-distances[curr_pred][nearest_neighbors[k]] / min_distance),
+                weights[k] = fmax(exp(-distances[curr_pred][nearest_neighbors[k]] / min_distance),
                                  min_weight);
             }
         }
@@ -422,8 +426,8 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
 {
     size_t curr_pred, effective_nn, E = data_vectors[0].size();
     double avg_distance;
-    vector<double> weights;
-    vector<size_t> nearest_neighbors;
+    vec weights;
+    std::vector<size_t> nearest_neighbors;
     MatrixXd A, S_inv;
     VectorXd B, S, x;
     double max_s, pred;
@@ -499,9 +503,9 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
     return;
 }
 
-vector<bool> ForecastMachine::adjust_lib(const size_t curr_pred)
+std::vector<bool> ForecastMachine::adjust_lib(const size_t curr_pred)
 {
-    vector<bool> valid_lib_indices = lib_indices;
+    std::vector<bool> valid_lib_indices = lib_indices;
     
     // go through lib and remove lib vectors that are within exclusion radius
     if(exclusion_radius >= 0)
@@ -519,11 +523,11 @@ vector<bool> ForecastMachine::adjust_lib(const size_t curr_pred)
     return valid_lib_indices;
 }
 
-vector<size_t> which_indices_true(const vector<bool>& indices)
+std::vector<size_t> which_indices_true(const std::vector<bool>& indices)
 {
-    vector<size_t> which;
+    std::vector<size_t> which;
     int index = 0;
-    for(vector<bool>::const_iterator iter = indices.begin();
+    for(std::vector<bool>::const_iterator iter = indices.begin();
         iter != indices.end(); ++iter, ++index)
     {
         if(*iter)
@@ -535,7 +539,7 @@ vector<size_t> which_indices_true(const vector<bool>& indices)
 double l1_distance_func(const vec& A, const vec& B)
 {
     double dist = 0;
-	for (vector<double>::const_iterator a_iter = A.begin(), b_iter = B.begin();
+	for (auto a_iter = A.begin(), b_iter = B.begin();
          a_iter != A.end(); ++a_iter, ++b_iter)
 	{
 		dist += fabs(*a_iter - *b_iter);
@@ -546,7 +550,7 @@ double l1_distance_func(const vec& A, const vec& B)
 double l2_distance_func(const vec& A, const vec& B)
 {
     double dist = 0;
-	for (vector<double>::const_iterator a_iter = A.begin(), b_iter = B.begin();
+	for (auto a_iter = A.begin(), b_iter = B.begin();
          a_iter != A.end(); ++a_iter, ++b_iter)
 	{
 		dist += (*a_iter - *b_iter) * (*a_iter - *b_iter);
@@ -554,7 +558,7 @@ double l2_distance_func(const vec& A, const vec& B)
 	return sqrt(dist);
 }
 
-vector<size_t> sort_indices(const vector<double>& v, vector<size_t> idx)
+std::vector<size_t> sort_indices(const vec& v, std::vector<size_t> idx)
 {
     sort(idx.begin(), idx.end(),
          [&v](size_t i1, size_t i2) {return v[i1] < v[i2];});

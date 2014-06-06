@@ -5,7 +5,6 @@
 #include <iostream>
 #include "forecast_machine.h"
 
-using namespace std;
 using namespace Rcpp;
 
 class BlockLNLP: public ForecastMachine
@@ -36,12 +35,12 @@ private:
     void prepare_forecast();
     void make_vectors();
     void make_targets();
-    vector<vec> block;
+    std::vector<vec> block;
     
     // *** local parameters *** //
     int tp;
     size_t E;
-    vector<size_t> embedding;
+    std::vector<size_t> embedding;
     size_t target;
     bool remake_vectors;
     bool remake_targets;
