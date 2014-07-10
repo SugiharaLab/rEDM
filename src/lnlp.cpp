@@ -126,7 +126,8 @@ DataFrame LNLP::get_output()
 {
     return DataFrame::create( Named("time") = time, 
                               Named("obs") = observed, 
-                              Named("pred") = predicted);
+                              Named("pred") = predicted, 
+                              Named("pred_var") = predicted_var);
 }
 
 DataFrame LNLP::get_short_output()

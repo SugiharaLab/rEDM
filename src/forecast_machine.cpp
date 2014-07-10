@@ -7,7 +7,7 @@ ForecastMachine::ForecastMachine():
 lib_indices(std::vector<bool>()), pred_indices(std::vector<bool>()),
 which_lib(std::vector<size_t>()), which_pred(std::vector<size_t>()),
 time(vec()), data_vectors(std::vector<vec>()),
-observed(vec()), predicted(vec()),
+observed(vec()), predicted(vec()), predicted_var(vec()), 
 num_vectors(0),
 distances(std::vector<vec>()), neighbors(std::vector<std::vector<size_t> >()),
 CROSS_VALIDATION(false), SUPPRESS_WARNINGS(false), pred_mode(SIMPLEX), norm_mode(L2_NORM),
@@ -131,6 +131,7 @@ std::vector<size_t> ForecastMachine::find_nearest_neighbors(const size_t curr_pr
 void ForecastMachine::forecast()
 {
     predicted.assign(num_vectors, qnan); // initialize predictions
+    predicted_var.assign(num_vectors, qnan);
     switch(pred_mode)
     {
         case SIMPLEX:
@@ -418,6 +419,12 @@ void ForecastMachine::simplex_prediction(const size_t start, const size_t end)
         for(size_t k = 0; k < effective_nn; ++k)
             predicted[curr_pred] += weights[k] * observed[nearest_neighbors[k]];
         predicted[curr_pred] = predicted[curr_pred] / total_weight;
+        
+        //compute variance
+        predicted_var[curr_pred] = 0;
+        for(size_t k = 0; k < effective_nn; ++k)
+            predicted_var[curr_pred] += weights[k] * pow(observed[nearest_neighbors[k]] - predicted[curr_pred], 2);
+        predicted_var[curr_pred] = predicted_var[curr_pred] / total_weight;
     }
     return;
 }

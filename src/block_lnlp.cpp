@@ -142,7 +142,8 @@ DataFrame BlockLNLP::get_output()
 {
     return DataFrame::create( Named("time") = time, 
                               Named("obs") = observed, 
-                              Named("pred") = predicted);
+                              Named("pred") = predicted, 
+                              Named("pred_var") = predicted_var);
 }
 
 DataFrame BlockLNLP::get_short_output()

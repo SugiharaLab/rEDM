@@ -2,4 +2,5 @@
 
 useDynLib(Redm)
 exportPattern("^[[:alpha:]]+")
-importFrom(Rcpp, loadModule)
+#importFrom(Rcpp, loadModule)
+import(Rcpp)

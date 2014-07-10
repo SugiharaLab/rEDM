@@ -6,7 +6,7 @@ block_lnlp(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
   norm_type = c("L2 norm", "L1 norm"), method = c("simplex", "s-map"),
   tp = 1, num_neighbors = "e+1", columns = NULL, target_column = 1,
   stats_only = TRUE, first_column_time = FALSE, exclusion_radius = NULL,
-  epsilon = NULL, theta = 0)
+  epsilon = NULL, theta = NULL, silent = FALSE)
 }
 \arguments{
   \item{block}{either a vector to be used as the time
@@ -43,6 +43,10 @@ block_lnlp(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
   \item{stats_only}{specify whether to output just the
   forecast statistics or the raw predictions for each run}
 
+  \item{first_column_time}{indicates whether the first
+  column of the given block is a time column (and therefore
+  excluded when indexing)}
+
   \item{exclusion_radius}{excludes vectors from the search
   space of nearest neighbors if their *time index* is
   within exclusion_radius (NULL turns this option off)}
@@ -50,6 +54,9 @@ block_lnlp(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
   \item{epsilon}{excludes vectors from the search space of
   nearest neighbors if their *distance* is farther away
   than epsilon (NULL turns this option off)}
+
+  \item{theta}{the nonlinear tuning parameter (theta is
+  only relevant if method == "s-map")}
 }
 \value{
 If stats_only, then a data.frame with components for the

@@ -9,7 +9,7 @@ Description: The Redm package contains C++ compiled objects that use time delay 
 License: GPL-3 | file LICENSE
 NeedsCompilation: yes
 Suggests: testthat
-Depends: Rcpp (>= 0.11.1)
+Imports: Rcpp (>= 0.11.2)
 LinkingTo: Rcpp
 RcppModules: lnlp_module, block_lnlp_module
 Roxygen: list(wrap = TRUE)

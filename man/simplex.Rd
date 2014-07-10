@@ -5,7 +5,7 @@
 simplex(time_series, lib = c(1, NROW(time_series)), pred = c(1,
   NROW(time_series)), norm_type = c("L2 norm", "L1 norm"), E = 1:10,
   tau = 1, tp = 1, num_neighbors = "e+1", stats_only = TRUE,
-  exclusion_radius = NULL, epsilon = NULL)
+  exclusion_radius = NULL, epsilon = NULL, silent = FALSE)
 }
 \arguments{
   \item{time_series}{either a vector to be used as the time

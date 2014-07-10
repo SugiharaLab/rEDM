@@ -6,7 +6,8 @@ s_map(time_series, lib = c(1, NROW(time_series)), pred = c(1,
   NROW(time_series)), norm_type = c("L2 norm", "L1 norm"), E = 1:10,
   tau = 1, tp = 1, num_neighbors = -1, theta = c(0, 1e-04, 3e-04, 0.001,
   0.003, 0.01, 0.03, 0.1, 0.3, 0.5, 0.75, 1, 1.5, 2, 3, 4, 6, 8),
-  stats_only = TRUE, exclusion_radius = NULL, epsilon = NULL)
+  stats_only = TRUE, exclusion_radius = NULL, epsilon = NULL,
+  silent = FALSE)
 }
 \arguments{
   \item{time_series}{either a vector to be used as the time
@@ -37,7 +38,7 @@ s_map(time_series, lib = c(1, NROW(time_series)), pred = c(1,
   parameter to E+1 for each run, any value < 1 will use all
   possible neighbors.)}
 
-  \item{theta}{the nonlinear tuning parameter (note tthat
+  \item{theta}{the nonlinear tuning parameter (note that
   theta = 0 is equivalent to an autoregressive model of
   order E.)}
 

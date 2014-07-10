@@ -43,6 +43,7 @@ protected:
     std::vector<vec> data_vectors;
     vec observed;
     vec predicted;
+    vec predicted_var;
     size_t num_vectors;
     double (*dist_func)(const vec&, const vec&);
     std::vector<vec > distances;
