@@ -13,9 +13,10 @@ void BlockLNLP::set_time(const NumericVector new_time)
 
 void BlockLNLP::set_block(const NumericMatrix new_block)
 {
-    block.resize(new_block.ncol());
-    num_vectors = new_block.nrow();
-    for(size_t i = 0; i < new_block.ncol(); ++i)
+    size_t num_cols = size_t(new_block.ncol());
+    block.resize(num_cols);
+    num_vectors = size_t(new_block.nrow());
+    for(size_t i = 0; i < num_cols; ++i)
     {
         block[i].resize(num_vectors);
         for(size_t j = 0; j < num_vectors; ++j)
@@ -62,8 +63,9 @@ void BlockLNLP::set_pred_type(const int pred_type)
 
 void BlockLNLP::set_lib(const NumericMatrix lib)
 {
-    lib_ranges.resize(lib.nrow());
-    for(size_t i = 0; i < lib.nrow(); ++i)
+    size_t num_rows = size_t(lib.nrow());
+    lib_ranges.resize(num_rows);
+    for(size_t i = 0; i < num_rows; ++i)
     {
         lib_ranges[i].first = lib(i,0) - 1; // convert 1-index to 0-index
         lib_ranges[i].second = lib(i,1) - 1;
@@ -74,8 +76,9 @@ void BlockLNLP::set_lib(const NumericMatrix lib)
 
 void BlockLNLP::set_pred(const NumericMatrix pred)
 {
-    pred_ranges.resize(pred.nrow());
-    for(size_t i = 0; i < pred.nrow(); ++i)
+    size_t num_rows = size_t(pred.nrow());
+    pred_ranges.resize(num_rows);
+    for(size_t i = 0; i < num_rows; ++i)
     {
         pred_ranges[i].first = pred(i,0) - 1; // convert 1-index to 0-index
         pred_ranges[i].second = pred(i,1) - 1;

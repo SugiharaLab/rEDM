@@ -56,8 +56,9 @@ void LNLP::set_pred_type(const int pred_type)
 
 void LNLP::set_lib(const NumericMatrix lib)
 {
-    lib_ranges.resize(lib.nrow());
-    for(size_t i = 0; i < lib.nrow(); ++i)
+    size_t num_rows = size_t(lib.nrow());
+    lib_ranges.resize(num_rows);
+    for(size_t i = 0; i < num_rows; ++i)
     {
         lib_ranges[i].first = lib(i,0) - 1; // convert 1-index to 0-index
         lib_ranges[i].second = lib(i,1) - 1;
@@ -68,8 +69,9 @@ void LNLP::set_lib(const NumericMatrix lib)
 
 void LNLP::set_pred(const NumericMatrix pred)
 {
-    pred_ranges.resize(pred.nrow());
-    for(size_t i = 0; i < pred.nrow(); ++i)
+    size_t num_rows = size_t(pred.nrow());
+    pred_ranges.resize(num_rows);
+    for(size_t i = 0; i < num_rows; ++i)
     {
         pred_ranges[i].first = pred(i,0) - 1; // convert 1-index to 0-index
         pred_ranges[i].second = pred(i,1) - 1;
