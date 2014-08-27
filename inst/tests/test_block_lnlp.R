@@ -14,7 +14,7 @@ points(t, output$pred[t], col = "blue")
 for(i in t)
 {
     lines(c(i,i), c(output$pred[i]-output$pred_err[i], 
-                    output$pred[i]+output$pred_err[i]))
+                    output$pred[i]+output$pred_err[i]), col = "blue")
 }
 
 # cross mapping using x to predict y

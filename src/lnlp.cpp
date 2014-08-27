@@ -195,14 +195,14 @@ void LNLP::make_vectors()
     data_vectors.assign(num_vectors, vec(E, qnan));
 
     // beginning of lagged vectors cannot lag before start of time series
-    for(size_t i = 0; i < (E-1)*tau; ++i)
-        for(size_t j = 0; j < E; ++j)
+    for(size_t i = 0; i < (unsigned int)((E-1)*tau); ++i)
+        for(size_t j = 0; j < (unsigned int)(E); ++j)
             if(i >= j*tau)
                 data_vectors[i][j] = time_series[i - j * tau];
     
     // remaining lagged vectors
-    for(size_t i = (E-1)*tau; i < num_vectors; ++i)
-        for(size_t j = 0; j < E; ++j)
+    for(size_t i = (unsigned int)((E-1)*tau); i < num_vectors; ++i)
+        for(size_t j = 0; j < (unsigned int)(E); ++j)
             data_vectors[i][j] = time_series[i - j * tau];
             
     remake_vectors = false;

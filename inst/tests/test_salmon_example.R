@@ -19,6 +19,7 @@ normalize_by_cycle_line <- function(ts)
     return(df)
 }
 
+# scale each column in block to mean = 0, variance = 1
 normalize <- function(block)
 {
     if(NCOL(block) > 1)
@@ -33,7 +34,7 @@ normalize <- function(block)
         return((block - mean(block, na.rm = TRUE)) / sd(block, na.rm = TRUE))
 }
 
-preprocess_data <- function(stock_name = "Early Stuart")
+preprocess_data <- function(stock_name = "Late Shuswap")
 {
     # load data
     data("FR_sockeye")
@@ -83,54 +84,64 @@ preprocess_data <- function(stock_name = "Early Stuart")
     return(stock_df)
 }
 
-make_forecasts <- function(stock_df, columns = c("eff", "D_jun"))
+make_forecasts <- function(stock_df, columns = c("eff", "D_may", "PT_jul"))
 {
-    valid <- is.finite(stock_df$rec45) & is.finite(stock_df$eff)
-    years <- stock_df$yr[valid]
-    returns <- stock_df$ret[valid]
-    spawners <- stock_df$eff_n[valid]
-    recruits_4 <- stock_df$rec4_n[valid]
-    mu_4 <- stock_df$rec4_mu[valid]
-    sigma_4 <- stock_df$rec4_sigma[valid]
-    recruits_5 <- stock_df$rec5_n[valid]
-    mu_5 <- stock_df$rec5_mu[valid]
-    sigma_5 <- stock_df$rec5_sigma[valid]
+    year <- stock_df$yr
+    eff <- stock_df$eff
+    ret <- stock_df$ret
+    rec4 <- stock_df$rec4_n
+    mu_4 <- stock_df$rec4_mu
+    sigma_4 <- stock_df$rec4_sigma
+    rec5 <- stock_df$rec5_n
+    mu_5 <- stock_df$rec5_mu
+    sigma_5 <- stock_df$rec5_sigma
     env_names = c("D_max", "D_apr", "D_may", "D_jun", 
                   "ET_apr", "ET_may", "ET_jun", "PT_apr", "PT_may", "PT_jun", "PT_jul", 
                   "PDO_win")
     env <- normalize(stock_df[,env_names])
     
     # make block
-    block <- data.frame(years = years, eff = spawners, 
-                        rec4 = recruits_4, rec5 = recruits_5)
-    block <- cbind(block, env[valid, ])
+    block <- data.frame(year, eff, rec4, rec5)
+    block <- cbind(block, env)
     
     # make lib and pred
-    lib <- c(1, NROW(block)) 
-    pred <- c(1, NROW(block))
+    lib <- c(1, which(block$year == 2005))
+    pred_4 <- c(which(block$year == 2006), NROW(block))
+    pred_5 <- c(which(block$year == 2005), NROW(block))
     
-    rec4_preds <- block_lnlp(block, lib = lib, pred = pred, 
+    rec4_output <- block_lnlp(block, lib = lib, pred = pred_4, 
                              target_column = 2, columns = columns, 
                              stats_only = FALSE)[[1]]$model_output
-    rec5_preds <- block_lnlp(block, lib = lib, pred = pred, 
+    rec5_output <- block_lnlp(block, lib = lib, pred = pred_5, 
                              target_column = 3, columns = columns, 
                              stats_only = FALSE)[[1]]$model_output
-    rec4 <- rec4_preds$pred*sigma_4 + mu_4
-    rec5 <- rec5_preds$pred*sigma_5 + mu_5
-    rec4_var <- rec4_preds$pred_var * sigma_4 * sigma_4
-    rec5_var <- rec5_preds$pred_var * sigma_5 * sigma_5
-    forecasts <- data.frame(pred = rec4 + c(NA, rec5[1:NROW(block)-1]), 
+    rec4_preds <- rec4_output$pred*sigma_4 + mu_4
+    rec5_preds <- rec5_output$pred*sigma_5 + mu_5
+    rec4_var <- rec4_output$pred_var * sigma_4 * sigma_4
+    rec5_var <- rec5_output$pred_var * sigma_5 * sigma_5
+    forecasts <- data.frame(pred = rec4_preds + c(NA, rec5_preds[1:NROW(block)-1]), 
                             var = rec4_var + c(NA, rec5_var[1:NROW(block)-1]))
     forecasts$std_err <- sqrt(forecasts$var)
-    output <- cbind(year = years, obs = returns, forecasts)
+    output <- cbind(year = year+4, obs = ret, forecasts)
 }
+
+# begin main code
 
 stock_df <- preprocess_data()
 forecasts <- make_forecasts(stock_df)
 
-
-
-
+par(mar = c(4,4,1,1), mgp = c(2.5, 1, 0))
+plot(forecasts$year, forecasts$obs, type = "l", 
+     xlab = "Year", ylab = "Returns (millions of fish)")
+points(forecasts$year, forecasts$pred, col = "blue")
+for(i in which(is.finite(forecasts$pred)))
+{
+    lines(c(forecasts$year[i], forecasts$year[i]), 
+          forecasts$pred[i] + c(-forecasts$std_err[i], forecasts$std_err[i]), 
+          col = "blue")
+}
+legend(x = "topright", legend = c("observed", "predicted (+/- 1 SE)"), 
+       col = c("black", "blue"), lwd = 1, pch = c(NA, 1), inset = 0.02)
 
 
 

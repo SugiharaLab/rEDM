@@ -1,2 +1,2 @@
-#CXX_STD = CXX11
-PKG_CXXFLAGS = -std=c++0x -pedantic -Wall -I../inst/include
+CXX_STD = CXX11
+PKG_CXXFLAGS = -pedantic -Wall -I../inst/include
