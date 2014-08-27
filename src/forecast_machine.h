@@ -16,7 +16,7 @@ class ForecastMachine
 {
 protected:
     // *** constructors *** //
-    ForecastMachine();    
+    ForecastMachine();
     
     // *** computational methods *** //
     void init_distances();

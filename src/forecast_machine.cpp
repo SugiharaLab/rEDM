@@ -15,7 +15,7 @@ nn(0), exclusion_radius(-1),
 lib_ranges(std::vector<time_range>()), pred_ranges(std::vector<time_range>()),
 num_threads(1)
 {
-    num_threads = std::thread::hardware_concurrency();
+    //num_threads = std::thread::hardware_concurrency();
 }
 
 void ForecastMachine::init_distances()
@@ -40,6 +40,7 @@ void ForecastMachine::init_distances()
 
 void ForecastMachine::compute_distances()
 {
+    /*
     size_t rows = which_pred.size() / num_threads;
     size_t extra = which_pred.size() % num_threads;
     size_t start = 0;
@@ -58,14 +59,18 @@ void ForecastMachine::compute_distances()
                                      for(size_t i = start; i < end; ++i)
                                      {
                                          curr_pred = which_pred[i];
-                                         for(auto& curr_lib: which_lib)
-                                         {
-                                             if(std::isnan(distances[curr_pred][curr_lib]))
-                                                 distances[curr_pred][curr_lib] = dist_func(data_vectors[curr_pred],
-                                                                                            data_vectors[curr_lib]);
-                                         }
-                                     }
-                                 }));
+    */
+    for(auto& curr_pred: which_pred)
+    {
+         for(auto& curr_lib: which_lib)
+         {
+             if(std::isnan(distances[curr_pred][curr_lib]))
+                 distances[curr_pred][curr_lib] = dist_func(data_vectors[curr_pred],
+                                                            data_vectors[curr_lib]);
+         }
+     }
+    /*
+                                }));
         
         // set up rows for next calc
         start = end;
@@ -74,6 +79,7 @@ void ForecastMachine::compute_distances()
     
     for(auto& tt: workers)
         tt.join();
+    */
     return;
 }
 
@@ -110,7 +116,7 @@ std::vector<size_t> ForecastMachine::find_nearest_neighbors(const size_t curr_pr
         {
             nearest_neighbors[j] = *curr_lib;
             ++j;
-            if(j >= nn)
+            if(int(j) >= nn)
                 break;
         }
     }
@@ -162,11 +168,13 @@ void ForecastMachine::set_indices_from_range(std::vector<bool>& indices, const s
         end_of_range = range_iter.second + end_shift;
         if(end_of_range >= num_vectors) // check end of range
         {
-            std::string temp = "end_of_range = ";
-            temp += std::to_string(end_of_range);
-            temp += ", but num_vectors = ";
-            temp += std::to_string(num_vectors);
-            LOG_WARNING(temp.c_str());
+            std::ostringstream temp;
+            temp << "end_of_range = ";
+            temp << end_of_range;
+            temp << ", but num_vectors = ";
+            temp << num_vectors;
+            std::string temp_str = temp.str();
+            LOG_WARNING(temp_str.c_str());
             LOG_WARNING("end of time_range was greater than the number of vectors; corrected");
             end_of_range = num_vectors-1;
         }
@@ -294,6 +302,7 @@ void ForecastMachine::LOG_WARNING(const char* warning_text)
 
 void ForecastMachine::simplex_forecast()
 {
+    /*
     size_t rows = which_pred.size() / num_threads;
     size_t extra = which_pred.size() % num_threads;
     size_t start = 0;
@@ -316,12 +325,14 @@ void ForecastMachine::simplex_forecast()
     // wait for threads to finish
     for(auto& tt: workers)
         tt.join();
-    
+    */
+    simplex_prediction(0, which_pred.size());
     return;
 }
 
 void ForecastMachine::smap_forecast()
 {
+    /*
     size_t rows = which_pred.size() / num_threads;
     size_t extra = which_pred.size() % num_threads;
     size_t start = 0;
@@ -344,7 +355,8 @@ void ForecastMachine::smap_forecast()
     // wait for threads to finish
     for(auto& tt: workers)
         tt.join();
-        
+    */
+    smap_prediction(0, which_pred.size());
     return;
 }
 
