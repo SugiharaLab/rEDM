@@ -19,6 +19,20 @@ normalize_by_cycle_line <- function(ts)
     return(df)
 }
 
+normalize <- function(block)
+{
+    if(NCOL(block) > 1)
+    {
+        n <- NROW(block)
+        means <- sapply(block, mean, na.rm = TRUE)
+        sds <- sapply(block, sd, na.rm = TRUE)
+        return((block - matrix(rep(means, each = n), nrow = n)) / 
+                   matrix(rep(sds, each = n), nrow = n))
+    }
+    else
+        return((block - mean(block, na.rm = TRUE)) / sd(block, na.rm = TRUE))
+}
+
 preprocess_data <- function(stock_name = "Early Stuart")
 {
     # load data
@@ -26,6 +40,7 @@ preprocess_data <- function(stock_name = "Early Stuart")
     
     # process biological data
     stock_df <- subset(sockeye_data, stk == stock_name)
+    n <- NROW(stock_df)
     stock_df$rec45 <- stock_df$rec4 + stock_df$rec5
     stock_df$ret <- stock_df$rec4 + c(NA, stock_df$rec5[1:(n-1)]) # age-4 and age-5 fish
     
@@ -68,12 +83,7 @@ preprocess_data <- function(stock_name = "Early Stuart")
     return(stock_df)
 }
 
-stock_df <- preprocess_data()
-forecasts <- make_forecasts(stock_df)
-
-make_forecasts <- function(stock_df, columns = c("eff, D_jun"), 
-                           lib = c(1, NROW(stock_df)), 
-                           pred = c(1, NROW(stock_df)))
+make_forecasts <- function(stock_df, columns = c("eff", "D_jun"))
 {
     valid <- is.finite(stock_df$rec45) & is.finite(stock_df$eff)
     years <- stock_df$yr[valid]
@@ -85,6 +95,9 @@ make_forecasts <- function(stock_df, columns = c("eff, D_jun"),
     recruits_5 <- stock_df$rec5_n[valid]
     mu_5 <- stock_df$rec5_mu[valid]
     sigma_5 <- stock_df$rec5_sigma[valid]
+    env_names = c("D_max", "D_apr", "D_may", "D_jun", 
+                  "ET_apr", "ET_may", "ET_jun", "PT_apr", "PT_may", "PT_jun", "PT_jul", 
+                  "PDO_win")
     env <- normalize(stock_df[,env_names])
     
     # make block
@@ -92,17 +105,30 @@ make_forecasts <- function(stock_df, columns = c("eff, D_jun"),
                         rec4 = recruits_4, rec5 = recruits_5)
     block <- cbind(block, env[valid, ])
     
-    if(length(returns) < 2) # check for enough data
-        return(data.frame(year = NaN, obs = NaN, pred = NaN))
+    # make lib and pred
+    lib <- c(1, NROW(block)) 
+    pred <- c(1, NROW(block))
     
-    rec4_preds <- do.call(cbind, block_lnlp_4(block, target_column = 2, columns = columns))
-    rec5_preds <- do.call(cbind, block_lnlp_4(block, target_column = 3, columns = columns))
-    rec4_preds <- rec4_preds*sigma_4 + mu_4
-    rec5_preds <- rec5_preds*sigma_5 + mu_5
-    forecasts <- data.frame(rec4_preds + rbind(NA, rec5_preds[1:NROW(block)-1,]))
-    names(forecasts) <- lapply(columns, function(v) paste(v, sep = "", collapse = ", "))
+    rec4_preds <- block_lnlp(block, lib = lib, pred = pred, 
+                             target_column = 2, columns = columns, 
+                             stats_only = FALSE)[[1]]$model_output
+    rec5_preds <- block_lnlp(block, lib = lib, pred = pred, 
+                             target_column = 3, columns = columns, 
+                             stats_only = FALSE)[[1]]$model_output
+    rec4 <- rec4_preds$pred*sigma_4 + mu_4
+    rec5 <- rec5_preds$pred*sigma_5 + mu_5
+    rec4_var <- rec4_preds$pred_var * sigma_4 * sigma_4
+    rec5_var <- rec5_preds$pred_var * sigma_5 * sigma_5
+    forecasts <- data.frame(pred = rec4 + c(NA, rec5[1:NROW(block)-1]), 
+                            var = rec4_var + c(NA, rec5_var[1:NROW(block)-1]))
+    forecasts$std_err <- sqrt(forecasts$var)
     output <- cbind(year = years, obs = returns, forecasts)
 }
+
+stock_df <- preprocess_data()
+forecasts <- make_forecasts(stock_df)
+
+
 
 
 
