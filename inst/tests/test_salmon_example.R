@@ -34,6 +34,8 @@ normalize <- function(block)
         return((block - mean(block, na.rm = TRUE)) / sd(block, na.rm = TRUE))
 }
 
+# prepare data.frame with time series
+# default is for Late Shuswap stock
 preprocess_data <- function(stock_name = "Late Shuswap")
 {
     # load data
@@ -84,6 +86,9 @@ preprocess_data <- function(stock_name = "Late Shuswap")
     return(stock_df)
 }
 
+# make forward forecasts with variance and standard error estimates
+# default model is (eff, D_may, PT_jul) [best for Late Shuswap]
+# lib is all previous data, pred is for returns in 2010+
 make_forecasts <- function(stock_df, columns = c("eff", "D_may", "PT_jul"))
 {
     year <- stock_df$yr
@@ -125,10 +130,41 @@ make_forecasts <- function(stock_df, columns = c("eff", "D_may", "PT_jul"))
     output <- cbind(year = year+4, obs = ret, forecasts)
 }
 
-# begin main code
-
+# begin main code (using defaults for Late Shuswap)
 stock_df <- preprocess_data()
 forecasts <- make_forecasts(stock_df)
+
+# ---- Birkenhead ----
+# stock_df <- preprocess_data("Birkenhead")
+# forecasts <- make_forecasts(stock_df, "eff")
+
+# ---- Chilko ----
+# stock_df <- preprocess_data("Chilko")
+# forecasts <- make_forecasts(stock_df, "eff")
+
+# ---- Early Stuart ----
+# stock_df <- preprocess_data("Early Stuart")
+# forecasts <- make_forecasts(stock_df, c("eff", "D_apr", "D_jun"))
+
+# ---- Late Stuart ----
+# stock_df <- preprocess_data("Late Stuart")
+# forecasts <- make_forecasts(stock_df, c("eff", "D_jun", "ET_apr"))
+
+# ---- Quesnel ----
+# stock_df <- preprocess_data("Quesnel")
+# forecasts <- make_forecasts(stock_df, c("eff", "PT_may", "PDO_win"))
+
+# ---- Seymour ----
+# stock_df <- preprocess_data("Seymour")
+# forecasts <- make_forecasts(stock_df, c("eff", "PT_jul"))
+
+# ---- Stellako ----
+# stock_df <- preprocess_data("Stellako")
+# forecasts <- make_forecasts(stock_df, c("eff", "PT_apr", "PDO_win"))
+
+# ---- Weaver ----
+# stock_df <- preprocess_data("Weaver")
+# forecasts <- make_forecasts(stock_df, c("eff", "D_apr", "D_max"))
 
 par(mar = c(4,4,1,1), mgp = c(2.5, 1, 0))
 plot(forecasts$year, forecasts$obs, type = "l", 
