@@ -178,12 +178,3 @@ for(i in which(is.finite(forecasts$pred)))
 }
 legend(x = "topright", legend = c("observed", "predicted (+/- 1 SE)"), 
        col = c("black", "blue"), lwd = 1, pch = c(NA, 1), inset = 0.02)
-
-
-
-
-
-
-
-
-

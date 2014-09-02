@@ -47,6 +47,9 @@ simplex(time_series, lib = c(1, NROW(time_series)), pred = c(1,
   \item{epsilon}{excludes vectors from the search space of
   nearest neighbors if their *distance* is farther away
   than epsilon (NULL turns this option off)}
+
+  \item{silent}{prevents warning messages from being
+  printed to the R console}
 }
 \value{
 If stats_only, then a data.frame with components for the

@@ -1,3 +1,5 @@
+library(Redm)
+
 data("two_species_model")
 
 block <- two_species_model[1:200,]

@@ -38,6 +38,7 @@
 #' @param epsilon excludes vectors from the search space of nearest neighbors 
 #'   if their *distance* is farther away than epsilon (NULL turns this option 
 #'   off)
+#' @param silent prevents warning messages from being printed to the R console
 #' @return If stats_only, then a data.frame with components for the parameters 
 #'   and forecast statistics:
 #' \tabular{ll}{
@@ -73,7 +74,13 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = c(1, NROW
     
     # setup data
     if (is.vector(time_series)) {
-        time <- seq_along(time_series)
+        if(!is.null(names(time_series))) {
+            time <- as.numeric(names(time_series))
+            if(any(is.na(time)))
+                time <- seq_along(time_series)
+        } else {
+            time <- seq_along(time_series)
+        }
     } else if ((is.matrix(time_series) || is.data.frame(time_series)) && NCOL(time_series) >= 2) {
         time <- time_series[,1]
         time_series <- time_series[,2]
@@ -176,6 +183,7 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = c(1, NROW
 #' @param epsilon excludes vectors from the search space of nearest neighbors 
 #'   if their *distance* is farther away than epsilon (NULL turns this option 
 #'   off)
+#' @param silent prevents warning messages from being printed to the R console
 #' @return If stats_only, then a data.frame with components for the parameters 
 #'   and forecast statistics:
 #' \tabular{ll}{

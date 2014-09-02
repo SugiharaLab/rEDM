@@ -294,7 +294,7 @@ PredStats ForecastMachine::compute_stats()
 void ForecastMachine::LOG_WARNING(const char* warning_text)
 {
     if(!SUPPRESS_WARNINGS)
-        std::cerr << "WARNING: " << warning_text << "\n";
+        Rcout << "WARNING: " << warning_text << "\n";
     return;
 }
 

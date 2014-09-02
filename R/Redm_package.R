@@ -17,10 +17,45 @@ NULL
 #' model exhibiting chaotic dynamics.
 NULL
 
+#' @name sardine_data
+#' @docType data
+#' @title Time series for the California Current Anchovy-Sardine-SST system
+#' @author Hao Ye
+#' @description Time series of Pacific sardine landings (CA), Northern anchovy landings (CA), 
+#' and sea-surface temperature (3-year average) at the SIO pier and Newport pier
+NULL
+
+#' @name sockeye_data
+#' @docType data
+#' @title Biological time series for Fraser River sockeye salmon
+#' @author Hao Ye
+#' @description Time series of recruitment, juveniles, and effective female 
+#' spawners for 19 stocks of sockeye salmon in the Fraser River system.
+NULL
+
+#' @name environmental_data
+#' @docType data
+#' @title Physical time series for Fraser River sockeye salmon
+#' @author Hao Ye
+#' @description Time series of Fraser River discharge, sea-surface temperature at 
+#' 2 British Columbia lighthouses, and the Pacific Decadal Oscillation to be used 
+#' as environmental covariates of Fraser River sockeye salmon.
+NULL
+
+#' @name Rcpp_LNLP-class
+#' @docType class
+#' @title S4 class for Rcpp compiled object, "LNLP"
+NULL
+
 #' @name LNLP
 #' @title C++ compiled object for univariate forecasting.
 #' @author Hao Ye
 #' @seealso \code{\link{simplex}} and \code{\link{s_map}} for R wrappers.
+NULL
+
+#' @name Rcpp_BlockLNLP-class
+#' @docType class
+#' @title S4 class for Rcpp compiled object, "BlockLNLP"
 NULL
 
 #' @name BlockLNLP

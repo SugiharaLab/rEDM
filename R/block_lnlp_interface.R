@@ -51,6 +51,7 @@
 #'   off)
 #' @param theta the nonlinear tuning parameter (theta is only relevant if 
 #'   method == "s-map")
+#' @param silent prevents warning messages from being printed to the R console
 #' @return If stats_only, then a data.frame with components for the parameters 
 #'   and forecast statistics:
 #' \tabular{ll}{

@@ -7,10 +7,12 @@
 #include <thread>
 #include <stdexcept>
 #include <math.h>
+#include <Rcpp.h>
 #include "data_types.h"
 #include <Eigen/Dense>
 
 using namespace Eigen;
+using namespace Rcpp;
 
 class ForecastMachine
 {
