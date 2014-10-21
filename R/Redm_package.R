@@ -9,6 +9,13 @@
 #' @keywords package
 NULL
 
+#' @name tentmap_1d
+#' @docType data
+#' @title Time series for a tent map with mu = 2.
+#' @author Hao Ye
+#' @description Time series generated from the tent map recurrence relation with mu = 2.
+NULL
+
 #' @name two_species_model
 #' @docType data
 #' @title Time series for a two-species coupled model.
