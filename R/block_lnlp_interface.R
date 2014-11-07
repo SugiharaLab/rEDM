@@ -126,6 +126,7 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
     }
     model$set_time(time)
     model$set_block(as.matrix(block))
+    # NEED TO CHECK TARGET NAME
     model$set_target_column(target_column)
     
     # setup norm and pred types

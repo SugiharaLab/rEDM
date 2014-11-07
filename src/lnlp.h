@@ -35,7 +35,8 @@ private:
     vec time_series;
     
     // *** local parameters *** //
-    int E, tau, tp;
+    int tp;
+    size_t E, tau;
     bool remake_vectors;
     bool remake_targets;
     bool remake_ranges;

@@ -56,7 +56,7 @@ protected:
     bool SUPPRESS_WARNINGS;
     PredEnum pred_mode;
     NormEnum norm_mode;
-    int nn;
+    size_t nn;
     double theta;
     double exclusion_radius;
     std::vector<time_range> lib_ranges;
@@ -71,7 +71,7 @@ private:
     void smap_prediction(const size_t start, const size_t end);
     std::vector<bool> adjust_lib(const size_t curr_pred);
     
-    int num_threads;
+    //int num_threads;
 };
 
 std::vector<size_t> which_indices_true(const std::vector<bool>& indices);

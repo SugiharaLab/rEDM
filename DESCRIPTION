@@ -11,5 +11,5 @@ NeedsCompilation: yes
 Suggests: testthat
 Imports: Rcpp (>= 0.11.2), methods
 LinkingTo: Rcpp
-RcppModules: lnlp_module, block_lnlp_module
+RcppModules: lnlp_module, block_lnlp_module, ccm_module
 Roxygen: list(wrap = TRUE)

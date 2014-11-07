@@ -110,7 +110,7 @@ void BlockLNLP::set_target_column(const size_t new_target)
     return;
 }
 
-void BlockLNLP::set_params(const int new_tp, const int new_nn)
+void BlockLNLP::set_params(const int new_tp, const size_t new_nn)
 {
     if(tp != new_tp)
         remake_targets = true;

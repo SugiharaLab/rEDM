@@ -12,8 +12,7 @@ num_vectors(0),
 distances(std::vector<vec>()), neighbors(std::vector<std::vector<size_t> >()),
 CROSS_VALIDATION(false), SUPPRESS_WARNINGS(false), pred_mode(SIMPLEX), norm_mode(L2_NORM),
 nn(0), exclusion_radius(-1),
-lib_ranges(std::vector<time_range>()), pred_ranges(std::vector<time_range>()),
-num_threads(1)
+lib_ranges(std::vector<time_range>()), pred_ranges(std::vector<time_range>())
 {
     //num_threads = std::thread::hardware_concurrency();
 }
