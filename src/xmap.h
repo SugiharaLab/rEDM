@@ -1,5 +1,5 @@
-#ifndef CCM_H
-#define CCM_H
+#ifndef XMAP_H
+#define XMAP_H
 
 #include <Rcpp.h>
 #include <iostream>
@@ -8,11 +8,11 @@
 
 using namespace Rcpp;
 
-class CCM: public ForecastMachine
+class Xmap: public ForecastMachine
 {
 public:
     // *** constructors *** //
-    CCM();
+    Xmap();
     
     // *** methods *** //
     void set_time(const NumericVector time);
@@ -39,7 +39,6 @@ private:
     
     // *** local parameters *** //
     std::vector<size_t> lib_sizes;
-    std::vector<size_t> full_lib;
     int tp;
     size_t E, tau;
     size_t lib_col, target;
@@ -51,7 +50,7 @@ private:
     bool remake_ranges;
     
     // *** output data structures *** //
-    std::vector<PredStats> stats;
+    std::vector<PredStats> predicted_stats;
     std::vector<size_t> predicted_lib_sizes;
 };
 

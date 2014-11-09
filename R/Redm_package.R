@@ -24,7 +24,7 @@ NULL
 #' model exhibiting chaotic dynamics.
 NULL
 
-#' @name sardine_data
+#' @name sardine_anchovy_sst
 #' @docType data
 #' @title Time series for the California Current Anchovy-Sardine-SST system
 #' @author Hao Ye
@@ -69,4 +69,10 @@ NULL
 #' @title C++ compiled object for multivariate forecasting.
 #' @author Hao Ye
 #' @seealso \code{\link{block_lnlp}} for the R wrapper.
+NULL
+
+#' @name Xmap
+#' @title C++ compiled object for convergent cross mapping.
+#' @author Hao Ye
+#' @seealso \code{\link{ccm}} for the R wrapper.
 NULL

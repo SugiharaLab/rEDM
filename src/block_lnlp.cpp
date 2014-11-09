@@ -203,7 +203,7 @@ void BlockLNLP::prepare_forecast()
     }
     
     compute_distances();
-    sort_neighbors();
+    //sort_neighbors();
     
     return;
 }

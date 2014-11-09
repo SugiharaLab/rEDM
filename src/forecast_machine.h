@@ -16,6 +16,11 @@ using namespace Rcpp;
 
 class ForecastMachine
 {
+public:
+    void debug_print_vectors();
+    void debug_print_lib_and_pred();
+    
+    
 protected:
     // *** constructors *** //
     ForecastMachine();
@@ -23,7 +28,7 @@ protected:
     // *** computational methods *** //
     void init_distances();
     void compute_distances();
-    void sort_neighbors();
+    //void sort_neighbors();
     std::vector<size_t> find_nearest_neighbors(const size_t curr_pred, const std::vector<bool>& valid_lib_indices);
 
     void forecast();
@@ -49,7 +54,6 @@ protected:
     size_t num_vectors;
     double (*dist_func)(const vec&, const vec&);
     std::vector<vec > distances;
-    std::vector<std::vector<size_t> > neighbors;
     
     // *** parameters *** //
     bool CROSS_VALIDATION;

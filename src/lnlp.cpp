@@ -186,7 +186,6 @@ void LNLP::prepare_forecast()
     }
     
     compute_distances();
-    sort_neighbors();
     return;
 }
 

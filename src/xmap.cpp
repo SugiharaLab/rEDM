@@ -1,18 +1,18 @@
-#include "ccm.h"
+#include "xmap.h"
 
 /*** Constructors ***/
-CCM::CCM(): remake_vectors(true), remake_targets(true), remake_ranges(true)
+Xmap::Xmap(): remake_vectors(true), remake_targets(true), remake_ranges(true)
 {
     pred_mode = SIMPLEX;
 }
 
-void CCM::set_time(const NumericVector new_time)
+void Xmap::set_time(const NumericVector new_time)
 {
     time = as<std::vector<double> >(new_time);
     return;
 }
 
-void CCM::set_block(const NumericMatrix new_block)
+void Xmap::set_block(const NumericMatrix new_block)
 {
     size_t num_cols = size_t(new_block.ncol());
     block.resize(num_cols);
@@ -27,7 +27,7 @@ void CCM::set_block(const NumericMatrix new_block)
     return;
 }
 
-void CCM::set_norm_type(const int norm_type)
+void Xmap::set_norm_type(const int norm_type)
 {
     switch(norm_type)
     {
@@ -43,7 +43,7 @@ void CCM::set_norm_type(const int norm_type)
     return;
 }
 
-void CCM::set_lib(const NumericMatrix lib)
+void Xmap::set_lib(const NumericMatrix lib)
 {
     size_t num_rows = size_t(lib.nrow());
     lib_ranges.resize(num_rows);
@@ -56,7 +56,7 @@ void CCM::set_lib(const NumericMatrix lib)
     return;
 }
 
-void CCM::set_pred(const NumericMatrix pred)
+void Xmap::set_pred(const NumericMatrix pred)
 {
     size_t num_rows = size_t(pred.nrow());
     pred_ranges.resize(num_rows);
@@ -69,13 +69,13 @@ void CCM::set_pred(const NumericMatrix pred)
     return;
 }
 
-void CCM::set_lib_sizes(const NumericVector new_lib_sizes)
+void Xmap::set_lib_sizes(const NumericVector new_lib_sizes)
 {
     lib_sizes = as<std::vector<size_t> >(new_lib_sizes);
     return;
 }
 
-void CCM::set_exclusion_radius(const double new_exclusion_radius)
+void Xmap::set_exclusion_radius(const double new_exclusion_radius)
 {
     exclusion_radius = new_exclusion_radius;
     if(exclusion_radius >= 0)
@@ -83,21 +83,21 @@ void CCM::set_exclusion_radius(const double new_exclusion_radius)
     return;
 }
 
-void CCM::set_lib_column(const size_t new_lib_col)
+void Xmap::set_lib_column(const size_t new_lib_col)
 {
     lib_col = new_lib_col;
     remake_vectors = true;
     return;
 }
 
-void CCM::set_target_column(const size_t new_target)
+void Xmap::set_target_column(const size_t new_target)
 {
     target = new_target;
     remake_targets = true;
     return;
 }
 
-void CCM::set_params(const size_t new_E, const size_t new_tau, const int new_tp, 
+void Xmap::set_params(const size_t new_E, const size_t new_tau, const int new_tp, 
                     const size_t new_nn, const bool new_random_libs, 
                     const size_t new_num_samples, const bool new_replace)
 {
@@ -119,42 +119,51 @@ void CCM::set_params(const size_t new_E, const size_t new_tau, const int new_tp,
     return;
 }
 
-void CCM::suppress_warnings()
+void Xmap::suppress_warnings()
 {
     SUPPRESS_WARNINGS = true;
     return;
 }
 
-void CCM::run()
+void Xmap::run()
 {
     prepare_forecast(); // check parameters
     
     // setup data structures and compute maximum lib size
-    stats.clear();
+    predicted_stats.clear();
     predicted_lib_sizes.clear();
+    std::vector<size_t> full_lib = which_lib;
     size_t max_lib_size = full_lib.size();
     std::mt19937 rng(42); // init mersenne twister with 42 as seed
-    std::uniform_int_distribution<uint32_t> lib_sampler(0, max_lib_size); 
-    vector<int> idx;
+    std::uniform_int_distribution<uint32_t> lib_sampler(0, max_lib_size);
+    std::uniform_real_distribution<double> unif_01(0, 1);
+    std::vector<int> idx;
  
+    size_t m;
+    size_t t;
+
     for(auto lib_size: lib_sizes)
     {
+        if(lib_size > max_lib_size)
+        {
+            lib_size = max_lib_size;
+        }
         if(lib_size == max_lib_size && (!random_libs || !replace))
         // no possible lib variation if using all vectors and
         // [no random libs OR (random_libs and sampling without replacement)]
         {
             which_lib = full_lib; // use all lib vectors
             forecast();
-            stats.push_back(compute_stats());
+            predicted_stats.push_back(compute_stats());
             predicted_lib_sizes.push_back(lib_size);
         }
         else if(random_libs)
         {
+            which_lib.resize(lib_size);
             for(size_t k = 0; k < num_samples; ++k)
             {
                 if(replace)
                 {
-                    which_lib.resize(lib_size);
                     for(auto& lib: which_lib)
                     {
                         lib = full_lib[lib_sampler(rng)];
@@ -162,10 +171,24 @@ void CCM::run()
                 }
                 else
                 {
-                    A:LSKJD:ALKSJ
+                    // sample without replacement (algorithm from Knuth)
+                    m = 0;
+                    t = 0;
+                    while(m < lib_size)
+                    {
+                        if(double(max_lib_size - t) * unif_01(rng) >= double(lib_size - m))
+                        {
+                            ++t;
+                        }
+                        else
+                        {
+                            which_lib[m] = full_lib[t];
+                            ++t; ++m;
+                        }
+                    }
                 }
                 forecast();
-                stats.push_back(compute_stats());
+                predicted_stats.push_back(compute_stats());
                 predicted_lib_sizes.push_back(lib_size);
             }
         }
@@ -174,34 +197,53 @@ void CCM::run()
         {
             for(size_t k = 0; k < max_lib_size; ++k)
             {
-            // setup libs as contiguous segments ***
+                if((k + lib_size) > max_lib_size) // need to loop around
+                {
+                    which_lib.assign(full_lib.begin()+k, full_lib.end()); // k to end
+                    which_lib.insert(which_lib.begin(), 
+                                     full_lib.begin(), 
+                                     full_lib.begin() + lib_size - (max_lib_size-k));
+                }
+                else
+                {
+                    which_lib.assign(full_lib.begin()+k, full_lib.begin()+k+lib_size);
+                }
+                
                 forecast();
-                stats.push_back(compute_stats());
+                predicted_stats.push_back(compute_stats());
                 predicted_lib_sizes.push_back(lib_size);
             }
         }
     }
+    which_lib = full_lib;
     return;
 }
 
-DataFrame CCM::get_output()
+DataFrame Xmap::get_output()
 {
-        PredStats output = compute_stats();
-    return DataFrame::create( Named("num_pred") = output.num_pred, 
-                              Named("rho") = output.rho, 
-                              Named("mae") = output.mae, 
-                              Named("rmse") = output.rmse );
+    std::vector<size_t> num_pred;
+    std::vector<double> rho;
+    std::vector<double> mae;
+    std::vector<double> rmse;
 
+    for(auto& stats: predicted_stats)
+    {
+        num_pred.push_back(stats.num_pred);
+        rho.push_back(stats.rho);
+        mae.push_back(stats.mae);
+        rmse.push_back(stats.rmse);
+    }
 
-    return DataFrame::create( Named("time") = time, 
-                              Named("obs") = observed, 
-                              Named("pred") = predicted, 
-                              Named("pred_var") = predicted_var);
+    return DataFrame::create( Named("lib_size") = predicted_lib_sizes, 
+                              Named("num_pred") = num_pred, 
+                              Named("rho") = rho, 
+                              Named("mae") = mae, 
+                              Named("rmse") = rmse );
 }
 
 // *** PRIVATE METHODS FOR INTERNAL USE ONLY *** //
 
-void CCM::prepare_forecast()
+void Xmap::prepare_forecast()
 {
     if(remake_vectors)
     {
@@ -219,21 +261,26 @@ void CCM::prepare_forecast()
 
         check_cross_validation();
 
-        full_lib = which_indices_true(lib_indices);
+        which_lib = which_indices_true(lib_indices);
         which_pred = which_indices_true(pred_indices);
         
         remake_ranges = false;
     }
     
     compute_distances();
-    sort_neighbors();
+    //sort_neighbors();
     
     return;
 }
 
-void CCM::make_vectors()
+void Xmap::make_vectors()
 {
-    auto time_series = block[lib_col];
+    if((lib_col < 1) || (lib_col-1 >= block.size()))
+    {
+        throw std::domain_error("invalid target column");
+    }
+    
+    auto time_series = block[lib_col-1];
     data_vectors.assign(num_vectors, vec(E, qnan));
 
     // beginning of lagged vectors cannot lag before start of time series
@@ -251,7 +298,7 @@ void CCM::make_vectors()
     return;
 }
 
-void CCM::make_targets()
+void Xmap::make_targets()
 {
     if((target < 1) || (target-1 >= block.size()))
     {
@@ -273,24 +320,24 @@ void CCM::make_targets()
     return;
 }
 
-RCPP_MODULE(ccm_module)
+RCPP_MODULE(xmap_module)
 {
-    class_<CCM>("CCM")
+    class_<Xmap>("Xmap")
     
     .constructor()
     
-    .method("set_time", &CCM::set_time)
-    .method("set_block", &CCM::set_block)
-    .method("set_norm_type", &CCM::set_norm_type)
-    .method("set_lib", &CCM::set_lib)
-    .method("set_pred", &CCM::set_pred)
-    .method("set_lib_sizes", &CCM::set_lib_sizes)
-    .method("set_exclusion_radius", &CCM::set_exclusion_radius)
-    .method("set_lib_column", &CCM::set_lib_column)
-    .method("set_target_column", &CCM::set_target_column)
-    .method("set_params", &CCM::set_params)
-    .method("suppress_warnings", &CCM::suppress_warnings)
-    .method("run", &CCM::run)
-    .method("get_output", &CCM::get_output)
+    .method("set_time", &Xmap::set_time)
+    .method("set_block", &Xmap::set_block)
+    .method("set_norm_type", &Xmap::set_norm_type)
+    .method("set_lib", &Xmap::set_lib)
+    .method("set_pred", &Xmap::set_pred)
+    .method("set_lib_sizes", &Xmap::set_lib_sizes)
+    .method("set_exclusion_radius", &Xmap::set_exclusion_radius)
+    .method("set_lib_column", &Xmap::set_lib_column)
+    .method("set_target_column", &Xmap::set_target_column)
+    .method("set_params", &Xmap::set_params)
+    .method("suppress_warnings", &Xmap::suppress_warnings)
+    .method("run", &Xmap::run)
+    .method("get_output", &Xmap::get_output)
     ;
 }

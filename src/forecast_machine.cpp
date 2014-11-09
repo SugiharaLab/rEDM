@@ -9,12 +9,39 @@ which_lib(std::vector<size_t>()), which_pred(std::vector<size_t>()),
 time(vec()), data_vectors(std::vector<vec>()),
 observed(vec()), predicted(vec()), predicted_var(vec()), 
 num_vectors(0),
-distances(std::vector<vec>()), neighbors(std::vector<std::vector<size_t> >()),
+distances(std::vector<vec>()), 
 CROSS_VALIDATION(false), SUPPRESS_WARNINGS(false), pred_mode(SIMPLEX), norm_mode(L2_NORM),
 nn(0), exclusion_radius(-1),
 lib_ranges(std::vector<time_range>()), pred_ranges(std::vector<time_range>())
 {
     //num_threads = std::thread::hardware_concurrency();
+}
+
+void ForecastMachine::debug_print_vectors()
+{
+    size_t i = 0;
+    for(auto& v: data_vectors)
+    {
+        std::cerr << i << ": <";
+        for(auto& i: v)
+        {
+            std::cerr << i << " ";
+        }
+        std::cerr << "> --> " << observed[i] << "\n";
+        ++i;
+    }
+    return;
+}
+
+void ForecastMachine::debug_print_lib_and_pred()
+{
+    size_t i = 0;
+    for(auto l: lib_indices)
+    {
+        std::cerr << i << ": " << "lib = " << l << ", pred = " << pred_indices[i] << "\n";
+        ++i;
+    }
+    return;
 }
 
 void ForecastMachine::init_distances()
@@ -82,47 +109,38 @@ void ForecastMachine::compute_distances()
     return;
 }
 
-void ForecastMachine::sort_neighbors()
-{
-    neighbors.resize(num_vectors);
-    for(auto& curr_pred: which_pred)
-    {
-        neighbors[curr_pred] = sort_indices(distances[curr_pred], which_lib);
-    }
-    return;
-}
-
 std::vector<size_t> ForecastMachine::find_nearest_neighbors(const size_t curr_pred, const std::vector<bool>& valid_lib_indices)
 {
+    std::vector<size_t> neighbors = sort_indices(distances[curr_pred], which_lib);
     std::vector<size_t> nearest_neighbors;
     
     if(nn < 1)
     {
-        for(auto& curr_lib: neighbors[curr_pred])
+        for(auto& curr_lib: neighbors)
             if(valid_lib_indices[curr_lib])
                 nearest_neighbors.push_back(curr_lib);
         return nearest_neighbors;
     }
     // else
-    nearest_neighbors.assign(nn, 0);
     std::vector<size_t>::iterator curr_lib;
     
     // find nearest neighbors
-    size_t j = 0;
-    for(curr_lib = neighbors[curr_pred].begin(); curr_lib != neighbors[curr_pred].end(); ++curr_lib)
+    for(curr_lib = neighbors.begin(); curr_lib != neighbors.end(); ++curr_lib)
     {
         if(valid_lib_indices[*curr_lib])
         {
-            nearest_neighbors[j] = *curr_lib;
-            ++j;
-            if(int(j) >= nn)
+            nearest_neighbors.push_back(*curr_lib);
+            if(nearest_neighbors.size() >= nn)
                 break;
         }
     }
+    if(curr_lib == neighbors.end())
+        return nearest_neighbors;
+        
     double tie_distance = distances[curr_pred][nearest_neighbors.back()];
     
     // check for ties
-    for(++curr_lib; curr_lib != neighbors[curr_pred].end(); ++curr_lib)
+    for(++curr_lib; curr_lib != neighbors.end(); ++curr_lib)
     {
         if(distances[curr_pred][*curr_lib] > tie_distance) // distance is bigger
             break;
@@ -368,9 +386,9 @@ void ForecastMachine::simplex_prediction(const size_t start, const size_t end)
     double tie_adj_factor;
     double total_weight;
     
-    for(size_t i = start; i < end; ++i)
+    for(size_t k = start; k < end; ++k)
     {
-        curr_pred = which_pred[i];
+        curr_pred = which_pred[k];
         
         // find nearest neighbors
         if(CROSS_VALIDATION)
@@ -450,9 +468,9 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
     VectorXd B, S, x;
     double max_s, pred;
     
-    for(size_t i = start; i < end; ++i)
+    for(size_t k = start; k < end; ++k)
     {
-        curr_pred = which_pred[i];
+        curr_pred = which_pred[k];
         
         // find nearest neighbors
         if(CROSS_VALIDATION)

@@ -65,7 +65,6 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
                 lib_column = 1, target_column = 2, first_column_time = FALSE, 
                 exclusion_radius = NULL, epsilon = NULL, silent = FALSE)
 {
-    stop("not working yet")
     convert_to_column_indices <- function(columns)
     {
         if(is.numeric(columns))
@@ -82,7 +81,7 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
     }
     
     # make new model object
-    model <- new(CCM)
+    model <- new(Xmap)
     
     # setup data
     if(first_column_time)
@@ -109,8 +108,8 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
     }
     model$set_time(time)
     model$set_block(as.matrix(block))
-    model$set_lib_column(lib_column)
-    model$set_target_column(target_column)
+    model$set_lib_column(convert_to_column_indices(lib_column))
+    model$set_target_column(convert_to_column_indices(target_column))
     
     # setup norm type
     model$set_norm_type(switch(match.arg(norm_type), "L2 norm" = 2, "L1 norm" = 1))
@@ -122,6 +121,7 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
         pred <- matrix(pred, ncol = 2, byrow = TRUE)
     model$set_lib(lib)
     model$set_pred(pred)
+    lib_sizes <- unique(pmin(lib_sizes, NROW(block)))
     model$set_lib_sizes(lib_sizes)
     
     # handle exclusion radius
@@ -135,17 +135,22 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
     if (silent)
         model$suppress_warnings()
     
-    stop("asdfasdfasdf")
     # check inputs?
     
     params <- data.frame(E, tau, tp, num_neighbors, lib_column, target_column)
     e_plus_1_index <- match(num_neighbors, c("e+1", "E+1", "e + 1", "E + 1"))
     if (any(e_plus_1_index, na.rm = TRUE))
-        params$nn <- params$E+1
+        params$num_neighbors <- params$E+1
 
-    model$set_params(params$E, params$tau, params$tp, params$nn, 
+    model$set_params(params$E, params$tau, params$tp, params$num_neighbors, 
                      random_libs, num_samples, replace)
     model$run()
-    stats <- model$get_stats()
+    stats <- model$get_output()
     return(cbind(params, stats))
+}
+
+ccm_means <- function(ccm_df)
+{
+    ccm_means <- aggregate(ccm_df, by = list(ccm_df$lib_size), function(x) {mean(x, na.rm = TRUE)})
+    return(ccm_means[,-1]) # drop Group.1 column
 }
