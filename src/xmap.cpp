@@ -135,7 +135,8 @@ void Xmap::run()
     std::vector<size_t> full_lib = which_lib;
     size_t max_lib_size = full_lib.size();
     std::mt19937 rng(42); // init mersenne twister with 42 as seed
-    std::uniform_int_distribution<uint32_t> lib_sampler(0, max_lib_size);
+    // need to update with true random seed
+    std::uniform_int_distribution<uint32_t> lib_sampler(0, max_lib_size-1);
     std::uniform_real_distribution<double> unif_01(0, 1);
     std::vector<int> idx;
  
@@ -144,11 +145,7 @@ void Xmap::run()
 
     for(auto lib_size: lib_sizes)
     {
-        if(lib_size > max_lib_size)
-        {
-            lib_size = max_lib_size;
-        }
-        if(lib_size == max_lib_size && (!random_libs || !replace))
+        if(lib_size >= max_lib_size && (!random_libs || !replace))
         // no possible lib variation if using all vectors and
         // [no random libs OR (random_libs and sampling without replacement)]
         {
@@ -159,7 +156,7 @@ void Xmap::run()
         }
         else if(random_libs)
         {
-            which_lib.resize(lib_size);
+            which_lib.resize(lib_size, 0);
             for(size_t k = 0; k < num_samples; ++k)
             {
                 if(replace)
