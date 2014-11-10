@@ -121,7 +121,6 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
         pred <- matrix(pred, ncol = 2, byrow = TRUE)
     model$set_lib(lib)
     model$set_pred(pred)
-    lib_sizes <- unique(pmin(lib_sizes, NROW(block)))
     model$set_lib_sizes(lib_sizes)
     
     # handle exclusion radius
