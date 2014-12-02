@@ -17,6 +17,7 @@ lib_ranges(std::vector<time_range>()), pred_ranges(std::vector<time_range>())
     //num_threads = std::thread::hardware_concurrency();
 }
 
+/*
 void ForecastMachine::debug_print_vectors()
 {
     size_t i = 0;
@@ -43,6 +44,7 @@ void ForecastMachine::debug_print_lib_and_pred()
     }
     return;
 }
+*/
 
 void ForecastMachine::init_distances()
 {

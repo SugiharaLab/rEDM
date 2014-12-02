@@ -106,8 +106,9 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
         if(any(is.na(time)))
             time <- 1:NROW(block)
     }
+    col_names <- colnames(block)
     model$set_time(time)
-    model$set_block(as.matrix(block))
+    model$set_block(data.matrix(block))
     model$set_lib_column(convert_to_column_indices(lib_column))
     model$set_target_column(convert_to_column_indices(target_column))
     
@@ -148,6 +149,16 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
     return(cbind(params, stats))
 }
 
+#' Take output from ccm and compute means as a function of library size.
+#'
+#' \code{ccm_means} is a utility function to summarize output from the \code{\link{ccm}} 
+#' function
+#' 
+#' @param ccm_df a data.frame, usually output from the \code{\link{ccm}} function
+#' @return A data.frame with forecast statistics averaged at each unique library
+#'   size
+#' @export 
+#' 
 ccm_means <- function(ccm_df)
 {
     ccm_means <- aggregate(ccm_df, by = list(ccm_df$lib_size), function(x) {mean(x, na.rm = TRUE)})

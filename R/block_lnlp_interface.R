@@ -97,7 +97,6 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
             message("Warning: some column names could not be matched and were ignored.")
         return(indices[is.finite(indices)])
     }
-    
     # make new model object
     model <- new(BlockLNLP)
     
@@ -124,10 +123,10 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
         if(any(is.na(time)))
             time <- 1:NROW(block)
     }
+    col_names <- colnames(block)
     model$set_time(time)
-    model$set_block(as.matrix(block))
-    # NEED TO CHECK TARGET NAME
-    model$set_target_column(target_column)
+    model$set_block(data.matrix(block))
+    model$set_target_column(convert_to_column_indices(target_column))
     
     # setup norm and pred types
     model$set_norm_type(switch(match.arg(norm_type), "L2 norm" = 2, "L1 norm" = 1))
@@ -158,7 +157,6 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
         model$suppress_warnings()
     
     # convert embeddings to column indices
-    col_names <- colnames(block)
     if(is.null(col_names)) {
         col_names <- paste("ts_", seq_len(NCOL(block)))
     }
@@ -174,7 +172,7 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
         columns <- lapply(1:NROW(columns), function(i) convert_to_column_indices(columns[i,]))
     }
     embedding_index <- seq_along(columns)
-
+    
     # setup other params in data.frame
     if(match.arg(method) == "s-map")
     {

@@ -16,11 +16,6 @@ using namespace Rcpp;
 
 class ForecastMachine
 {
-public:
-    void debug_print_vectors();
-    void debug_print_lib_and_pred();
-    
-    
 protected:
     // *** constructors *** //
     ForecastMachine();
