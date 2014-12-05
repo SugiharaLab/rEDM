@@ -1,2 +1,2 @@
 library(testthat)
-test_package("Redm")
+test_package("rEDM")

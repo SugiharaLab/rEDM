@@ -1,4 +1,4 @@
-library(Redm)
+library(rEDM)
 
 data("two_species_model")
 
