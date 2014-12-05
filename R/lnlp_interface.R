@@ -104,8 +104,11 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = c(1, NROW
     if (is.null(exclusion_radius))
         exclusion_radius = -1;
     model$set_exclusion_radius(exclusion_radius)
-    
-    # TODO: handle epsilon
+
+    # handle epsilon
+    if (is.null(epsilon))
+        epsilon = -1;
+    model$set_epsilon(epsilon)
     
     # handle silent flag
     if (silent)
@@ -248,7 +251,10 @@ s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = c(1, NROW(t
         exclusion_radius = -1;
     model$set_exclusion_radius(exclusion_radius)
     
-    # TODO: handle epsilon
+    # handle epsilon
+    if (is.null(epsilon))
+        epsilon = -1;
+    model$set_epsilon(epsilon)
     
     # handle silent flag
     if (silent)

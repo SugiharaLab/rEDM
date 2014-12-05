@@ -22,6 +22,7 @@ public:
     void set_pred(const NumericMatrix pred);
     void set_lib_sizes(const NumericVector new_lib_sizes);
     void set_exclusion_radius(const double new_exclusion_radius);
+    void set_epsilon(const double new_epsilon);
     void set_lib_column(const size_t new_lib_col);
     void set_target_column(const size_t new_target);
     void set_params(const size_t new_E, const size_t new_tau, const int new_tp, 

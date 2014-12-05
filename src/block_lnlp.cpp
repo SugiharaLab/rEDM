@@ -95,6 +95,12 @@ void BlockLNLP::set_exclusion_radius(const double new_exclusion_radius)
     return;
 }
 
+void BlockLNLP::set_epsilon(const double new_epsilon)
+{
+    epsilon = new_epsilon;
+    return;
+}
+
 void BlockLNLP::set_embedding(const NumericVector new_embedding)
 {
     embedding = as<std::vector<size_t> >(new_embedding);
@@ -258,6 +264,7 @@ RCPP_MODULE(block_lnlp_module)
     .method("set_lib", &BlockLNLP::set_lib)
     .method("set_pred", &BlockLNLP::set_pred)
     .method("set_exclusion_radius", &BlockLNLP::set_exclusion_radius)
+    .method("set_epsilon", &BlockLNLP::set_epsilon)
     .method("set_embedding", &BlockLNLP::set_embedding)
     .method("set_target_column", &BlockLNLP::set_target_column)
     .method("set_params", &BlockLNLP::set_params)

@@ -21,6 +21,7 @@ public:
     void set_lib(const NumericMatrix lib);
     void set_pred(const NumericMatrix pred);
     void set_exclusion_radius(const double new_exclusion_radius);
+    void set_epsilon(const double new_epsilon);
     void set_embedding(const NumericVector new_embedding);
     void set_target_column(const size_t new_target);
     void set_params(const int new_tp, const size_t new_nn);

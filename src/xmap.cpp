@@ -83,6 +83,12 @@ void Xmap::set_exclusion_radius(const double new_exclusion_radius)
     return;
 }
 
+void Xmap::set_epsilon(const double new_epsilon)
+{
+    epsilon = new_epsilon;
+    return;
+}
+
 void Xmap::set_lib_column(const size_t new_lib_col)
 {
     lib_col = new_lib_col;
@@ -330,6 +336,7 @@ RCPP_MODULE(xmap_module)
     .method("set_pred", &Xmap::set_pred)
     .method("set_lib_sizes", &Xmap::set_lib_sizes)
     .method("set_exclusion_radius", &Xmap::set_exclusion_radius)
+    .method("set_epsilon", &Xmap::set_epsilon)
     .method("set_lib_column", &Xmap::set_lib_column)
     .method("set_target_column", &Xmap::set_target_column)
     .method("set_params", &Xmap::set_params)

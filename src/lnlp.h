@@ -20,6 +20,7 @@ public:
     void set_lib(const NumericMatrix lib);
     void set_pred(const NumericMatrix pred);
     void set_exclusion_radius(const double new_exclusion_radius);
+    void set_epsilon(const double new_epsilon);
     void set_params(const int new_E, const int new_tau, const int new_tp, const int new_nn);
     void set_theta(const double new_theta);
     void suppress_warnings();

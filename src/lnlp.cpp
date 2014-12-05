@@ -88,6 +88,12 @@ void LNLP::set_exclusion_radius(const double new_exclusion_radius)
     return;
 }
 
+void LNLP::set_epsilon(const double new_epsilon)
+{
+    epsilon = new_epsilon;
+    return;
+}
+
 void LNLP::set_params(const int new_E, const int new_tau, const int new_tp, const int new_nn)
 {
     if(E != new_E || tau != new_tau)
@@ -230,6 +236,7 @@ RCPP_MODULE(lnlp_module)
     .method("set_lib", &LNLP::set_lib)
     .method("set_pred", &LNLP::set_pred)
     .method("set_exclusion_radius", &LNLP::set_exclusion_radius)
+    .method("set_epsilon", &LNLP::set_epsilon)
     .method("set_params", &LNLP::set_params)
     .method("set_theta", &LNLP::set_theta)
     .method("suppress_warnings", &LNLP::suppress_warnings)

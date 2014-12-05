@@ -58,6 +58,7 @@ protected:
     size_t nn;
     double theta;
     double exclusion_radius;
+    double epsilon;
     std::vector<time_range> lib_ranges;
     std::vector<time_range> pred_ranges;
     static const double qnan;

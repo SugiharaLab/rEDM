@@ -11,7 +11,7 @@ observed(vec()), predicted(vec()), predicted_var(vec()),
 num_vectors(0),
 distances(std::vector<vec>()), 
 CROSS_VALIDATION(false), SUPPRESS_WARNINGS(false), pred_mode(SIMPLEX), norm_mode(L2_NORM),
-nn(0), exclusion_radius(-1),
+nn(0), exclusion_radius(-1), epsilon(-1), 
 lib_ranges(std::vector<time_range>()), pred_ranges(std::vector<time_range>())
 {
     //num_threads = std::thread::hardware_concurrency();
@@ -148,6 +148,19 @@ std::vector<size_t> ForecastMachine::find_nearest_neighbors(const size_t curr_pr
             break;
         if(valid_lib_indices[*curr_lib]) // valid lib
             nearest_neighbors.push_back(*curr_lib); // add to nearest neighbors
+    }
+    
+    // filter for max_distance
+    if(epsilon >= 0)
+    {
+        for(auto neighbor_iter = nearest_neighbors.begin(); neighbor_iter != nearest_neighbors.end(); ++neighbor_iter)
+        {
+            if(distances[curr_pred][*neighbor_iter] > epsilon)
+            {
+                nearest_neighbors.erase(neighbor_iter, nearest_neighbors.end());
+                break;
+            }
+        }
     }
     
     return nearest_neighbors;
@@ -403,6 +416,13 @@ void ForecastMachine::simplex_prediction(const size_t start, const size_t end)
         }
         effective_nn = nearest_neighbors.size();
         
+        if(effective_nn == 0)
+        {
+            predicted[curr_pred] = qnan;
+            LOG_WARNING("no nearest neighbors found; using NA for forecast");
+            continue;
+        }
+        
         // compute weights
         min_distance = distances[curr_pred][nearest_neighbors[0]];
         weights.assign(effective_nn, min_weight);
@@ -484,6 +504,13 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
             nearest_neighbors = find_nearest_neighbors(curr_pred, lib_indices);
         }
         effective_nn = nearest_neighbors.size();
+        
+        if(effective_nn == 0)
+        {
+            predicted[curr_pred] = qnan;
+            LOG_WARNING("no nearest neighbors found; using NA for forecast");
+            continue;
+        }
         
         weights.assign(effective_nn, 1.0); // default is for theta = 0
         if(theta > 0.0)
