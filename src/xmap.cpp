@@ -159,6 +159,7 @@ void Xmap::run()
             forecast();
             predicted_stats.push_back(compute_stats());
             predicted_lib_sizes.push_back(lib_size);
+            break;
         }
         else if(random_libs)
         {
