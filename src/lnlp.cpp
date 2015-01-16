@@ -94,7 +94,7 @@ void LNLP::set_epsilon(const double new_epsilon)
     return;
 }
 
-void LNLP::set_params(const int new_E, const int new_tau, const int new_tp, const int new_nn)
+void LNLP::set_params(const size_t new_E, const size_t new_tau, const int new_tp, const size_t new_nn)
 {
     if(E != new_E || tau != new_tau)
         remake_vectors = true;
