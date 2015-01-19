@@ -74,8 +74,6 @@
 #' }
 #' @export 
 
-# KNOWN BUGS: NaN flags are set based on first embedding, so order of embeddings can influence results
-
 block_lnlp <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)), 
                        norm_type = c("L2 norm", "L1 norm"), 
                        method = c("simplex", "s-map"), 
@@ -189,9 +187,9 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
         if (stats_only)
         {
             stats <- lapply(1:NROW(params), function(i) {
+                model$set_embedding(columns[[params$embedding[i]]])
                 model$set_params(params$tp[i], params$nn[i])
                 model$set_theta(params$theta[i])
-                model$set_embedding(columns[[params$embedding[i]]])
                 model$run()
                 return(model$get_stats())
             })
@@ -200,9 +198,9 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
             output <- cbind(params, do.call(rbind, stats))
         } else {
             output <- lapply(1:NROW(params), function(i) {
+                model$set_embedding(columns[[params$embedding[i]]])
                 model$set_params(params$tp[i], params$nn[i])
                 model$set_theta(params$theta[i])
-                model$set_embedding(columns[[params$embedding[i]]])
                 model$run()
                 
                 return(list(params = params[i,], 
@@ -212,7 +210,7 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
             })
         }
     }
-    else
+    else # simplex
     {
         params <- expand.grid(tp, num_neighbors, embedding_index)
         names(params) <- c("tp", "nn", "embedding")
@@ -224,8 +222,8 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
         if (stats_only)
         {
             stats <- lapply(1:NROW(params), function(i) {
-                model$set_params(params$tp[i], params$nn[i])
                 model$set_embedding(columns[[params$embedding[i]]])
+                model$set_params(params$tp[i], params$nn[i])
                 model$run()
                 return(model$get_stats())
             })
@@ -234,8 +232,8 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
             output <- cbind(params, do.call(rbind, stats))
         } else {
             output <- lapply(1:NROW(params), function(i) {
-                model$set_params(params$tp[i], params$nn[i])
                 model$set_embedding(columns[[params$embedding[i]]])
+                model$set_params(params$tp[i], params$nn[i])
                 model$run()
                 
                 return(list(params = params[i,], 

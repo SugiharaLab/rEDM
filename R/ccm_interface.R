@@ -57,7 +57,6 @@
 #'   rmse \tab root mean square error
 #' }
 #' @export 
-
 ccm <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)), 
                 norm_type = c("L2 norm", "L1 norm"), E = 1, tau = 1, 
                 tp = 0, num_neighbors = "e+1", lib_sizes = seq(10, 100, by = 10), 
