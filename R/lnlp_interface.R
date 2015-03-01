@@ -178,7 +178,7 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = c(1, NROW
 #'   value < 1 will use all possible neighbors.)
 #' @param theta the nonlinear tuning parameter (note that theta = 0 is 
 #'   equivalent to an autoregressive model of order E.)
-#' @param stats_only specify whether to output just the forecast statistics or 
+#' @param stats_only specifies whether to output just the forecast statistics or 
 #'   the raw predictions for each run
 #' @param exclusion_radius excludes vectors from the search space of nearest 
 #'   neighbors if their *time index* is within exclusion_radius (NULL turns 
@@ -187,6 +187,9 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = c(1, NROW
 #'   if their *distance* is farther away than epsilon (NULL turns this option 
 #'   off)
 #' @param silent prevents warning messages from being printed to the R console
+#' @param save_smap_coefficients specifies whether to include the s_map 
+#'   coefficients with the output (and forces the full output as if stats_only 
+#'   were set to FALSE)
 #' @return If stats_only, then a data.frame with components for the parameters 
 #'   and forecast statistics:
 #' \tabular{ll}{
@@ -207,6 +210,8 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = c(1, NROW
 #'   params \tab data.frame of parameters (E, tau, tp, nn, theta)\cr
 #'   model_output \tab data.frame with columns for the time index, observations, 
 #'     and predictions\cr
+#'   smap_coefficients \tab matrix with the s_map coefficients (first E columns 
+#'     are for the E lags, and the (E+1)th column is the constant)\cr
 #'   stats \tab data.frame of forecast statistics (num_pred, rho, mae, rmse)\cr
 #' }
 #' @export 
@@ -217,7 +222,7 @@ s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = c(1, NROW(t
                   theta = c(0, 0.0001, 0.0003, 0.001, 0.003, 0.01, 0.03, 0.1, 
                             0.3, 0.5, 0.75, 1.0, 1.5, 2, 3, 4, 6, 8), 
                   stats_only = TRUE, exclusion_radius = NULL, epsilon = NULL, 
-                  silent = FALSE)
+                  silent = FALSE, save_smap_coefficients = FALSE)
 {
     # check inputs?
     
@@ -260,6 +265,12 @@ s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = c(1, NROW(t
     if (silent)
         model$suppress_warnings()
     
+    # handle smap coefficients flag
+    if (save_smap_coefficients)
+    {
+        stats_only = FALSE;
+        model$save_smap_coefficients()
+    }
     # setup other params in data.frame
     params <- expand.grid(theta, tp, num_neighbors, tau, E)
     names(params) <- c("theta", "tp", "nn", "tau", "E")
@@ -285,9 +296,19 @@ s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = c(1, NROW(t
         model$set_params(params$E[i], params$tau[i], params$tp[i], params$nn[i])
         model$set_theta(params$theta[i])
         model$run()
-        return(list(params = params[i,], 
-                    model_output = model$get_output(), 
-                    stats = model$get_stats()))
+        if(save_smap_coefficients)
+        {
+            return(list(params = params[i,], 
+                        model_output = model$get_output(), 
+                        smap_coefficients = do.call(rbind, model$get_smap_coefficients()), 
+                        stats = model$get_stats()))
+        }
+        else
+        {
+            return(list(params = params[i,], 
+                        model_output = model$get_output(), 
+                        stats = model$get_stats()))
+        }
     })
     return(output)
 }

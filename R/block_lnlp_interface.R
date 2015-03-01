@@ -52,6 +52,9 @@
 #' @param theta the nonlinear tuning parameter (theta is only relevant if 
 #'   method == "s-map")
 #' @param silent prevents warning messages from being printed to the R console
+#' @param save_smap_coefficients specifies whether to include the s_map 
+#'   coefficients with the output (and forces the full output as if stats_only 
+#'   were set to FALSE)
 #' @return If stats_only, then a data.frame with components for the parameters 
 #'   and forecast statistics:
 #' \tabular{ll}{
@@ -70,6 +73,8 @@
 #'   params \tab data.frame of parameters (E, tau, tp, nn)\cr
 #'   model_output \tab data.frame with columns for the time index, observations, 
 #'     and predictions\cr
+#'   smap_coefficients \tab matrix with the s_map coefficients (first E columns 
+#'     are for the E lags, and the (E+1)th column is the constant)\cr
 #'   stats \tab data.frame of forecast statistics (num_pred, rho, mae, rmse)\cr
 #' }
 #' @export 
@@ -79,7 +84,8 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
                        method = c("simplex", "s-map"), 
                        tp = 1, num_neighbors = "e+1", columns = NULL, 
                        target_column = 1, stats_only = TRUE, first_column_time = FALSE, 
-                       exclusion_radius = NULL, epsilon = NULL, theta = NULL, silent = FALSE)
+                       exclusion_radius = NULL, epsilon = NULL, theta = NULL, 
+                       silent = FALSE, save_smap_coefficients = FALSE)
 {
     convert_to_column_indices <- function(columns)
     {
@@ -132,7 +138,12 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
     if(match.arg(method) == "s-map")
     {
         if(is.null(theta))
-            theta <- 0        
+            theta <- 0
+        if (save_smap_coefficients)
+        {
+            stats_only = FALSE;
+            model$save_smap_coefficients()
+        }
     }
     
     # setup lib and pred ranges
@@ -203,10 +214,21 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
                 model$set_theta(params$theta[i])
                 model$run()
                 
-                return(list(params = params[i,], 
-                            embedding = paste(columns[[params$embedding[i]]], sep = "", collapse = ", "), 
-                            model_output = model$get_output(), 
-                            stats = model$get_stats()))
+                if(save_smap_coefficients)
+                {
+                    return(list(params = params[i,], 
+                                embedding = paste(columns[[params$embedding[i]]], sep = "", collapse = ", "), 
+                                model_output = model$get_output(), 
+                                smap_coefficients = do.call(rbind, model$get_smap_coefficients()), 
+                                stats = model$get_stats()))
+                }
+                else
+                {
+                    return(list(params = params[i,],
+                                embedding = paste(columns[[params$embedding[i]]], sep = "", collapse = ", "), 
+                                model_output = model$get_output(), 
+                                stats = model$get_stats()))
+                }
             })
         }
     }

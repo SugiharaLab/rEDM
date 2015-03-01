@@ -10,3 +10,6 @@ simplex(ts, lib = c(1, 100), pred = c(101, 200))
 
 # univariate s-map using E = 2
 s_map(ts, E = 2)
+
+# univariate s-map using E = 2, theta = 1, and full output with smap_coefficients
+y <- s_map(ts, E = 2, theta = 1, save_smap_coefficients = TRUE)

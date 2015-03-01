@@ -140,6 +140,12 @@ void BlockLNLP::suppress_warnings()
     return;
 }
 
+void BlockLNLP::save_smap_coefficients()
+{
+    SAVE_SMAP_COEFFICIENTS = true;
+    return;
+}
+
 void BlockLNLP::run()
 {
     prepare_forecast(); // check parameters
@@ -153,6 +159,11 @@ DataFrame BlockLNLP::get_output()
                               Named("obs") = observed, 
                               Named("pred") = predicted, 
                               Named("pred_var") = predicted_var);
+}
+
+List BlockLNLP::get_smap_coefficients()
+{     
+    return(wrap(smap_coefficients));
 }
 
 DataFrame BlockLNLP::get_short_output()
@@ -270,8 +281,10 @@ RCPP_MODULE(block_lnlp_module)
     .method("set_params", &BlockLNLP::set_params)
     .method("set_theta", &BlockLNLP::set_theta)
     .method("suppress_warnings", &BlockLNLP::suppress_warnings)
+    .method("save_smap_coefficients", &BlockLNLP::save_smap_coefficients)
     .method("run", &BlockLNLP::run)
     .method("get_output", &BlockLNLP::get_output)
+    .method("get_smap_coefficients", &BlockLNLP::get_smap_coefficients)
     .method("get_short_output", &BlockLNLP::get_short_output)
     .method("get_stats", &BlockLNLP::get_stats)
     ;

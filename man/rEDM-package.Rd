@@ -2,7 +2,7 @@
 % Please edit documentation in R/rEDM_package.R
 \docType{package}
 \name{rEDM-package}
-\alias{Redm}
+\alias{rEDM}
 \alias{rEDM-package}
 \title{Applications of empirical dynamic modeling from time series.}
 \description{

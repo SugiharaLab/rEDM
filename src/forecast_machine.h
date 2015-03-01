@@ -43,6 +43,7 @@ protected:
     
     vec time;
     std::vector<vec> data_vectors;
+    std::vector<vec> smap_coefficients;
     vec observed;
     vec predicted;
     vec predicted_var;
@@ -53,6 +54,7 @@ protected:
     // *** parameters *** //
     bool CROSS_VALIDATION;
     bool SUPPRESS_WARNINGS;
+    bool SAVE_SMAP_COEFFICIENTS;
     PredEnum pred_mode;
     NormEnum norm_mode;
     size_t nn;

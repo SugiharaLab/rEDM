@@ -24,8 +24,10 @@ public:
     void set_params(const size_t new_E, const size_t new_tau, const int new_tp, const size_t new_nn);
     void set_theta(const double new_theta);
     void suppress_warnings();
+    void save_smap_coefficients();
     void run();
     DataFrame get_output();
+    List get_smap_coefficients();
     DataFrame get_short_output();
     DataFrame get_stats();
     

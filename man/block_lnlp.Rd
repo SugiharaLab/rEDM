@@ -8,7 +8,8 @@ block_lnlp(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
   norm_type = c("L2 norm", "L1 norm"), method = c("simplex", "s-map"),
   tp = 1, num_neighbors = "e+1", columns = NULL, target_column = 1,
   stats_only = TRUE, first_column_time = FALSE, exclusion_radius = NULL,
-  epsilon = NULL, theta = NULL, silent = FALSE)
+  epsilon = NULL, theta = NULL, silent = FALSE,
+  save_smap_coefficients = FALSE)
 }
 \arguments{
   \item{block}{either a vector to be used as the time
@@ -62,6 +63,11 @@ block_lnlp(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
 
   \item{silent}{prevents warning messages from being
   printed to the R console}
+
+  \item{save_smap_coefficients}{specifies whether to
+  include the s_map coefficients with the output (and
+  forces the full output as if stats_only were set to
+  FALSE)}
 }
 \value{
 If stats_only, then a data.frame with components for the
@@ -76,8 +82,11 @@ parameter combinations). Each element is a list with the
 following components: \tabular{ll}{ params \tab data.frame
 of parameters (E, tau, tp, nn)\cr model_output \tab
 data.frame with columns for the time index, observations,
-and predictions\cr stats \tab data.frame of forecast
-statistics (num_pred, rho, mae, rmse)\cr }
+and predictions\cr smap_coefficients \tab matrix with the
+s_map coefficients (first E columns are for the E lags, and
+the (E+1)th column is the constant)\cr stats \tab
+data.frame of forecast statistics (num_pred, rho, mae,
+rmse)\cr }
 }
 \description{
 \code{block_lnlp} uses multiple time series given as input

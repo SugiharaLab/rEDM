@@ -6,11 +6,11 @@ const double ForecastMachine::qnan = std::numeric_limits<double>::quiet_NaN();
 ForecastMachine::ForecastMachine():
 lib_indices(std::vector<bool>()), pred_indices(std::vector<bool>()),
 which_lib(std::vector<size_t>()), which_pred(std::vector<size_t>()),
-time(vec()), data_vectors(std::vector<vec>()),
+time(vec()), data_vectors(std::vector<vec>()), smap_coefficients(std::vector<vec>()), 
 observed(vec()), predicted(vec()), predicted_var(vec()), 
-num_vectors(0),
-distances(std::vector<vec>()), 
-CROSS_VALIDATION(false), SUPPRESS_WARNINGS(false), pred_mode(SIMPLEX), norm_mode(L2_NORM),
+num_vectors(0), distances(std::vector<vec>()), 
+CROSS_VALIDATION(false), SUPPRESS_WARNINGS(false), SAVE_SMAP_COEFFICIENTS(false), 
+pred_mode(SIMPLEX), norm_mode(L2_NORM),
 nn(0), exclusion_radius(-1), epsilon(-1), 
 lib_ranges(std::vector<time_range>()), pred_ranges(std::vector<time_range>())
 {
@@ -239,31 +239,6 @@ void ForecastMachine::check_cross_validation()
         }
     }
     
-    /*
-    if (exclusion_radius < 0) // if exclusion_radius is set, always do cross_validation
-    {
-        for (size_t i = 0; i < num_vectors; ++i) // see if all lib indices == pred_indices
-        {
-            if(lib_indices[i] != pred_indices[i])
-            {
-                CROSS_VALIDATION = false;
-                break;
-            }
-        }
-        // lib == pred   
-    }
-    if(!CROSS_VALIDATION) // some difference -> resolve any equal cases
-    {
-        for(size_t i = 0; i < num_vectors; ++i)
-        {
-            if(lib_indices[i] && pred_indices[i])
-            {
-                lib_indices[i] = true;
-                pred_indices[i] = false;
-            }
-        }
-    }
-    */
     return;
 }
 
@@ -388,6 +363,10 @@ void ForecastMachine::smap_forecast()
     for(auto& tt: workers)
         tt.join();
     */
+    if(SAVE_SMAP_COEFFICIENTS)
+    {
+        smap_coefficients.assign(num_vectors, vec(data_vectors[0].size()+1, qnan));
+    }
     smap_prediction(0, which_pred.size());
     return;
 }
@@ -561,7 +540,11 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
         for(size_t j = 0; j < E; ++j)
             pred += x(j) * data_vectors[curr_pred][j];
         pred += x(E);
-        
+        if(SAVE_SMAP_COEFFICIENTS)
+        {
+            for(size_t j = 0; j <= E; ++j)
+                smap_coefficients[curr_pred][j] = x(j);
+        }
         // save prediction
         predicted[curr_pred] = pred;
     }

@@ -9,7 +9,7 @@ s_map(time_series, lib = c(1, NROW(time_series)), pred = c(1,
   tau = 1, tp = 1, num_neighbors = 0, theta = c(0, 1e-04, 3e-04, 0.001,
   0.003, 0.01, 0.03, 0.1, 0.3, 0.5, 0.75, 1, 1.5, 2, 3, 4, 6, 8),
   stats_only = TRUE, exclusion_radius = NULL, epsilon = NULL,
-  silent = FALSE)
+  silent = FALSE, save_smap_coefficients = FALSE)
 }
 \arguments{
   \item{time_series}{either a vector to be used as the time
@@ -44,7 +44,7 @@ s_map(time_series, lib = c(1, NROW(time_series)), pred = c(1,
   theta = 0 is equivalent to an autoregressive model of
   order E.)}
 
-  \item{stats_only}{specify whether to output just the
+  \item{stats_only}{specifies whether to output just the
   forecast statistics or the raw predictions for each run}
 
   \item{exclusion_radius}{excludes vectors from the search
@@ -57,6 +57,11 @@ s_map(time_series, lib = c(1, NROW(time_series)), pred = c(1,
 
   \item{silent}{prevents warning messages from being
   printed to the R console}
+
+  \item{save_smap_coefficients}{specifies whether to
+  include the s_map coefficients with the output (and
+  forces the full output as if stats_only were set to
+  FALSE)}
 }
 \value{
 If stats_only, then a data.frame with components for the
@@ -72,9 +77,11 @@ runs (unique parameter combinations). Each element is a
 list with the following components: \tabular{ll}{ params
 \tab data.frame of parameters (E, tau, tp, nn, theta)\cr
 model_output \tab data.frame with columns for the time
-index, observations, and predictions\cr stats \tab
-data.frame of forecast statistics (num_pred, rho, mae,
-rmse)\cr }
+index, observations, and predictions\cr smap_coefficients
+\tab matrix with the s_map coefficients (first E columns
+are for the E lags, and the (E+1)th column is the
+constant)\cr stats \tab data.frame of forecast statistics
+(num_pred, rho, mae, rmse)\cr }
 }
 \description{
 \code{s_map} uses time delay embedding on a single time
