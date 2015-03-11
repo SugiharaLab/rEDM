@@ -1,0 +1,70 @@
+---
+title: "Introduction to rEDM"
+author: "Hao Ye"
+date: "March 10, 2015"
+output:
+  html_document: 
+    number_sections: true
+    css: styles.css
+---
+
+# Introduction
+This file is designed to serve as an introduction to **rEDM**, an R package for Empirical Dynamic Modeling (EDM).
+
+
+# Installation
+rEDM is an **Rcpp** package, meaning that it contains both **C++** and **R** code. Because the C++ code needs to be compiled prior to usage, we present several different options for obtaining and installing the rEDM package, depending on your familiarity with R's package system.  
+
+rEDM is compatible with **R 3.1.0+**, and works on **Mac OS X 10.9+** or **Windows 7+ (32-bit or 64-bit)**. We have not tested it for **Linux**, but believe it should work without any problems by compiling from source.  
+
+## Rcpp
+rEDM requires **Rcpp (0.11.2+)** to be installed. Please follow the normal [instructions](http://www.cookbook-r.com/Basics/Installing_and_using_packages/) for package installation to install Rcpp before installing rEDM.  
+
+## Precompiled Binary Version
+Precompiled versions can be downloaded from the following Google Drive links. Please be sure to download the latest version (0.2.2 as of March 10, 2015).  
+[Windows](https://drive.google.com/folderview?id=0B10pWFVNQ65gfmUxaWZhWlN0di1IR3ZnTU8yX3l2TnlQV29GUEE0RU5JclZkZG9fWlA0em8&usp=sharing)  
+[Mac OS X](https://drive.google.com/folderview?id=0B10pWFVNQ65gbVc5S0Y3MXZCc28&usp=sharing)  
+
+To install the precompiled binary package, use the following R command, replacing `***` with the name of the package file. (You will need to either give the complete path, or put the package file in R's working directory.)
+```{r, eval = FALSE}
+install.packages("***", type = "source", repos = NULL)
+```
+
+## Source Version
+The raw source can be downloaded from my Github repository [here](https://github.com/ha0ye/rEDM). If you are familiar with using Git with Rstudio projects, you can go ahead and clone it. Otherwise, it is possible to install it using functions from the **devtools** package:
+```{r, eval = FALSE}
+library(devtools)
+install_github("ha0ye/rEDM")
+```
+
+Note that this method requires **Git** to be installed, along with a **C++11** compiler, in addition to **Rcpp**.
+
+# Examples
+
+## Simplex Projection
+
+**Simplex Projection** is a nearest neighbor forecasting method. It is typically applied as a simple test for estimating the optimal *embedding dimension* for a time-series. We demonstrate this in the following example.  
+
+First, we load the data and run simplex projection. Note that we let many of the parameters to the `simplex` function be default values (e.g., $\tau = 1$, $\text{tp} = 1$). In addition, the default values for the embedding dimension, $E$, range from $1$ to $10$, and so the output will allow us to determine which embedding dimension best unfolds the attractor (i.e., resolves singularities in the dynamics to produce the best forecast skill).
+
+```{r}
+library(rEDM)
+data(two_species_model)
+
+simplex_output <- simplex(two_species_model$x)
+```
+
+The results are a simple data.frame with columns for each of the model parameters, and forecast statistics, and rows for each run of the model. In this case, there is one run for each value of $E$, so we can simply plot $E$ against the $\rho$, the correlation between observed and predicted values:
+
+```{r}
+par(mar = c(4,4,1,1))
+plot(simplex_output$E, simplex_output$rho, type = "l", 
+     xlab = "Embedding Dimension", ylab = "Forecast Skill")
+```
+
+
+## S-map
+
+## Multivariate Models
+## Convergent Cross Mapping
+
