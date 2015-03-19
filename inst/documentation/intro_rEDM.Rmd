@@ -41,6 +41,52 @@ Note that this method requires **Git** to be installed, along with a **C++11** c
 
 # Examples
 
+## Data Input
+
+The **rEDM** functions are designed to accept data in common R data formats, namely vectors, matrices, and data.frames. Depending on the specific function, one or the other data type is preferred. Please see the documentation associated with individual functions for more details.
+
+## General Parameters
+
+Many of the functions in **rEDM** are designed around the same prediction engine, and so share many of the following parameters. Please see the documentation associated with individual functions to verify which parameters are applicable as well as the default values (which can change from function to function)
+
+* lib
+    + a 2-column matrix (or 2-element vector) where each row specifies the portions of the time series to use for attractor reconstruction (i.e., the set of vectors that can be selected as nearest neighbors)
+    + e.g., `(1, n)` specifies that the first n *rows* (from 1 to n) of data are a contiguous time series block, and can be used
+    + by default, lib uses the entire input as a single contiguous segment
+* pred
+    + (same format as lib, but specifes the portions of the time series to make predictions for)
+* norm_type
+    + `"L2 norm"` (default) or `"L1 norm"`: specifies which distance metric to use when doing calculations
+* E
+    + the embedding dimension to use for attractor reconstruction
+* tau
+    + the lag to use for attractor reconstruction
+    + by default, tau is set to `1`
+* tp
+    + the prediction horizon (how many steps ahead to make forecasts)
+    + (negative values will also work)
+* num_neighbors
+    + the number of neighbors to use
+    + `"e+1"`, `"E+1"`, `"e + 1"`, and `"E + 1"` will all peg this parameter to be `E+1` for each run
+    + values less than 1 will use all possible neighbors
+* theta
+    + the nonlinear tuning parameter (for use with S-maps) that adjusts how distance is factored into computation of the local linear map (`0` corresponds to a globally linear map, while values greater than 0 correspond to nonlinear models where the local linear map changes as a function of state-space)
+* stats_only
+    + `TRUE` (default) or `FALSE`: specifies whether the output should just contain statistics of the predictions, or also contain all the predictions that were made
+* exclusion_radius
+    + `exclusion_radius` sets the threshold whereby all vectors with time indices too close to the predictee will be excluded from being considered nearest neighbors
+    + e.g., `1` means that vectors must have an associated time index more than 1 away from potential nearest neighbors
+    + by default, exclusion_radius is set to NULL (turning this filtering off)
+* epsilon
+    + `epsilon` sets the threshold whereby all vectors with distance too far away from the predictee will be excluded from being considered nearest neighbors
+    + e.g., `2` means that vectors must have be within a distance of 2 from potential nearest neighbors
+    + by default, epsilon is set to NULL (turning this filtering off)
+* silent
+    + `TRUE` or `FALSE` (default): specifies whether to suppress warning messages from being printed to the R console
+* save_smap_coefficients
+    + `TRUE` or `FALSE` (default): specifies whether to include a table of s-map coefficients with the output
+    + (note that setting this to `TRUE` forces the full output as if `stats_only = FALSE`)
+
 ## Simplex Projection
 
 **Simplex Projection** is a nearest neighbor forecasting method. It is typically applied as a simple test for estimating the optimal *embedding dimension* for a time-series. We demonstrate this in the following example.  
@@ -49,9 +95,10 @@ First, we load the data and run simplex projection. Note that we let many of the
 
 ```{r}
 library(rEDM)
-data(two_species_model)
+data(sockeye_returns)
+ts <- sockeye_returns$returns_1d
 
-simplex_output <- simplex(two_species_model$x)
+simplex_output <- simplex(ts, lib = sockeye_lib, pred = sockeye_lib)
 ```
 
 The results are a simple data.frame with columns for each of the model parameters, and forecast statistics, and rows for each run of the model. In this case, there is one run for each value of $E$, so we can simply plot $E$ against the $\rho$, the correlation between observed and predicted values:
@@ -59,12 +106,88 @@ The results are a simple data.frame with columns for each of the model parameter
 ```{r}
 par(mar = c(4,4,1,1))
 plot(simplex_output$E, simplex_output$rho, type = "l", 
-     xlab = "Embedding Dimension", ylab = "Forecast Skill")
+     xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)")
 ```
-
 
 ## S-map
 
+**S-map** is a forecasting method that also relies on the principle of attractor reconstruction. However, it has a nonlinear tuning parameter, $\theta$, that affects how weights change with distance in state space. By varying $theta$, it is possible to compare equivalent linear and nonlinear models. Thus, it is typically applied as a test for nonlinear dynamics after using **simplex projection** to first estimate the optimal *embedding dimension* for a time-series. We demonstrate this in the following example.  
+
+Following from the previous example, we set `E = 2` based on the results from simplex projection. Again, note that we let many of the parameters to the `s_map` function be default values (e.g., $\tau = 1$, $\text{tp} = 1$). If these were changed in simplex projection, we would propagate those changes here. Here, we can use the default values for the nonlinear tuning parameter, $\theta$, which vary from $0$ to $8$.
+
+```{r}
+smap_output <- s_map(ts, E = 3, lib = sockeye_lib, pred = sockeye_lib)
+```
+
+Again, the results are a simple data.frame with columns for each of the model parameters, and forecast statistics, and rows for each run of the model. In this case, there is one run for each value of $\theta$, so we can simply plot $\theta$ against the $\rho$:
+
+```{r}
+par(mar = c(4,4,1,1))
+plot(smap_output$theta, smap_output$rho, type = "l", 
+     xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)")
+```
+
 ## Multivariate Models
+
+Instead of creating an attractor by taking lags of a single time series, it is possible to combine lags from different time series, as long as they are all observed from the same system. Here, forecasts can be made using the `block_lnlp` function, which can be set to use either of the **simplex projection** or **s-map** algorithms.
+
+For `block_lnlp`, the main data input is expected to be a matrix or data.frame of the time series observations, where each column is a separate time series and each row is a set of observations at the same time. In addition to the typical arguments for `simplex` or `s_map`, `block_lnlp` contains arguments to specify which column is to be forecast (the `target_column` argument) as well as which columns to use to construct the attractor (the `columns` argument). In both cases, either a numerical index or the column name can be given. 
+
+Note that if lagged coordinates are intended to be used, they need to be manually created as separate columns in the matrix or data.frame.
+
+```{r}
+data(block_3sp)
+block_lnlp_output <- block_lnlp(block_3sp, 
+                                columns = c(1,2,4), target_column = 1, 
+                                stats_only = FALSE, first_column_time = TRUE)
+```
+
+By setting `stats_only` to `FALSE`, we get back a list with the full model output. Only 1 model was run, so we access the first element of the list to get the output associated with that model. Here, we can plot the observed vs. predicted to see how well the model fit relative to the expected 1:1 line.
+
+```{r}
+par(mar = c(4,4,1,1))
+plot(block_lnlp_output[[1]]$model_output$obs, block_lnlp_output[[1]]$model_output$pred, 
+     xlab = "Observed", ylab = "Predicted")
+abline(a = 0, b = 1, lty = 2, col = "blue")
+```
+
 ## Convergent Cross Mapping
+
+// use CCM to identify causality
+// operates by cross mapping from one variable to another
+// must specify E as well as lib portions
+// convergene criterion means try different library sizes
+// at each library size can randomly sample from vectors
+// see help for ccm for more details
+
+```{r}
+data(sardine_anchovy_sst)
+anchovy_xmap_sst <- ccm(sardine_anchovy_sst, E = 3, 
+                            lib_column = "anchovy", target_column = "np_sst", 
+                            lib_sizes = seq(10, 80, by = 10), num_samples = 100, 
+                            silent = TRUE)
+sst_xmap_anchovy <- ccm(sardine_anchovy_sst, E = 3, 
+                            lib_column = "np_sst", target_column = "anchovy", 
+                            lib_sizes = seq(10, 80, by = 10), num_samples = 100, 
+                            silent = TRUE)
+```
+
+The output from CCM is a data.frame with statistics for each library used. Because we cross map using multiple libraries at each library size, we'd like to aggregate the results and just plot the mean cross map skill at each library size.
+
+```{r, warning=FALSE}
+a_xmap_t_means <- ccm_means(anchovy_xmap_sst)
+t_xmap_a_means <- ccm_means(sst_xmap_anchovy)
+
+par(mar = c(4,4,1,1))
+plot(a_xmap_t_means$lib_size, pmax(0, a_xmap_t_means$rho), type = "l", col = "darkolivegreen", 
+     xlab = "Library Size", ylab = "Cross Map Skill (rho)", ylim = c(0, 0.4))
+lines(t_xmap_a_means$lib_size, pmax(0, t_xmap_a_means$rho), col = "blue")
+legend(x = "topleft", legend = c("anchovy xmap SST", "SST xmap anchovy"), 
+       col = c("darkolivegreen", "blue"), lwd = 1, inset = 0.02)
+```
+
+
+
+
+
 

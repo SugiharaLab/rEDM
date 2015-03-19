@@ -40,6 +40,22 @@ NULL
 #' model exhibiting chaotic dynamics.
 NULL
 
+#' @name sockeye_returns
+#' @docType data
+#' @title Time series for sockeye salmon returns.
+#' @author Hao Ye
+#' @description Composited time series of first-differenced sockeye salmon returns 
+#' from the Fraser River in British Columbia, Canada.
+NULL
+
+#' @name block_3sp
+#' @docType data
+#' @title Time series for a three-species coupled model.
+#' @author Hao Ye
+#' @description Time series generated from a discrete-time coupled Lotka-Volterra 
+#' model exhibiting chaotic dynamics.
+NULL
+
 #' @name Rcpp_LNLP-class
 #' @docType class
 #' @title S4 class for Rcpp compiled object, "LNLP"
