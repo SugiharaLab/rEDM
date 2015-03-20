@@ -4,6 +4,7 @@ author: "Hao Ye"
 date: "March 10, 2015"
 output:
   html_document: 
+    toc: true
     number_sections: true
     css: styles.css
 ---
@@ -153,12 +154,9 @@ abline(a = 0, b = 1, lty = 2, col = "blue")
 
 ## Convergent Cross Mapping
 
-// use CCM to identify causality
-// operates by cross mapping from one variable to another
-// must specify E as well as lib portions
-// convergene criterion means try different library sizes
-// at each library size can randomly sample from vectors
-// see help for ccm for more details
+**Convergent Cross Mapping** (**CCM**) is a technique to identify causality based on the idea of attractor reconstruction. In essence, if $x$ has a causal influence on $y$, then the reconstructions based on $x$ and $y$ should map diffeomorphic, and there should be a mapping from the reconstruction based on $y$ to the reconstruction based on $x$. Furthermore, this reconstruction should improve with longer time series, and so convergence of the cross mapping skill with more data is a useful property to identify.
+
+The `ccm` function computes statistics for the cross mapping relationship, and has several additional parameters for sampling library portions to determine convergence. Please see the documentation for `ccm` for more details.
 
 ```{r}
 data(sardine_anchovy_sst)
@@ -172,7 +170,7 @@ sst_xmap_anchovy <- ccm(sardine_anchovy_sst, E = 3,
                             silent = TRUE)
 ```
 
-The output from CCM is a data.frame with statistics for each library used. Because we cross map using multiple libraries at each library size, we'd like to aggregate the results and just plot the mean cross map skill at each library size.
+The output from CCM is a data.frame with statistics for each library used. Because we cross map using multiple libraries at each library size, we'd like to aggregate the results and plot the average cross map skill at each library size. Because average cross map skill less than $0$ is noninformative, we filter out negative values when plotting.
 
 ```{r, warning=FALSE}
 a_xmap_t_means <- ccm_means(anchovy_xmap_sst)
@@ -185,9 +183,4 @@ lines(t_xmap_a_means$lib_size, pmax(0, t_xmap_a_means$rho), col = "blue")
 legend(x = "topleft", legend = c("anchovy xmap SST", "SST xmap anchovy"), 
        col = c("darkolivegreen", "blue"), lwd = 1, inset = 0.02)
 ```
-
-
-
-
-
 

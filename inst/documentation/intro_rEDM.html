@@ -68,6 +68,24 @@ img {
 <h4 class="date"><em>March 10, 2015</em></h4>
 </div>
 
+<div id="TOC">
+<ul>
+<li><a href="#introduction"><span class="toc-section-number">1</span> Introduction</a></li>
+<li><a href="#installation"><span class="toc-section-number">2</span> Installation</a><ul>
+<li><a href="#rcpp"><span class="toc-section-number">2.1</span> Rcpp</a></li>
+<li><a href="#precompiled-binary-version"><span class="toc-section-number">2.2</span> Precompiled Binary Version</a></li>
+<li><a href="#source-version"><span class="toc-section-number">2.3</span> Source Version</a></li>
+</ul></li>
+<li><a href="#examples"><span class="toc-section-number">3</span> Examples</a><ul>
+<li><a href="#data-input"><span class="toc-section-number">3.1</span> Data Input</a></li>
+<li><a href="#general-parameters"><span class="toc-section-number">3.2</span> General Parameters</a></li>
+<li><a href="#simplex-projection"><span class="toc-section-number">3.3</span> Simplex Projection</a></li>
+<li><a href="#s-map"><span class="toc-section-number">3.4</span> S-map</a></li>
+<li><a href="#multivariate-models"><span class="toc-section-number">3.5</span> Multivariate Models</a></li>
+<li><a href="#convergent-cross-mapping"><span class="toc-section-number">3.6</span> Convergent Cross Mapping</a></li>
+</ul></li>
+</ul>
+</div>
 
 <div id="introduction" class="section level1">
 <h1><span class="header-section-number">1</span> Introduction</h1>
@@ -217,7 +235,8 @@ abline(a = 0, b = 1, lty = 2, col = &quot;blue&quot;)</code></pre>
 </div>
 <div id="convergent-cross-mapping" class="section level2">
 <h2><span class="header-section-number">3.6</span> Convergent Cross Mapping</h2>
-<p>// use CCM to identify causality // operates by cross mapping from one variable to another // must specify E as well as lib portions // convergene criterion means try different library sizes // at each library size can randomly sample from vectors // see help for ccm for more details</p>
+<p><strong>Convergent Cross Mapping</strong> (<strong>CCM</strong>) is a technique to identify causality based on the idea of attractor reconstruction. In essence, if <span class="math">\(x\)</span> has a causal influence on <span class="math">\(y\)</span>, then the reconstructions based on <span class="math">\(x\)</span> and <span class="math">\(y\)</span> should map diffeomorphic, and there should be a mapping from the reconstruction based on <span class="math">\(y\)</span> to the reconstruction based on <span class="math">\(x\)</span>. Furthermore, this reconstruction should improve with longer time series, and so convergence of the cross mapping skill with more data is a useful property to identify.</p>
+<p>The <code>ccm</code> function computes statistics for the cross mapping relationship, and has several additional parameters for sampling library portions to determine convergence. Please see the documentation for <code>ccm</code> for more details.</p>
 <pre class="r"><code>data(sardine_anchovy_sst)
 anchovy_xmap_sst &lt;- ccm(sardine_anchovy_sst, E = 3, 
                             lib_column = &quot;anchovy&quot;, target_column = &quot;np_sst&quot;, 
@@ -227,7 +246,7 @@ sst_xmap_anchovy &lt;- ccm(sardine_anchovy_sst, E = 3,
                             lib_column = &quot;np_sst&quot;, target_column = &quot;anchovy&quot;, 
                             lib_sizes = seq(10, 80, by = 10), num_samples = 100, 
                             silent = TRUE)</code></pre>
-<p>The output from CCM is a data.frame with statistics for each library used. Because we cross map using multiple libraries at each library size, we’d like to aggregate the results and just plot the mean cross map skill at each library size.</p>
+<p>The output from CCM is a data.frame with statistics for each library used. Because we cross map using multiple libraries at each library size, we’d like to aggregate the results and plot the average cross map skill at each library size. Because average cross map skill less than <span class="math">\(0\)</span> is noninformative, we filter out negative values when plotting.</p>
 <pre class="r"><code>a_xmap_t_means &lt;- ccm_means(anchovy_xmap_sst)
 t_xmap_a_means &lt;- ccm_means(sst_xmap_anchovy)
 
