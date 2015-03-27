@@ -24,7 +24,7 @@ We have tested rEDM on **Mac OS X 10.9+** or **Windows 7+ (32-bit or 64-bit)**. 
 rEDM requires **Rcpp (0.11.2+)** to be installed. Please follow the normal [instructions](http://www.cookbook-r.com/Basics/Installing_and_using_packages/) to install the Rcpp package first.
 
 ## Precompiled Binary Version
-Precompiled versions can be downloaded from the following Google Drive links. Please be sure to download the latest version (0.2.2 as of March 10, 2015). Note that you want the entire package file (with .tgz or .zip extension) and not the folder with all of the package contents (Google Drive will allow you to view the contents of .zip files). After downloading, there is no need to extract the contents, as R expects a single package file, rather than a folder.
+Precompiled versions can be downloaded from the following Google Drive links. Please be sure to download the latest version (0.2.3 as of March 28, 2015). Note that you want the entire package file (with .tgz or .zip extension) and not the folder with all of the package contents (Google Drive will allow you to view the contents of .zip files). After downloading, there is no need to extract the contents, as R expects a single package file, rather than a folder.
 
 [Windows](https://drive.google.com/folderview?id=0B10pWFVNQ65gfmUxaWZhWlN0di1IR3ZnTU8yX3l2TnlQV29GUEE0RU5JclZkZG9fWlA0em8&usp=sharing)  
 [Mac OS X](https://drive.google.com/folderview?id=0B10pWFVNQ65gbVc5S0Y3MXZCc28&usp=sharing)  
@@ -285,4 +285,4 @@ plot(smap_output$theta, smap_output$rho, type = "l",
 
 # Acknowledgements
 
-**rEDM** is the latest incarnation of EDM code. Past versions have been developed by George Sugihara, Alan Trombla, Richard Penner, Victor Wong, Martin Casdagli, Mohsen Azarbayejani, Ava Pierce, Jennifer Trezzo.
+**rEDM** is the latest incarnation of EDM code. Past versions have been developed by George Sugihara, Alan Trombla, Richard Penner, Victor Wong, Martin Casdagli, Mohsen Azarbayejani, Ava Pierce, Jennifer Trezzo, and Hao Ye.
