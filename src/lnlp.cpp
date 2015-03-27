@@ -137,8 +137,8 @@ void LNLP::run()
 
 DataFrame LNLP::get_output()
 {
-    return DataFrame::create( Named("time") = time, 
-                              Named("obs") = observed, 
+    return DataFrame::create( Named("time") = target_time, 
+                              Named("obs") = targets, 
                               Named("pred") = predicted, 
                               Named("pred_var") = predicted_var);
 }
@@ -156,8 +156,8 @@ DataFrame LNLP::get_short_output()
     
     for(size_t i = 0; i < which_pred.size(); ++i)
     {
-        short_time[i] = time[which_pred[i]];
-        short_obs[i] = observed[which_pred[i]];
+        short_time[i] = target_time[which_pred[i]];
+        short_obs[i] = targets[which_pred[i]];
         short_pred[i] = predicted[which_pred[i]];
     }
     
@@ -226,9 +226,20 @@ void LNLP::make_vectors()
 
 void LNLP::make_targets()
 {
-    observed.assign(time_series.begin()+tp, time_series.end());
-    observed.insert(observed.end(), tp, qnan);
-    
+    if(tp >= 0)
+    {
+        targets.assign(time_series.begin()+tp, time_series.end());
+        targets.insert(targets.end(), tp, qnan);
+        target_time.assign(time.begin()+tp, time.end());
+        target_time.insert(target_time.end(), tp, qnan);
+    }
+    else
+    {
+        targets.assign(time_series.begin(), time_series.end()+tp);
+        targets.insert(targets.begin(), -tp, qnan);
+        target_time.assign(time.begin(), time.end()+tp);
+        target_time.insert(target_time.begin(), -tp, qnan);
+    }
     remake_targets = false;
     return;
 }

@@ -309,16 +309,16 @@ void Xmap::make_targets()
         throw std::domain_error("invalid target column");
     }
     
-    observed.clear();
+    targets.clear();
     if(tp >= 0)
     {
-        observed.assign(block[target-1].begin()+tp, block[target-1].end());
-        observed.insert(observed.end(), tp, qnan);
+        targets.assign(block[target-1].begin()+tp, block[target-1].end());
+        targets.insert(targets.end(), tp, qnan);
     }
     else
     {
-        observed.assign(block[target-1].begin(), block[target-1].end()+tp);
-        observed.insert(observed.begin(), -tp, qnan);
+        targets.assign(block[target-1].begin(), block[target-1].end()+tp);
+        targets.insert(targets.begin(), -tp, qnan);
     }
     remake_targets = false;
     return;

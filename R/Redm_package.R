@@ -44,8 +44,8 @@ NULL
 #' @docType data
 #' @title Time series for sockeye salmon returns.
 #' @author Hao Ye
-#' @description Composited time series of first-differenced sockeye salmon returns 
-#' from the Fraser River in British Columbia, Canada.
+#' @description Time series of sockeye salmon returns from the Fraser River in 
+#' British Columbia, Canada.
 NULL
 
 #' @name block_3sp

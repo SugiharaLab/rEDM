@@ -8,37 +8,42 @@ output:
     number_sections: true
     css: styles.css
 ---
-
 # Introduction
-This file is designed to serve as an introduction to **rEDM**, an R package for Empirical Dynamic Modeling (EDM).
-
+This file is designed to serve as an introductory user guide to **rEDM**, an R package for Empirical Dynamic Modeling (EDM).
 
 # Installation
 rEDM is an **Rcpp** package, meaning that it contains both **C++** and **R** code. Because the C++ code needs to be compiled prior to usage, we present several different options for obtaining and installing the rEDM package, depending on your familiarity with R's package system.  
 
-rEDM is compatible with **R 3.1.0+**, and works on **Mac OS X 10.9+** or **Windows 7+ (32-bit or 64-bit)**. We have not tested it for **Linux**, but believe it should work without any problems by compiling from source.  
+## R version
+rEDM is compatible with **R 3.1.0+**; please ensure you have an up-to-date copy of **R**, which you can download from [CRAN](http://cran.r-project.org/). (For Mac users, please make sure that you have the version built for **OS X Mavericks**.)
+
+## Compatibility
+We have tested rEDM on **Mac OS X 10.9+** or **Windows 7+ (32-bit or 64-bit)**. We have not tested it for **Linux**, but believe it should work if you compile from source (see below).
 
 ## Rcpp
-rEDM requires **Rcpp (0.11.2+)** to be installed. Please follow the normal [instructions](http://www.cookbook-r.com/Basics/Installing_and_using_packages/) for package installation to install Rcpp before installing rEDM.  
+rEDM requires **Rcpp (0.11.2+)** to be installed. Please follow the normal [instructions](http://www.cookbook-r.com/Basics/Installing_and_using_packages/) to install the Rcpp package first.
 
 ## Precompiled Binary Version
-Precompiled versions can be downloaded from the following Google Drive links. Please be sure to download the latest version (0.2.2 as of March 10, 2015).  
+Precompiled versions can be downloaded from the following Google Drive links. Please be sure to download the latest version (0.2.2 as of March 10, 2015). Note that you want the entire package file (with .tgz or .zip extension) and not the folder with all of the package contents (Google Drive will allow you to view the contents of .zip files). After downloading, there is no need to extract the contents, as R expects a single package file, rather than a folder.
+
 [Windows](https://drive.google.com/folderview?id=0B10pWFVNQ65gfmUxaWZhWlN0di1IR3ZnTU8yX3l2TnlQV29GUEE0RU5JclZkZG9fWlA0em8&usp=sharing)  
 [Mac OS X](https://drive.google.com/folderview?id=0B10pWFVNQ65gbVc5S0Y3MXZCc28&usp=sharing)  
 
-To install the precompiled binary package, use the following R command, replacing `***` with the name of the package file. (You will need to either give the complete path, or put the package file in R's working directory.)
+To install the precompiled binary package, use the standard R command (`install.packages`) as below, replacing `***` with the name of the package file. (You will need to either give the complete path, or put the package file in R's working directory.)
+
 ```{r, eval = FALSE}
 install.packages("***", type = "source", repos = NULL)
 ```
 
 ## Source Version
-The raw source can be downloaded from my Github repository [here](https://github.com/ha0ye/rEDM). If you are familiar with using Git with Rstudio projects, you can go ahead and clone it. Otherwise, it is possible to install it using functions from the **devtools** package:
+The raw source can be downloaded from my Github repository [here](https://github.com/ha0ye/rEDM). If you are familiar with using Git with Rstudio projects, you can go ahead and clone it directly. Otherwise, it is possible to install it using functions from the **devtools** package:
+
 ```{r, eval = FALSE}
 library(devtools)
 install_github("ha0ye/rEDM")
 ```
 
-Note that this method requires **Git** to be installed, along with a **C++11** compiler, in addition to **Rcpp**.
+Note that this method requires **Git** to be installed, along with a **C++11** compiler, in addition to **Rcpp**. We have successfully tested this method of installation using both **Rtools 3.1** for Windows (a set of developer tools including c/c++ compilers) as well as **XCode 5.0+** for Macintosh.
 
 # Examples
 
@@ -92,17 +97,30 @@ Many of the functions in **rEDM** are designed around the same prediction engine
 
 **Simplex Projection** is a nearest neighbor forecasting method. It is typically applied as a simple test for estimating the optimal *embedding dimension* for a time-series. We demonstrate this in the following example.  
 
-First, we load the data and run simplex projection. Note that we let many of the parameters to the `simplex` function be default values (e.g., $\tau = 1$, $\text{tp} = 1$). In addition, the default values for the embedding dimension, $E$, range from $1$ to $10$, and so the output will allow us to determine which embedding dimension best unfolds the attractor (i.e., resolves singularities in the dynamics to produce the best forecast skill).
+First, we load the data and look at the format.
 
 ```{r}
 library(rEDM)
 data(sockeye_returns)
-ts <- sockeye_returns$returns_1d
-
-simplex_output <- simplex(ts, lib = sockeye_lib, pred = sockeye_lib)
+head(sockeye_returns)
 ```
 
-The results are a simple data.frame with columns for each of the model parameters, and forecast statistics, and rows for each run of the model. In this case, there is one run for each value of $E$, so we can simply plot $E$ against the $\rho$, the correlation between observed and predicted values:
+We can see that the data is in wide format with a time column (`year`) and additional columns representing time series of returns for different stocks within the dataset. For now, we'll just look at doing an analysis based on one of the stocks.
+
+We being by running simplex projection to identify the optimal embedding dimension. Note that we let many of the parameters to the `simplex` function be default values (e.g., $\tau = 1$, $\text{tp} = 1$). The default values for the embedding dimension, $E$, range from $1$ to $10$, and so the output will allow us to determine which embedding dimension best unfolds the attractor.
+
+Initially, we'd like to use leave-one-out cross-validation over the entire time series, so the `lib` and `pred` arguments should be set appropriately. By setting `lib = c(1, length(ts))`, we indicate that the data points beginning with at row `1` of the data and ending in row `length(ts)` form a time series that we are using for attractor reconstruction. Similarly, we set `pred` in the same way. (These are also the default values if not supplied to `simplex`.)
+
+Note that the code automatically detects this overlap and outputs a warning message to indicate that it will use leave-one-out cross-validation.
+
+```{r}
+ts <- sockeye_returns$Early_Stuart
+lib <- c(1, length(ts))
+pred <- c(1, length(ts))
+simplex_output <- simplex(ts, lib, pred)
+```
+
+The results are a simple data.frame with columns for each of the model parameters and forecast statistics, and rows for each run of the model. In this case, there is one run for each value of $E$, so we can simply plot $E$ against $\rho$, the correlation between observed and predicted values:
 
 ```{r}
 par(mar = c(4,4,1,1))
@@ -112,15 +130,17 @@ plot(simplex_output$E, simplex_output$rho, type = "l",
 
 ## S-map
 
-**S-map** is a forecasting method that also relies on the principle of attractor reconstruction. However, it has a nonlinear tuning parameter, $\theta$, that affects how weights change with distance in state space. By varying $theta$, it is possible to compare equivalent linear and nonlinear models. Thus, it is typically applied as a test for nonlinear dynamics after using **simplex projection** to first estimate the optimal *embedding dimension* for a time-series. We demonstrate this in the following example.  
+**S-map** is a forecasting method that also relies on the principle of attractor reconstruction. However, it has a nonlinear tuning parameter, $\theta$, that affects how weights change with distance in state space. When $\theta = 0$, all weights are equal, and the S-map is identical to an autoregressive model; values of $\theta$ above $0$ give greater weight to nearby points in the state space, thereby accommodating nonlinear behavior by allowing the local linear map to vary with state-space. Thus, varying $\theta$ allows us to compare equivalent linear and nonlinear models as a test for nonlinear dynamics (after first using **simplex projection** to estimate the optimal *embedding dimension* for a time-series.) We demonstrate this in the following example.
 
-Following from the previous example, we set `E = 2` based on the results from simplex projection. Again, note that we let many of the parameters to the `s_map` function be default values (e.g., $\tau = 1$, $\text{tp} = 1$). If these were changed in simplex projection, we would propagate those changes here. Here, we can use the default values for the nonlinear tuning parameter, $\theta$, which vary from $0$ to $8$.
+Following from the previous example, we set `E = 5` based on the results from simplex projection. Again, note that we allow many of the parameters to the `s_map` function take on default values (e.g., $\tau = 1$, $\text{tp} = 1$). If we had changed these for simplex projection, we would want to propagate those same values for the `s_map`. The default values for the nonlinear tuning parameter, $\theta$, range from $0$ to $8$, and are suitable for our purposes.
+
+Note also, that the default value for `num_neighbors` is `0`. Typically, when using `s_map` to test for nonlinear behavior, we allow all points in the reconstruction to be used, subject only to the weighting based on distance. By using `0` for `num_neighbors` (an otherwise nonsensical value), we let the program know to use all nearest neighbors.
 
 ```{r}
-smap_output <- s_map(ts, E = 3, lib = sockeye_lib, pred = sockeye_lib)
+smap_output <- s_map(ts, lib, pred, E = 5)
 ```
 
-Again, the results are a simple data.frame with columns for each of the model parameters, and forecast statistics, and rows for each run of the model. In this case, there is one run for each value of $\theta$, so we can simply plot $\theta$ against the $\rho$:
+Again, the results are a simple data.frame with columns for each of the model parameters and forecast statistics, and rows for each run of the model. In this case, there is one run for each value of $\theta$, so we can simply plot $\theta$ against $\rho$:
 
 ```{r}
 par(mar = c(4,4,1,1))
@@ -132,31 +152,59 @@ plot(smap_output$theta, smap_output$rho, type = "l",
 
 Instead of creating an attractor by taking lags of a single time series, it is possible to combine lags from different time series, as long as they are all observed from the same system. Here, forecasts can be made using the `block_lnlp` function, which can be set to use either of the **simplex projection** or **s-map** algorithms.
 
-For `block_lnlp`, the main data input is expected to be a matrix or data.frame of the time series observations, where each column is a separate time series and each row is a set of observations at the same time. In addition to the typical arguments for `simplex` or `s_map`, `block_lnlp` contains arguments to specify which column is to be forecast (the `target_column` argument) as well as which columns to use to construct the attractor (the `columns` argument). In both cases, either a numerical index or the column name can be given. 
+For `block_lnlp`, the main data input is expected to be a matrix or data.frame of the time series observations, where each column is a separate time series and each row represents the variables observed at the same time. In addition to the typical arguments for `simplex` or `s_map`, `block_lnlp` contains arguments to specify which column is to be forecast (the `target_column` argument) as well as which columns to use to construct the attractor (the `columns` argument). In both cases, either a numerical index or the column name can be given.
 
 Note that if lagged coordinates are intended to be used, they need to be manually created as separate columns in the matrix or data.frame.
 
+We begin by loading an example dataset of time series and lags from a coupled 3-species model system. Here, the `block_3sp` variable is a 10-column data.frame with 1 column for time, and 3 columns for each of the variables (unlagged, t-1, and t-2 lags).
+
 ```{r}
 data(block_3sp)
-block_lnlp_output <- block_lnlp(block_3sp, 
+head(block_3sp)
+```
+
+In order to correctly index into columns, `block_lnlp` has an option to indicate that the first column is actually a time index. When `first_column_time` is set to `TRUE`, a value of `1` for `target_column` now points to the first **data** column in the data.frame, as opposed to the time column (the `columns` is similarly indexed).
+
+```{r}
+lib <- c(1, NROW(block_3sp))
+pred <- c(1, NROW(block_3sp))
+
+block_lnlp_output <- block_lnlp(block_3sp, lib = lib, pred = pred, 
                                 columns = c(1,2,4), target_column = 1, 
                                 stats_only = FALSE, first_column_time = TRUE)
 ```
 
-By setting `stats_only` to `FALSE`, we get back a list with the full model output. Only 1 model was run, so we access the first element of the list to get the output associated with that model. Here, we can plot the observed vs. predicted to see how well the model fit relative to the expected 1:1 line.
+We can also run the same model by referring to the names of the columns directly.
 
 ```{r}
-par(mar = c(4,4,1,1))
-plot(block_lnlp_output[[1]]$model_output$obs, block_lnlp_output[[1]]$model_output$pred, 
+block_lnlp_output <- block_lnlp(block_3sp, lib = lib, pred = pred, 
+                                columns = c("x_t", "x_t-1", "y_t"), target_column = "x_t", 
+                                stats_only = FALSE, first_column_time = TRUE)
+```
+
+Note that we did not specify a value for the `tp` parameter. Here, the default value of `1` means that the program will use the specified model to predict the target variable 1 time step into the future (based on the row-structure of the input data). In some cases, the data may already be processed into a format where one wants to predict a variable that has already been aligned correctly. In that case, one can set `tp = 0` when calling `block_lnlp`.
+
+By setting `stats_only` to `FALSE`, we get back a list with the full model output. Only 1 model was run, so the output is a list with 1 element. To extract the raw predictions, we can go into the `model_output` variable and pull out the observed and predicted values, plotting them to see how well the model fit relative to the expected 1:1 line.
+
+```{r}
+observed <- block_lnlp_output[[1]]$model_output$obs
+predicted <- block_lnlp_output[[1]]$model_output$pred
+
+par(mar = c(4,4,1,1), pty = "s")
+plot_range <- range(c(observed, predicted), na.rm = TRUE)
+plot(observed, predicted, 
+     xlim = plot_range, ylim = plot_range, 
      xlab = "Observed", ylab = "Predicted")
 abline(a = 0, b = 1, lty = 2, col = "blue")
 ```
 
 ## Convergent Cross Mapping
 
-**Convergent Cross Mapping** (**CCM**) is a technique to identify causality based on the idea of attractor reconstruction. In essence, if $x$ has a causal influence on $y$, then the reconstructions based on $x$ and $y$ should map diffeomorphic, and there should be a mapping from the reconstruction based on $y$ to the reconstruction based on $x$. Furthermore, this reconstruction should improve with longer time series, and so convergence of the cross mapping skill with more data is a useful property to identify.
+**Convergent Cross Mapping** (**CCM**) is a technique to identify causality based on the idea of attractor reconstruction. In essence, if $x$ has a causal influence on $y$, then the reconstructions based on $x$ and $y$ should be diffeomorphic, and there should be a mapping from the reconstruction based on $y$ to the reconstruction based on $x$. Furthermore, with longer time series, the reconstructions will be more precise, which should cause the cross mapping skill to converge as time series length increases.
 
-The `ccm` function computes statistics for the cross mapping relationship, and has several additional parameters for sampling library portions to determine convergence. Please see the documentation for `ccm` for more details.
+The `ccm` function is an easy way to compute cross map skill for multiple subsamples of different libraries. In the following example, we use CCM to identify causality between anchovy landings in California and Newport Pier sea-surface temperature. 
+
+Here, we use a previously identified value of `3` for the embedding dimension. We set `lib_sizes` (the number of library vectors) to vary from `10` to `80` in steps of `10`. Setting `num_samples` to `100` means that 100 different library samples will be generated, by random sampling (`random_libs = TRUE` by default) from the possible vectors with replacement (`replace = TRUE` by default). 
 
 ```{r}
 data(sardine_anchovy_sst)
@@ -170,7 +218,7 @@ sst_xmap_anchovy <- ccm(sardine_anchovy_sst, E = 3,
                             silent = TRUE)
 ```
 
-The output from CCM is a data.frame with statistics for each library used. Because we cross map using multiple libraries at each library size, we'd like to aggregate the results and plot the average cross map skill at each library size. Because average cross map skill less than $0$ is noninformative, we filter out negative values when plotting.
+The output from CCM is a data.frame with statistics for each model run (in thise case, 100 models at each of 8 library sizes = 800 rows). Because we cross map using multiple libraries at each library size, we'd like to aggregate the results and plot the average cross map skill at each library size. Because average cross map skill less than $0$ is noninformative, we filter out negative values when plotting.
 
 ```{r, warning=FALSE}
 a_xmap_t_means <- ccm_means(anchovy_xmap_sst)
@@ -184,3 +232,57 @@ legend(x = "topleft", legend = c("anchovy xmap SST", "SST xmap anchovy"),
        col = c("darkolivegreen", "blue"), lwd = 1, inset = 0.02)
 ```
 
+# Extensions
+
+## Composite Time Series
+
+In some cases, we may have multiple time series that can serve as spatial or ecological replicates. To treat these time series as replicates when applying EDM, we want to combine the data together into a single composite time series. Because the scale may differ across time series, we typically apply a normalization routine to linearly transform each time series to have mean = 0 and variance = 1 before concatenating. 
+
+```{r}
+data(sockeye_returns)
+
+# separate time column from data
+time <- sockeye_returns$year
+sockeye_returns <- sockeye_returns[,-1]
+
+# normalize each time series
+n <- NCOL(sockeye_returns)
+for(j in 1:n)
+{
+    sockeye_returns[,j] <- (sockeye_returns[,j] - mean(sockeye_returns[,j])) / sd(sockeye_returns[,j])
+}
+
+# make composite time series
+composite_ts <- data.frame(year = time, 
+                           returns = stack(sockeye_returns)$value)
+```
+
+Before applying EDM, however, we want to make sure that EDM will properly recognize the different time series segments as being different, so that lagged vectors are not constructed that contain coordinates spanning multiple time series. This is simply handled by constructing the lib and pred so that the first column designates the start of each time series segment, and the second column designates the end.
+
+```{r}
+# make composite library
+segments <- cbind(seq(from = 1, by = NROW(sockeye_returns), length.out = n), 
+                  seq(from = NROW(sockeye_returns), by = NROW(sockeye_returns), length.out = n))
+composite_lib <- segments[1:5,]
+composite_pred <- segments[6:9,]
+```
+
+We can then use the **rEDM** functions as normal:
+
+```{r}
+simplex_output <- simplex(composite_ts, composite_lib, composite_pred)
+par(mar = c(4,4,1,1))
+plot(simplex_output$E, simplex_output$rho, type = "l", 
+     xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)")
+```
+
+```{r}
+smap_output <- s_map(composite_ts, composite_lib, composite_pred, E = 8)
+par(mar = c(4,4,1,1))
+plot(smap_output$theta, smap_output$rho, type = "l", 
+     xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)")
+```
+
+# Acknowledgements
+
+**rEDM** is the latest incarnation of EDM code. Past versions have been developed by George Sugihara, Alan Trombla, Richard Penner, Victor Wong, Martin Casdagli, Mohsen Azarbayejani, Ava Pierce, Jennifer Trezzo.

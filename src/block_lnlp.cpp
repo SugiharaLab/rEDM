@@ -155,8 +155,8 @@ void BlockLNLP::run()
 
 DataFrame BlockLNLP::get_output()
 {
-    return DataFrame::create( Named("time") = time, 
-                              Named("obs") = observed, 
+    return DataFrame::create( Named("time") = target_time, 
+                              Named("obs") = targets, 
                               Named("pred") = predicted, 
                               Named("pred_var") = predicted_var);
 }
@@ -174,8 +174,8 @@ DataFrame BlockLNLP::get_short_output()
     
     for(size_t i = 0; i < which_pred.size(); ++i)
     {
-        short_time[i] = time[which_pred[i]];
-        short_obs[i] = observed[which_pred[i]];
+        short_time[i] = target_time[which_pred[i]];
+        short_obs[i] = targets[which_pred[i]];
         short_pred[i] = predicted[which_pred[i]];
     }
     
@@ -247,16 +247,20 @@ void BlockLNLP::make_targets()
         throw std::domain_error("invalid target column");
     }
     
-    observed.clear();
+    targets.clear();
     if(tp >= 0)
     {
-        observed.assign(block[target-1].begin()+tp, block[target-1].end());
-        observed.insert(observed.end(), tp, qnan);
+        targets.assign(block[target-1].begin()+tp, block[target-1].end());
+        targets.insert(targets.end(), tp, qnan);
+        target_time.assign(time.begin()+tp, time.end());
+        target_time.insert(target_time.end(), tp, qnan);
     }
     else
     {
-        observed.assign(block[target-1].begin(), block[target-1].end()+tp);
-        observed.insert(observed.begin(), -tp, qnan);
+        targets.assign(block[target-1].begin(), block[target-1].end()+tp);
+        targets.insert(targets.begin(), -tp, qnan);
+        target_time.assign(time.begin(), time.end()+tp);
+        target_time.insert(target_time.begin(), -tp, qnan);
     }
     remake_targets = false;
     return;

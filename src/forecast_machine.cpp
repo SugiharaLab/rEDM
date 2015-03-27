@@ -7,7 +7,7 @@ ForecastMachine::ForecastMachine():
 lib_indices(std::vector<bool>()), pred_indices(std::vector<bool>()),
 which_lib(std::vector<size_t>()), which_pred(std::vector<size_t>()),
 time(vec()), data_vectors(std::vector<vec>()), smap_coefficients(std::vector<vec>()), 
-observed(vec()), predicted(vec()), predicted_var(vec()), 
+targets(vec()), predicted(vec()), predicted_var(vec()), 
 num_vectors(0), distances(std::vector<vec>()), 
 CROSS_VALIDATION(false), SUPPRESS_WARNINGS(false), SAVE_SMAP_COEFFICIENTS(false), 
 pred_mode(SIMPLEX), norm_mode(L2_NORM),
@@ -28,7 +28,7 @@ void ForecastMachine::debug_print_vectors()
         {
             std::cerr << i << " ";
         }
-        std::cerr << "> --> " << observed[i] << "\n";
+        std::cerr << "> --> " << targets[i] << "\n";
         ++i;
     }
     return;
@@ -255,7 +255,7 @@ bool ForecastMachine::is_vec_valid(const size_t vec_index)
 bool ForecastMachine::is_target_valid(const size_t vec_index)
 {
     // check target value
-    if(std::isnan(observed[vec_index])) return false;
+    if(std::isnan(targets[vec_index])) return false;
     
     // if all is good, then:
     return true;
@@ -274,16 +274,16 @@ PredStats ForecastMachine::compute_stats()
     
     for(size_t k = 0; k < num_vectors; ++k)
     {
-        if(!std::isnan(observed[k]) && !std::isnan(predicted[k]))
+        if(!std::isnan(targets[k]) && !std::isnan(predicted[k]))
         {
             ++ num_pred;
-            sum_errors += fabs(observed[k] - predicted[k]);
-            sum_squared_errors += (observed[k] - predicted[k]) * (observed[k] - predicted[k]);
-            sum_obs += observed[k];
+            sum_errors += fabs(targets[k] - predicted[k]);
+            sum_squared_errors += (targets[k] - predicted[k]) * (targets[k] - predicted[k]);
+            sum_obs += targets[k];
             sum_pred += predicted[k];
-            sum_squared_obs += observed[k] * observed[k];
+            sum_squared_obs += targets[k] * targets[k];
             sum_squared_pred += predicted[k] * predicted[k];
-            sum_prod += observed[k] * predicted[k];
+            sum_prod += targets[k] * predicted[k];
         }
     }
     
@@ -447,13 +447,13 @@ void ForecastMachine::simplex_prediction(const size_t start, const size_t end)
         total_weight = accumulate(weights.begin(), weights.end(), 0.0);
         predicted[curr_pred] = 0;
         for(size_t k = 0; k < effective_nn; ++k)
-            predicted[curr_pred] += weights[k] * observed[nearest_neighbors[k]];
+            predicted[curr_pred] += weights[k] * targets[nearest_neighbors[k]];
         predicted[curr_pred] = predicted[curr_pred] / total_weight;
         
         //compute variance
         predicted_var[curr_pred] = 0;
         for(size_t k = 0; k < effective_nn; ++k)
-            predicted_var[curr_pred] += weights[k] * pow(observed[nearest_neighbors[k]] - predicted[curr_pred], 2);
+            predicted_var[curr_pred] += weights[k] * pow(targets[nearest_neighbors[k]] - predicted[curr_pred], 2);
         predicted_var[curr_pred] = predicted_var[curr_pred] / total_weight;
     }
     return;
@@ -513,7 +513,7 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
         
         for(size_t i = 0; i < effective_nn; ++i)
         {
-            B(i) = weights[i] * observed[nearest_neighbors[i]];
+            B(i) = weights[i] * targets[nearest_neighbors[i]];
             
             for(size_t j = 0; j < E; ++j)
                 A(i, j) = weights[i] * data_vectors[nearest_neighbors[i]][j];

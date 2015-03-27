@@ -119,6 +119,12 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
         lib <- matrix(lib, ncol = 2, byrow = TRUE)
     if (is.vector(pred))
         pred <- matrix(pred, ncol = 2, byrow = TRUE)
+    
+    if(~all(lib[,2] >= lib[,1]))
+        warning("Some library rows look incorrectly formatted, please check the lib argument.")
+    if(~all(pred[,2] >= pred[,1]))
+        warning("Some library rows look incorrectly formatted, please check the pred argument.")
+    
     model$set_lib(lib)
     model$set_pred(pred)
     model$set_lib_sizes(lib_sizes)

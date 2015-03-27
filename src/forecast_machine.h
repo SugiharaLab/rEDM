@@ -42,9 +42,10 @@ protected:
     std::vector<size_t> which_pred;
     
     vec time;
+    vec target_time;
     std::vector<vec> data_vectors;
     std::vector<vec> smap_coefficients;
-    vec observed;
+    vec targets;
     vec predicted;
     vec predicted_var;
     size_t num_vectors;
