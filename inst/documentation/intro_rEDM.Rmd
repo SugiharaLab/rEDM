@@ -63,6 +63,8 @@ Many of the functions in **rEDM** are designed around the same prediction engine
     + (same format as lib, but specifes the portions of the time series to make predictions for)
 * norm_type
     + `"L2 norm"` (default) or `"L1 norm"`: specifies which distance metric to use when doing calculations
+    + `"L2 norm"` is the standard Euclidean distance, where the distance between a vector $\vec{x} = \langle x_1, x_2, \dots, x_n \rangle$ and $\vec{y} = \langle y_1, y_2, \dots, y_n \rangle$ is computed as $\sqrt{(x_1 - y_1)^2 + (x_2 - y_2)^x + \dots + (x_n - y_n)^2}$.
+    + `"L1 norm"` is the Manhattan norm (also known as taxicab distance), where the distance between a vector $\vec{x} = \langle x_1, x_2, \dots, x_n \rangle$ and $\vec{y} = \langle y_1, y_2, \dots, y_n \rangle$ is computed as $|x_1 - y_1| + |x_2 - y_2| + \dots + |x_n - y_n|$.
 * E
     + the embedding dimension to use for attractor reconstruction
 * tau

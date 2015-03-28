@@ -98,9 +98,9 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = c(1, NROW
     if (is.vector(pred))
         pred <- matrix(pred, ncol = 2, byrow = TRUE)
     
-    if(~all(lib[,2] >= lib[,1]))
+    if(!all(lib[,2] >= lib[,1]))
         warning("Some library rows look incorrectly formatted, please check the lib argument.")
-    if(~all(pred[,2] >= pred[,1]))
+    if(!all(pred[,2] >= pred[,1]))
         warning("Some library rows look incorrectly formatted, please check the pred argument.")
     
     model$set_lib(lib)
@@ -255,9 +255,9 @@ s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = c(1, NROW(t
     if (is.vector(pred))
         pred <- matrix(pred, ncol = 2, byrow = TRUE)
     
-    if(~all(lib[,2] >= lib[,1]))
+    if(!all(lib[,2] >= lib[,1]))
         warning("Some library rows look incorrectly formatted, please check the lib argument.")
-    if(~all(pred[,2] >= pred[,1]))
+    if(!all(pred[,2] >= pred[,1]))
         warning("Some library rows look incorrectly formatted, please check the pred argument.")
     
     model$set_lib(lib)
