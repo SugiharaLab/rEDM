@@ -186,11 +186,18 @@ DataFrame BlockLNLP::get_short_output()
 
 DataFrame BlockLNLP::get_stats()
 {
-    PredStats output = compute_stats();
+    PredStats output = make_stats();
+    PredStats const_output = make_const_stats();
     return DataFrame::create( Named("num_pred") = output.num_pred, 
                               Named("rho") = output.rho, 
                               Named("mae") = output.mae, 
-                              Named("rmse") = output.rmse );
+                              Named("rmse") = output.rmse,
+                              Named("perc") = output.perc, 
+                              Named("const_pred_num_pred") = const_output.num_pred, 
+                              Named("const_pred_rho") = const_output.rho, 
+                              Named("const_pred_mae") = const_output.mae, 
+                              Named("const_pred_rmse") = const_output.rmse, 
+                              Named("const_pred_perc") = const_output.perc);
 }
 
 // *** PRIVATE METHODS FOR INTERNAL USE ONLY *** //
@@ -262,6 +269,7 @@ void BlockLNLP::make_targets()
         target_time.assign(time.begin(), time.end()+tp);
         target_time.insert(target_time.begin(), -tp, qnan);
     }
+    const_targets = block[target-1];
     remake_targets = false;
     return;
 }

@@ -32,7 +32,9 @@ protected:
     void check_cross_validation();
     bool is_vec_valid(const size_t vec_index);
     bool is_target_valid(const size_t vec_index);
-    PredStats compute_stats();
+    PredStats compute_stats(const vec& obs, const vec& pred);
+    PredStats make_stats();
+    PredStats make_const_stats();
     void LOG_WARNING(const char* warning_text);
     
     // *** variables *** //
@@ -48,6 +50,8 @@ protected:
     vec targets;
     vec predicted;
     vec predicted_var;
+    vec const_targets;
+    vec const_predicted;
     size_t num_vectors;
     double (*dist_func)(const vec&, const vec&);
     std::vector<vec > distances;
@@ -72,6 +76,7 @@ private:
     void smap_forecast();
     void simplex_prediction(const size_t start, const size_t end);
     void smap_prediction(const size_t start, const size_t end);
+    void const_prediction(const size_t start, const size_t end);
     std::vector<bool> adjust_lib(const size_t curr_pred);
     
     //int num_threads;

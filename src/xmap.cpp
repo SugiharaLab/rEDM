@@ -157,7 +157,7 @@ void Xmap::run()
         {
             which_lib = full_lib; // use all lib vectors
             forecast();
-            predicted_stats.push_back(compute_stats());
+            predicted_stats.push_back(make_stats());
             predicted_lib_sizes.push_back(lib_size);
             break;
         }
@@ -192,7 +192,7 @@ void Xmap::run()
                     }
                 }
                 forecast();
-                predicted_stats.push_back(compute_stats());
+                predicted_stats.push_back(make_stats());
                 predicted_lib_sizes.push_back(lib_size);
             }
         }
@@ -214,7 +214,7 @@ void Xmap::run()
                 }
                 
                 forecast();
-                predicted_stats.push_back(compute_stats());
+                predicted_stats.push_back(make_stats());
                 predicted_lib_sizes.push_back(lib_size);
             }
         }
@@ -314,12 +314,17 @@ void Xmap::make_targets()
     {
         targets.assign(block[target-1].begin()+tp, block[target-1].end());
         targets.insert(targets.end(), tp, qnan);
+        target_time.assign(time.begin()+tp, time.end());
+        target_time.insert(target_time.end(), tp, qnan);
     }
     else
     {
         targets.assign(block[target-1].begin(), block[target-1].end()+tp);
         targets.insert(targets.begin(), -tp, qnan);
+        target_time.assign(time.begin(), time.end()+tp);
+        target_time.insert(target_time.begin(), -tp, qnan);
     }
+    const_targets = block[target-1];
     remake_targets = false;
     return;
 }

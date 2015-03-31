@@ -8,6 +8,7 @@ lib_indices(std::vector<bool>()), pred_indices(std::vector<bool>()),
 which_lib(std::vector<size_t>()), which_pred(std::vector<size_t>()),
 time(vec()), data_vectors(std::vector<vec>()), smap_coefficients(std::vector<vec>()), 
 targets(vec()), predicted(vec()), predicted_var(vec()), 
+const_targets(vec()), const_predicted(vec()), 
 num_vectors(0), distances(std::vector<vec>()), 
 CROSS_VALIDATION(false), SUPPRESS_WARNINGS(false), SAVE_SMAP_COEFFICIENTS(false), 
 pred_mode(SIMPLEX), norm_mode(L2_NORM),
@@ -169,6 +170,7 @@ std::vector<size_t> ForecastMachine::find_nearest_neighbors(const size_t curr_pr
 void ForecastMachine::forecast()
 {
     predicted.assign(num_vectors, qnan); // initialize predictions
+    const_predicted.assign(num_vectors, qnan);
     predicted_var.assign(num_vectors, qnan);
     switch(pred_mode)
     {
@@ -261,7 +263,7 @@ bool ForecastMachine::is_target_valid(const size_t vec_index)
     return true;
 }
 
-PredStats ForecastMachine::compute_stats()
+PredStats ForecastMachine::compute_stats(const vec& obs, const vec& pred)
 {
     size_t num_pred = 0;
     double sum_errors = 0;
@@ -271,19 +273,23 @@ PredStats ForecastMachine::compute_stats()
     double sum_squared_obs = 0;
     double sum_squared_pred = 0;
     double sum_prod = 0;
+    size_t same_sign = 0;
     
     for(size_t k = 0; k < num_vectors; ++k)
     {
-        if(!std::isnan(targets[k]) && !std::isnan(predicted[k]))
+        if(!std::isnan(obs[k]) && !std::isnan(pred[k]))
         {
             ++ num_pred;
-            sum_errors += fabs(targets[k] - predicted[k]);
-            sum_squared_errors += (targets[k] - predicted[k]) * (targets[k] - predicted[k]);
-            sum_obs += targets[k];
-            sum_pred += predicted[k];
-            sum_squared_obs += targets[k] * targets[k];
-            sum_squared_pred += predicted[k] * predicted[k];
-            sum_prod += targets[k] * predicted[k];
+            sum_errors += fabs(obs[k] - pred[k]);
+            sum_squared_errors += (obs[k] - pred[k]) * (obs[k] - pred[k]);
+            sum_obs += obs[k];
+            sum_pred += pred[k];
+            sum_squared_obs += obs[k] * obs[k];
+            sum_squared_pred += pred[k] * pred[k];
+            sum_prod += obs[k] * pred[k];
+            if((obs[k] >= 0 && pred[k] >= 0) ||
+               (obs[k] <= 0 && pred[k] <= 0))
+               ++ same_sign;
         }
     }
     
@@ -294,8 +300,19 @@ PredStats ForecastMachine::compute_stats()
          (sum_squared_pred * num_pred - sum_pred * sum_pred));
     output.mae = sum_errors / double(num_pred);
     output.rmse = sqrt(sum_squared_errors / double(num_pred));
+    output.perc = double(same_sign) / double(num_pred);
     
     return output;
+}
+
+PredStats ForecastMachine::make_stats()
+{
+    return compute_stats(targets, predicted);
+}
+
+PredStats ForecastMachine::make_const_stats()
+{
+    return compute_stats(targets, const_predicted);
 }
 
 void ForecastMachine::LOG_WARNING(const char* warning_text)
@@ -334,6 +351,7 @@ void ForecastMachine::simplex_forecast()
         tt.join();
     */
     simplex_prediction(0, which_pred.size());
+    const_prediction(0, which_pred.size());
     return;
 }
 
@@ -368,6 +386,7 @@ void ForecastMachine::smap_forecast()
         smap_coefficients.assign(num_vectors, vec(data_vectors[0].size()+1, qnan));
     }
     smap_prediction(0, which_pred.size());
+    const_prediction(0, which_pred.size());
     return;
 }
 
@@ -547,6 +566,17 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
         }
         // save prediction
         predicted[curr_pred] = pred;
+    }
+    return;
+}
+
+void ForecastMachine::const_prediction(const size_t start, const size_t end)
+{
+    size_t curr_pred;
+    for(size_t k = start; k < end; ++k)
+    {
+        curr_pred = which_pred[k];
+        const_predicted[curr_pred] = const_targets[curr_pred];
     }
     return;
 }
