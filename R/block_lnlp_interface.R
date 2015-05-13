@@ -130,7 +130,7 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
     col_names <- colnames(block)
     model$set_time(time)
     model$set_block(data.matrix(block))
-    model$set_target_column(convert_to_column_indices(target_column))
+    model$set_target_columns(convert_to_column_indices(target_column))
     
     # setup norm and pred types
     model$set_norm_type(switch(match.arg(norm_type), "L2 norm" = 2, "L1 norm" = 1))

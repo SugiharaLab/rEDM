@@ -96,9 +96,10 @@ void Xmap::set_lib_column(const size_t new_lib_col)
     return;
 }
 
-void Xmap::set_target_column(const size_t new_target)
+void Xmap::set_target_columns(const NumericVector new_targets)
 {
-    target = new_target;
+    target_cols = as<std::vector<size_t> >(new_targets);
+    num_targets = target_cols.size();
     remake_targets = true;
     return;
 }
@@ -134,10 +135,10 @@ void Xmap::suppress_warnings()
 void Xmap::run()
 {
     prepare_forecast(); // check parameters
-    
     // setup data structures and compute maximum lib size
     predicted_stats.clear();
     predicted_lib_sizes.clear();
+    predicted_targets.clear();
     std::vector<size_t> full_lib = which_lib;
     size_t max_lib_size = full_lib.size();
     std::mt19937 rng(42); // init mersenne twister with 42 as seed
@@ -157,8 +158,12 @@ void Xmap::run()
         {
             which_lib = full_lib; // use all lib vectors
             forecast();
-            predicted_stats.push_back(make_stats());
-            predicted_lib_sizes.push_back(lib_size);
+            for(size_t target_idx = 0; target_idx < num_targets; ++target_idx)
+            {
+                predicted_stats.push_back(make_stats(target_idx));
+                predicted_lib_sizes.push_back(lib_size);
+                predicted_targets.push_back(target_cols[target_idx]);
+            }
             break;
         }
         else if(random_libs)
@@ -192,8 +197,12 @@ void Xmap::run()
                     }
                 }
                 forecast();
-                predicted_stats.push_back(make_stats());
-                predicted_lib_sizes.push_back(lib_size);
+                for(size_t target_idx = 0; target_idx < num_targets; ++target_idx)
+                {
+                    predicted_stats.push_back(make_stats(target_idx));
+                    predicted_lib_sizes.push_back(lib_size);
+                    predicted_targets.push_back(target_cols[target_idx]);
+                }
             }
         }
         else
@@ -212,10 +221,13 @@ void Xmap::run()
                 {
                     which_lib.assign(full_lib.begin()+k, full_lib.begin()+k+lib_size);
                 }
-                
                 forecast();
-                predicted_stats.push_back(make_stats());
-                predicted_lib_sizes.push_back(lib_size);
+                for(size_t target_idx = 0; target_idx < num_targets; ++target_idx)
+                {
+                    predicted_stats.push_back(make_stats(target_idx));
+                    predicted_lib_sizes.push_back(lib_size);
+                    predicted_targets.push_back(target_cols[target_idx]);
+                }
             }
         }
     }
@@ -238,11 +250,12 @@ DataFrame Xmap::get_output()
         rmse.push_back(stats.rmse);
     }
 
-    return DataFrame::create( Named("lib_size") = predicted_lib_sizes, 
+    return DataFrame::create( Named("target_column") = predicted_targets, 
+                              Named("lib_size") = predicted_lib_sizes, 
                               Named("num_pred") = num_pred, 
                               Named("rho") = rho, 
                               Named("mae") = mae, 
-                              Named("rmse") = rmse );
+                              Named("rmse") = rmse);
 }
 
 // *** PRIVATE METHODS FOR INTERNAL USE ONLY *** //
@@ -304,27 +317,41 @@ void Xmap::make_vectors()
 
 void Xmap::make_targets()
 {
-    if((target < 1) || (target-1 >= block.size()))
-    {
-        throw std::domain_error("invalid target column");
-    }
-    
     targets.clear();
+    const_targets.clear();
+    vec curr_target;
+    
     if(tp >= 0)
     {
-        targets.assign(block[target-1].begin()+tp, block[target-1].end());
-        targets.insert(targets.end(), tp, qnan);
         target_time.assign(time.begin()+tp, time.end());
         target_time.insert(target_time.end(), tp, qnan);
     }
     else
     {
-        targets.assign(block[target-1].begin(), block[target-1].end()+tp);
-        targets.insert(targets.begin(), -tp, qnan);
         target_time.assign(time.begin(), time.end()+tp);
         target_time.insert(target_time.begin(), -tp, qnan);
     }
-    const_targets = block[target-1];
+    
+    for(auto& curr_col: target_cols)
+    {
+        if((curr_col < 1) || (curr_col-1 >= block.size()))
+        {
+            throw std::domain_error("invalid target column");
+        }
+        curr_target.clear();
+        if(tp >= 0)
+        {
+            curr_target.assign(block[curr_col-1].begin()+tp, block[curr_col-1].end());
+            curr_target.insert(curr_target.end(), tp, qnan);
+        }
+        else
+        {
+            curr_target.assign(block[curr_col-1].begin(), block[curr_col-1].end()+tp);
+            curr_target.insert(curr_target.begin(), -tp, qnan);
+        }
+        targets.push_back(curr_target);
+        const_targets.push_back(block[curr_col-1]);
+    }
     remake_targets = false;
     return;
 }
@@ -344,7 +371,7 @@ RCPP_MODULE(xmap_module)
     .method("set_exclusion_radius", &Xmap::set_exclusion_radius)
     .method("set_epsilon", &Xmap::set_epsilon)
     .method("set_lib_column", &Xmap::set_lib_column)
-    .method("set_target_column", &Xmap::set_target_column)
+    .method("set_target_columns", &Xmap::set_target_columns)
     .method("set_params", &Xmap::set_params)
     .method("suppress_warnings", &Xmap::suppress_warnings)
     .method("run", &Xmap::run)

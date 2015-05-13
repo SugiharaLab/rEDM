@@ -138,9 +138,9 @@ void LNLP::run()
 DataFrame LNLP::get_output()
 {
     return DataFrame::create( Named("time") = target_time, 
-                              Named("obs") = targets, 
-                              Named("pred") = predicted, 
-                              Named("pred_var") = predicted_var);
+                              Named("obs") = targets[0], 
+                              Named("pred") = predicted[0], 
+                              Named("pred_var") = predicted_var[0]);
 }
 
 List LNLP::get_smap_coefficients()
@@ -157,8 +157,8 @@ DataFrame LNLP::get_short_output()
     for(size_t i = 0; i < which_pred.size(); ++i)
     {
         short_time[i] = target_time[which_pred[i]];
-        short_obs[i] = targets[which_pred[i]];
-        short_pred[i] = predicted[which_pred[i]];
+        short_obs[i] = targets[0][which_pred[i]];
+        short_pred[i] = predicted[0][which_pred[i]];
     }
     
     return DataFrame::create( Named("time") = short_time, 
@@ -168,8 +168,8 @@ DataFrame LNLP::get_short_output()
 
 DataFrame LNLP::get_stats()
 {
-    PredStats output = make_stats();
-    PredStats const_output = make_const_stats();
+    PredStats output = make_stats(0);
+    PredStats const_output = make_const_stats(0);
     return DataFrame::create( Named("num_pred") = output.num_pred, 
                               Named("rho") = output.rho, 
                               Named("mae") = output.mae, 
@@ -233,21 +233,26 @@ void LNLP::make_vectors()
 
 void LNLP::make_targets()
 {
+    targets.clear();
+    const_targets.clear();
+    vec curr_target;
+    
     if(tp >= 0)
     {
-        targets.assign(time_series.begin()+tp, time_series.end());
-        targets.insert(targets.end(), tp, qnan);
+        curr_target.assign(time_series.begin()+tp, time_series.end());
+        curr_target.insert(curr_target.end(), tp, qnan);
         target_time.assign(time.begin()+tp, time.end());
         target_time.insert(target_time.end(), tp, qnan);
     }
     else
     {
-        targets.assign(time_series.begin(), time_series.end()+tp);
-        targets.insert(targets.begin(), -tp, qnan);
+        curr_target.assign(time_series.begin(), time_series.end()+tp);
+        curr_target.insert(curr_target.begin(), -tp, qnan);
         target_time.assign(time.begin(), time.end()+tp);
         target_time.insert(target_time.begin(), -tp, qnan);
     }
-    const_targets = time_series;
+    targets.push_back(curr_target);
+    const_targets.push_back(time_series);
     remake_targets = false;
     return;
 }

@@ -33,8 +33,8 @@ protected:
     bool is_vec_valid(const size_t vec_index);
     bool is_target_valid(const size_t vec_index);
     PredStats compute_stats(const vec& obs, const vec& pred);
-    PredStats make_stats();
-    PredStats make_const_stats();
+    PredStats make_stats(const size_t target_idx);
+    PredStats make_const_stats(const size_t target_idx);
     void LOG_WARNING(const char* warning_text);
     
     // *** variables *** //
@@ -47,14 +47,15 @@ protected:
     vec target_time;
     std::vector<vec> data_vectors;
     std::vector<vec> smap_coefficients;
-    vec targets;
-    vec predicted;
-    vec predicted_var;
-    vec const_targets;
-    vec const_predicted;
+    size_t num_targets;
+    std::vector<vec> targets;
+    std::vector<vec> predicted;
+    std::vector<vec> predicted_var;
+    std::vector<vec> const_targets;
+    std::vector<vec> const_predicted;
     size_t num_vectors;
     double (*dist_func)(const vec&, const vec&);
-    std::vector<vec > distances;
+    std::vector<vec> distances;
     
     // *** parameters *** //
     bool CROSS_VALIDATION;

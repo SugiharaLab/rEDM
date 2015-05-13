@@ -109,7 +109,7 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
     model$set_time(time)
     model$set_block(data.matrix(block))
     model$set_lib_column(convert_to_column_indices(lib_column))
-    model$set_target_column(convert_to_column_indices(target_column))
+    model$set_target_columns(convert_to_column_indices(target_column))
     
     # setup norm type
     model$set_norm_type(switch(match.arg(norm_type), "L2 norm" = 2, "L1 norm" = 1))
@@ -142,7 +142,7 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
     
     # check inputs?
     
-    params <- data.frame(E, tau, tp, num_neighbors, lib_column, target_column)
+    params <- data.frame(E, tau, tp, num_neighbors, lib_column)
     e_plus_1_index <- match(num_neighbors, c("e+1", "E+1", "e + 1", "E + 1"))
     if (any(e_plus_1_index, na.rm = TRUE))
         params$num_neighbors <- params$E+1

@@ -109,9 +109,9 @@ void BlockLNLP::set_embedding(const NumericVector new_embedding)
     return;
 }
 
-void BlockLNLP::set_target_column(const size_t new_target)
+void BlockLNLP::set_target_columns(const NumericVector new_targets)
 {
-    target = new_target;
+    target_cols = as<std::vector<size_t> >(new_targets);
     remake_targets = true;
     return;
 }
@@ -166,7 +166,7 @@ List BlockLNLP::get_smap_coefficients()
     return(wrap(smap_coefficients));
 }
 
-DataFrame BlockLNLP::get_short_output()
+DataFrame BlockLNLP::get_short_output(size_t target_idx)
 {
     vec short_time(which_pred.size(), qnan);
     vec short_obs(which_pred.size(), qnan);
@@ -175,8 +175,8 @@ DataFrame BlockLNLP::get_short_output()
     for(size_t i = 0; i < which_pred.size(); ++i)
     {
         short_time[i] = target_time[which_pred[i]];
-        short_obs[i] = targets[which_pred[i]];
-        short_pred[i] = predicted[which_pred[i]];
+        short_obs[i] = targets[target_idx][which_pred[i]];
+        short_pred[i] = predicted[target_idx][which_pred[i]];
     }
     
     return DataFrame::create( Named("time") = short_time, 
@@ -184,10 +184,10 @@ DataFrame BlockLNLP::get_short_output()
                               Named("pred") = short_pred);
 }
 
-DataFrame BlockLNLP::get_stats()
+DataFrame BlockLNLP::get_stats(const size_t target_idx)
 {
-    PredStats output = make_stats();
-    PredStats const_output = make_const_stats();
+    PredStats output = make_stats(target_idx);
+    PredStats const_output = make_const_stats(target_idx);
     return DataFrame::create( Named("num_pred") = output.num_pred, 
                               Named("rho") = output.rho, 
                               Named("mae") = output.mae, 
@@ -249,27 +249,41 @@ void BlockLNLP::make_vectors()
 
 void BlockLNLP::make_targets()
 {
-    if((target < 1) || (target-1 >= block.size()))
-    {
-        throw std::domain_error("invalid target column");
-    }
-    
     targets.clear();
+    const_targets.clear();
+    vec curr_target;
+    
     if(tp >= 0)
     {
-        targets.assign(block[target-1].begin()+tp, block[target-1].end());
-        targets.insert(targets.end(), tp, qnan);
         target_time.assign(time.begin()+tp, time.end());
         target_time.insert(target_time.end(), tp, qnan);
     }
     else
     {
-        targets.assign(block[target-1].begin(), block[target-1].end()+tp);
-        targets.insert(targets.begin(), -tp, qnan);
         target_time.assign(time.begin(), time.end()+tp);
         target_time.insert(target_time.begin(), -tp, qnan);
     }
-    const_targets = block[target-1];
+    
+    for(auto& curr_col: target_cols)
+    {
+        if((curr_col < 1) || (curr_col-1 >= block.size()))
+        {
+            throw std::domain_error("invalid target column");
+        }
+        curr_target.clear();
+        if(tp >= 0)
+        {
+            curr_target.assign(block[curr_col-1].begin()+tp, block[curr_col-1].end());
+            curr_target.insert(curr_target.end(), tp, qnan);
+        }
+        else
+        {
+            curr_target.assign(block[curr_col-1].begin(), block[curr_col-1].end()+tp);
+            curr_target.insert(curr_target.begin(), -tp, qnan);
+        }
+        targets.push_back(curr_target);
+        const_targets.push_back(block[curr_col-1]);
+    }
     remake_targets = false;
     return;
 }
@@ -289,7 +303,7 @@ RCPP_MODULE(block_lnlp_module)
     .method("set_exclusion_radius", &BlockLNLP::set_exclusion_radius)
     .method("set_epsilon", &BlockLNLP::set_epsilon)
     .method("set_embedding", &BlockLNLP::set_embedding)
-    .method("set_target_column", &BlockLNLP::set_target_column)
+    .method("set_target_columns", &BlockLNLP::set_target_columns)
     .method("set_params", &BlockLNLP::set_params)
     .method("set_theta", &BlockLNLP::set_theta)
     .method("suppress_warnings", &BlockLNLP::suppress_warnings)

@@ -23,7 +23,7 @@ public:
     void set_exclusion_radius(const double new_exclusion_radius);
     void set_epsilon(const double new_epsilon);
     void set_embedding(const NumericVector new_embedding);
-    void set_target_column(const size_t new_target);
+    void set_target_columns(const NumericVector new_targets);
     void set_params(const int new_tp, const size_t new_nn);
     void set_theta(const double new_theta);
     void suppress_warnings();
@@ -31,8 +31,8 @@ public:
     void run();
     DataFrame get_output();
     List get_smap_coefficients();
-    DataFrame get_short_output();
-    DataFrame get_stats();
+    DataFrame get_short_output(const size_t target_idx);
+    DataFrame get_stats(const size_t target_idx);
     
 private:
     void prepare_forecast();
@@ -44,7 +44,7 @@ private:
     int tp;
     size_t E;
     std::vector<size_t> embedding;
-    size_t target;
+    std::vector<size_t> target_cols;
     bool remake_vectors;
     bool remake_targets;
     bool remake_ranges;

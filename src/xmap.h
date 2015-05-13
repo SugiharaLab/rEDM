@@ -24,7 +24,7 @@ public:
     void set_exclusion_radius(const double new_exclusion_radius);
     void set_epsilon(const double new_epsilon);
     void set_lib_column(const size_t new_lib_col);
-    void set_target_column(const size_t new_target);
+    void set_target_columns(const NumericVector new_targets);
     void set_params(const size_t new_E, const size_t new_tau, const int new_tp, 
                     const size_t new_nn, const bool new_random_libs, 
                     const size_t new_num_samples, const bool new_replace);
@@ -42,7 +42,8 @@ private:
     std::vector<size_t> lib_sizes;
     int tp;
     size_t E, tau;
-    size_t lib_col, target;
+    size_t lib_col;
+    std::vector<size_t> target_cols;
     bool random_libs;
     size_t num_samples;
     bool replace;
@@ -53,6 +54,7 @@ private:
     // *** output data structures *** //
     std::vector<PredStats> predicted_stats;
     std::vector<size_t> predicted_lib_sizes;
+    std::vector<size_t> predicted_targets;
 };
 
 #endif
