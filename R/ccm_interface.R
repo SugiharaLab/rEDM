@@ -57,12 +57,12 @@
 #'   rmse \tab root mean square error
 #' }
 #' @export 
-ccm <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)), 
+ccm <- function(block, lib = c(1, NROW(block)), pred = lib, 
                 norm_type = c("L2 norm", "L1 norm"), E = 1, tau = 1, 
                 tp = 0, num_neighbors = "e+1", lib_sizes = seq(10, 100, by = 10), 
                 random_libs = TRUE, num_samples = 100, replace = TRUE, 
                 lib_column = 1, target_column = 2, first_column_time = FALSE, 
-                exclusion_radius = NULL, epsilon = NULL, silent = FALSE)
+                RNGseed = NULL, exclusion_radius = NULL, epsilon = NULL, silent = FALSE)
 {
     convert_to_column_indices <- function(columns)
     {
@@ -149,6 +149,8 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
 
     model$set_params(params$E, params$tau, params$tp, params$num_neighbors, 
                      random_libs, num_samples, replace)
+    if(!is.null(RNGseed))
+        model$set_seed(RNGseed)
     model$run()
     stats <- model$get_output()
     return(cbind(params, stats))

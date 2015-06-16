@@ -62,7 +62,7 @@
 #' }
 #' @export 
 
-simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = c(1, NROW(time_series)), 
+simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = lib, 
                     norm_type = c("L2 norm", "L1 norm"), E = 1:10, tau = 1, 
                     tp = 1, num_neighbors = "e+1", stats_only = TRUE, 
                     exclusion_radius = NULL, epsilon = NULL, silent = FALSE)
@@ -222,7 +222,7 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = c(1, NROW
 #' }
 #' @export 
 
-s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = c(1, NROW(time_series)), 
+s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = lib, 
                   norm_type = c("L2 norm", "L1 norm"), E = 1:10, tau = 1, 
                   tp = 1, num_neighbors = 0, 
                   theta = c(0, 0.0001, 0.0003, 0.001, 0.003, 0.01, 0.03, 0.1, 

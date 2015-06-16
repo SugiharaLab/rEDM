@@ -79,7 +79,7 @@
 #' }
 #' @export 
 
-block_lnlp <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)), 
+block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib, 
                        norm_type = c("L2 norm", "L1 norm"), 
                        method = c("simplex", "s-map"), 
                        tp = 1, num_neighbors = "e+1", columns = NULL, 

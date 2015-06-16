@@ -1,12 +1,13 @@
 ---
-title: "Introduction to rEDM"
+title: "rEDM User Guide"
 author: "Hao Ye"
-date: "March 10, 2015"
+date: "April 10, 2015"
 output:
   html_document: 
     toc: true
     number_sections: true
     css: styles.css
+bibliography: rEDM_refs.bib
 ---
 # Introduction
 This file is designed to serve as an introductory user guide to **rEDM**, an R package for Empirical Dynamic Modeling (EDM).
@@ -14,20 +15,19 @@ This file is designed to serve as an introductory user guide to **rEDM**, an R p
 # Installation
 rEDM is an **Rcpp** package, meaning that it contains both **C++** and **R** code. Because the C++ code needs to be compiled prior to usage, we present several different options for obtaining and installing the rEDM package, depending on your familiarity with R's package system.  
 
-## R version
+## Prerequisites
+
+### R version
 rEDM is compatible with **R 3.1.0+**; please ensure you have an up-to-date copy of **R**, which you can download from [CRAN](http://cran.r-project.org/). (For Mac users, please make sure that you have the version built for **OS X Mavericks**.)
 
-## Compatibility
-We have tested rEDM on **Mac OS X 10.9+** or **Windows 7+ (32-bit or 64-bit)**. We have not tested it for **Linux**, but believe it should work if you compile from source (see below).
+### Operating System
+We have tested rEDM on **Mac OS X 10.9+** or **Windows 7+ (32-bit or 64-bit)**. Collaborators have also gotten rEDM working on **Linux** (Amazon EC2) by compiling from source (see below).
 
-## Rcpp
+### Rcpp
 rEDM requires **Rcpp (0.11.2+)** to be installed. Please follow the normal [instructions](http://www.cookbook-r.com/Basics/Installing_and_using_packages/) to install the Rcpp package first.
 
 ## Precompiled Binary Version
-Precompiled versions can be downloaded from the following Google Drive links. Please be sure to download the latest version (0.2.3 as of March 28, 2015). Note that you want the entire package file (with .tgz or .zip extension) and not the folder with all of the package contents (Google Drive will allow you to view the contents of .zip files). After downloading, there is no need to extract the contents, as R expects a single package file, rather than a folder.
-
-[Windows](https://drive.google.com/folderview?id=0B10pWFVNQ65gfmUxaWZhWlN0di1IR3ZnTU8yX3l2TnlQV29GUEE0RU5JclZkZG9fWlA0em8&usp=sharing)  
-[Mac OS X](https://drive.google.com/folderview?id=0B10pWFVNQ65gbVc5S0Y3MXZCc28&usp=sharing)  
+Precompiled versions can be downloaded from this [Github repository](https://github.com/ha0ye/rEDM-binary). Please be sure to download the latest version (0.2.4 as of April 6, 2015). Note that you want the entire package file (with .tgz or .zip extension) and not the folder with all of the package contents (if you click on the file, there should be a link to "view the full file", which should initiate a downlaod. After downloading, there is no need to extract the contents, as R expects a single package file, rather than a folder.
 
 To install the precompiled binary package, use the standard R command (`install.packages`) as below, replacing `***` with the name of the package file. (You will need to either give the complete path, or put the package file in R's working directory.)
 
@@ -51,13 +51,17 @@ Note that this method requires **Git** to be installed, along with a **C++11** c
 
 The **rEDM** functions are designed to accept data in common R data formats, namely vectors, matrices, and data.frames. Depending on the specific function, one or the other data type is preferred. Please see the documentation associated with individual functions for more details.
 
+Missing data can be input using either `NA` or `NAN`. The program will automatically ignore such missing values as appropriate. For instance, simplex projection will not select nearest neighbors if any of the state vector coordinates is missing or if the corresponding target value is missing.
+
+Note that when there is no observed target value, it is still possible to predict from a given state vector, if it has no missing values. Thus, it is possible to use the software to forecast ahead from an observed state into an unbserved future. This can be done simply by substituting `NA` or `NAN` for unknown future values. However, be aware that the performance metrics will be computed so as to ignore such predictions (since there are no observed values to compare against). Thus, the statistics (e.g., \rho, MAE, RMSE) may be computed based on fewer predictions than those actually made by the software.
+
 ## General Parameters
 
 Many of the functions in **rEDM** are designed around the same prediction engine, and so share many of the following parameters. Please see the documentation associated with individual functions to verify which parameters are applicable as well as the default values (which can change from function to function)
 
 * lib
     + a 2-column matrix (or 2-element vector) where each row specifies the portions of the time series to use for attractor reconstruction (i.e., the set of vectors that can be selected as nearest neighbors)
-    + e.g., `(1, n)` specifies that the first n *rows* (from 1 to n) of data are a contiguous time series block, and can be used
+    + e.g., `(1, n)` specifies that the first n *rows* (from 1 to n) of data are a contiguous time series block, each point of which can be used to construct state vectors
     + by default, lib uses the entire input as a single contiguous segment
 * pred
     + (same format as lib, but specifes the portions of the time series to make predictions for)
@@ -97,7 +101,7 @@ Many of the functions in **rEDM** are designed around the same prediction engine
 
 ## Simplex Projection
 
-**Simplex Projection** is a nearest neighbor forecasting method. It is typically applied as a simple test for estimating the optimal *embedding dimension* for a time-series. We demonstrate this in the following example.  
+**Simplex Projection** is a nearest neighbor forecasting method [see @Sugihara_1990]. It is typically applied as a simple test for estimating the optimal *embedding dimension* for a time-series. We demonstrate this in the following example.  
 
 First, we load the data and look at the format.
 
@@ -234,7 +238,7 @@ legend(x = "topleft", legend = c("anchovy xmap SST", "SST xmap anchovy"),
        col = c("darkolivegreen", "blue"), lwd = 1, inset = 0.02)
 ```
 
-# Extensions
+# Applications
 
 ## Composite Time Series
 
@@ -285,6 +289,17 @@ plot(smap_output$theta, smap_output$rho, type = "l",
      xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)")
 ```
 
+## Scenario Exploration
+
+# Diagnostic Tests
+
+## Prediction Decay
+## Nonlinearity Tests Using Surrogate Data
+## Cross Mapping Convergence
+
+
 # Acknowledgements
 
 **rEDM** is the latest incarnation of EDM code. Past versions have been developed by George Sugihara, Alan Trombla, Richard Penner, Victor Wong, Martin Casdagli, Mohsen Azarbayejani, Ava Pierce, Jennifer Trezzo, and Hao Ye.
+
+# References
