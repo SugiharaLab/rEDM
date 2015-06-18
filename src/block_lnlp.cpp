@@ -193,11 +193,13 @@ DataFrame BlockLNLP::get_stats()
                               Named("mae") = output.mae, 
                               Named("rmse") = output.rmse,
                               Named("perc") = output.perc, 
+                              Named("p_val") = output.p_val, 
                               Named("const_pred_num_pred") = const_output.num_pred, 
                               Named("const_pred_rho") = const_output.rho, 
                               Named("const_pred_mae") = const_output.mae, 
                               Named("const_pred_rmse") = const_output.rmse, 
-                              Named("const_pred_perc") = const_output.perc);
+                              Named("const_pred_perc") = const_output.perc, 
+                              Named("const_p_val") = const_output.p_val);
 }
 
 // *** PRIVATE METHODS FOR INTERNAL USE ONLY *** //

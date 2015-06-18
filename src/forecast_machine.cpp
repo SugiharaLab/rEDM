@@ -301,7 +301,8 @@ PredStats ForecastMachine::compute_stats(const vec& obs, const vec& pred)
     output.mae = sum_errors / double(num_pred);
     output.rmse = sqrt(sum_squared_errors / double(num_pred));
     output.perc = double(same_sign) / double(num_pred);
-    
+    output.p_val = R::pnorm(atanh(output.rho), 0.0, 1.0 / sqrt(output.num_pred-3), 0.0, 0.0);
+
     return output;
 }
 
