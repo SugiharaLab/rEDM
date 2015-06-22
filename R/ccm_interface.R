@@ -57,12 +57,12 @@
 #'   rmse \tab root mean square error
 #' }
 #' @export 
-ccm <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)), 
+ccm <- function(block, lib = c(1, NROW(block)), pred = lib, 
                 norm_type = c("L2 norm", "L1 norm"), E = 1, tau = 1, 
                 tp = 0, num_neighbors = "e+1", lib_sizes = seq(10, 100, by = 10), 
                 random_libs = TRUE, num_samples = 100, replace = TRUE, 
                 lib_column = 1, target_column = 2, first_column_time = FALSE, 
-                exclusion_radius = NULL, epsilon = NULL, silent = FALSE)
+                RNGseed = NULL, exclusion_radius = NULL, epsilon = NULL, silent = FALSE)
 {
     convert_to_column_indices <- function(columns)
     {
@@ -149,6 +149,8 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
 
     model$set_params(params$E, params$tau, params$tp, params$num_neighbors, 
                      random_libs, num_samples, replace)
+    if(!is.null(RNGseed))
+        model$set_seed(RNGseed)
     model$run()
     stats <- model$get_output()
     return(cbind(params, stats))
@@ -160,12 +162,20 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
 #' function
 #' 
 #' @param ccm_df a data.frame, usually output from the \code{\link{ccm}} function
-#' @return A data.frame with forecast statistics averaged at each unique library
+#' @param fun a function that aggregates the numerical statistics (by default, uses the mean)
+#' @return A data.frame with forecast statistics aggregated at each unique library
 #'   size
 #' @export 
 #' 
-ccm_means <- function(ccm_df)
+ccm_means <- function(ccm_df, fun = mean, ...)
 {
-    ccm_means <- aggregate(ccm_df, by = list(ccm_df$lib_size), function(x) {mean(x, na.rm = TRUE)})
+    lib <- ccm_df$lib_column[!duplicated(ccm_df$lib_size)]
+    target <- ccm_df$target_column[!duplicated(ccm_df$lib_size)]
+    ccm_df <- subset(ccm_df, select = -c(lib_column, target_column))
+    ccm_means <- aggregate(ccm_df, by = list(ccm_df$lib_size), fun, ...)
+    col_idx <- which(names(ccm_means) == "lib_size")
+    ccm_means <- cbind(ccm_means[,1:(col_idx-1)], 
+                       lib_column = lib, target_column = target, 
+                       ccm_means[,col_idx:NCOL(ccm_means)])
     return(ccm_means[,-1]) # drop Group.1 column
 }

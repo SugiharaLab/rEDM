@@ -26,6 +26,7 @@ struct PredStats
     double mae;
     double rmse;
     double perc;
+    double p_val;
 };
 
 #endif

@@ -4,6 +4,7 @@
 Xmap::Xmap(): remake_vectors(true), remake_targets(true), remake_ranges(true)
 {
     pred_mode = SIMPLEX;
+    seed = (size_t)(std::chrono::high_resolution_clock::now().time_since_epoch().count());
 }
 
 void Xmap::set_time(const NumericVector new_time)
@@ -125,6 +126,12 @@ void Xmap::set_params(const size_t new_E, const size_t new_tau, const int new_tp
     return;
 }
 
+void Xmap::set_seed(const size_t new_seed)
+{
+    seed = new_seed;
+    return;
+}
+
 void Xmap::suppress_warnings()
 {
     SUPPRESS_WARNINGS = true;
@@ -140,7 +147,7 @@ void Xmap::run()
     predicted_lib_sizes.clear();
     std::vector<size_t> full_lib = which_lib;
     size_t max_lib_size = full_lib.size();
-    std::mt19937 rng(42); // init mersenne twister with 42 as seed
+    std::mt19937 rng(seed); // init mersenne twister with seed
     // need to update with true random seed
     std::uniform_int_distribution<uint32_t> lib_sampler(0, max_lib_size-1);
     std::uniform_real_distribution<double> unif_01(0, 1);
@@ -346,6 +353,7 @@ RCPP_MODULE(xmap_module)
     .method("set_lib_column", &Xmap::set_lib_column)
     .method("set_target_column", &Xmap::set_target_column)
     .method("set_params", &Xmap::set_params)
+    .method("set_seed", &Xmap::set_seed)
     .method("suppress_warnings", &Xmap::suppress_warnings)
     .method("run", &Xmap::run)
     .method("get_output", &Xmap::get_output)

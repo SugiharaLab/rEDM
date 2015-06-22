@@ -28,6 +28,7 @@ public:
     void set_params(const size_t new_E, const size_t new_tau, const int new_tp, 
                     const size_t new_nn, const bool new_random_libs, 
                     const size_t new_num_samples, const bool new_replace);
+    void set_seed(const size_t new_seed);
     void suppress_warnings();
     void run();
     DataFrame get_output();
@@ -45,6 +46,7 @@ private:
     size_t lib_col, target;
     bool random_libs;
     size_t num_samples;
+    size_t seed;
     bool replace;
     bool remake_vectors;
     bool remake_targets;
