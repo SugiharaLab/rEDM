@@ -91,13 +91,16 @@ void ForecastMachine::compute_distances()
     */
     for(auto& curr_pred: which_pred)
     {
-         for(auto& curr_lib: which_lib)
-         {
-             if(std::isnan(distances[curr_pred][curr_lib]))
-                 distances[curr_pred][curr_lib] = dist_func(data_vectors[curr_pred],
+        for(auto& curr_lib: which_lib)
+        {
+            if(std::isnan(distances[curr_pred][curr_lib]))
+            {
+                distances[curr_pred][curr_lib] = dist_func(data_vectors[curr_pred],
                                                             data_vectors[curr_lib]);
-         }
-     }
+                distances[curr_lib][curr_pred] = distances[curr_pred][curr_lib];                              
+            }
+        }
+    }
     /*
                                 }));
         
@@ -112,43 +115,65 @@ void ForecastMachine::compute_distances()
     return;
 }
 
-std::vector<size_t> ForecastMachine::find_nearest_neighbors(const size_t curr_pred, const std::vector<bool>& valid_lib_indices)
+std::vector<size_t> ForecastMachine::find_nearest_neighbors(const vec& dist)
 {
-    std::vector<size_t> neighbors = sort_indices(distances[curr_pred], which_lib);
-    std::vector<size_t> nearest_neighbors;
-    
     if(nn < 1)
     {
-        for(auto& curr_lib: neighbors)
-            if(valid_lib_indices[curr_lib])
-                nearest_neighbors.push_back(curr_lib);
-        return nearest_neighbors;
+        return sort_indices(dist, which_lib);
     }
     // else
-    std::vector<size_t>::iterator curr_lib;
-    
-    // find nearest neighbors
-    for(curr_lib = neighbors.begin(); curr_lib != neighbors.end(); ++curr_lib)
+    std::vector<size_t> neighbors;
+    std::vector<size_t> nearest_neighbors;
+    double curr_distance;
+
+    if(nn > log(which_lib.size()))
     {
-        if(valid_lib_indices[*curr_lib])
+        neighbors = sort_indices(dist, which_lib);
+        std::vector<size_t>::iterator curr_lib;
+        
+        // find nearest neighbors
+        for(curr_lib = neighbors.begin(); curr_lib != neighbors.end(); ++curr_lib)
         {
             nearest_neighbors.push_back(*curr_lib);
             if(nearest_neighbors.size() >= nn)
                 break;
         }
-    }
-    if(curr_lib == neighbors.end())
-        return nearest_neighbors;
+        if(curr_lib == neighbors.end())
+            return nearest_neighbors;
+            
+        double tie_distance = dist[nearest_neighbors.back()];
         
-    double tie_distance = distances[curr_pred][nearest_neighbors.back()];
-    
-    // check for ties
-    for(++curr_lib; curr_lib != neighbors.end(); ++curr_lib)
-    {
-        if(distances[curr_pred][*curr_lib] > tie_distance) // distance is bigger
-            break;
-        if(valid_lib_indices[*curr_lib]) // valid lib
+        // check for ties
+        for(++curr_lib; curr_lib != neighbors.end(); ++curr_lib)
+        {
+            if(dist[*curr_lib] > tie_distance) // distance is bigger
+                break;
             nearest_neighbors.push_back(*curr_lib); // add to nearest neighbors
+        }
+    }
+    else
+    {
+        size_t i;
+        nearest_neighbors.push_back(which_lib[0]);
+        for(auto curr_lib: which_lib)
+        {
+            curr_distance = dist[curr_lib];
+            if(curr_distance <= dist[nearest_neighbors.back()])
+            {
+                i = nearest_neighbors.size();
+                while((i > 0) && (curr_distance < dist[nearest_neighbors[i-1]]))
+                {
+                    i--;
+                }
+                nearest_neighbors.insert(nearest_neighbors.begin()+i, curr_lib);
+                
+                if((nearest_neighbors.size() > nn) && 
+                   (dist[nearest_neighbors[nn-1]] < dist[nearest_neighbors.back()]))
+                {
+                    nearest_neighbors.pop_back();
+                }
+            }
+        }
     }
     
     // filter for max_distance
@@ -156,7 +181,7 @@ std::vector<size_t> ForecastMachine::find_nearest_neighbors(const size_t curr_pr
     {
         for(auto neighbor_iter = nearest_neighbors.begin(); neighbor_iter != nearest_neighbors.end(); ++neighbor_iter)
         {
-            if(distances[curr_pred][*neighbor_iter] > epsilon)
+            if(dist[*neighbor_iter] > epsilon)
             {
                 nearest_neighbors.erase(neighbor_iter, nearest_neighbors.end());
                 break;
@@ -399,6 +424,7 @@ void ForecastMachine::simplex_prediction(const size_t start, const size_t end)
     std::vector<size_t> nearest_neighbors;
     double tie_adj_factor;
     double total_weight;
+    std::vector<size_t> temp_lib;
     
     for(size_t k = start; k < end; ++k)
     {
@@ -407,11 +433,14 @@ void ForecastMachine::simplex_prediction(const size_t start, const size_t end)
         // find nearest neighbors
         if(CROSS_VALIDATION)
         {
-            nearest_neighbors = find_nearest_neighbors(curr_pred, adjust_lib(curr_pred));
+            temp_lib = which_lib;
+            adjust_lib(curr_pred);
+            nearest_neighbors = find_nearest_neighbors(distances[curr_pred]);
+            which_lib = temp_lib;
         }
         else
         {
-            nearest_neighbors = find_nearest_neighbors(curr_pred, lib_indices);
+            nearest_neighbors = find_nearest_neighbors(distances[curr_pred]);
         }
         effective_nn = nearest_neighbors.size();
         
@@ -488,6 +517,7 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
     MatrixXd A, S_inv;
     VectorXd B, S, x;
     double max_s, pred;
+    std::vector<size_t> temp_lib;
     
     for(size_t k = start; k < end; ++k)
     {
@@ -496,11 +526,14 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
         // find nearest neighbors
         if(CROSS_VALIDATION)
         {
-            nearest_neighbors = find_nearest_neighbors(curr_pred, adjust_lib(curr_pred));
+            temp_lib = which_lib;
+            adjust_lib(curr_pred);
+            nearest_neighbors = find_nearest_neighbors(distances[curr_pred]);
+            which_lib = temp_lib;
         }
         else
         {
-            nearest_neighbors = find_nearest_neighbors(curr_pred, lib_indices);
+            nearest_neighbors = find_nearest_neighbors(distances[curr_pred]);
         }
         effective_nn = nearest_neighbors.size();
         
@@ -582,24 +615,21 @@ void ForecastMachine::const_prediction(const size_t start, const size_t end)
     return;
 }
 
-std::vector<bool> ForecastMachine::adjust_lib(const size_t curr_pred)
+void ForecastMachine::adjust_lib(const size_t curr_pred)
 {
-    std::vector<bool> valid_lib_indices = lib_indices;
-    
-    // go through lib and remove lib vectors that are within exclusion radius
+    // clear out lib indices we don't want from which_lib
     if(exclusion_radius >= 0)
     {
-        double start_time = time[curr_pred] - exclusion_radius;
-        double end_time = time[curr_pred] + exclusion_radius;
-        for(size_t i = 0; i < num_vectors; ++i)
-        {
-            if(lib_indices[i] && time[i] >= start_time && time[i] <= end_time)
-                valid_lib_indices[i] = false;
-        }
+        auto f = [&](const size_t curr_lib) {
+            return (curr_lib == curr_pred) || ((time[curr_lib] >= (time[curr_pred] - exclusion_radius)) && (time[curr_lib] <= (time[curr_pred] + exclusion_radius)));
+            };
+        which_lib.erase(std::remove_if(which_lib.begin(), which_lib.end(), f), which_lib.end());
     }
-    
-    valid_lib_indices[curr_pred] = false; // always remove vector that we are predicting
-    return valid_lib_indices;
+    else
+    {
+        which_lib.erase(std::remove_if(which_lib.begin(), which_lib.end(), [&](const size_t curr_lib) {return curr_lib == curr_pred;}), which_lib.end());
+    }
+    return;
 }
 
 std::vector<size_t> which_indices_true(const std::vector<bool>& indices)

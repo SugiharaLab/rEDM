@@ -6,6 +6,7 @@
 #include <numeric>
 #include <thread>
 #include <stdexcept>
+#include <algorithm>
 #include <math.h>
 #include <Rcpp.h>
 #include "data_types.h"
@@ -24,7 +25,7 @@ protected:
     void init_distances();
     void compute_distances();
     //void sort_neighbors();
-    std::vector<size_t> find_nearest_neighbors(const size_t curr_pred, const std::vector<bool>& valid_lib_indices);
+    std::vector<size_t> find_nearest_neighbors(const vec& dist);
 
     void forecast();
     void set_indices_from_range(std::vector<bool>& indices, const std::vector<time_range>& range, 
@@ -77,7 +78,7 @@ private:
     void simplex_prediction(const size_t start, const size_t end);
     void smap_prediction(const size_t start, const size_t end);
     void const_prediction(const size_t start, const size_t end);
-    std::vector<bool> adjust_lib(const size_t curr_pred);
+    void adjust_lib(const size_t curr_pred);
     
     //int num_threads;
 };
