@@ -9,6 +9,6 @@ Time series of Paramecium and Didinium abundances (#/mL) from
 an experiment by Veilleux (1979)
 }
 \author{
-Hao Ye
+Veilleux
 }
 

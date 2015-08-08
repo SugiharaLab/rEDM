@@ -136,7 +136,7 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
             model$run()
             return(model$get_stats())
         })
-        return(cbind(params, do.call(rbind, stats)))
+        return(cbind(params, do.call(rbind, stats), row.names = NULL))
     }
     
     # else
@@ -300,7 +300,7 @@ s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
             model$run()
             return(model$get_stats())
         })
-        return(cbind(params, do.call(rbind, stats)))
+        return(cbind(params, do.call(rbind, stats), row.names = NULL))
     }
     
     # else

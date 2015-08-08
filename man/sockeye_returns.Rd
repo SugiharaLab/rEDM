@@ -9,6 +9,6 @@ Time series of sockeye salmon returns from the Fraser River in
 British Columbia, Canada.
 }
 \author{
-Hao Ye
+****
 }
 

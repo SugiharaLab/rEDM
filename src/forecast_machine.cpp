@@ -344,7 +344,7 @@ PredStats ForecastMachine::make_const_stats()
 void ForecastMachine::LOG_WARNING(const char* warning_text)
 {
     if(!SUPPRESS_WARNINGS)
-        Rcout << "WARNING: " << warning_text << "\n";
+        Rcpp::warning(warning_text);
     return;
 }
 

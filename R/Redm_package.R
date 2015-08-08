@@ -12,7 +12,7 @@ NULL
 #' @name paramecium_didinium
 #' @docType data
 #' @title Time series for the Paramecium-Didinium laboratory experiment
-#' @author Hao Ye
+#' @author Veilleux
 #' @description Time series of Paramecium and Didinium abundances (#/mL) from 
 #' an experiment by Veilleux (1979)
 NULL
@@ -20,7 +20,7 @@ NULL
 #' @name sardine_anchovy_sst
 #' @docType data
 #' @title Time series for the California Current Anchovy-Sardine-SST system
-#' @author Hao Ye
+#' @author ****
 #' @description Time series of Pacific sardine landings (CA), Northern anchovy landings (CA), 
 #' and sea-surface temperature (3-year average) at the SIO pier and Newport pier
 NULL
@@ -40,20 +40,44 @@ NULL
 #' model exhibiting chaotic dynamics.
 NULL
 
-#' @name sockeye_returns
-#' @docType data
-#' @title Time series for sockeye salmon returns.
-#' @author Hao Ye
-#' @description Time series of sockeye salmon returns from the Fraser River in 
-#' British Columbia, Canada.
-NULL
-
 #' @name block_3sp
 #' @docType data
 #' @title Time series for a three-species coupled model.
 #' @author Hao Ye
 #' @description Time series generated from a discrete-time coupled Lotka-Volterra 
 #' model exhibiting chaotic dynamics.
+NULL
+
+#' @name sockeye_returns
+#' @docType data
+#' @title Time series for sockeye salmon returns.
+#' @author ****
+#' @description Time series of sockeye salmon returns from the Fraser River in 
+#' British Columbia, Canada.
+NULL
+
+#' @name e054_succession
+#' @docType data
+#' @title Succession data at the Cedar Creek LTER
+#' @author ****
+#' @description Experiment 054 is a subset of the long-term observational study 
+#' of old field succession at the Cedar Creek LTER.
+NULL
+
+#' @name e120_biodiversity
+#' @docType data
+#' @title Biodiversity data at the Cedar Creek LTER
+#' @author ****
+#' @description Experiment 120, the “Big Biodiversity” experiment at Cedar Creek 
+#' LTER. This experiment is the longest running randomized test for the effects 
+#' of plant diversity on ecosystem functions.
+NULL
+
+#' @name thrips_block
+#' @docType data
+#' @title Apple-blossom Thrips time series
+#' @author ****
+#' @description Seasonal outbreaks of Thrips imaginis.
 NULL
 
 #' @name Rcpp_LNLP-class
@@ -63,7 +87,6 @@ NULL
 
 #' @name LNLP
 #' @title C++ compiled object for univariate forecasting.
-#' @author Hao Ye
 #' @seealso \code{\link{simplex}} and \code{\link{s_map}} for R wrappers.
 NULL
 
@@ -74,7 +97,6 @@ NULL
 
 #' @name BlockLNLP
 #' @title C++ compiled object for multivariate forecasting.
-#' @author Hao Ye
 #' @seealso \code{\link{block_lnlp}} for the R wrapper.
 NULL
 
@@ -85,6 +107,5 @@ NULL
 
 #' @name Xmap
 #' @title C++ compiled object for convergent cross mapping.
-#' @author Hao Ye
 #' @seealso \code{\link{ccm}} for the R wrapper.
 NULL

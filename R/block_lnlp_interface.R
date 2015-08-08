@@ -212,7 +212,7 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
             })
             params$embedding <- sapply(params$embedding, function(i) {
                 paste(columns[[i]], sep = "", collapse = ", ")})
-            output <- cbind(params, do.call(rbind, stats))
+            output <- cbind(params, do.call(rbind, stats), row.names = NULL)
         } else {
             output <- lapply(1:NROW(params), function(i) {
                 model$set_embedding(columns[[params$embedding[i]]])
@@ -257,7 +257,7 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
             })
             params$embedding <- sapply(params$embedding, function(i) {
                 paste(columns[[i]], sep = "", collapse = ", ")})
-            output <- cbind(params, do.call(rbind, stats))
+            output <- cbind(params, do.call(rbind, stats), row.names = NULL)
         } else {
             output <- lapply(1:NROW(params), function(i) {
                 model$set_embedding(columns[[params$embedding[i]]])

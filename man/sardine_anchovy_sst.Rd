@@ -9,6 +9,6 @@ Time series of Pacific sardine landings (CA), Northern anchovy landings (CA),
 and sea-surface temperature (3-year average) at the SIO pier and Newport pier
 }
 \author{
-Hao Ye
+****
 }
 

@@ -6,9 +6,6 @@
 \description{
 C++ compiled object for convergent cross mapping.
 }
-\author{
-Hao Ye
-}
 \seealso{
 \code{\link{ccm}} for the R wrapper.
 }

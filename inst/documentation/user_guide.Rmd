@@ -1,7 +1,7 @@
 ---
 title: "rEDM User Guide"
 author: "Hao Ye"
-date: "April 10, 2015"
+date: "August 1, 2015"
 output:
   html_document: 
     toc: true
@@ -27,7 +27,7 @@ We have tested rEDM on **Mac OS X 10.9+** or **Windows 7+ (32-bit or 64-bit)**. 
 rEDM requires **Rcpp (0.11.2+)** to be installed. Please follow the normal [instructions](http://www.cookbook-r.com/Basics/Installing_and_using_packages/) to install the Rcpp package first.
 
 ## Precompiled Binary Version
-Precompiled versions can be downloaded from this [Github repository](https://github.com/ha0ye/rEDM-binary). Please be sure to download the latest version (0.2.4 as of April 6, 2015). Note that you want the entire package file (with .tgz or .zip extension) and not the folder with all of the package contents (if you click on the file, there should be a link to "view the full file", which should initiate a downlaod. After downloading, there is no need to extract the contents, as R expects a single package file, rather than a folder.
+Precompiled versions can be downloaded from Github [here](https://github.com/ha0ye/rEDM-binary). Please be sure to download the latest version (0.2.4.1 as of July 3, 2015). Clicking on the "view the full file" link should initiate a downlaod of the .tgz or .zip file, which you can save anywhere you like. Note that you do not want to unpack the .tgz or .zip file, since R expects a single package file, rather than a folder.
 
 To install the precompiled binary package, use the standard R command (`install.packages`) as below, replacing `***` with the name of the package file. (You will need to either give the complete path, or put the package file in R's working directory.)
 
@@ -36,7 +36,7 @@ install.packages("***", type = "source", repos = NULL)
 ```
 
 ## Source Version
-The raw source can be downloaded from my Github repository [here](https://github.com/ha0ye/rEDM). If you are familiar with using Git with Rstudio projects, you can go ahead and clone it directly. Otherwise, it is possible to install it using functions from the **devtools** package:
+The raw source can be downloaded from Github [here](https://github.com/ha0ye/rEDM). If you are familiar with using Git with Rstudio projects, you can go ahead and clone it directly. Otherwise, it is possible to install it using functions from the **devtools** package:
 
 ```{r, eval = FALSE}
 library(devtools)
@@ -294,6 +294,28 @@ plot(smap_output$theta, smap_output$rho, type = "l",
 # Diagnostic Tests
 
 ## Prediction Decay
+
+An important property of deterministic chaos is that nearby trajectories eventually diverge over time (the so-called "butterfly effect"). This means that prediction is primarily limited to short-term forecasts, because over the long-term, the system state may be viewed as essentially random. This property also differentiated nonlinear systems from the equilibrium view, where the system can be expected to settle around a stable point.
+
+We can test for this property by adjusting the `tp` parameter in the models, which determines how far into the future the model seeks to predict:
+
+```{r}
+data(tentmap_1d)
+ts <- tentmap_1d
+lib <- c(1, 50)
+pred <- c(101, length(ts))
+simplex_output <- simplex(ts, lib, pred, E = 2, tp = 1:10)
+```
+
+Again, the results are a data.frame with columns for the model parameters and forecast statistics, and rows for each run of the model. Here, we can simply plot $tp$ against $\rho$ to see how forecast accuracy changes as we predict further and further into the future:
+
+```{r}
+par(mar = c(4,4,1,1))
+plot(simplex_output$tp, simplex_output$rho, type = "l", 
+     xlab = "Time to Prediction (tp)", ylab = "Forecast Skill (rho)")
+```
+
+
 ## Nonlinearity Tests Using Surrogate Data
 ## Cross Mapping Convergence
 

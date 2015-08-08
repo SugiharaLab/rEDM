@@ -153,7 +153,7 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
         model$set_seed(RNGseed)
     model$run()
     stats <- model$get_output()
-    return(cbind(params, stats))
+    return(cbind(params, stats, row.names = NULL))
 }
 
 #' Take output from ccm and compute means as a function of library size.
