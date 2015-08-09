@@ -4,15 +4,17 @@
 \alias{make_surrogate_data}
 \title{Generate surrogate data for permutation/randomization tests}
 \usage{
-make_surrogate_data(ts, method = c("random_shuffle", "ebisuzaki"),
-  num_sim = 100)
+make_surrogate_data(ts, method = c("random_shuffle", "ebisuzaki", "seasonal"),
+  num_surr = 100, T_period = 1)
 }
 \arguments{
 \item{ts}{the original time series}
 
 \item{method}{which algorithm to use to generate surrogate data}
 
-\item{num_sim}{the number of null surrogates to generate}
+\item{num_surr}{the number of null surrogates to generate}
+
+\item{T_period}{the period of seasonality for seasonal surrogates (ignored for other methods)}
 }
 \value{
 A matrix where each column is a separate surrogate with the same length as \code{ts}.

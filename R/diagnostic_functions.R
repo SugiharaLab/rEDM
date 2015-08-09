@@ -73,8 +73,8 @@ make_surrogate_data <- function(ts, method = c("random_shuffle", "ebisuzaki", "s
         I_season <- suppressWarnings(matrix(1:T_period, nrow=n, ncol=1))
         
         # Calculate seasonal cycle using smooth.spline
-        seasonal_F <- smooth.spline(rbind(I_season - T_period, I_season, I_season + T_period), 
-                                    rbind(ts, ts, ts))
+        seasonal_F <- smooth.spline(c(I_season - T_period, I_season, I_season + T_period), 
+                                    c(ts, ts, ts))
         seasonal_cyc <- predict(seasonal_F,I_season)$y
         seasonal_resid <- ts - seasonal_cyc
         
