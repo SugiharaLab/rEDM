@@ -20,7 +20,7 @@ make_surrogate_data(ts, method = c("random_shuffle", "ebisuzaki", "seasonal"),
 A matrix where each column is a separate surrogate with the same length as \code{ts}.
 }
 \description{
-\code{make_surrogate data} generates surrogate data under several different
+\code{make_surrogate_data} generates surrogate data under several different
 null models.
 }
 \details{
@@ -29,6 +29,9 @@ of the original time series.
 
 Method "Ebisuzaki" creates surrogates by randomizing the phases of a Fourier
 transform, preserving the power spectra of the null surrogates.
+
+Method "seasonal" creates surrogates by computing a mean seasonal trend of
+the specified period and shuffling the residuals.
 
 See \code{test_nonlinearity} for context.
 }

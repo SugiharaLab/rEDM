@@ -1,8 +1,8 @@
 Package: rEDM
 Type: Package
 Title: Applications of empirical dynamic modeling (EDM) from time series.
-Version: 0.2.6
-Date: 2015-08-08
+Version: 0.3
+Date: 2015-10-05
 Author: Hao Ye, Adam Clark, Ethan Deyle
 Maintainer: Hao Ye <hye@ucsd.edu>
 Description: The rEDM package contains C++ compiled objects that use time delay embedding to perform state-space reconstruction and nonlinear forecasting and an R interface to those objects using Rcpp. It supports both the simplex projection (Sugihara 1990) and s-map forecasting algorithms (Sugihara 1994), with implementations of convergent cross mapping (Sugihara 2012).
