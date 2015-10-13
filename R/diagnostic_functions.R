@@ -9,7 +9,7 @@
 #' @param num_surr the number of null surrogates to generate
 #' @param T_period the period of seasonality for seasonal surrogates (ignored for other methods)
 #' @param ... optional arguments to s_map
-#' @return A list containing the following components:
+#' @return A data.frame containing the following components:
 #' \tabular{ll}{
 #'   delta_rho \tab the value of the delta rho statistic\cr
 #'   delta_mae \tab the value of the delat mae statistic\cr
@@ -38,12 +38,12 @@ test_nonlinearity <- function(ts, method = "ebisuzaki", num_surr = 200, T_period
     surrogate_data <- make_surrogate_data(ts, method, num_surr, T_period)
     null_stats <- data.frame(t(apply(surrogate_data, 2, compute_stats, ...)))
     
-    return(list(delta_rho = delta_rho, 
-                delta_mae = delta_mae, 
-                num_surr = num_surr, 
-                E = E, 
-                delta_rho_p_value = (sum(null_stats$delta_rho > delta_rho)+1) / (num_surr+1), 
-                delta_mae_p_value = (sum(null_stats$delta_mae > delta_mae)+1) / (num_surr+1)))
+    return(data.frame(delta_rho = delta_rho, 
+                      delta_mae = delta_mae, 
+                      num_surr = num_surr, 
+                      E = E, 
+                      delta_rho_p_value = (sum(null_stats$delta_rho > delta_rho)+1) / (num_surr+1), 
+                      delta_mae_p_value = (sum(null_stats$delta_mae > delta_mae)+1) / (num_surr+1)))
 }
 
 

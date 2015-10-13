@@ -19,7 +19,7 @@ test_nonlinearity(ts, method = "ebisuzaki", num_surr = 200, T_period = 1,
 \item{...}{optional arguments to s_map}
 }
 \value{
-A list containing the following components:
+A data.frame containing the following components:
 \tabular{ll}{
   delta_rho \tab the value of the delta rho statistic\cr
   delta_mae \tab the value of the delat mae statistic\cr
