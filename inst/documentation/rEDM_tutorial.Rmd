@@ -236,8 +236,8 @@ Here, we use a previously identified value of `3` for the embedding dimension. W
 
 ```{r sardine anchovy ccm, tidy = TRUE, warning = FALSE, cache = TRUE}
 data(sardine_anchovy_sst)
-anchovy_xmap_sst <- ccm(sardine_anchovy_sst, E = 3, lib_column = "anchovy", target_column = "np_sst", lib_sizes = seq(10, 80, by = 10), num_samples = 100)
-sst_xmap_anchovy <- ccm(sardine_anchovy_sst, E = 3, lib_column = "np_sst", target_column = "anchovy", lib_sizes = seq(10, 80, by = 10), num_samples = 100)
+anchovy_xmap_sst <- ccm(sardine_anchovy_sst, E = 3, lib_column = "anchovy", target_column = "np_sst", lib_sizes = seq(10, 80, by = 10), random_libs = FALSE)
+sst_xmap_anchovy <- ccm(sardine_anchovy_sst, E = 3, lib_column = "np_sst", target_column = "anchovy", lib_sizes = seq(10, 80, by = 10), random_libs = FALSE)
 ```
 
 The output from CCM is a data.frame with statistics for each model run (in thise case, 100 models at each of 8 library sizes = 800 rows). Because we cross map using multiple libraries at each library size, we'd like to aggregate the results and plot the average cross map skill at each library size. Because average cross map skill less than $0$ is noninformative, we filter out negative values when plotting.
