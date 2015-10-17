@@ -8,6 +8,7 @@
 #' @param method which algorithm to use to generate surrogate data
 #' @param num_surr the number of null surrogates to generate
 #' @param T_period the period of seasonality for seasonal surrogates (ignored for other methods)
+#' @param E the embedding dimension for s_map
 #' @param ... optional arguments to s_map
 #' @return A data.frame containing the following components:
 #' \tabular{ll}{
@@ -113,8 +114,6 @@ make_surrogate_data <- function(ts, method = c("random_shuffle", "ebisuzaki", "s
             # adjust variance of the surrogate time series to match the original            
             return(temp / sd(temp) * sigma)
         }))
-        
-        return(output)
     }
     else
     {
@@ -139,7 +138,7 @@ make_surrogate_data <- function(ts, method = c("random_shuffle", "ebisuzaki", "s
 
 # test for cross map convergence with library size
 # equivalent of ccmtest from multispatialCCM
-test_convergence <- function(ccm_results)
-{
-    return()
-}
+# test_convergence <- function(ccm_results)
+# {
+#     return()
+# }

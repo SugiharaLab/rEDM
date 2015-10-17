@@ -40,6 +40,8 @@
 #' @param target_column the index (or name) of the column to cross map to
 #' @param first_column_time indicates whether the first column of the given 
 #'   block is a time column (and therefore excluded when indexing)
+#' @param RNGseed will set a seed for the random number generator, enabling 
+#'   reproducible runs of ccm with randomly generated libraries
 #' @param exclusion_radius excludes vectors from the search space of nearest 
 #'   neighbors if their *time index* is within exclusion_radius (NULL turns 
 #'   this option off)
@@ -162,17 +164,19 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
 #' function
 #' 
 #' @param ccm_df a data.frame, usually output from the \code{\link{ccm}} function
-#' @param fun a function that aggregates the numerical statistics (by default, uses the mean)
+#' @param FUN a function that aggregates the numerical statistics (by default, uses the mean)
+#' @param ... optional arguments to FUN
 #' @return A data.frame with forecast statistics aggregated at each unique library
 #'   size
 #' @export 
 #' 
-ccm_means <- function(ccm_df, fun = mean, ...)
+ccm_means <- function(ccm_df, FUN = mean, ...)
 {
     lib <- ccm_df$lib_column[!duplicated(ccm_df$lib_size)]
     target <- ccm_df$target_column[!duplicated(ccm_df$lib_size)]
-    ccm_df <- subset(ccm_df, select = -c(lib_column, target_column))
-    ccm_means <- aggregate(ccm_df, by = list(ccm_df$lib_size), fun, ...)
+    ccm_df$lib_column <- NULL
+    ccm_df$target_column <- NULL
+    ccm_means <- aggregate(ccm_df, by = list(ccm_df$lib_size), FUN, ...)
     col_idx <- which(names(ccm_means) == "lib_size")
     ccm_means <- cbind(ccm_means[,1:(col_idx-1)], 
                        lib_column = lib, target_column = target, 
