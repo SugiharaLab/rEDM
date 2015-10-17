@@ -4,12 +4,14 @@
 \alias{ccm_means}
 \title{Take output from ccm and compute means as a function of library size.}
 \usage{
-ccm_means(ccm_df, fun = mean, ...)
+ccm_means(ccm_df, FUN = mean, ...)
 }
 \arguments{
 \item{ccm_df}{a data.frame, usually output from the \code{\link{ccm}} function}
 
-\item{fun}{a function that aggregates the numerical statistics (by default, uses the mean)}
+\item{FUN}{a function that aggregates the numerical statistics (by default, uses the mean)}
+
+\item{...}{optional arguments to FUN}
 }
 \value{
 A data.frame with forecast statistics aggregated at each unique library

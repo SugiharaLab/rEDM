@@ -49,6 +49,9 @@ parameter is ignored if random_libs is FALSE)}
 \item{first_column_time}{indicates whether the first column of the given
 block is a time column (and therefore excluded when indexing)}
 
+\item{RNGseed}{will set a seed for the random number generator, enabling
+reproducible runs of ccm with randomly generated libraries}
+
 \item{exclusion_radius}{excludes vectors from the search space of nearest
 neighbors if their *time index* is within exclusion_radius (NULL turns
 this option off)}
