@@ -45,23 +45,25 @@ R packages can be installed manually by downloading the package file and using t
 rEDM is an Rcpp package, and contains both C++ and R code. Because the C++ code needs to be compiled prior to usage, we present several different options for obtaining and installing the rEDM package, depending on your preference.
 
 ### Binary Version
-Most users will want the precompiled binary version. This can be downloaded from Github [here](https://github.com/ha0ye/rEDM-binary). Please be sure to download the latest version (0.2.6 as of August 9, 2015). Clicking on the "view the full file" link should initiate a downlaod of the .tgz or .zip file, which you can save anywhere you like. Note that you do not want to unpack the .tgz or .zip file, since R expects a single package file, rather than a folder.
+Most users will want the precompiled binary version. This can be downloaded from Github [here](https://github.com/ha0ye/rEDM-binary). Please be sure to download the latest version (0.3.1 as of October 17, 2015). Clicking on the "view the full file" link should initiate a downlaod of the .tgz or .zip file, which you can save anywhere you like. Note that you do not want to unpack the .tgz or .zip file, since R expects a single package file, rather than a folder.
 
-To install the downloaded package, use the standard R command (`install.packages`) as below, replacing `***` with the name of the package file. (You will need to either give the complete path, or put the package file in R's current working directory.)
+To install the downloaded package, use the standard R command (`install.packages`) as below. This should open a dialog window where you can select the downloaded package file (.tgz or .zip) to install.
 
 ```{r install rEDM from package file, eval = FALSE}
-install.packages("***", type = "source", repos = NULL)
+install.packages(file.choose(), type = "source", repos = NULL)
 ```
 
 ### Source Version
-The raw source can be downloaded [here](https://github.com/ha0ye/rEDM). If you are familiar with using Git with Rstudio projects, you may find it easier to clone directly. It can also be installed using functions from the **devtools** package:
+For users who prefer to download and compile the source version of rEDM, a raw source version is available from Github [here](https://github.com/ha0ye/rEDM). Note that this approach requires a **C++11** compiler, in addition to the **Rcpp** package. We have successfully tested this method of installation using both **Rtools 3.1** for Windows and **XCode 5.0+** for Macintosh.
+
+An alternative option for users familiar with using Git with Rstudio projects is to clone the rEDM package directly.
+
+A third option uses the `install_github` function from the **devtools** package to download and install directly from Github.
 
 ```{r install rEDM from GitHub, eval = FALSE}
 library(devtools)
 install_github("ha0ye/rEDM")
 ```
-
-Note that this method requires **Git** to be installed, along with a **C++11** compiler, in addition to **Rcpp**. We have successfully tested this method of installation using both **Rtools 3.1** for Windows and **XCode 5.0+** for Macintosh.
 
 # Empirical Dynamic Modeling
 
@@ -169,6 +171,9 @@ Again, the results are a simple data.frame with columns for each of the model pa
 par(mar = c(4,4,1,1), mgp = c(2.5, 1, 0))
 plot(smap_output$theta, smap_output$rho, type = "l", xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)")
 ```
+
+
+
 
 ## Generalized Takens' Theorem
 
@@ -482,22 +487,22 @@ The data presented here are part of Experiment 120, the “Big Biodiversity” e
 
 Instead, we focus a different set of published results from the experiment: interactions between primary productivity, soil nitrate, and invasion rates by non-planted species. These show that increased biomass is associated with decreases in soil nitrate levels and decreases in invasion success [@Fargione_2005]. A posited mechanism for this is soil nitrate: increased primary productivity leads to decreased soil nitrate, which in turn reduces resources available to invaders. For the analyses here, we combine planted diversity treatments from 4-8 species planted treatments, and analyze them as a block.
 
-The columns in the dataset `e120_invdat` are as follows: `Exp`, `Year`, `Month`, `Plot`, `Field`, and `FieldPlot` describe experiment, plot identity, and sampling time. `NumSp` and `SpNum` show the planted and realized species diversity in the plot respectively. `AbvBioAnnProd` shows annual aboveground productivity of planted species, in g/m2. `noh020tot` shows soil nitrate levels in the top 20 cm of soil, measured in ug/kg soil. `invrichness` shows species richness of unplanted species in the plot. `SummerPrecip.mm.` shows precipitation annual from May to August measured in mm.
+The columns in the dataset `e120_biodiversity` are as follows: `Exp`, `Year`, `Month`, `Plot`, `Field`, and `FieldPlot` describe experiment, plot identity, and sampling time. `NumSp` and `SpNum` show the planted and realized species diversity in the plot respectively. `AbvBioAnnProd` shows annual aboveground productivity of planted species, in g/m2. `noh020tot` shows soil nitrate levels in the top 20 cm of soil, measured in ug/kg soil. `invrichness` shows species richness of unplanted species in the plot. `SummerPrecip.mm.` shows precipitation annual from May to August measured in mm.
 
 ### Preparing the Data
 
 E120 includes data from multiple plots, meaning that we first need to collapse it into a single composite time series. As before, we begin by normalizing each time series. 
 
 ```{r load e120 data, tidy = TRUE}
-data(e120_diversity)
-head(e120_diversity)
+data(e120_biodiversity)
+head(e120_biodiversity)
 
 # separate time column from data
-composite_ts <- e120_diversity[,c(7:9,12)]
+composite_ts <- e120_biodiversity[,c(7:9,12)]
 
 # normalize each time series
 n <- NCOL(composite_ts)
-blocks <- e120_diversity$Plot
+blocks <- e120_biodiversity$Plot
 blocks_index <- sort(unique(blocks))
 for(j in 1:n) {
     for(i in 1:length(blocks_index)) {
@@ -506,7 +511,7 @@ for(j in 1:n) {
         }
     }
 
-composite_ts <- cbind(year = e120_diversity$Year, composite_ts)
+composite_ts <- cbind(year = e120_biodiversity$Year, composite_ts)
 ```
 
 Again, we need to indicate separations between plots so that lagged vectors are not constructed that contain coordinates spanning multiple time series.
@@ -533,7 +538,7 @@ composite_pred <- segments[-rndlib,]
 Because the time series for precipitation does not vary among replicates, we also need to construct separate variables for analyzing precipitation dynamics:
  
 ```{r precip for e120}
-precip_ts <- unique(e120_diversity[,c("Year", "SummerPrecip.mm.")])
+precip_ts <- unique(e120_biodiversity[,c("Year", "SummerPrecip.mm.")])
 precip_ts <- precip_ts[order(precip_ts$Year),]
 ```
 

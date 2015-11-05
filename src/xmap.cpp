@@ -38,6 +38,9 @@ void Xmap::set_norm_type(const int norm_type)
         case 2:
             norm_mode = L2_NORM;
             break;
+        case 3:
+            norm_mode = P_NORM;
+            break;
         default:
             throw(std::domain_error("unknown norm type selected"));
     }
@@ -87,6 +90,12 @@ void Xmap::set_exclusion_radius(const double new_exclusion_radius)
 void Xmap::set_epsilon(const double new_epsilon)
 {
     epsilon = new_epsilon;
+    return;
+}
+
+void Xmap::set_p(const double new_p)
+{
+    p = new_p;
     return;
 }
 
@@ -350,6 +359,7 @@ RCPP_MODULE(xmap_module)
     .method("set_lib_sizes", &Xmap::set_lib_sizes)
     .method("set_exclusion_radius", &Xmap::set_exclusion_radius)
     .method("set_epsilon", &Xmap::set_epsilon)
+    .method("set_p", &Xmap::set_p)
     .method("set_lib_column", &Xmap::set_lib_column)
     .method("set_target_column", &Xmap::set_target_column)
     .method("set_params", &Xmap::set_params)

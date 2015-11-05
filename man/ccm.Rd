@@ -5,11 +5,11 @@
 \title{Perform convergent cross mapping using simplex projection}
 \usage{
 ccm(block, lib = c(1, NROW(block)), pred = lib, norm_type = c("L2 norm",
-  "L1 norm"), E = 1, tau = 1, tp = 0, num_neighbors = "e+1",
-  lib_sizes = seq(10, 100, by = 10), random_libs = TRUE,
-  num_samples = 100, replace = TRUE, lib_column = 1, target_column = 2,
-  first_column_time = FALSE, RNGseed = NULL, exclusion_radius = NULL,
-  epsilon = NULL, silent = FALSE)
+  "L1 norm", "LP norm"), P = 0.5, E = 1, tau = 1, tp = 0,
+  num_neighbors = "e+1", lib_sizes = seq(10, 100, by = 10),
+  random_libs = TRUE, num_samples = 100, replace = TRUE, lib_column = 1,
+  target_column = 2, first_column_time = FALSE, RNGseed = NULL,
+  exclusion_radius = NULL, epsilon = NULL, silent = FALSE)
 }
 \arguments{
 \item{block}{either a vector to be used as the time series, or a
@@ -22,6 +22,8 @@ first and last *rows* of the time series to use for attractor reconstruction}
 series to forecast.}
 
 \item{norm_type}{the distance function to use. see 'Details'}
+
+\item{P}{the exponent for the P norm}
 
 \item{E}{the embedding dimensions to use for time delay embedding}
 
@@ -92,5 +94,7 @@ norm_type "L2 norm" (default) uses the typical Euclidean distance:
 \deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}}{distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
 norm_type "L1 norm" uses the Manhattan distance:
 \deqn{distance(a,b) := \sum_i{|a_i - b_i|}}{distance(a, b) := \sum|a_i - b_i|}
+norm type "P norm" uses the LP norm, generalizing the L1 and L2 norm to use $p$ as the exponent:
+\deqn{distance(a,b) := \sum_i{(a_i - b_i)^p}^{1/p}}{distance(a, b) := (\sum(a_i - b_i)^p)^(1/p)}
 }
 

@@ -24,6 +24,9 @@
 #' norm_type "L1 norm" uses the Manhattan distance:
 #' \deqn{distance(a,b) := \sum_i{|a_i - b_i|}}{distance(a, b) := 
 #' \sum|a_i - b_i|}
+#' norm type "P norm" uses the LP norm, generalizing the L1 and L2 norm to use $p$ as the exponent:
+#' \deqn{distance(a,b) := \sum_i{(a_i - b_i)^p}^{1/p}}{distance(a, b) := 
+#' (\sum(a_i - b_i)^p)^(1/p)}
 #' 
 #' @param time_series either a vector to be used as the time series, or a 
 #'   data.frame or matrix with at least 2 columns (in which case the first column 
@@ -33,6 +36,7 @@
 #' @param pred (same format as lib), but specifying the sections of the time 
 #'   series to forecast.
 #' @param norm_type the distance function to use. see 'Details'
+#' @param p the exponent for the P norm
 #' @param E the embedding dimensions to use for time delay embedding
 #' @param tau the lag to use for time delay embedding
 #' @param tp the prediction horizon (how far ahead to forecast)
@@ -91,9 +95,10 @@
 #' }
 #' @export 
 simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = lib, 
-                    norm_type = c("L2 norm", "L1 norm"), E = 1:10, tau = 1, 
-                    tp = 1, num_neighbors = "e+1", stats_only = TRUE, 
-                    exclusion_radius = NULL, epsilon = NULL, silent = FALSE)
+                    norm_type = c("L2 norm", "L1 norm", "P norm"), P = 0.5, 
+                    E = 1:10, tau = 1, tp = 1, num_neighbors = "e+1", 
+                    stats_only = TRUE, exclusion_radius = NULL, epsilon = NULL, 
+                    silent = FALSE)
 {
     # check inputs?
     
@@ -117,7 +122,8 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
     model$set_time_series(time_series)
            
     # setup norm and pred types
-    model$set_norm_type(switch(match.arg(norm_type), "L2 norm" = 2, "L1 norm" = 1))
+    model$set_norm_type(switch(match.arg(norm_type), "P norm" = 3, "L2 norm" = 2, "L1 norm" = 1))
+    model$set_p(P)
     model$set_pred_type(2) # 2 = simplex
     
     # setup lib and pred ranges
@@ -189,8 +195,8 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
 #' will appear in the full output.
 #' @export
 s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = lib, 
-                  norm_type = c("L2 norm", "L1 norm"), E = 1, tau = 1, 
-                  tp = 1, num_neighbors = 0, 
+                  norm_type = c("L2 norm", "L1 norm", "P norm"), P = 0.5, 
+                  E = 1, tau = 1, tp = 1, num_neighbors = 0, 
                   theta = c(0, 0.0001, 0.0003, 0.001, 0.003, 0.01, 0.03, 0.1, 
                             0.3, 0.5, 0.75, 1.0, 1.5, 2, 3, 4, 6, 8), 
                   stats_only = TRUE, exclusion_radius = NULL, epsilon = NULL, 
@@ -212,7 +218,8 @@ s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
     model$set_time_series(time_series)
     
     # setup norm and pred types
-    model$set_norm_type(switch(match.arg(norm_type), "L2 norm" = 2, "L1 norm" = 1))
+    model$set_norm_type(switch(match.arg(norm_type), "P norm" = 3, "L2 norm" = 2, "L1 norm" = 1))
+    model$set_p(P)
     model$set_pred_type(1) # 1 = s-map
     
     # setup lib and pred ranges

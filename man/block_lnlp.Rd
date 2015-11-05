@@ -5,11 +5,11 @@
 \title{Perform generalized forecasting using simplex projection or s-map}
 \usage{
 block_lnlp(block, lib = c(1, NROW(block)), pred = lib,
-  norm_type = c("L2 norm", "L1 norm"), method = c("simplex", "s-map"),
-  tp = 1, num_neighbors = "e+1", columns = NULL, target_column = 1,
-  stats_only = TRUE, first_column_time = FALSE, exclusion_radius = NULL,
-  epsilon = NULL, theta = NULL, silent = FALSE,
-  save_smap_coefficients = FALSE)
+  norm_type = c("L2 norm", "L1 norm", "P norm"), P = 0.5,
+  method = c("simplex", "s-map"), tp = 1, num_neighbors = "e+1",
+  columns = NULL, target_column = 1, stats_only = TRUE,
+  first_column_time = FALSE, exclusion_radius = NULL, epsilon = NULL,
+  theta = NULL, silent = FALSE, save_smap_coefficients = FALSE)
 }
 \arguments{
 \item{block}{either a vector to be used as the time series, or a
@@ -22,6 +22,8 @@ first and last *rows* of the time series to use for attractor reconstruction}
 series to forecast.}
 
 \item{norm_type}{the distance function to use. see 'Details'}
+
+\item{P}{the exponent for the P norm}
 
 \item{method}{the prediction method to use. see 'Details'}
 
@@ -104,6 +106,8 @@ norm_type "L2 norm" (default) uses the typical Euclidean distance:
 \deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}}{distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
 norm_type "L1 norm" uses the Manhattan distance:
 \deqn{distance(a,b) := \sum_i{|a_i - b_i|}}{distance(a, b) := \sum|a_i - b_i|}
+norm type "P norm" uses the P norm, generalizing the L1 and L2 norm to use $p$ as the exponent:
+\deqn{distance(a,b) := \sum_i{(a_i - b_i)^p}^{1/p}}{distance(a, b) := (\sum(a_i - b_i)^p)^(1/p)}
 
 method "simplex" (default) uses the simplex projection forecasting algorithm
 

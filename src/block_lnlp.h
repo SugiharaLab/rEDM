@@ -26,6 +26,7 @@ public:
     void set_target_column(const size_t new_target);
     void set_params(const int new_tp, const size_t new_nn);
     void set_theta(const double new_theta);
+    void set_p(const double new_p);
     void suppress_warnings();
     void save_smap_coefficients();
     void run();

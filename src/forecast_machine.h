@@ -54,7 +54,7 @@ protected:
     vec const_targets;
     vec const_predicted;
     size_t num_vectors;
-    double (*dist_func)(const vec&, const vec&);
+    std::function<double (const vec&, const vec&)> dist_func;
     std::vector<vec > distances;
     
     // *** parameters *** //
@@ -67,6 +67,7 @@ protected:
     double theta;
     double exclusion_radius;
     double epsilon;
+    double p;
     std::vector<time_range> lib_ranges;
     std::vector<time_range> pred_ranges;
     static const double qnan;
@@ -84,8 +85,6 @@ private:
 };
 
 std::vector<size_t> which_indices_true(const std::vector<bool>& indices);
-double l1_distance_func(const vec& A, const vec& B);
-double l2_distance_func(const vec& A, const vec& B);
 std::vector<size_t> sort_indices(const std::vector<double>& v, const std::vector<size_t> idx);
 
 #endif
