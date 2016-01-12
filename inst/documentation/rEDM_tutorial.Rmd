@@ -4,7 +4,7 @@ author:
 - Hao Ye
 - Adam Clark
 - Ethan Deyle
-date: "August 9, 2015"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   pdf_document:
     toc: yes
@@ -99,8 +99,8 @@ First, we load the data and look at the format. Because this dataset is part of 
 
 ```{r load tentmap data}
 library(rEDM)
-data(tentmap_1d)
-head(tentmap_1d)
+data(tentmap_del)
+head(tentmap_del)
 ```
 
 We can see that the data consists of just a single vector, containing the raw data (first-differences from a tentmap). Because the `simplex` function can accept a single vector as the input time series, we don't need further processing of the data. Furthermore, because the data come from a discrete-time model, we can let many of the parameters be default values (e.g., $\tau = 1$, $\text{tp} = 1$). The default values for the embedding dimension, $E$, range from $1$ to $10$, and so the output will allow us to determine which embedding dimension best unfolds the attractor.
@@ -117,7 +117,7 @@ This will use the first 100 points (time = 1 to 100) in the time series as the "
 *Note that if the code detects any overlap in the lib and pred, it will enable leave-one-out cross-validation and return a warning message.*
 
 ```{r simplex on tentmap}
-ts <- tentmap_1d
+ts <- tentmap_del
 simplex_output <- simplex(ts, lib, pred)
 ```
 
