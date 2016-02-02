@@ -208,11 +208,13 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
                 model$set_params(params$tp[i], params$nn[i])
                 model$set_theta(params$theta[i])
                 model$run()
-                return(model$get_stats())
+                stats_df <- model$get_stats()          
+                stats_df <- cbind(embedding = paste(columns[[params$embedding[i]]], sep = "", collapse = ", "), 
+                                  tp = params$tp[i], nn = params$nn[i], theta = params$theta[i], 
+                                  stats_df)
+                return(stats_df)
             })
-            params$embedding <- sapply(params$embedding, function(i) {
-                paste(columns[[i]], sep = "", collapse = ", ")})
-            output <- cbind(params, do.call(rbind, stats))
+            output <- do.call(rbind, stats)
         } else {
             output <- lapply(1:NROW(params), function(i) {
                 model$set_embedding(columns[[params$embedding[i]]])
@@ -253,11 +255,13 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = c(1, NROW(block)),
                 model$set_embedding(columns[[params$embedding[i]]])
                 model$set_params(params$tp[i], params$nn[i])
                 model$run()
-                return(model$get_stats())
+                stats_df <- model$get_stats()          
+                stats_df <- cbind(embedding = paste(columns[[params$embedding[i]]], sep = "", collapse = ", "), 
+                                  tp = params$tp[i], nn = params$nn[i], 
+                                  stats_df)
+                return(stats_df)
             })
-            params$embedding <- sapply(params$embedding, function(i) {
-                paste(columns[[i]], sep = "", collapse = ", ")})
-            output <- cbind(params, do.call(rbind, stats))
+            output <- do.call(rbind, stats)
         } else {
             output <- lapply(1:NROW(params), function(i) {
                 model$set_embedding(columns[[params$embedding[i]]])

@@ -99,7 +99,6 @@ void Xmap::set_lib_column(const size_t new_lib_col)
 void Xmap::set_target_columns(const NumericVector new_targets)
 {
     target_cols = as<std::vector<size_t> >(new_targets);
-    num_targets = target_cols.size();
     remake_targets = true;
     return;
 }

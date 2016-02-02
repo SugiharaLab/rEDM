@@ -184,20 +184,51 @@ DataFrame BlockLNLP::get_short_output(size_t target_idx)
                               Named("pred") = short_pred);
 }
 
-DataFrame BlockLNLP::get_stats(const size_t target_idx)
+DataFrame BlockLNLP::get_stats()
 {
-    PredStats output = make_stats(target_idx);
-    PredStats const_output = make_const_stats(target_idx);
-    return DataFrame::create( Named("num_pred") = output.num_pred, 
-                              Named("rho") = output.rho, 
-                              Named("mae") = output.mae, 
-                              Named("rmse") = output.rmse,
-                              Named("perc") = output.perc, 
-                              Named("const_pred_num_pred") = const_output.num_pred, 
-                              Named("const_pred_rho") = const_output.rho, 
-                              Named("const_pred_mae") = const_output.mae, 
-                              Named("const_pred_rmse") = const_output.rmse, 
-                              Named("const_pred_perc") = const_output.perc);
+    std::vector<size_t> target(num_targets, 0);
+    std::vector<size_t> num_pred(num_targets, 0);
+    std::vector<double> rho(num_targets, 0);
+    std::vector<double> mae(num_targets, 0);
+    std::vector<double> rmse(num_targets, 0);
+    std::vector<double> perc(num_targets, 0);
+    std::vector<size_t> const_num_pred(num_targets, 0);
+    std::vector<double> const_rho(num_targets, 0);
+    std::vector<double> const_mae(num_targets, 0);
+    std::vector<double> const_rmse(num_targets, 0);
+    std::vector<double> const_perc(num_targets, 0);
+    
+    // assemble each column
+    for(size_t target_idx = 0; target_idx < num_targets; ++target_idx)
+    {
+        target[target_idx] = target_cols[target_idx];
+
+        PredStats output = make_stats(target_idx);
+        num_pred[target_idx] = output.num_pred;
+        rho[target_idx] = output.rho;
+        mae[target_idx] = output.mae;
+        rmse[target_idx] = output.rmse;
+        perc[target_idx] = output.perc;
+        
+        PredStats const_output = make_const_stats(target_idx);
+        const_num_pred[target_idx] = const_output.num_pred;
+        const_rho[target_idx] = const_output.rho;
+        const_mae[target_idx] = const_output.mae;
+        const_rmse[target_idx] = const_output.rmse;
+        const_perc[target_idx] = const_output.perc;
+    }
+    
+    return DataFrame::create( Named("target") = target, 
+                              Named("num_pred") = num_pred, 
+                              Named("rho") = rho, 
+                              Named("mae") = mae, 
+                              Named("rmse") = rmse,
+                              Named("perc") = perc, 
+                              Named("const_pred_num_pred") = const_num_pred, 
+                              Named("const_pred_rho") = const_rho, 
+                              Named("const_pred_mae") = const_mae, 
+                              Named("const_pred_rmse") = const_rmse, 
+                              Named("const_pred_perc") = const_perc);
 }
 
 // *** PRIVATE METHODS FOR INTERNAL USE ONLY *** //

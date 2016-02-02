@@ -169,6 +169,8 @@ std::vector<size_t> ForecastMachine::find_nearest_neighbors(const size_t curr_pr
 
 void ForecastMachine::forecast()
 {
+    num_targets = targets.size();
+    
     predicted.assign(num_targets, vec());
     predicted_var.assign(num_targets, vec());
     const_predicted.assign(num_targets, vec());

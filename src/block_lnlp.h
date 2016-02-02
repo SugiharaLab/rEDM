@@ -32,7 +32,7 @@ public:
     DataFrame get_output();
     List get_smap_coefficients();
     DataFrame get_short_output(const size_t target_idx);
-    DataFrame get_stats(const size_t target_idx);
+    DataFrame get_stats();
     
 private:
     void prepare_forecast();

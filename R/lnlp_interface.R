@@ -87,7 +87,7 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = c(1, NROW
     }
     model$set_time(time)
     model$set_time_series(time_series)
-           
+
     # setup norm and pred types
     model$set_norm_type(switch(match.arg(norm_type), "L2 norm" = 2, "L1 norm" = 1))
     model$set_pred_type(2) # 2 = simplex
