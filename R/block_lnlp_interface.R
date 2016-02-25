@@ -55,6 +55,8 @@
 #' @param save_smap_coefficients specifies whether to include the s_map 
 #'   coefficients with the output (and forces the full output as if stats_only 
 #'   were set to FALSE)
+#' @param short_output specifies whether to return a truncated output data.frame
+#'   whose rows only include the predictions made and not the whole input block
 #' @return If stats_only, then a data.frame with components for the parameters 
 #'   and forecast statistics:
 #' \tabular{ll}{
@@ -85,7 +87,7 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
                        tp = 1, num_neighbors = "e+1", columns = NULL, 
                        target_column = 1, stats_only = TRUE, first_column_time = FALSE, 
                        exclusion_radius = NULL, epsilon = NULL, theta = NULL, 
-                       silent = FALSE, save_smap_coefficients = FALSE)
+                       silent = FALSE, save_smap_coefficients = FALSE, short_output = FALSE)
 {
     convert_to_column_indices <- function(columns)
     {
@@ -227,19 +229,24 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
                                 model_output = model$get_output(), 
                                 smap_coefficients = do.call(rbind, model$get_smap_coefficients()), 
                                 stats = model$get_stats()))
-                }
-                else
-                {
-                    return(list(params = params[i,],
-                                embedding = paste(columns[[params$embedding[i]]], sep = "", collapse = ", "), 
-                                model_output = model$get_output(), 
-                                stats = model$get_stats()))
+                } else {
+                    if(short_output)
+                    {
+                        return(list(params = params[i,],
+                                    embedding = paste(columns[[params$embedding[i]]], sep = "", collapse = ", "), 
+                                    model_output = model$get_short_output(), 
+                                    stats = model$get_stats()))
+                    } else {
+                        return(list(params = params[i,],
+                                    embedding = paste(columns[[params$embedding[i]]], sep = "", collapse = ", "), 
+                                    model_output = model$get_output(), 
+                                    stats = model$get_stats()))
+                    }
                 }
             })
         }
-    }
-    else # simplex
-    {
+    } else {
+        # simplex
         params <- expand.grid(tp, num_neighbors, embedding_index)
         names(params) <- c("tp", "nn", "embedding")
         params <- params[,c("embedding", "tp", "nn")]
@@ -264,10 +271,18 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
                 model$set_params(params$tp[i], params$nn[i])
                 model$run()
                 
-                return(list(params = params[i,], 
-                            embedding = paste(columns[[params$embedding[i]]], sep = "", collapse = ", "), 
-                            model_output = model$get_output(), 
-                            stats = model$get_stats()))
+                if(short_output)
+                {
+                    return(list(params = params[i,], 
+                                embedding = paste(columns[[params$embedding[i]]], sep = "", collapse = ", "), 
+                                model_output = model$get_short_output(), 
+                                stats = model$get_stats()))                  
+                } else {
+                    return(list(params = params[i,], 
+                                embedding = paste(columns[[params$embedding[i]]], sep = "", collapse = ", "), 
+                                model_output = model$get_output(), 
+                                stats = model$get_stats()))
+                }
             })
         }
     }

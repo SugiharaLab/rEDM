@@ -171,17 +171,20 @@ DataFrame BlockLNLP::get_short_output()
     vec short_time(which_pred.size(), qnan);
     vec short_obs(which_pred.size(), qnan);
     vec short_pred(which_pred.size(), qnan);
+    vec short_pred_var(which_pred.size()), qnan);
     
     for(size_t i = 0; i < which_pred.size(); ++i)
     {
         short_time[i] = target_time[which_pred[i]];
         short_obs[i] = targets[which_pred[i]];
         short_pred[i] = predicted[which_pred[i]];
+        short_pred_var[i] = predicted_var[which_pred[i]];
     }
     
     return DataFrame::create( Named("time") = short_time, 
                               Named("obs") = short_obs, 
-                              Named("pred") = short_pred);
+                              Named("pred") = short_pred, 
+                              Named("pred_var") = short_pred_var);
 }
 
 DataFrame BlockLNLP::get_stats()
