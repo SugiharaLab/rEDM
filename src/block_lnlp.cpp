@@ -180,7 +180,7 @@ DataFrame BlockLNLP::get_short_output()
     vec short_time(which_pred.size(), qnan);
     vec short_obs(which_pred.size(), qnan);
     vec short_pred(which_pred.size(), qnan);
-    vec short_pred_var(which_pred.size()), qnan);
+    vec short_pred_var(which_pred.size(), qnan);
     
     for(size_t i = 0; i < which_pred.size(); ++i)
     {
