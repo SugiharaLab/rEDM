@@ -17,6 +17,8 @@
 #' \deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}}{distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
 #' norm_type "L1 norm" uses the Manhattan distance:
 #' \deqn{distance(a,b) := \sum_i{|a_i - b_i|}}{distance(a, b) := \sum|a_i - b_i|}
+#' norm type "P norm" uses the LP norm, generalizing the L1 and L2 norm to use $p$ as the exponent:
+#' \deqn{distance(a,b) := \sum_i{(a_i - b_i)^p}^{1/p}}{distance(a, b) := (\sum(a_i - b_i)^p)^(1/p)}
 #' 
 #' @param block either a vector to be used as the time series, or a 
 #'   data.frame or matrix where each column is a time series
@@ -25,6 +27,7 @@
 #' @param pred (same format as lib), but specifying the sections of the time 
 #'   series to forecast.
 #' @param norm_type the distance function to use. see 'Details'
+#' @param P the exponent for the P norm
 #' @param E the embedding dimensions to use for time delay embedding
 #' @param tau the lag to use for time delay embedding
 #' @param tp the prediction horizon (how far ahead to forecast)
@@ -60,11 +63,12 @@
 #' }
 #' @export 
 ccm <- function(block, lib = c(1, NROW(block)), pred = lib, 
-                norm_type = c("L2 norm", "L1 norm"), E = 1, tau = 1, 
-                tp = 0, num_neighbors = "e+1", lib_sizes = seq(10, 100, by = 10), 
-                random_libs = TRUE, num_samples = 100, replace = TRUE, 
-                lib_column = 1, target_column = 2, first_column_time = FALSE, 
-                RNGseed = NULL, exclusion_radius = NULL, epsilon = NULL, silent = FALSE)
+                norm_type = c("L2 norm", "L1 norm", "LP norm"), P = 0.5, E = 1, 
+                tau = 1, tp = 0, num_neighbors = "e+1", 
+                lib_sizes = seq(10, 100, by = 10), random_libs = TRUE, 
+                num_samples = 100, replace = TRUE, lib_column = 1, 
+                target_column = 2, first_column_time = FALSE, RNGseed = NULL, 
+                exclusion_radius = NULL, epsilon = NULL, silent = FALSE)
 {
     convert_to_column_indices <- function(columns)
     {
@@ -114,7 +118,8 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
     model$set_target_column(convert_to_column_indices(target_column))
     
     # setup norm type
-    model$set_norm_type(switch(match.arg(norm_type), "L2 norm" = 2, "L1 norm" = 1))
+    model$set_norm_type(switch(match.arg(norm_type), "P norm" = 3, "L2 norm" = 2, "L1 norm" = 1))
+    model$set_p(P)
     
     # setup lib and pred ranges
     if (is.vector(lib))

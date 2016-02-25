@@ -19,6 +19,8 @@
 #' \deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}}{distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
 #' norm_type "L1 norm" uses the Manhattan distance:
 #' \deqn{distance(a,b) := \sum_i{|a_i - b_i|}}{distance(a, b) := \sum|a_i - b_i|}
+#' norm type "P norm" uses the P norm, generalizing the L1 and L2 norm to use $p$ as the exponent:
+#' \deqn{distance(a,b) := \sum_i{(a_i - b_i)^p}^{1/p}}{distance(a, b) := (\sum(a_i - b_i)^p)^(1/p)}
 #' 
 #' method "simplex" (default) uses the simplex projection forecasting algorithm
 #' 
@@ -31,6 +33,7 @@
 #' @param pred (same format as lib), but specifying the sections of the time 
 #'   series to forecast.
 #' @param norm_type the distance function to use. see 'Details'
+#' @param P the exponent for the P norm
 #' @param method the prediction method to use. see 'Details'
 #' @param tp the prediction horizon (how far ahead to forecast)
 #' @param num_neighbors the number of nearest neighbors to use (any of "e+1", 
@@ -82,7 +85,7 @@
 #' @export 
 
 block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib, 
-                       norm_type = c("L2 norm", "L1 norm"), 
+                       norm_type = c("L2 norm", "L1 norm", "P norm"), P = 0.5, 
                        method = c("simplex", "s-map"), 
                        tp = 1, num_neighbors = "e+1", columns = NULL, 
                        target_column = 1, stats_only = TRUE, first_column_time = FALSE, 
@@ -135,7 +138,8 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
     model$set_target_column(convert_to_column_indices(target_column))
     
     # setup norm and pred types
-    model$set_norm_type(switch(match.arg(norm_type), "L2 norm" = 2, "L1 norm" = 1))
+    model$set_norm_type(switch(match.arg(norm_type), "P norm" = 3, "L2 norm" = 2, "L1 norm" = 1))
+    model$set_p(P)
     model$set_pred_type(switch(match.arg(method), "simplex" = 2, "s-map" = 1))
     if(match.arg(method) == "s-map")
     {

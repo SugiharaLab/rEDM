@@ -29,6 +29,9 @@ void LNLP::set_norm_type(const int norm_type)
         case 2:
             norm_mode = L2_NORM;
             break;
+        case 3:
+            norm_mode = P_NORM;
+            break;
         default:
             throw(std::domain_error("unknown norm type selected"));
     }
@@ -113,6 +116,12 @@ void LNLP::set_params(const size_t new_E, const size_t new_tau, const int new_tp
 void LNLP::set_theta(const double new_theta)
 {
     theta = new_theta;
+    return;
+}
+
+void LNLP::set_p(const double new_p)
+{
+    p = new_p;
     return;
 }
 
@@ -270,6 +279,7 @@ RCPP_MODULE(lnlp_module)
     .method("set_epsilon", &LNLP::set_epsilon)
     .method("set_params", &LNLP::set_params)
     .method("set_theta", &LNLP::set_theta)
+    .method("set_p", &LNLP::set_p)
     .method("suppress_warnings", &LNLP::suppress_warnings)
     .method("save_smap_coefficients", &LNLP::save_smap_coefficients)
     .method("run", &LNLP::run)

@@ -12,7 +12,7 @@ const_targets(vec()), const_predicted(vec()),
 num_vectors(0), distances(std::vector<vec>()), 
 CROSS_VALIDATION(false), SUPPRESS_WARNINGS(false), SAVE_SMAP_COEFFICIENTS(false), 
 pred_mode(SIMPLEX), norm_mode(L2_NORM),
-nn(0), exclusion_radius(-1), epsilon(-1), 
+nn(0), exclusion_radius(-1), epsilon(-1), p(0.5), 
 lib_ranges(std::vector<time_range>()), pred_ranges(std::vector<time_range>())
 {
     //num_threads = std::thread::hardware_concurrency();
@@ -53,10 +53,41 @@ void ForecastMachine::init_distances()
     switch(norm_mode)
     {
         case L1_NORM:
-            dist_func = &l1_distance_func;
+            //dist_func = &l1_distance_func;
+            dist_func = [](const vec& A, const vec& B)
+            {
+                double dist = 0;
+                for (auto a_iter = A.begin(), b_iter = B.begin();
+                     a_iter != A.end(); ++a_iter, ++b_iter)
+                {
+                    dist += fabs(*a_iter - *b_iter);
+                }
+                return dist;
+            };
             break;
         case L2_NORM:
-            dist_func = &l2_distance_func;
+            //dist_func = &l2_distance_func;
+            dist_func = [](const vec& A, const vec& B)
+            {
+                double dist = 0;
+                for (auto a_iter = A.begin(), b_iter = B.begin();
+                     a_iter != A.end(); ++a_iter, ++b_iter)
+                {
+                    dist += (*a_iter - *b_iter) * (*a_iter - *b_iter);
+                }
+                return sqrt(dist);
+            };
+            break;
+        case P_NORM:
+            dist_func = [&](const vec& A, const vec& B){
+                            double dist = 0;
+                            for (auto a_iter = A.begin(), b_iter = B.begin();
+                                 a_iter != A.end(); ++a_iter, ++b_iter)
+                            {
+                                dist += pow(fabs(*a_iter - *b_iter), p);
+                            }
+                            return pow(dist, 1/p);
+                        };
             break;
         default:
             throw std::domain_error("Unknown norm type");
@@ -643,28 +674,6 @@ std::vector<size_t> which_indices_true(const std::vector<bool>& indices)
             which.push_back(index);
     }
     return which;
-}
-
-double l1_distance_func(const vec& A, const vec& B)
-{
-    double dist = 0;
-	for (auto a_iter = A.begin(), b_iter = B.begin();
-         a_iter != A.end(); ++a_iter, ++b_iter)
-	{
-		dist += fabs(*a_iter - *b_iter);
-	}
-	return dist;
-}
-
-double l2_distance_func(const vec& A, const vec& B)
-{
-    double dist = 0;
-	for (auto a_iter = A.begin(), b_iter = B.begin();
-         a_iter != A.end(); ++a_iter, ++b_iter)
-	{
-		dist += (*a_iter - *b_iter) * (*a_iter - *b_iter);
-	}
-	return sqrt(dist);
 }
 
 std::vector<size_t> sort_indices(const vec& v, std::vector<size_t> idx)

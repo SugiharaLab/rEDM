@@ -6,16 +6,16 @@
 \title{Perform univariate forecasting}
 \usage{
 simplex(time_series, lib = c(1, NROW(time_series)), pred = lib,
-  norm_type = c("L2 norm", "L1 norm"), E = 1:10, tau = 1, tp = 1,
-  num_neighbors = "e+1", stats_only = TRUE, exclusion_radius = NULL,
-  epsilon = NULL, silent = FALSE)
+  norm_type = c("L2 norm", "L1 norm", "P norm"), P = 0.5, E = 1:10,
+  tau = 1, tp = 1, num_neighbors = "e+1", stats_only = TRUE,
+  exclusion_radius = NULL, epsilon = NULL, silent = FALSE)
 
 s_map(time_series, lib = c(1, NROW(time_series)), pred = lib,
-  norm_type = c("L2 norm", "L1 norm"), E = 1, tau = 1, tp = 1,
-  num_neighbors = 0, theta = c(0, 1e-04, 3e-04, 0.001, 0.003, 0.01, 0.03,
-  0.1, 0.3, 0.5, 0.75, 1, 1.5, 2, 3, 4, 6, 8), stats_only = TRUE,
-  exclusion_radius = NULL, epsilon = NULL, silent = FALSE,
-  save_smap_coefficients = FALSE)
+  norm_type = c("L2 norm", "L1 norm", "P norm"), P = 0.5, E = 1,
+  tau = 1, tp = 1, num_neighbors = 0, theta = c(0, 1e-04, 3e-04, 0.001,
+  0.003, 0.01, 0.03, 0.1, 0.3, 0.5, 0.75, 1, 1.5, 2, 3, 4, 6, 8),
+  stats_only = TRUE, exclusion_radius = NULL, epsilon = NULL,
+  silent = FALSE, save_smap_coefficients = FALSE)
 }
 \arguments{
 \item{time_series}{either a vector to be used as the time series, or a
@@ -59,6 +59,8 @@ equivalent to an autoregressive model of order E.)}
 \item{save_smap_coefficients}{specifies whether to include the s_map
 coefficients with the output (and forces the full output as if stats_only
 were set to FALSE)}
+
+\item{p}{the exponent for the P norm}
 }
 \value{
 For \code{simplex}, if \code{stats_only = TRUE}, then a data.frame
@@ -126,5 +128,8 @@ norm_type "L2 norm" (default) uses the typical Euclidean distance:
 norm_type "L1 norm" uses the Manhattan distance:
 \deqn{distance(a,b) := \sum_i{|a_i - b_i|}}{distance(a, b) :=
 \sum|a_i - b_i|}
+norm type "P norm" uses the LP norm, generalizing the L1 and L2 norm to use $p$ as the exponent:
+\deqn{distance(a,b) := \sum_i{(a_i - b_i)^p}^{1/p}}{distance(a, b) :=
+(\sum(a_i - b_i)^p)^(1/p)}
 }
 
