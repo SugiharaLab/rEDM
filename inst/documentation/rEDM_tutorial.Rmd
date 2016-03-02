@@ -1,9 +1,10 @@
 ---
-title: "Tutorial in Empirical Dynamic Modeling and Convergent Cross-Mapping"
+title: "rEDM: an R package for Empirical Dynamic Modeling and Convergent Cross-Mapping"
 author:
 - Hao Ye
 - Adam Clark
 - Ethan Deyle
+- George Sugihara
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   pdf_document:
@@ -13,7 +14,6 @@ output:
 csl: ecology.csl
 bibliography: rEDM_refs.bib
 ---
-
 # Introduction
 Empirical dynamic modeling (EDM) is an emerging non-parametric framework for modeling nonlinear dynamic systems. In an ecological context, EDM has numerous applications, including forecasting population abundances, unraveling species interactions, and identifying causal drivers. In contrast to the conventional approach of fitting assumed model equations to data, EDM relies on the fact that ecosystems have dynamics that allows us to reconstruct attractors directly from time series. This approach (with minimal assumptions) makes EDM particularly suitable for studying ecosystems, which exhibit non-equilibrium dynamics (problematic for models that typically assume stable equilibria) and state-dependent behavior (interactions that change with system state). This guide is designed to introduce both the theory behind EDM, as well as providing practical examples for using the rEDM software package.
 

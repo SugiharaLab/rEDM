@@ -9,7 +9,8 @@ block_lnlp(block, lib = c(1, NROW(block)), pred = lib,
   method = c("simplex", "s-map"), tp = 1, num_neighbors = "e+1",
   columns = NULL, target_column = 1, stats_only = TRUE,
   first_column_time = FALSE, exclusion_radius = NULL, epsilon = NULL,
-  theta = NULL, silent = FALSE, save_smap_coefficients = FALSE)
+  theta = NULL, silent = FALSE, save_smap_coefficients = FALSE,
+  short_output = FALSE)
 }
 \arguments{
 \item{block}{either a vector to be used as the time series, or a
@@ -60,6 +61,9 @@ method == "s-map")}
 \item{save_smap_coefficients}{specifies whether to include the s_map
 coefficients with the output (and forces the full output as if stats_only
 were set to FALSE)}
+
+\item{short_output}{specifies whether to return a truncated output data.frame
+whose rows only include the predictions made and not the whole input block}
 }
 \value{
 If stats_only, then a data.frame with components for the parameters
