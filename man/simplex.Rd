@@ -30,6 +30,8 @@ series to forecast.}
 
 \item{norm_type}{the distance function to use. see 'Details'}
 
+\item{P}{the exponent for the P norm}
+
 \item{E}{the embedding dimensions to use for time delay embedding}
 
 \item{tau}{the lag to use for time delay embedding}
@@ -59,8 +61,6 @@ equivalent to an autoregressive model of order E.)}
 \item{save_smap_coefficients}{specifies whether to include the s_map
 coefficients with the output (and forces the full output as if stats_only
 were set to FALSE)}
-
-\item{p}{the exponent for the P norm}
 }
 \value{
 For \code{simplex}, if \code{stats_only = TRUE}, then a data.frame

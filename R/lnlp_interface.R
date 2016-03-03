@@ -36,7 +36,7 @@
 #' @param pred (same format as lib), but specifying the sections of the time 
 #'   series to forecast.
 #' @param norm_type the distance function to use. see 'Details'
-#' @param p the exponent for the P norm
+#' @param P the exponent for the P norm
 #' @param E the embedding dimensions to use for time delay embedding
 #' @param tau the lag to use for time delay embedding
 #' @param tp the prediction horizon (how far ahead to forecast)
