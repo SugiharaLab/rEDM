@@ -5,3 +5,5 @@ exportPattern("^[[:alpha:]]+")
 #importFrom(Rcpp, loadModule)
 import(Rcpp)
 import(methods)
+importFrom("stats", "aggregate", "fft", "predict", "runif", "sd",
+              "smooth.spline")

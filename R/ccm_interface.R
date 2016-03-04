@@ -75,13 +75,13 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
         if(is.numeric(columns))
         {
             if(any(columns > NCOL(block)))
-                message("Warning: some column indices exceed the number of columns and were ignored.")
+                warning("Some column indices exceed the number of columns and were ignored.")
             return(columns[columns <= NCOL(block)])
         }
         # else
         indices <- match(columns, col_names)
         if(any(is.na(indices)))
-            message("Warning: some column names could not be matched and were ignored.")
+            warning("Some column names could not be matched and were ignored.")
         return(indices[is.finite(indices)])
     }
     
@@ -146,6 +146,8 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
     # handle silent flag
     if (silent)
         model$suppress_warnings()
+    else
+        warning("Note: CCM results are typically interpreted in the opposite direction of causation. Please see 'Detecting causality in complex ecosystems' (Sugihara et al. 2012) for more details.")
     
     # check inputs?
     
