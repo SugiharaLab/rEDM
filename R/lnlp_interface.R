@@ -93,6 +93,14 @@
 #'     and predictions\cr
 #'   stats \tab data.frame of forecast statistics (num_pred, rho, mae, rmse)\cr
 #' }
+#' @examples 
+#' data("two_species_model")
+#' ts <- two_species_model$x[1:200]
+#' simplex(ts, lib = c(1, 100), pred = c(101, 200))
+#' 
+#' data("two_species_model")
+#' ts <- two_species_model$x[1:200]
+#' #' simplex(ts, stats_only = FALSE)
 #' @export 
 simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = lib, 
                     norm_type = c("L2 norm", "L1 norm", "P norm"), P = 0.5, 
@@ -193,6 +201,14 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
 #' column for the value of theta. If \code{stats_only = FALSE} and 
 #' \code{save_smap_coefficients = TRUE}, then a matrix of S-map coefficients 
 #' will appear in the full output.
+#' @examples 
+#' data("two_species_model")
+#' ts <- two_species_model$x[1:200]
+#' s_map(ts, E = 2)
+#' 
+#' data("two_species_model")
+#' ts <- two_species_model$x[1:200]
+#' s_map(ts, E = 2, theta = 1, save_smap_coefficients = TRUE)
 #' @export
 s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = lib, 
                   norm_type = c("L2 norm", "L1 norm", "P norm"), P = 0.5, 

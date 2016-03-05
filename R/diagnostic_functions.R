@@ -69,6 +69,10 @@ test_nonlinearity <- function(ts, method = "ebisuzaki", num_surr = 200, T_period
 #' @param num_surr the number of null surrogates to generate
 #' @param T_period the period of seasonality for seasonal surrogates (ignored for other methods)
 #' @return A matrix where each column is a separate surrogate with the same length as \code{ts}.
+#' @examples
+#' data("two_species_model")
+#' ts <- two_species_model$x[1:200]
+#' make_surrogate_data(ts, method = "ebisuzaki")
 #' @export 
 #' 
 make_surrogate_data <- function(ts, method = c("random_shuffle", "ebisuzaki", "seasonal"), 

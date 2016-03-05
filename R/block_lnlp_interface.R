@@ -82,6 +82,10 @@
 #'     are for the E lags, and the (E+1)th column is the constant)\cr
 #'   stats \tab data.frame of forecast statistics (num_pred, rho, mae, rmse)\cr
 #' }
+#' @examples 
+#' data("two_species_model")
+#' block <- two_species_model[1:200,]
+#' block_lnlp(block, columns = c("x", "y"), first_column_time = TRUE)
 #' @export 
 
 block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib, 

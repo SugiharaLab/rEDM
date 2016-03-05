@@ -132,4 +132,20 @@ norm type "P norm" uses the LP norm, generalizing the L1 and L2 norm to use $p$ 
 \deqn{distance(a,b) := \sum_i{(a_i - b_i)^p}^{1/p}}{distance(a, b) :=
 (\sum(a_i - b_i)^p)^(1/p)}
 }
+\examples{
+data("two_species_model")
+ts <- two_species_model$x[1:200]
+simplex(ts, lib = c(1, 100), pred = c(101, 200))
+
+data("two_species_model")
+ts <- two_species_model$x[1:200]
+#' simplex(ts, stats_only = FALSE)
+data("two_species_model")
+ts <- two_species_model$x[1:200]
+s_map(ts, E = 2)
+
+data("two_species_model")
+ts <- two_species_model$x[1:200]
+s_map(ts, E = 2, theta = 1, save_smap_coefficients = TRUE)
+}
 

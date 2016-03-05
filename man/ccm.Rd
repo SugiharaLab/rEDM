@@ -97,4 +97,10 @@ norm_type "L1 norm" uses the Manhattan distance:
 norm type "P norm" uses the LP norm, generalizing the L1 and L2 norm to use $p$ as the exponent:
 \deqn{distance(a,b) := \sum_i{(a_i - b_i)^p}^{1/p}}{distance(a, b) := (\sum(a_i - b_i)^p)^(1/p)}
 }
+\examples{
+data("sardine_anchovy_sst")
+anchovy_xmap_sst <- ccm(sardine_anchovy_sst, E = 3,
+  lib_column = "anchovy", target_column = "np_sst",
+  lib_sizes = seq(10, 80, by = 10), num_samples = 100)
+}
 
