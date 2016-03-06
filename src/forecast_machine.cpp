@@ -157,7 +157,7 @@ std::vector<size_t> ForecastMachine::find_nearest_neighbors(const vec& dist)
     std::vector<size_t> nearest_neighbors;
     double curr_distance;
 
-    if(nn > log(which_lib.size()))
+    if(nn > log(double(which_lib.size())))
     {
         neighbors = sort_indices(dist, which_lib);
         std::vector<size_t>::iterator curr_lib;
@@ -357,7 +357,7 @@ PredStats ForecastMachine::compute_stats(const vec& obs, const vec& pred)
     output.mae = sum_errors / double(num_pred);
     output.rmse = sqrt(sum_squared_errors / double(num_pred));
     output.perc = double(same_sign) / double(num_pred);
-    output.p_val = R::pnorm(atanh(output.rho), 0.0, 1.0 / sqrt(output.num_pred-3), 0.0, 0.0);
+    output.p_val = R::pnorm(atanh(output.rho), 0.0, 1.0 / sqrt(double(output.num_pred-3)), 0.0, 0.0);
 
     return output;
 }
