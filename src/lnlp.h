@@ -36,9 +36,9 @@ private:
     void prepare_forecast();
     void make_vectors();
     void make_targets();
-    vec time_series;
     
     // *** local parameters *** //
+    vec time_series;
     int tp;
     size_t E, tau;
     bool remake_vectors;

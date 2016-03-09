@@ -1,7 +1,10 @@
 #include "xmap.h"
 
 /*** Constructors ***/
-Xmap::Xmap(): remake_vectors(true), remake_targets(true), remake_ranges(true)
+Xmap::Xmap():
+    block(std::vector<vec>()), lib_sizes(std::vector<size_t>()), tp(0), E(0), 
+    tau(1), lib_col(0), target(0), random_libs(true), num_samples(0), seed(42), 
+    remake_vectors(true), remake_targets(true), remake_ranges(true)
 {
     pred_mode = SIMPLEX;
     seed = (size_t)(std::chrono::high_resolution_clock::now().time_since_epoch().count());

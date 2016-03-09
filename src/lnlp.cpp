@@ -1,7 +1,9 @@
 #include "lnlp.h"
 
 /*** Constructors ***/
-LNLP::LNLP(): remake_vectors(true), remake_targets(true), remake_ranges(true)
+LNLP::LNLP(): 
+    time_series(vec()), tp(1), E(1), tau(1), 
+    remake_vectors(true), remake_targets(true), remake_ranges(true)
 {
 }
 

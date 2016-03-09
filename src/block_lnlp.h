@@ -39,9 +39,9 @@ private:
     void prepare_forecast();
     void make_vectors();
     void make_targets();
-    std::vector<vec> block;
     
     // *** local parameters *** //
+    std::vector<vec> block;
     int tp;
     size_t E;
     std::vector<size_t> embedding;

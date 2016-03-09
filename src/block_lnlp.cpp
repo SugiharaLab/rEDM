@@ -1,7 +1,9 @@
 #include "block_lnlp.h"
 
 /*** Constructors ***/
-BlockLNLP::BlockLNLP(): remake_vectors(true), remake_targets(true), remake_ranges(true)
+BlockLNLP::BlockLNLP(): 
+    block(std::vector<vec>()), tp(0), E(0), embedding(std::vector<size_t>()), target(0), 
+    remake_vectors(true), remake_targets(true), remake_ranges(true)
 {
 }
 
@@ -288,12 +290,13 @@ void BlockLNLP::make_targets()
     return;
 }
 
+
 RCPP_MODULE(block_lnlp_module)
 {
     class_<BlockLNLP>("BlockLNLP")
     
     .constructor()
-    
+
     .method("set_time", &BlockLNLP::set_time)
     .method("set_block", &BlockLNLP::set_block)
     .method("set_norm_type", &BlockLNLP::set_norm_type)
