@@ -33,7 +33,6 @@ protected:
     void check_cross_validation();
     bool is_vec_valid(const size_t vec_index);
     bool is_target_valid(const size_t vec_index);
-    PredStats compute_stats(const vec& obs, const vec& pred);
     PredStats make_stats();
     PredStats make_const_stats();
     void LOG_WARNING(const char* warning_text);
@@ -86,5 +85,7 @@ private:
 
 std::vector<size_t> which_indices_true(const std::vector<bool>& indices);
 std::vector<size_t> sort_indices(const std::vector<double>& v, const std::vector<size_t> idx);
+PredStats compute_stats(const vec& obs, const vec& pred);
+DataFrame get_stats(const vec& obs, const vec& pred);
 
 #endif

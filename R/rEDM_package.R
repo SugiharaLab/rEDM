@@ -109,3 +109,25 @@ NULL
 #' @title C++ compiled object for convergent cross mapping.
 #' @seealso \code{\link{ccm}} for the R wrapper.
 NULL
+
+#' @name compute_stats
+#' 
+#' @title Compute performance metrics for predictions
+#'
+#' @description BLAH BLAH BLAH
+#' 
+#' @param observed a vector of the observed values
+#' @param predicted a vector of the corresponding predicted values
+#' 
+#' @return A data.frame with components for the various performance metrics:
+#' \tabular{ll}{
+#'   num_pred \tab number of predictions\cr
+#'   rho \tab correlation coefficient between observations and predictions\cr
+#'   mae \tab mean absolute error\cr
+#'   rmse \tab root mean square error\cr
+#'   perc \tab percent correct sign\cr
+#'   p_val \tab p-value that rho is significantly greater than 0 using Fisher's 
+#' }
+#' @examples 
+#' compute_stats(rnorm(100), rnorm(100))
+NULL

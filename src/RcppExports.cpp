@@ -5,3 +5,15 @@
 
 using namespace Rcpp;
 
+// compute_stats
+DataFrame compute_stats(NumericVector observed, NumericVector predicted);
+RcppExport SEXP rEDM_compute_stats(SEXP observedSEXP, SEXP predictedSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericVector >::type observed(observedSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type predicted(predictedSEXP);
+    __result = Rcpp::wrap(compute_stats(observed, predicted));
+    return __result;
+END_RCPP
+}
