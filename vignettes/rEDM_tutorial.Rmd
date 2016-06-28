@@ -157,7 +157,7 @@ Thus, varying $\theta$ allows us to compare equivalent linear and nonlinear mode
 
 ### Example
 
-Following from the previous example, we set `E = 2` based on the results from simplex projection. Again, note that we allow many of the parameters take on default values (e.g., $\tau = 1$, $\text{tp} = 1$). If we had changed these for simplex projection, we would want to propagate them here. The default values for the nonlinear tuning parameter, $\theta$, range from $0$ to $8$, and are suitable for our purposes.
+Following from the previous example, we set `E = 2` based on the results from simplex projection. Again, note that we allow many of the parameters to take on default values (e.g., $\tau = 1$, $\text{tp} = 1$). If we had changed these for simplex projection, we would want to propagate them here. The default values for the nonlinear tuning parameter, $\theta$, range from $0$ to $8$, and are suitable for our purposes.
 
 Note also, that the default value for `num_neighbors` is `0`. Typically, when using `s_map` to test for nonlinear behavior, we allow all points in the reconstruction to be used, subject only to the weighting based on distance. By using `0` for this parameter (an otherwise nonsensical value), the program will use all nearest neighbors.
 
@@ -915,7 +915,7 @@ The **rEDM** functions are designed to accept data in common R data formats, nam
 
 Missing data can be input using either `NA` or `NAN`. The program will automatically ignore such missing values as appropriate. For instance, simplex projection will not select nearest neighbors if any of the state vector coordinates is missing or if the corresponding target value is missing.
 
-Note that when there is no observed target value, it is still possible to predict from a given state vector, if it has no missing values. Thus, it is possible to use the software to forecast ahead from an observed state into an unbserved future. This can be done simply by substituting `NA` or `NAN` for unknown future values. However, be aware that the performance metrics will be computed so as to ignore such predictions (since there are no observed values to compare against). Thus, the statistics (e.g., $\rho$, MAE, RMSE) may be computed based on fewer predictions than those actually made by the software.
+Note that when there is no observed target value, it is still possible to predict from a given state vector, if it has no missing values. Thus, it is possible to use the software to forecast ahead from an observed state into an unobserved future. This can be done simply by substituting `NA` or `NAN` for unknown future values. However, be aware that the performance metrics will be computed so as to ignore such predictions (since there are no observed values to compare against). Thus, the statistics (e.g., $\rho$, MAE, RMSE) may be computed based on fewer predictions than those actually made by the software.
 
 ## General Parameters
 
