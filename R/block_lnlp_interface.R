@@ -149,7 +149,7 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
     {
         if(is.null(theta))
             theta <- 0
-        if (save_smap_coefficients)
+        if(save_smap_coefficients)
         {
             stats_only = FALSE;
             model$save_smap_coefficients()
@@ -157,9 +157,9 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
     }
     
     # setup lib and pred ranges
-    if (is.vector(lib))
+    if(is.vector(lib))
         lib <- matrix(lib, ncol = 2, byrow = TRUE)
-    if (is.vector(pred))
+    if(is.vector(pred))
         pred <- matrix(pred, ncol = 2, byrow = TRUE)
     
     if(!all(lib[,2] >= lib[,1]))
@@ -230,27 +230,23 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
                 model$set_theta(params$theta[i])
                 model$run()
                 
-                if(save_smap_coefficients)
+                if(short_output)
                 {
-                    return(list(params = params[i,], 
-                                embedding = paste(columns[[params$embedding[i]]], sep = "", collapse = ", "), 
-                                model_output = model$get_output(), 
-                                smap_coefficients = do.call(rbind, model$get_smap_coefficients()), 
-                                stats = model$get_stats()))
+                    to_return <- list(params = params[i,],
+                                      embedding = paste(columns[[params$embedding[i]]], sep = "", collapse = ", "), 
+                                      model_output = model$get_short_output(), 
+                                      stats = model$get_stats())
+                    if(save_smap_coefficients)
+                        to_return$smap_coefficients <- do.call(rbind, model$get_short_smap_coefficients())
                 } else {
-                    if(short_output)
-                    {
-                        return(list(params = params[i,],
-                                    embedding = paste(columns[[params$embedding[i]]], sep = "", collapse = ", "), 
-                                    model_output = model$get_short_output(), 
-                                    stats = model$get_stats()))
-                    } else {
-                        return(list(params = params[i,],
-                                    embedding = paste(columns[[params$embedding[i]]], sep = "", collapse = ", "), 
-                                    model_output = model$get_output(), 
-                                    stats = model$get_stats()))
-                    }
+                    to_return <- list(params = params[i,],
+                                      embedding = paste(columns[[params$embedding[i]]], sep = "", collapse = ", "), 
+                                      model_output = model$get_output(), 
+                                      stats = model$get_stats())
+                    if(save_smap_coefficients)
+                        to_return$smap_coefficients <- do.call(rbind, model$get_smap_coefficients())
                 }
+                return(to_return)
             })
         }
     } else {

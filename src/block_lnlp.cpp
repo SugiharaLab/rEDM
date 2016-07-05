@@ -198,6 +198,16 @@ DataFrame BlockLNLP::get_short_output()
                               Named("pred_var") = short_pred_var);
 }
 
+List BlockLNLP::get_short_smap_coefficients()
+{
+    std::vector<vec> short_smap_coefficients;
+    for(auto curr_pred: which_pred)
+    {
+        short_smap_coefficients.push_back(smap_coefficients[curr_pred]);
+    }
+    return(wrap(short_smap_coefficients));
+}
+
 DataFrame BlockLNLP::get_stats()
 {
     PredStats output = make_stats();
@@ -316,6 +326,7 @@ RCPP_MODULE(block_lnlp_module)
     .method("get_output", &BlockLNLP::get_output)
     .method("get_smap_coefficients", &BlockLNLP::get_smap_coefficients)
     .method("get_short_output", &BlockLNLP::get_short_output)
+    .method("get_short_smap_coefficients", &BlockLNLP::get_short_smap_coefficients)
     .method("get_stats", &BlockLNLP::get_stats)
     ;
 }
