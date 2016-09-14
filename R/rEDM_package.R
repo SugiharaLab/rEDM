@@ -130,4 +130,5 @@ NULL
 #' }
 #' @examples 
 #' compute_stats(rnorm(100), rnorm(100))
+#' @export
 NULL

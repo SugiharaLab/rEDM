@@ -1,8 +1,8 @@
 Package: rEDM
 Type: Package
 Title: Applications of Empirical Dynamic Modeling from Time Series
-Version: 0.4.7.2
-Date: 2016-04-21
+Version: 0.5
+Date: 2016-09-13
 Author: Hao Ye, Adam Clark, Ethan Deyle
 Maintainer: Hao Ye <hye@ucsd.edu>
 Description: Contains C++ compiled objects that use time delay embedding to

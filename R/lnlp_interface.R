@@ -91,7 +91,7 @@
 #'   params \tab data.frame of parameters (E, tau, tp, nn)\cr
 #'   model_output \tab data.frame with columns for the time index, observations, 
 #'     and predictions\cr
-#'   stats \tab data.frame of forecast statistics (num_pred, rho, mae, rmse)\cr
+#'   stats \tab data.frame of forecast statistics\cr
 #' }
 #' @examples 
 #' data("two_species_model")
