@@ -321,12 +321,12 @@ bool ForecastMachine::is_target_valid(const size_t vec_index)
 
 PredStats ForecastMachine::make_stats()
 {
-    return compute_stats(targets, predicted);
+    return compute_stats_internal(targets, predicted);
 }
 
 PredStats ForecastMachine::make_const_stats()
 {
-    return compute_stats(targets, const_predicted);
+    return compute_stats_internal(targets, const_predicted);
 }
 
 void ForecastMachine::LOG_WARNING(const char* warning_text)
@@ -640,7 +640,7 @@ std::vector<size_t> sort_indices(const vec& v, std::vector<size_t> idx)
     return idx;
 }
 
-PredStats compute_stats(const vec& obs, const vec& pred)
+PredStats compute_stats_internal(const vec& obs, const vec& pred)
 {
     size_t num_pred = 0;
     double sum_errors = 0;
@@ -687,12 +687,10 @@ PredStats compute_stats(const vec& obs, const vec& pred)
 }
 
 // [[Rcpp::export]]
-DataFrame compute_stats(NumericVector observed, NumericVector predicted)
+DataFrame compute_stats(std::vector<double> observed, std::vector<double> predicted)
 {
-    vec obs = as<std::vector<double> >(observed);
-    vec pred = as<std::vector<double> >(predicted);
 
-    PredStats output = compute_stats(obs, pred);
+    PredStats output = compute_stats_internal(observed, predicted);
     return DataFrame::create( Named("num_pred") = output.num_pred, 
                               Named("rho") = output.rho, 
                               Named("mae") = output.mae, 
