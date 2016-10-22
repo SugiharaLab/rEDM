@@ -1,5 +1,4 @@
-#' @name rEDM-package
-#' @aliases rEDM
+#' @name rEDM
 #' @docType package
 #' @title Applications of empirical dynamic modeling from time series.
 #' @author Hao Ye
