@@ -31,6 +31,8 @@ series to forecast.}
 
 \item{tp}{the prediction horizon (how far ahead to forecast)}
 
+\item{max_lag}{the maximum number of lags to use for variable combinations}
+
 \item{num_neighbors}{the number of nearest neighbors to use for the in-sample 
 prediction (any of "e+1", "E+1", "e + 1", "E + 1" will peg this parameter 
 to E+1 for each run, any value < 1 will use all possible neighbors.)}

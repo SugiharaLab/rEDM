@@ -562,7 +562,7 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
         }
         
         // perform SVD
-        JacobiSVD<MatrixXd> svd(A, ComputeThinU | ComputeThinV);
+        Eigen::JacobiSVD<MatrixXd> svd(A, Eigen::ComputeThinU | Eigen::ComputeThinV);
         
         // remove singular values close to 0
         S = svd.singularValues();

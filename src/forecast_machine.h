@@ -10,9 +10,12 @@
 #include <math.h>
 #include <Rcpp.h>
 #include "data_types.h"
-#include <Eigen/Dense>
+//#include <Eigen/Dense>
+#include <RcppEigen.h>
 
-using namespace Eigen;
+//using namespace Eigen;
+using Eigen::MatrixXd;
+using Eigen::VectorXd;
 using namespace Rcpp;
 
 class ForecastMachine

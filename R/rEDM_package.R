@@ -79,41 +79,12 @@ NULL
 #' @description Seasonal outbreaks of Thrips imaginis.
 NULL
 
-#' @name Rcpp_LNLP-class
-#' @docType class
-#' @title S4 class for Rcpp compiled object, "LNLP"
-NULL
-
-#' @name LNLP
-#' @title C++ compiled object for univariate forecasting.
-#' @seealso \code{\link{simplex}} and \code{\link{s_map}} for R wrappers.
-NULL
-
-#' @name Rcpp_BlockLNLP-class
-#' @docType class
-#' @title S4 class for Rcpp compiled object, "BlockLNLP"
-NULL
-
-#' @name BlockLNLP
-#' @title C++ compiled object for multivariate forecasting.
-#' @seealso \code{\link{block_lnlp}} for the R wrapper.
-NULL
-
-#' @name Rcpp_Xmap-class
-#' @docType class
-#' @title S4 class for Rcpp compiled object, "Xmap"
-NULL
-
-#' @name Xmap
-#' @title C++ compiled object for convergent cross mapping.
-#' @seealso \code{\link{ccm}} for the R wrapper.
-NULL
-
 #' @name compute_stats
 #' 
 #' @title Compute performance metrics for predictions
 #'
-#' @description BLAH BLAH BLAH
+#' @description Computes the rho, MAE, RMSE, perc, and p-val performance metrics
+#' using the compiled C++ function
 #' 
 #' @param observed a vector of the observed values
 #' @param predicted a vector of the corresponding predicted values

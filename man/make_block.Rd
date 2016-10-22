@@ -26,8 +26,4 @@ A data.frame with the lagged columns and a time column
 tau, while respecting lib (by inserting NANs, when trying to lag past lib 
 regions)
 }
-\examples{
-data("model_3sp")
-make_block(model_3sp)
-}
 

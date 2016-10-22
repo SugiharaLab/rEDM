@@ -39,6 +39,7 @@
 #' @param E the embedding dimensions to use for time delay embedding
 #' @param tau the lag to use for time delay embedding
 #' @param tp the prediction horizon (how far ahead to forecast)
+#' @param max_lag the maximum number of lags to use for variable combinations
 #' @param num_neighbors the number of nearest neighbors to use for the in-sample 
 #'   prediction (any of "e+1", "E+1", "e + 1", "E + 1" will peg this parameter 
 #'   to E+1 for each run, any value < 1 will use all possible neighbors.)
@@ -205,9 +206,6 @@ multiview <- function(block, lib = c(1, floor(NROW(block)/2)),
 #' @param tau the lag to use for time delay embedding
 #' @return A data.frame with the lagged columns and a time column
 #' 
-#' @examples 
-#' data("model_3sp")
-#' make_block(model_3sp)
 make_block <- function(block, max_lag = 3, t = NULL, lib = NULL, tau = 1)
 {
     num_vars <- NCOL(block)
