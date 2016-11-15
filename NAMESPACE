@@ -10,7 +10,6 @@ export(multiview)
 export(s_map)
 export(simplex)
 export(test_nonlinearity)
-#importFrom(Rcpp, loadModule)
 import(Rcpp)
 import(methods)
 importFrom("stats", "aggregate", "fft", "predict", "runif", "sd",
