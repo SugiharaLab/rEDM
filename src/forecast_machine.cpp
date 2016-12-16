@@ -500,10 +500,10 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
 {
     size_t curr_pred, effective_nn, E = data_vectors[0].size();
     double avg_distance;
-    vec weights;
+//    vec weights;
     std::vector<size_t> nearest_neighbors;
     MatrixXd A, S_inv;
-    VectorXd B, S, x;
+    VectorXd B, S, x, weights;
     double max_s, pred;
     std::vector<size_t> temp_lib;
     
@@ -531,8 +531,8 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
             LOG_WARNING("no nearest neighbors found; using NA for forecast");
             continue;
         }
-        
-        weights.assign(effective_nn, 1.0); // default is for theta = 0
+        weights = Eigen::VectorXd::Constant(effective_nn, 1.0);
+//        weights.assign(effective_nn, 1.0); // default is for theta = 0
         if(theta > 0.0)
         {
             // compute average distance
@@ -545,7 +545,7 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
             
             // compute weights
             for(size_t i = 0; i < effective_nn; ++i)
-                weights[i] = exp(-theta * distances[curr_pred][nearest_neighbors[i]] / avg_distance);
+                weights(i) = exp(-theta * distances[curr_pred][nearest_neighbors[i]] / avg_distance);
         }
         
         // setup matrices for SVD
@@ -554,13 +554,13 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
         
         for(size_t i = 0; i < effective_nn; ++i)
         {
-            B(i) = weights[i] * targets[nearest_neighbors[i]];
+            B(i) = weights(i) * targets[nearest_neighbors[i]];
             
             for(size_t j = 0; j < E; ++j)
-                A(i, j) = weights[i] * data_vectors[nearest_neighbors[i]][j];
-            A(i, E) = weights[i];
+                A(i, j) = weights(i) * data_vectors[nearest_neighbors[i]][j];
+            A(i, E) = weights(i);
         }
-        
+
         // perform SVD
         Eigen::JacobiSVD<MatrixXd> svd(A, Eigen::ComputeThinU | Eigen::ComputeThinV);
         
