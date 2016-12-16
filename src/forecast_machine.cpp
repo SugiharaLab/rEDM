@@ -588,6 +588,17 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
         }
         // save prediction
         predicted[curr_pred] = pred;
+        
+        // compute variance of prediction
+        VectorXd w_resid = B - A * x;
+        VectorXd resid = w_resid;
+        double total_w = 0;
+        for(size_t i = 0; i < effective_nn; ++i)
+        {
+            resid(i) /= weights(i);
+            total_w += weights(i);
+        }
+        predicted_var[curr_pred] = w_resid.dot(resid) / total_w;
     }
     return;
 }
