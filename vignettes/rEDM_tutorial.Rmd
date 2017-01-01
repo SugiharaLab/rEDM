@@ -1013,4 +1013,6 @@ Many of the functions in **rEDM** are designed around the same prediction engine
 
 **rEDM** is the latest incarnation of EDM code. Past versions have been developed by George Sugihara, Alan Trombla, Richard Penner, Victor Wong, Martin Casdagli, Mohsen Azarbayejani, Ava Pierce, Jennifer Trezzo, and Hao Ye.
 
+We thank Ethan White and Tony Tsai for their suggestions on earlier versions of this document.
+
 # References
