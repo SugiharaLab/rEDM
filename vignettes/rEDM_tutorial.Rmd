@@ -505,8 +505,8 @@ composite_ts <- e120_biodiversity[,c(7:9,12)]
 n <- NCOL(composite_ts)
 blocks <- e120_biodiversity$Plot
 blocks_index <- sort(unique(blocks))
-for(j in 1:n) {
-    for(i in 1:length(blocks_index)) {
+for (j in 1:n) {
+    for (i in 1:length(blocks_index)) {
         subs <- which(blocks == blocks_index[i])
         composite_ts[subs,j] <- (composite_ts[subs,j] - mean(composite_ts[subs,j])) / sd(composite_ts[subs,j])
         }
@@ -518,29 +518,29 @@ composite_ts <- cbind(year = e120_biodiversity$Year, composite_ts)
 Again, we need to indicate separations between plots so that lagged vectors are not constructed that contain coordinates spanning multiple time series.
 
 ```{r make composite ts for e120}
-#make composite library
+# make composite library
 segments <- NULL
 startpos <- 1
-for(i in 2:nrow(composite_ts)) {
-    if(composite_ts$year[i] < composite_ts$year[i-1]) {
-        segments <- rbind(segments, c(startpos, i))
-        startpos <- i+1
-        }
-    }
-segments <- rbind(segments, c(max(segments)+1, nrow(composite_ts)))
+for (i in 2:nrow(composite_ts)) {
+  if (composite_ts$year[i] < composite_ts$year[i - 1]) {
+    segments <- rbind(segments, c(startpos, i))
+    startpos <- i + 1
+  }
+}
+segments <- rbind(segments, c(max(segments) + 1, nrow(composite_ts)))
 
-#Choose random segments for prediction
+# choose random segments for prediction
 set.seed(2312)
-rndlib <- sort(sample(1:nrow(segments), round(nrow(segments)/2,0), rep=FALSE))
-composite_lib <- segments[rndlib,]
-composite_pred <- segments[-rndlib,]
+rndlib <- sort(sample(1:nrow(segments), round(nrow(segments)/2, 0), replace = FALSE))
+composite_lib <- segments[rndlib, ]
+composite_pred <- segments[-rndlib, ]
 ```
 
 Because the time series for precipitation does not vary among replicates, we also need to construct separate variables for analyzing precipitation dynamics:
  
 ```{r precip for e120}
-precip_ts <- unique(e120_biodiversity[,c("Year", "SummerPrecip.mm.")])
-precip_ts <- precip_ts[order(precip_ts$Year),]
+precip_ts <- unique(e120_biodiversity[, c("Year", "SummerPrecip.mm.")])
+precip_ts <- precip_ts[order(precip_ts$Year), ]
 ```
 
 ### Applying Simplex and S-map Algorithms
@@ -548,18 +548,18 @@ precip_ts <- precip_ts[order(precip_ts$Year),]
 We can then use the **rEDM** functions as normal for each of our time series. First, we apply simplex projection:
  
 ```{r simplex on e120, tidy = TRUE, cache = TRUE, warning = FALSE, fig.width = 6}
-par(mar = c(4,4,1,1), mfrow=c(2,2), mgp = c(2.5, 1, 0))
+par(mar = c(4,4,1,1), mfrow = c(2,2), mgp = c(2.5, 1, 0))
 varlst <- colnames(composite_ts)[2:4]
 simplex_output_list <- NULL
 
-for(i in 1:length(varlst)) {
-    simplex_output_list[[i]] <- simplex(composite_ts[,c("year", varlst[i])], lib=composite_lib, pred=composite_pred, E = c(2:6))
-    plot(simplex_output_list[[i]]$E, simplex_output_list[[i]]$rho, type = "l", xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)", main=varlst[i])
+for (i in 1:length(varlst)) {
+    simplex_output_list[[i]] <- simplex(composite_ts[,c("year", varlst[i])], lib = composite_lib, pred = composite_pred, E = c(2:6))
+    plot(simplex_output_list[[i]]$E, simplex_output_list[[i]]$rho, type = "l", xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)", main = varlst[i])
     }
 
 simplex_output_list[[4]] <- simplex(precip_ts, lib = c(1,7), pred = c(1,7), E = c(2:5), silent = TRUE)
 names(simplex_output_list) <- c(varlst, "precipmm")
-plot(simplex_output_list[[4]]$E, simplex_output_list[[4]]$rho, type = "l", xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)", main="Precip")
+plot(simplex_output_list[[4]]$E, simplex_output_list[[4]]$rho, type = "l", xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)", main = "Precip")
 ```
 
 These results give us the best embedding dimension for each of our projections:
@@ -574,10 +574,10 @@ bestE
 Using these embedding dimensions, we can now apply S-maps to identify nonlinearity:
 
 ```{r smap on e120, cache = TRUE, warning = FALSE, tidy = TRUE, fig.width = 6}
-par(mar = c(4,4,1,1), mfrow=c(2,2), mgp = c(2.5, 1, 0))
+par(mar = c(4,4,1,1), mfrow = c(2,2), mgp = c(2.5, 1, 0))
 smap_output_list <- NULL
 
-for(i in 1:length(varlst)) {
+for (i in 1:length(varlst)) {
     smap_output_list[[i]] <- s_map(composite_ts[,c("year", varlst[i])], lib = composite_lib, pred = composite_pred, E = bestE[i], silent = TRUE)
     plot(smap_output_list[[i]]$theta, smap_output_list[[i]]$rho, type = "l", xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)", main = varlst[i])
     }
@@ -595,8 +595,8 @@ Next, we can use information from several time series to make better predictions
 ```{r make block for e120, tidy = TRUE}
 n <- NROW(composite_ts)
 
-#Make lags
-block_data <- data.frame(year=composite_ts$year)
+# make lags
+block_data <- data.frame(year = composite_ts$year)
 block_data$AB_tm <- composite_ts$AbvBioAnnProd
 block_data$AB_tm1 <- c(NA, block_data$AB_tm[-n])
 block_data$AB_tm2 <- c(NA, block_data$AB_tm1[-n])
@@ -617,22 +617,22 @@ block_data$PR_tm1 <- c(NA, block_data$PR_tm[-n])
 block_data$PR_tm2 <- c(NA, block_data$PR_tm1[-n])
 block_data$PR_tm3 <- c(NA, block_data$PR_tm2[-n])
 
-#Remove overlaps from other plots
+# remove overlaps from other plots
 startyear <- 1996
-for(i in 2:nrow(block_data)) {
-    if(block_data$year[i]<block_data$year[i-1]) {
+for (i in 2:nrow(block_data)) {
+    if (block_data$year[i] < block_data$year[i - 1]) {
         startyear <- block_data$year[i]
         }
-    if(block_data$year[i]==startyear) {
+    if (block_data$year[i] == startyear) {
         block_data[i,c("AB_tm1", "NO_tm1", "IV_tm1", "PR_tm1")] <- NA
         block_data[i,c("AB_tm2", "NO_tm2", "IV_tm2", "PR_tm2")] <- NA
         block_data[i,c("AB_tm3", "NO_tm3", "IV_tm3", "PR_tm3")] <- NA
         }
-    if(block_data$year[i]==(startyear+1)) {
+    if (block_data$year[i] == (startyear + 1)) {
         block_data[i,c("AB_tm2", "NO_tm2", "IV_tm2", "PR_tm2")] <- NA
         block_data[i,c("AB_tm3", "NO_tm3", "IV_tm3", "PR_tm3")] <- NA
         }
-    if(block_data$year[i]==(startyear+2)) {
+    if (block_data$year[i] == (startyear + 2)) {
         block_data[i,c("AB_tm3", "NO_tm3", "IV_tm3", "PR_tm3")] <- NA
         }
     }
@@ -643,8 +643,6 @@ Now, we can run the `block_lnlp` algorithm on the composite, multi-variate time 
 
 ```{r block_lnlp for e120, tidy=TRUE, warning = FALSE, cache = TRUE}
 block_lnlp_output_AB <- block_lnlp(block_data, lib = composite_lib, pred = composite_pred, columns = c("AB_tm", "AB_tm1", "AB_tm2"), target_column = 1, stats_only = FALSE, first_column_time = TRUE)
-
-block_lnlp_output_ABPR <- block_lnlp(block_data, lib = composite_lib, pred = composite_pred, columns = c("AB_tm", "AB_tm1", "AB_tm2", "PR_tm", "PR_tm1", "PR_tm2"), target_column = 1, stats_only = FALSE, first_column_time = TRUE)
 
 block_lnlp_output_ABPR <- block_lnlp(block_data, lib = composite_lib, pred = composite_pred, columns = c("AB_tm", "AB_tm1", "AB_tm2", "PR_tm", "PR_tm1", "PR_tm2"), target_column = 1, stats_only = FALSE, first_column_time = TRUE)
 ```
@@ -661,11 +659,11 @@ predicted_ABPR <- block_lnlp_output_ABPR[[1]]$model_output$pred
 par(mar = c(4,4,1,1), pty = "s", mgp = c(2.5, 1, 0))
 plot_range <- range(c(observed_AB, predicted_AB), na.rm = TRUE)
 plot(observed_AB, predicted_AB, xlim = plot_range, ylim = plot_range, xlab = "Observed", ylab = "Predicted")
-abline(a = 0, b = 1, lty = 2, col = "darkgrey", lwd=2)
-abline(lm(predicted_AB~observed_AB), col="black", lty=3, lwd=2)
+abline(a = 0, b = 1, lty = 2, col = "darkgrey", lwd = 2)
+abline(lm(predicted_AB~observed_AB), col = "black", lty = 3, lwd = 2)
 
-points(observed_ABPR, predicted_ABPR, pch=2, col="red")
-abline(lm(predicted_ABPR~observed_ABPR), col="red", lty=3, lwd=2)
+points(observed_ABPR, predicted_ABPR, pch = 2, col = "red")
+abline(lm(predicted_ABPR~observed_ABPR), col = "red", lty = 3, lwd = 2)
 ```
 
 ### Convergent Cross Mapping
@@ -676,42 +674,42 @@ In each case, we use the embedding dimension corresponding to the "best" embeddi
 
 ```{r ccm on e120, cache = TRUE, warning = FALSE, tidy = TRUE, fig.width = 5, fig.height = 3.5}
 # A. repens:
-no_xmap_inv <- ccm(composite_ts, lib=segments, pred=segments, E = bestE[4], lib_column = "noh020tot", target_column = "invrichness", lib_sizes = c(seq(5, 55, by=2), seq(55, 400, by=50)), num_samples = 100, silent = TRUE)
-inv_xmap_no <- ccm(composite_ts, lib=composite_lib, pred=composite_pred, E = bestE[1], lib_column = "invrichness", target_column = "noh020tot", lib_sizes = c(seq(5, 55, by=2), seq(55, 400, by=50)), num_samples = 100, silent = TRUE)
+no_xmap_inv <- ccm(composite_ts, lib = segments, pred = segments, E = bestE[4], lib_column = "noh020tot", target_column = "invrichness", lib_sizes = c(seq(5, 55, by = 2), seq(55, 400, by = 50)), num_samples = 100, silent = TRUE)
+inv_xmap_no <- ccm(composite_ts, lib = composite_lib, pred = composite_pred, E = bestE[1], lib_column = "invrichness", target_column = "noh020tot", lib_sizes = c(seq(5, 55, by = 2), seq(55, 400, by = 50)), num_samples = 100, silent = TRUE)
 
 n_xmap_i_means <- data.frame(ccm_means(no_xmap_inv), sd.rho = with(no_xmap_inv, tapply(rho, lib_size, sd)))
 i_xmap_n_means <- data.frame(ccm_means(inv_xmap_no), sd.rho = with(inv_xmap_no, tapply(rho, lib_size, sd)))
 
 # S. scoparium:
-ab_xmap_inv <- ccm(composite_ts, lib=segments, pred=segments, E = bestE[4], lib_column = "AbvBioAnnProd", target_column = "invrichness", lib_sizes = c(seq(5, 55, by=2), seq(55, 400, by=50)), num_samples = 100, silent = TRUE)
-inv_xmap_ab <- ccm(composite_ts, lib=segments, pred=segments, E = bestE[2], lib_column = "invrichness", target_column = "AbvBioAnnProd", lib_sizes = c(seq(5, 55, by=2), seq(55, 400, by=50)), num_samples = 100, silent = TRUE)
+ab_xmap_inv <- ccm(composite_ts, lib = segments, pred = segments, E = bestE[4], lib_column = "AbvBioAnnProd", target_column = "invrichness", lib_sizes = c(seq(5, 55, by = 2), seq(55, 400, by = 50)), num_samples = 100, silent = TRUE)
+inv_xmap_ab <- ccm(composite_ts, lib = segments, pred = segments, E = bestE[2], lib_column = "invrichness", target_column = "AbvBioAnnProd", lib_sizes = c(seq(5, 55, by = 2), seq(55, 400, by = 50)), num_samples = 100, silent = TRUE)
 
-a_xmap_i_means <- data.frame(ccm_means(ab_xmap_inv), sd.rho=with(ab_xmap_inv, tapply(rho, lib_size, sd)))
-i_xmap_a_means <- data.frame(ccm_means(inv_xmap_ab), sd.rho=with(inv_xmap_ab, tapply(rho, lib_size, sd)))
+a_xmap_i_means <- data.frame(ccm_means(ab_xmap_inv), sd.rho = with(ab_xmap_inv, tapply(rho, lib_size, sd)))
+i_xmap_a_means <- data.frame(ccm_means(inv_xmap_ab), sd.rho = with(inv_xmap_ab, tapply(rho, lib_size, sd)))
 
-# Plot output
+# plot output
 par(mar = c(4,4,1,1))
-plot(n_xmap_i_means$lib_size, pmax(0, n_xmap_i_means$rho), type = "l", col = "red", xlab = "Library Size", ylab = "Cross Map Skill (rho)", ylim = c(0, 0.6), lwd=2)
-lines(i_xmap_n_means$lib_size, pmax(0, i_xmap_n_means$rho), col = "blue", lwd=2)
-legend(x = "topleft", legend = c("Nitrate xmap Inv. Richness", "Inv. Richness xmap Nitrate"), col = c("red", "blue"), lwd = 2, inset = 0.02, bty="n", cex = 0.8)
-abline(h=0, lty=3, col="darkgrey", lwd=2)
+plot(n_xmap_i_means$lib_size, pmax(0, n_xmap_i_means$rho), type = "l", col = "red", xlab = "Library Size", ylab = "Cross Map Skill (rho)", ylim = c(0, 0.6), lwd = 2)
+lines(i_xmap_n_means$lib_size, pmax(0, i_xmap_n_means$rho), col = "blue", lwd = 2)
+legend(x = "topleft", legend = c("Nitrate xmap Inv. Richness", "Inv. Richness xmap Nitrate"), col = c("red", "blue"), lwd = 2, inset = 0.02, bty = "n", cex = 0.8)
+abline(h = 0, lty = 3, col = "darkgrey", lwd = 2)
 
-#Add CI's
-lines(n_xmap_i_means$lib_size, n_xmap_i_means$rho+n_xmap_i_means$sd.rho, col = "red", lty=2, lwd=2)
-lines(n_xmap_i_means$lib_size, n_xmap_i_means$rho-n_xmap_i_means$sd.rho, col = "red", lty=2, lwd=2)
-lines(i_xmap_n_means$lib_size, i_xmap_n_means$rho+i_xmap_n_means$sd.rho, col = "blue", lty=2, lwd=2)
-lines(i_xmap_n_means$lib_size, i_xmap_n_means$rho-i_xmap_n_means$sd.rho, col = "blue", lty=2, lwd=2)
+# add CI's
+lines(n_xmap_i_means$lib_size, n_xmap_i_means$rho + n_xmap_i_means$sd.rho, col = "red", lty = 2, lwd = 2)
+lines(n_xmap_i_means$lib_size, n_xmap_i_means$rho - n_xmap_i_means$sd.rho, col = "red", lty = 2, lwd = 2)
+lines(i_xmap_n_means$lib_size, i_xmap_n_means$rho + i_xmap_n_means$sd.rho, col = "blue", lty = 2, lwd = 2)
+lines(i_xmap_n_means$lib_size, i_xmap_n_means$rho - i_xmap_n_means$sd.rho, col = "blue", lty = 2, lwd = 2)
 
-plot(a_xmap_i_means$lib_size, pmax(0, a_xmap_i_means$rho), type = "l", col = "orange", xlab = "Library Size", ylab = "Cross Map Skill (rho)", ylim = c(0, 0.6), lwd=2)
-lines(i_xmap_a_means$lib_size, pmax(0, i_xmap_a_means$rho), col = "blue", lwd=2)
-legend(x = "topleft", legend = c("Abv. Biomass xmap Inv. Richness", "Inv. Richness xmap Abv. Biomass"), col = c("orange", "blue"), lwd = 2, inset = 0.02, bty="n", cex = 0.8)
-abline(h=0, lty=3, col="darkgrey", lwd=2)
+plot(a_xmap_i_means$lib_size, pmax(0, a_xmap_i_means$rho), type = "l", col = "orange", xlab = "Library Size", ylab = "Cross Map Skill (rho)", ylim = c(0, 0.6), lwd = 2)
+lines(i_xmap_a_means$lib_size, pmax(0, i_xmap_a_means$rho), col = "blue", lwd = 2)
+legend(x = "topleft", legend = c("Abv. Biomass xmap Inv. Richness", "Inv. Richness xmap Abv. Biomass"), col = c("orange", "blue"), lwd = 2, inset = 0.02, bty = "n", cex = 0.8)
+abline(h = 0, lty = 3, col = "darkgrey", lwd = 2)
 
-#Add CI's
-lines(a_xmap_i_means$lib_size, a_xmap_i_means$rho+a_xmap_i_means$sd.rho, col = "orange", lty=2, lwd=2)
-lines(a_xmap_i_means$lib_size, a_xmap_i_means$rho-a_xmap_i_means$sd.rho, col = "orange", lty=2, lwd=2)
-lines(i_xmap_a_means$lib_size, i_xmap_a_means$rho+i_xmap_a_means$sd.rho, col = "blue", lty=2, lwd=2)
-lines(i_xmap_a_means$lib_size, i_xmap_a_means$rho-i_xmap_a_means$sd.rho, col = "blue", lty=2, lwd=2)
+# add CI's
+lines(a_xmap_i_means$lib_size, a_xmap_i_means$rho + a_xmap_i_means$sd.rho, col = "orange", lty = 2, lwd = 2)
+lines(a_xmap_i_means$lib_size, a_xmap_i_means$rho - a_xmap_i_means$sd.rho, col = "orange", lty = 2, lwd = 2)
+lines(i_xmap_a_means$lib_size, i_xmap_a_means$rho + i_xmap_a_means$sd.rho, col = "blue", lty = 2, lwd = 2)
+lines(i_xmap_a_means$lib_size, i_xmap_a_means$rho - i_xmap_a_means$sd.rho, col = "blue", lty = 2, lwd = 2)
 ```
 
 In each case, results suggest that invasive richness is driven by other variables more strongly than it influences them in return. In particular, while invasion dynamics appear to be strongly forced by soil nitrate dynamics, invasion does not appear influence plot soil nitrate at all. This makes sense, as invading species in these plots are quickly weeded out and should not have time to influence local environmental conditions. Causal forcing between biomass and invasion, on the other hand, may be bi-directional based on our analyses. Again, though, it makes sense that there should only be moderate effects of invading species on plot-level biomass (e.g. by decreasing biomass of planted species through light competition), while effects of plot-level planted biomass on invader success should be much stronger (e.g. through competition for space or soil resources).
@@ -732,10 +730,10 @@ First, we plot the data.
 ```{r thrips plot, echo = FALSE, fig.width = 6, fig.height = 7}
 par(mar = c(4,4,1,1), mfrow = c(4,1), mgp = c(2.5,1,0))
 time_dec <- thrips_block$Year + (thrips_block$Month)/12
-plot(time_dec, thrips_block$Thrips_imaginis, type='l', col = 'green', ylab = 'Thrips')
-plot(time_dec, thrips_block$maxT_degC, type='l', col = 'red', ylab = 'maxT (oC)')
-plot(time_dec, thrips_block$Rain_mm, type='l', col = 'blue', ylab = 'Rain (mm)')
-plot(time_dec, thrips_block$Season, type='l', col = 'magenta', ylab = 'Season')
+plot(time_dec, thrips_block$Thrips_imaginis, type = 'l', col = 'green', ylab = 'Thrips')
+plot(time_dec, thrips_block$maxT_degC, type = 'l', col = 'red', ylab = 'maxT (oC)')
+plot(time_dec, thrips_block$Rain_mm, type = 'l', col = 'blue', ylab = 'Rain (mm)')
+plot(time_dec, thrips_block$Season, type = 'l', col = 'magenta', ylab = 'Season')
 ```
 
 Note that all the time-series variables, particularly the mean maximum daily Temperature, show marked seasonality.
@@ -766,8 +764,8 @@ smap_output[[2]] <- s_map(ts, lib, pred, E = 8)
 
 ```{r rho vs. theta for thrips, echo=FALSE, tidy = TRUE, fig.width = 6, fig.height = 3.5}
 par(mar = c(4,4,1,1), mfrow = c(1,2))
-plot(smap_output[[1]]$theta, smap_output[[1]]$rho, type = "l", xlim=c(0,4), xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)")
-plot(smap_output[[2]]$theta, smap_output[[2]]$rho, type = "l", xlim=c(0,4), xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)")
+plot(smap_output[[1]]$theta, smap_output[[1]]$rho, type = "l", xlim = c(0,4), xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)")
+plot(smap_output[[2]]$theta, smap_output[[2]]$rho, type = "l", xlim = c(0,4), xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)")
 ```
 
 The S-map results demonstrate clear nonlinearity in the Thrips time series, as nonlinear models $\theta > 0$ give substantially better predictions than the linear model $\theta = 0$. This suggests that Thrips, despite the strong seasonal dynamics, do not simply track the environment passively, but have some intrinsic dynamics. To look more closely at the issue of seasonal drivers, however, we turn to convergent cross-mapping (CCM).
@@ -780,15 +778,16 @@ Recall that there is a two-part criterion for CCM to be a rigorous test of causa
 For an initial summary, we first simply compute the cross-map skill (measured with Pearson's $\rho$) with the full time-series.
 
 ```{r compute ccm matrix for thrips, results='hold', tidy=TRUE, cache = TRUE, warning = FALSE}
-ncol <- dim(thrips_block)[2]-2
-M_rho <- array(NA,dim=c(ncol,ncol),dimnames=list(colnames(thrips_block[3:6]),colnames(thrips_block[3:6])))
+ncol <- dim(thrips_block)[2] - 2
+M_rho <- array(NA, dim = c(ncol,ncol), dimnames = list(colnames(thrips_block[3:6]),colnames(thrips_block[3:6])))
 
-for (i in 1:ncol){
-    for (j in 1:ncol){
-        if (i!=j){
-            out_temp <- ccm(thrips_block,E=8,lib_column=2+i,target_column=2+j,
-                            lib_sizes = dim(thrips_block)[1],replace=FALSE, silent = TRUE)
-            M_rho[i,j] <- out_temp$rho
+for (i in 1:ncol) {
+    for (j in 1:ncol) {
+        if (i != j) {
+            out_temp <- ccm(thrips_block, E = 8, lib_column = 2 + i, 
+                            target_column = 2 + j, lib_sizes = dim(thrips_block)[1], 
+                            replace = FALSE, silent = TRUE)
+            M_rho[i, j] <- out_temp$rho
             } 
         }
     }
@@ -798,13 +797,14 @@ for (i in 1:ncol){
 
 For comparison we also compute the lag cross-correlation, allowing lags up to $\pm 6$ months.
 ```{r compute corr matrix for thrips, tidy=TRUE}
-M_corr <- array(NA,dim=c(ncol,ncol),dimnames=list(colnames(thrips_block[3:6]),colnames(thrips_block[3:6])))
+M_corr <- array(NA, dim = c(ncol, ncol), dimnames = list(colnames(thrips_block[3:6]), colnames(thrips_block[3:6])))
 
-for (i in 1:ncol){
-    for (j in 1:ncol){
-        if (i!=j){
-            cf_temp <- ccf(x=thrips_block[,2+i], y=thrips_block[,2+j], type = "correlation", lag.max = 6, plot = FALSE)$acf
-            M_corr[i,j] <- max(abs(cf_temp))
+for (i in 1:ncol) {
+    for (j in 1:ncol) {
+        if (i != j) {
+            cf_temp <- ccf(x = thrips_block[, 2 + i], y = thrips_block[, 2 + j], 
+                           type = "correlation", lag.max = 6, plot = FALSE)$acf
+            M_corr[i, j] <- max(abs(cf_temp))
             }
         }
 }
@@ -838,7 +838,7 @@ xmap_means <- list(ccm_means(thrips_xmap_maxT),ccm_means(maxT_xmap_thrips))
 par(mar = c(4,4,1,1), mgp = c(2.5, 1, 0))
 plot(xmap_means[[1]]$lib_size, pmax(0, xmap_means[[1]]$rho), type = "l", col = "red",  xlab = "Library Size", ylab = "Cross Map Skill (rho)", ylim = c(0, 1))
 lines(xmap_means[[2]]$lib_size, pmax(0, xmap_means[[2]]$rho), col = "blue")
-abline(h=M_corr['Thrips_imaginis','maxT_degC'], col = "black", lty = 2)
+abline(h = M_corr['Thrips_imaginis','maxT_degC'], col = "black", lty = 2)
 legend(x = "bottomright", legend = c("Thrips xmap maxT", "maxT xmap Thrips"), col = c("red", "blue"), lwd = 1, inset = 0.02)
 ```
 
@@ -855,7 +855,7 @@ xmap_means <- list(ccm_means(thrips_xmap_Rain),ccm_means(Rain_xmap_thrips))
 par(mar = c(4,4,1,1), mgp = c(2.5, 1, 0))
 plot(xmap_means[[1]]$lib_size, pmax(0, xmap_means[[1]]$rho), type = "l", col = "red", xlab = "Library Size", ylab = "Cross Map Skill (rho)", ylim = c(0, 1))
 lines(xmap_means[[2]]$lib_size, pmax(0, xmap_means[[2]]$rho), col = "blue")
-abline(h=M_corr['Thrips_imaginis','Rain_mm'], col = 'black', lty = 2)
+abline(h = M_corr['Thrips_imaginis','Rain_mm'], col = 'black', lty = 2)
 legend(x = "topleft", legend = c("Thrips xmap Rain", "Rain xmap Thrips"), 
  col = c("red", "blue"), lwd = 1, inset = 0.02)
 ```
@@ -873,7 +873,7 @@ xmap_means <- list(ccm_means(thrips_xmap_Season), ccm_means(Season_xmap_thrips))
 par(mar = c(4,4,1,1), mgp = c(2.5, 1, 0))
 plot(xmap_means[[1]]$lib_size, pmax(0, xmap_means[[1]]$rho), type = "l", col = "red", xlab = "Library Size", ylab = "Cross Map Skill (rho)", ylim = c(0, 1))
 lines(xmap_means[[2]]$lib_size, pmax(0, xmap_means[[2]]$rho), col = "blue")
-abline(h=M_corr['Thrips_imaginis','Season'], col = 'black', lty = 2)
+abline(h = M_corr['Thrips_imaginis','Season'], col = 'black', lty = 2)
 legend(x = "bottomright", legend = c("Thrips xmap Season", "Season xmap Thrips"), col = c("red", "blue"), lwd = 1, inset = 0.02)
 ```
 
@@ -916,7 +916,7 @@ The **rEDM** functions are designed to accept data in common R data formats, nam
 
 Missing data can be input using either `NA` or `NAN`. The program will automatically ignore such missing values as appropriate. For instance, simplex projection will not select nearest neighbors if any of the state vector coordinates is missing or if the corresponding target value is missing.
 
-Note that when there is no observed target value, it is still possible to predict from a given state vector, if it has no missing values. Thus, it is possible to use the software to forecast ahead from an observed state into an unbserved future. This can be done simply by substituting `NA` or `NAN` for unknown future values. However, be aware that the performance metrics will be computed so as to ignore such predictions (since there are no observed values to compare against). Thus, the statistics (e.g., $\rho$, MAE, RMSE) may be computed based on fewer predictions than those actually made by the software.
+Note that when there is no observed target value, it is still possible to predict from a given state vector, if it has no missing values. Thus, it is possible to use the software to forecast ahead from an observed state into an unobserved future. This can be done simply by substituting `NA` or `NAN` for unknown future values. However, be aware that the performance metrics will be computed so as to ignore such predictions (since there are no observed values to compare against). Thus, the statistics (e.g., $\rho$, MAE, RMSE) may be computed based on fewer predictions than those actually made by the software.
 
 ## General Parameters
 
@@ -958,58 +958,56 @@ Many of the functions in **rEDM** are designed around the same prediction engine
 * silent
     + `TRUE` or `FALSE` (default): specifies whether to suppress warning messages from being printed to the R console
 * save_smap_coefficients
-    + `TRUE` or `FALSE` (default): specifies whether to include a table of s-map coefficients with the output
+    + `TRUE` or `FALSE` (default): specifies whether to include a table of S-map coefficients with the output
     + (note that setting this to `TRUE` forces the full output as if `stats_only = FALSE`)
 
-<!--
-# Applications
+<!-- # Applications -->
 
-## Composite Time Series
+<!-- ## Composite Time Series -->
 
-In some cases, we may have multiple time series that can serve as spatial or ecological replicates. To treat these time series as replicates when applying EDM, we want to combine the data together into a single composite time series. Because the scale may differ across time series, we typically apply a normalization routine to linearly transform each time series to have mean = 0 and variance = 1 before concatenating. 
+<!-- In some cases, we may have multiple time series that can serve as spatial or ecological replicates. To treat these time series as replicates when applying EDM, we want to combine the data together into a single composite time series. Because the scale may differ across time series, we typically apply a normalization routine to linearly transform each time series to have mean = 0 and variance = 1 before concatenating.  -->
 
-```{r load and composite sockeye data}
-data(sockeye_returns)
+<!-- ```{r load and composite sockeye data} -->
+<!-- data(sockeye_returns) -->
 
-# separate time column from data
-time <- sockeye_returns$year
-sockeye_returns <- sockeye_returns[,-1]
+<!-- # separate time column from data -->
+<!-- time <- sockeye_returns$year -->
+<!-- sockeye_returns <- sockeye_returns[,-1] -->
 
-# normalize each time series
-n <- NCOL(sockeye_returns)
-for(j in 1:n)
-    {
-    sockeye_returns[,j] <- (sockeye_returns[,j] - mean(sockeye_returns[,j])) / sd(sockeye_returns[,j])
-    }
+<!-- # normalize each time series -->
+<!-- n <- NCOL(sockeye_returns) -->
+<!-- for (j in 1:n) -->
+<!--     { -->
+<!--     sockeye_returns[,j] <- (sockeye_returns[,j] - mean(sockeye_returns[,j])) / sd(sockeye_returns[,j]) -->
+<!--     } -->
 
-# make composite time series
-composite_ts <- data.frame(year = time, 
-                           returns = stack(sockeye_returns)$value)
-```
+<!-- # make composite time series -->
+<!-- composite_ts <- data.frame(year = time,  -->
+<!--                            returns = stack(sockeye_returns)$value) -->
+<!-- ``` -->
 
-Before applying EDM, however, we want to make sure that EDM will properly recognize the different time series segments as being different, so that lagged vectors are not constructed that contain coordinates spanning multiple time series. This is simply handled by constructing the lib and pred so that the first column designates the start of each time series segment, and the second column designates the end.
+<!-- Before applying EDM, however, we want to make sure that EDM will properly recognize the different time series segments as being different, so that lagged vectors are not constructed that contain coordinates spanning multiple time series. This is simply handled by constructing the lib and pred so that the first column designates the start of each time series segment, and the second column designates the end. -->
 
-```{r composite lib and pred for sockeye, tidy = TRUE}
-# make composite library
-segments <- cbind(seq(from = 1, by = NROW(sockeye_returns), length.out = n),  seq(from = NROW(sockeye_returns), by = NROW(sockeye_returns), length.out = n))
-composite_lib <- segments[1:5,]
-composite_pred <- segments[6:9,]
-```
+<!-- ```{r composite lib and pred for sockeye, tidy = TRUE} -->
+<!-- # make composite library -->
+<!-- segments <- cbind(seq(from = 1, by = NROW(sockeye_returns), length.out = n),  seq(from = NROW(sockeye_returns), by = NROW(sockeye_returns), length.out = n)) -->
+<!-- composite_lib <- segments[1:5,] -->
+<!-- composite_pred <- segments[6:9,] -->
+<!-- ``` -->
 
-We can then use the **rEDM** functions as normal:
+<!-- We can then use the **rEDM** functions as normal: -->
 
-```{r simplex for composite sockeye, tidy = TRUE, fig.width = 6}
-simplex_output <- simplex(composite_ts, composite_lib, composite_pred)
-par(mar = c(4,4,1,1), mgp = c(2.5, 1, 0))
-plot(simplex_output$E, simplex_output$rho, type = "l",  xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)")
-```
+<!-- ```{r simplex for composite sockeye, tidy = TRUE, fig.width = 6} -->
+<!-- simplex_output <- simplex(composite_ts, composite_lib, composite_pred) -->
+<!-- par(mar = c(4,4,1,1), mgp = c(2.5, 1, 0)) -->
+<!-- plot(simplex_output$E, simplex_output$rho, type = "l",  xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)") -->
+<!-- ``` -->
 
-```{r smap for composite sockeye, tidy = TRUE, fig.width = 6}
-smap_output <- s_map(composite_ts, composite_lib, composite_pred, E = 8)
-par(mar = c(4,4,1,1), mgp = c(2.5, 1, 0))
-plot(smap_output$theta, smap_output$rho, type = "l", xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)")
-```
--->
+<!-- ```{r smap for composite sockeye, tidy = TRUE, fig.width = 6} -->
+<!-- smap_output <- s_map(composite_ts, composite_lib, composite_pred, E = 8) -->
+<!-- par(mar = c(4,4,1,1), mgp = c(2.5, 1, 0)) -->
+<!-- plot(smap_output$theta, smap_output$rho, type = "l", xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)") -->
+<!-- ``` -->
 
 # Acknowledgements
 
