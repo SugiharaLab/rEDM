@@ -157,7 +157,7 @@ Thus, varying $\theta$ allows us to compare equivalent linear and nonlinear mode
 
 ### Example
 
-Following from the previous example, we set `E = 2` based on the results from simplex projection. Again, note that we allow many of the parameters take on default values (e.g., $\tau = 1$, $\text{tp} = 1$). If we had changed these for simplex projection, we would want to propagate them here. The default values for the nonlinear tuning parameter, $\theta$, range from $0$ to $8$, and are suitable for our purposes.
+Following from the previous example, we set `E = 2` based on the results from simplex projection. Again, note that we allow many of the parameters to take on default values (e.g., $\tau = 1$, $\text{tp} = 1$). If we had changed these for simplex projection, we would want to propagate them here. The default values for the nonlinear tuning parameter, $\theta$, range from $0$ to $8$, and are suitable for our purposes.
 
 Note also, that the default value for `num_neighbors` is `0`. Typically, when using `s_map` to test for nonlinear behavior, we allow all points in the reconstruction to be used, subject only to the weighting based on distance. By using `0` for this parameter (an otherwise nonsensical value), the program will use all nearest neighbors.
 
