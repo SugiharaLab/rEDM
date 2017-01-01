@@ -259,228 +259,227 @@ legend(x = "topleft", legend = c("anchovy xmap SST", "SST xmap anchovy"), col = 
 
 # Real Data Examples
 
-<!--
-## Old Field Succession 
+<!-- ## Old Field Succession -->
 
-Dataset E054 is a subset of the long-term observational study of old field succession at the Cedar Creek LTER. Full methods can be found in [@Inouye_1987]. This subset includes annual species-level above-ground biomass and precipitation for 1988-2011 ("Year" colum in dataset), recorded in four transects ("Transect") in each of 15 fields ("OldField").
+<!-- Dataset E054 is a subset of the long-term observational study of old field succession at the Cedar Creek LTER. Full methods can be found in [@Inouye_1987]. This subset includes annual species-level above-ground biomass and precipitation for 1988-2011 ("Year" colum in dataset), recorded in four transects ("Transect") in each of 15 fields ("OldField"). -->
 
-Fields were abandoned between 1927 and 1998 ("YearAb"). The columns include abundance (g/m) for two common grass species at Cedar Creek (*Agropyron (Elymus) repens* and *Schizachyrium scoparium*), as well as for total leaf litter biomass. The "precipmm" column shows summer annual precipitation (June - August) in mm.
+<!-- Fields were abandoned between 1927 and 1998 ("YearAb"). The columns include abundance (g/m) for two common grass species at Cedar Creek (*Agropyron (Elymus) repens* and *Schizachyrium scoparium*), as well as for total leaf litter biomass. The "precipmm" column shows summer annual precipitation (June - August) in mm. -->
 
-In general, *A. repens* is a fast disperser, but inferior nitrogen competitor, meaning that it usually colonizes fields quickly, but is eventually displaced by *S. scoparium* [@Tilman_1994a]. However, when leaf litter is very abundant, this process appears to slow, leading to persistance of *A. repens* late into succession [@Isbell_2013]. Furthermore, *A. repens* and *S. scoparium* utilize C3 and C4 photosynthetic pathways respectively, suggesting that *A. repens* is likely to be more strongly influenced by water availability [@Tilman_1994]. All of these interactions are likely influenced by multiple variables and time lags, making the system an ideal candidate for simplex analysis.
+<!-- In general, *A. repens* is a fast disperser, but inferior nitrogen competitor, meaning that it usually colonizes fields quickly, but is eventually displaced by *S. scoparium* [@Tilman_1994a]. However, when leaf litter is very abundant, this process appears to slow, leading to persistance of *A. repens* late into succession [@Isbell_2013]. Furthermore, *A. repens* and *S. scoparium* utilize C3 and C4 photosynthetic pathways respectively, suggesting that *A. repens* is likely to be more strongly influenced by water availability [@Tilman_1994]. All of these interactions are likely influenced by multiple variables and time lags, making the system an ideal candidate for simplex analysis. -->
 
-### Preparing the Data
+<!-- ### Preparing the Data -->
 
-E054 includes data from multiple fields and transects, meaning that we first need to collapse it into a single composite time series. As before, we begin by normalizing each time series. 
+<!-- E054 includes data from multiple fields and transects, meaning that we first need to collapse it into a single composite time series. As before, we begin by normalizing each time series. -->
 
-```{r load e054 data, tidy = TRUE}
-data(e054_succession)
-head(e054_succession)
+<!-- ```{r load e054 data, tidy = TRUE} -->
+<!-- data(e054_succession) -->
+<!-- head(e054_succession) -->
 
-# separate time column from data
-composite_ts <- e054_succession[,-c(1:5)]
+<!-- # separate time column from data -->
+<!-- composite_ts <- e054_succession[,-c(1:5)] -->
 
-# normalize each time series
-n <- NCOL(composite_ts)
-blocks <- paste(e054_succession$Exp, e054_succession$OldField, e054_succession$Transect)
-blocks_index <- sort(unique(blocks))
-for(j in 1:n) {
-    for(i in 1:length(blocks_index)) {
-        subs <- which(blocks == blocks_index[i])
-        composite_ts[subs,j] <- (composite_ts[subs,j] - mean(composite_ts[subs,j])) / sd(composite_ts[subs,j])
-        }
-    }
-composite_ts <- cbind(year = e054_succession$Year, composite_ts)
-```
+<!-- # normalize each time series -->
+<!-- n <- NCOL(composite_ts) -->
+<!-- blocks <- paste(e054_succession$Exp, e054_succession$OldField, e054_succession$Transect) -->
+<!-- blocks_index <- sort(unique(blocks)) -->
+<!-- for(j in 1:n) { -->
+<!--     for(i in 1:length(blocks_index)) { -->
+<!--         subs <- which(blocks == blocks_index[i]) -->
+<!--         composite_ts[subs,j] <- (composite_ts[subs,j] - mean(composite_ts[subs,j])) / sd(composite_ts[subs,j]) -->
+<!--         } -->
+<!--     } -->
+<!-- composite_ts <- cbind(year = e054_succession$Year, composite_ts) -->
+<!-- ``` -->
 
-Again, we need to indicate separations between transects and fields so that lagged vectors are not constructed that contain coordinates spanning multiple time series.
+<!-- Again, we need to indicate separations between transects and fields so that lagged vectors are not constructed that contain coordinates spanning multiple time series. -->
 
-```{r library for e054}
-# make composite library
-segments <- NULL
-startpos <- 1
-for(i in 2:NROW(composite_ts)) {
-    if(composite_ts$year[i] < composite_ts$year[i-1]) {
-        segments <- rbind(segments, c(startpos, i))
-        startpos <- i+1
-        }
-    }
-segments <- rbind(segments, c(max(segments)+1, NROW(composite_ts)))
+<!-- ```{r library for e054} -->
+<!-- # make composite library -->
+<!-- segments <- NULL -->
+<!-- startpos <- 1 -->
+<!-- for(i in 2:NROW(composite_ts)) { -->
+<!--     if(composite_ts$year[i] < composite_ts$year[i-1]) { -->
+<!--         segments <- rbind(segments, c(startpos, i)) -->
+<!--         startpos <- i+1 -->
+<!--         } -->
+<!--     } -->
+<!-- segments <- rbind(segments, c(max(segments)+1, NROW(composite_ts))) -->
 
-composite_lib <- segments[1:floor(NROW(segments)/2),]
-composite_pred <- segments[(floor(NROW(segments)/2)+1):NROW(segments),]
-```
+<!-- composite_lib <- segments[1:floor(NROW(segments)/2),] -->
+<!-- composite_pred <- segments[(floor(NROW(segments)/2)+1):NROW(segments),] -->
+<!-- ``` -->
 
-Because the time series for precipitation does not vary among replicates, we also need to construct separate variables for analyzing precipitation dynamics:
+<!-- Because the time series for precipitation does not vary among replicates, we also need to construct separate variables for analyzing precipitation dynamics: -->
 
-```{r precipitation variable for e054}
-precip_ts <- unique(e054_succession[,c("Year", "precipmm")])
-precip_ts <- precip_ts[order(precip_ts$Year),]
-```
+<!-- ```{r precipitation variable for e054} -->
+<!-- precip_ts <- unique(e054_succession[,c("Year", "precipmm")]) -->
+<!-- precip_ts <- precip_ts[order(precip_ts$Year),] -->
+<!-- ``` -->
 
-### Applying Simplex and S-map Algorithms
+<!-- ### Applying Simplex and S-map Algorithms -->
 
-We can then use the **rEDM** functions as normal for each of our time series. First, we apply simplex projection:
+<!-- We can then use the **rEDM** functions as normal for each of our time series. First, we apply simplex projection: -->
 
-```{r simplex for e054, tidy = TRUE, warning = FALSE, fig.width = 6, results = "hold"}
-par(mar = c(4,4,1,1), mfrow = c(2,2), mgp = c(2,1,0))
-varlst <- colnames(composite_ts)[2:4]
-simplex_output_list <- NULL
+<!-- ```{r simplex for e054, tidy = TRUE, warning = FALSE, fig.width = 6, results = "hold"} -->
+<!-- par(mar = c(4,4,1,1), mfrow = c(2,2), mgp = c(2,1,0)) -->
+<!-- varlst <- colnames(composite_ts)[2:4] -->
+<!-- simplex_output_list <- NULL -->
 
-for(i in 1:length(varlst)) {
-    simplex_output_list[[i]] <- simplex(composite_ts[,varlst[i]], lib = composite_lib, pred = composite_pred, E = 2:6)
-    plot(simplex_output_list[[i]]$E, simplex_output_list[[i]]$rho, type = "l", xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)", main = varlst[i])
-    }
+<!-- for(i in 1:length(varlst)) { -->
+<!--     simplex_output_list[[i]] <- simplex(composite_ts[,varlst[i]], lib = composite_lib, pred = composite_pred, E = 2:6) -->
+<!--     plot(simplex_output_list[[i]]$E, simplex_output_list[[i]]$rho, type = "l", xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)", main = varlst[i]) -->
+<!--     } -->
 
-simplex_output_list[[4]] <- simplex(precip_ts, E = 2:6, silent = TRUE)
-names(simplex_output_list) <- c(varlst, "precipmm")
-plot(simplex_output_list[[4]]$E, simplex_output_list[[4]]$rho, type = "l", xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)", main = "Precip")
-```
+<!-- simplex_output_list[[4]] <- simplex(precip_ts, E = 2:6, silent = TRUE) -->
+<!-- names(simplex_output_list) <- c(varlst, "precipmm") -->
+<!-- plot(simplex_output_list[[4]]$E, simplex_output_list[[4]]$rho, type = "l", xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)", main = "Precip") -->
+<!-- ``` -->
 
-These results give us the best embedding dimension for each of our projections:
+<!-- These results give us the best embedding dimension for each of our projections: -->
 
-```{r get best E}
-bestE <- sapply(simplex_output_list, function(simplex_output) {
-    simplex_output$E[which.max(simplex_output$rho)]
-    })
-bestE
-```
+<!-- ```{r get best E} -->
+<!-- bestE <- sapply(simplex_output_list, function(simplex_output) { -->
+<!--     simplex_output$E[which.max(simplex_output$rho)] -->
+<!--     }) -->
+<!-- bestE -->
+<!-- ``` -->
 
-Using these embedding dimensions, we can now apply S-maps to identify nonlinearity:
+<!-- Using these embedding dimensions, we can now apply S-maps to identify nonlinearity: -->
 
-```{r smap for e054, cache = TRUE, tidy = TRUE, warning = FALSE, fig.width = 6}
-par(mar = c(4,4,1,1), mfrow=c(2,2), mgp = c(2,1,0))
-smap_output_list <- NULL
+<!-- ```{r smap for e054, cache = TRUE, tidy = TRUE, warning = FALSE, fig.width = 6} -->
+<!-- par(mar = c(4,4,1,1), mfrow=c(2,2), mgp = c(2,1,0)) -->
+<!-- smap_output_list <- NULL -->
 
-for(i in 1:length(varlst)) {
-    smap_output_list[[i]] <- s_map(composite_ts[,c("year", varlst[i])], lib = composite_lib, pred = composite_pred, E = bestE[i])
-    plot(smap_output_list[[i]]$theta, smap_output_list[[i]]$rho, type = "l", xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)", main=varlst[i])
-    }
+<!-- for(i in 1:length(varlst)) { -->
+<!--     smap_output_list[[i]] <- s_map(composite_ts[,c("year", varlst[i])], lib = composite_lib, pred = composite_pred, E = bestE[i]) -->
+<!--     plot(smap_output_list[[i]]$theta, smap_output_list[[i]]$rho, type = "l", xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)", main=varlst[i]) -->
+<!--     } -->
 
-smap_output_list[[4]] <- s_map(precip_ts, lib = c(1,24), pred = c(1,24), E = bestE[4])
-plot(smap_output_list[[4]]$theta, smap_output_list[[4]]$rho, type = "l", xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)", main="Precip")
-```
+<!-- smap_output_list[[4]] <- s_map(precip_ts, lib = c(1,24), pred = c(1,24), E = bestE[4]) -->
+<!-- plot(smap_output_list[[4]]$theta, smap_output_list[[4]]$rho, type = "l", xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)", main="Precip") -->
+<!-- ``` -->
 
-Note that all time series suggest nonlinear dynamics in the data (because of the initial rise in rho for non-zero theta, followed by a sharp drop-off in rho with theta).
+<!-- Note that all time series suggest nonlinear dynamics in the data (because of the initial rise in rho for non-zero theta, followed by a sharp drop-off in rho with theta). -->
 
-### Multivariate Models
+<!-- ### Multivariate Models -->
 
-Next, we can use information from several time series to make better predictions about system dynamics. We can accomplish this with the `block_lnlp` command. First, we need to manually construct lagged vectors for each variable. This requires a bit of care in coding, as we need to ensure that lagged components come only from observations within a single field and transect.
+<!-- Next, we can use information from several time series to make better predictions about system dynamics. We can accomplish this with the `block_lnlp` command. First, we need to manually construct lagged vectors for each variable. This requires a bit of care in coding, as we need to ensure that lagged components come only from observations within a single field and transect. -->
 
-```{r make blocks for e054}
-n <- NROW(composite_ts)
+<!-- ```{r make blocks for e054} -->
+<!-- n <- NROW(composite_ts) -->
 
-#Make lags
-block_e54 <- data.frame(year=composite_ts$year)
-block_e54$AR_tm <- composite_ts$Agropyron.repens
-block_e54$AR_tm1 <- c(NA, block_e54$AR_tm[-n])
-block_e54$AR_tm2 <- c(NA, block_e54$AR_tm1[-n])
-block_e54$AR_tm3 <- c(NA, block_e54$AR_tm2[-n])
+<!-- #Make lags -->
+<!-- block_e54 <- data.frame(year=composite_ts$year) -->
+<!-- block_e54$AR_tm <- composite_ts$Agropyron.repens -->
+<!-- block_e54$AR_tm1 <- c(NA, block_e54$AR_tm[-n]) -->
+<!-- block_e54$AR_tm2 <- c(NA, block_e54$AR_tm1[-n]) -->
+<!-- block_e54$AR_tm3 <- c(NA, block_e54$AR_tm2[-n]) -->
 
-block_e54$SS_tm <- composite_ts$Schizachyrium.scoparium
-block_e54$SS_tm1 <- c(NA, block_e54$SS_tm[-n])
-block_e54$SS_tm2 <- c(NA, block_e54$SS_tm1[-n])
-block_e54$SS_tm3 <- c(NA, block_e54$SS_tm2[-n])
+<!-- block_e54$SS_tm <- composite_ts$Schizachyrium.scoparium -->
+<!-- block_e54$SS_tm1 <- c(NA, block_e54$SS_tm[-n]) -->
+<!-- block_e54$SS_tm2 <- c(NA, block_e54$SS_tm1[-n]) -->
+<!-- block_e54$SS_tm3 <- c(NA, block_e54$SS_tm2[-n]) -->
 
-block_e54$ML_tm <- composite_ts$Miscellaneous.litter
-block_e54$ML_tm1 <- c(NA, block_e54$ML_tm[-n])
-block_e54$ML_tm2 <- c(NA, block_e54$ML_tm1[-n])
-block_e54$ML_tm3 <- c(NA, block_e54$ML_tm2[-n])
+<!-- block_e54$ML_tm <- composite_ts$Miscellaneous.litter -->
+<!-- block_e54$ML_tm1 <- c(NA, block_e54$ML_tm[-n]) -->
+<!-- block_e54$ML_tm2 <- c(NA, block_e54$ML_tm1[-n]) -->
+<!-- block_e54$ML_tm3 <- c(NA, block_e54$ML_tm2[-n]) -->
 
-block_e54$PR_tm <- composite_ts$precipmm
-block_e54$PR_tm1 <- c(NA, block_e54$PR_tm[-n])
-block_e54$PR_tm2 <- c(NA, block_e54$PR_tm1[-n])
-block_e54$PR_tm3 <- c(NA, block_e54$PR_tm2[-n])
+<!-- block_e54$PR_tm <- composite_ts$precipmm -->
+<!-- block_e54$PR_tm1 <- c(NA, block_e54$PR_tm[-n]) -->
+<!-- block_e54$PR_tm2 <- c(NA, block_e54$PR_tm1[-n]) -->
+<!-- block_e54$PR_tm3 <- c(NA, block_e54$PR_tm2[-n]) -->
 
-#Remove overlaps from other plots
-startyear <- 2001
-for(i in 2:nrow(block_e54)) {
-    if(block_e54$year[i]<block_e54$year[i-1]) {
-        startyear <- block_e54$year[i]
-        }
-    if(block_e54$year[i]==startyear) {
-        block_e54[i,c("AR_tm1", "SS_tm1", "ML_tm1", "PR_tm1")] <- NA
-        block_e54[i,c("AR_tm2", "SS_tm2", "ML_tm2", "PR_tm2")] <- NA
-        block_e54[i,c("AR_tm3", "SS_tm3", "ML_tm3", "PR_tm3")] <- NA
-        }
-    if(block_e54$year[i]==(startyear+1)) {
-        block_e54[i,c("AR_tm2", "SS_tm2", "ML_tm2", "PR_tm2")] <- NA
-        block_e54[i,c("AR_tm3", "SS_tm3", "ML_tm3", "PR_tm3")] <- NA
-        }
-    if(block_e54$year[i]==(startyear+2)) {
-        block_e54[i,c("AR_tm3", "SS_tm3", "ML_tm3", "PR_tm3")] <- NA
-        }
-    }
-head(block_e54)
-```
+<!-- #Remove overlaps from other plots -->
+<!-- startyear <- 2001 -->
+<!-- for(i in 2:nrow(block_e54)) { -->
+<!--     if(block_e54$year[i]<block_e54$year[i-1]) { -->
+<!--         startyear <- block_e54$year[i] -->
+<!--         } -->
+<!--     if(block_e54$year[i]==startyear) { -->
+<!--         block_e54[i,c("AR_tm1", "SS_tm1", "ML_tm1", "PR_tm1")] <- NA -->
+<!--         block_e54[i,c("AR_tm2", "SS_tm2", "ML_tm2", "PR_tm2")] <- NA -->
+<!--         block_e54[i,c("AR_tm3", "SS_tm3", "ML_tm3", "PR_tm3")] <- NA -->
+<!--         } -->
+<!--     if(block_e54$year[i]==(startyear+1)) { -->
+<!--         block_e54[i,c("AR_tm2", "SS_tm2", "ML_tm2", "PR_tm2")] <- NA -->
+<!--         block_e54[i,c("AR_tm3", "SS_tm3", "ML_tm3", "PR_tm3")] <- NA -->
+<!--         } -->
+<!--     if(block_e54$year[i]==(startyear+2)) { -->
+<!--         block_e54[i,c("AR_tm3", "SS_tm3", "ML_tm3", "PR_tm3")] <- NA -->
+<!--         } -->
+<!--     } -->
+<!-- head(block_e54) -->
+<!-- ``` -->
 
-Now, we can run the `block_lnlp` algorithm on the composite, multi-variate time series. First, we run the algorithm to predict *A. repens* dynamics, based on its own lagged dynamics, and on additional information included in litter abundance, summer precipitation, and abundance of *S. scoparium*:
+<!-- Now, we can run the `block_lnlp` algorithm on the composite, multi-variate time series. First, we run the algorithm to predict *A. repens* dynamics, based on its own lagged dynamics, and on additional information included in litter abundance, summer precipitation, and abundance of *S. scoparium*: -->
 
-```{r block_lnlp for e054, warning = FALSE, tidy = TRUE}
-block_lnlp_output_AR <- block_lnlp(block_e54, lib = composite_lib, pred = composite_pred, columns = c("AR_tm", "AR_tm1", "AR_tm2", "AR_tm3"), target_column = "AR_tm", stats_only = FALSE)
+<!-- ```{r block_lnlp for e054, warning = FALSE, tidy = TRUE} -->
+<!-- block_lnlp_output_AR <- block_lnlp(block_e54, lib = composite_lib, pred = composite_pred, columns = c("AR_tm", "AR_tm1", "AR_tm2", "AR_tm3"), target_column = "AR_tm", stats_only = FALSE) -->
 
-block_lnlp_output_ML <- block_lnlp(block_e54, lib = composite_lib, pred = composite_pred, columns = c("AR_tm", "AR_tm1", "AR_tm2", "AR_tm3", "ML_tm1", "PR_tm"), target_column = "AR_tm", stats_only = FALSE)
+<!-- block_lnlp_output_ML <- block_lnlp(block_e54, lib = composite_lib, pred = composite_pred, columns = c("AR_tm", "AR_tm1", "AR_tm2", "AR_tm3", "ML_tm1", "PR_tm"), target_column = "AR_tm", stats_only = FALSE) -->
 
-block_lnlp_output_SS <- block_lnlp(block_e54, lib = composite_lib, pred = composite_pred, columns = c("AR_tm", "AR_tm1", "AR_tm2", "AR_tm3", "ML_tm1", "PR_tm", "SS_tm3"), target_column = "AR_tm", stats_only = FALSE)
-```
+<!-- block_lnlp_output_SS <- block_lnlp(block_e54, lib = composite_lib, pred = composite_pred, columns = c("AR_tm", "AR_tm1", "AR_tm2", "AR_tm3", "ML_tm1", "PR_tm", "SS_tm3"), target_column = "AR_tm", stats_only = FALSE) -->
+<!-- ``` -->
 
-Note that each additional variable adds slightly to the predictive power of the model.
+<!-- Note that each additional variable adds slightly to the predictive power of the model. -->
 
-```{r block_lnlp plot for e054, fig.width = 6, tidy = TRUE, warning = FALSE}
-observed_AR <- block_lnlp_output_AR[[1]]$model_output$obs
-predicted_AR <- block_lnlp_output_AR[[1]]$model_output$pred
+<!-- ```{r block_lnlp plot for e054, fig.width = 6, tidy = TRUE, warning = FALSE} -->
+<!-- observed_AR <- block_lnlp_output_AR[[1]]$model_output$obs -->
+<!-- predicted_AR <- block_lnlp_output_AR[[1]]$model_output$pred -->
 
-observed_ML <- block_lnlp_output_ML[[1]]$model_output$obs
-predicted_ML <- block_lnlp_output_ML[[1]]$model_output$pred
+<!-- observed_ML <- block_lnlp_output_ML[[1]]$model_output$obs -->
+<!-- predicted_ML <- block_lnlp_output_ML[[1]]$model_output$pred -->
 
-observed_SS <- block_lnlp_output_SS[[1]]$model_output$obs
-predicted_SS <- block_lnlp_output_SS[[1]]$model_output$pred
+<!-- observed_SS <- block_lnlp_output_SS[[1]]$model_output$obs -->
+<!-- predicted_SS <- block_lnlp_output_SS[[1]]$model_output$pred -->
 
-par(mar = c(4,4,1,1), pty = "s")
-plot_range <- range(c(observed_AR, predicted_AR), na.rm = TRUE)
-plot(observed_AR, predicted_AR, xlim = plot_range, ylim = plot_range, xlab = "Observed", ylab = "Predicted")
-abline(a = 0, b = 1, lty = 2, col = "darkgrey")
+<!-- par(mar = c(4,4,1,1), pty = "s") -->
+<!-- plot_range <- range(c(observed_AR, predicted_AR), na.rm = TRUE) -->
+<!-- plot(observed_AR, predicted_AR, xlim = plot_range, ylim = plot_range, xlab = "Observed", ylab = "Predicted") -->
+<!-- abline(a = 0, b = 1, lty = 2, col = "darkgrey") -->
 
-abline(lm(predicted_AR~observed_AR), col="black", lty=3)
-points(observed_ML, predicted_ML, pch=2, col="red")
-abline(lm(predicted_ML~observed_ML), col="red", lty=3)
-points(observed_SS, predicted_SS, pch=3, col="blue")
-abline(lm(predicted_SS~observed_SS), col="blue", lty=3)
-```
+<!-- abline(lm(predicted_AR~observed_AR), col="black", lty=3) -->
+<!-- points(observed_ML, predicted_ML, pch=2, col="red") -->
+<!-- abline(lm(predicted_ML~observed_ML), col="red", lty=3) -->
+<!-- points(observed_SS, predicted_SS, pch=3, col="blue") -->
+<!-- abline(lm(predicted_SS~observed_SS), col="blue", lty=3) -->
+<!-- ``` -->
 
-### Convergent Cross Mapping
+<!-- ### Convergent Cross Mapping -->
 
-Finally, we can apply CCM to our data in order to test for causal links among variables. Because C3 grasses are thought to be more vulnerable to drought conditions than C4 grasses, we start by testing each species against precipitation dynamics for causal links.
+<!-- Finally, we can apply CCM to our data in order to test for causal links among variables. Because C3 grasses are thought to be more vulnerable to drought conditions than C4 grasses, we start by testing each species against precipitation dynamics for causal links. -->
 
-In each case, we use the embedding dimension corresponding to the "best" embedding dimension for the variable that we are trying to predict (i.e. the putative causal process).
+<!-- In each case, we use the embedding dimension corresponding to the "best" embedding dimension for the variable that we are trying to predict (i.e. the putative causal process). -->
 
-```{r, ccm on e054, cache = TRUE, warning = FALSE, tidy = TRUE, fig.width = 6}
-#A. repens:
-ar_xmap_prec <- ccm(composite_ts, lib = segments, pred = segments, E = bestE[4], lib_column = "Agropyron.repens", target_column = "precipmm", lib_sizes = seq(1, 1000, by = 100), num_samples = 10)
-prec_xmap_ar <- ccm(composite_ts, lib = composite_lib, pred = composite_pred, E = bestE[1], lib_column = "precipmm", target_column = "Agropyron.repens", lib_sizes = seq(1, 1000, by = 100), num_samples = 10)
+<!-- ```{r, ccm on e054, cache = TRUE, warning = FALSE, tidy = TRUE, fig.width = 6} -->
+<!-- #A. repens: -->
+<!-- ar_xmap_prec <- ccm(composite_ts, lib = segments, pred = segments, E = bestE[4], lib_column = "Agropyron.repens", target_column = "precipmm", lib_sizes = seq(1, 1000, by = 100), num_samples = 10) -->
+<!-- prec_xmap_ar <- ccm(composite_ts, lib = composite_lib, pred = composite_pred, E = bestE[1], lib_column = "precipmm", target_column = "Agropyron.repens", lib_sizes = seq(1, 1000, by = 100), num_samples = 10) -->
 
-a_xmap_p_means <- ccm_means(ar_xmap_prec)
-p_xmap_a_means <- ccm_means(prec_xmap_ar)
+<!-- a_xmap_p_means <- ccm_means(ar_xmap_prec) -->
+<!-- p_xmap_a_means <- ccm_means(prec_xmap_ar) -->
 
-#S. scoparium:
-ss_xmap_prec <- ccm(composite_ts, lib = segments, pred = segments, E = bestE[4], lib_column = "Schizachyrium.scoparium", target_column = "precipmm", lib_sizes = seq(1, 1000, by = 100), num_samples = 10)
-prec_xmap_ss <- ccm(composite_ts, lib = segments, pred = segments, E = bestE[2], lib_column = "precipmm", target_column = "Schizachyrium.scoparium", lib_sizes = seq(1, 1000, by = 100), num_samples = 10)
+<!-- #S. scoparium: -->
+<!-- ss_xmap_prec <- ccm(composite_ts, lib = segments, pred = segments, E = bestE[4], lib_column = "Schizachyrium.scoparium", target_column = "precipmm", lib_sizes = seq(1, 1000, by = 100), num_samples = 10) -->
+<!-- prec_xmap_ss <- ccm(composite_ts, lib = segments, pred = segments, E = bestE[2], lib_column = "precipmm", target_column = "Schizachyrium.scoparium", lib_sizes = seq(1, 1000, by = 100), num_samples = 10) -->
 
-s_xmap_p_means <- ccm_means(ss_xmap_prec)
-p_xmap_s_means <- ccm_means(prec_xmap_ss)
+<!-- s_xmap_p_means <- ccm_means(ss_xmap_prec) -->
+<!-- p_xmap_s_means <- ccm_means(prec_xmap_ss) -->
 
-#Plot output
-par(mar = c(4,4,1,1), mgp = c(2.5, 1, 0))
-plot(s_xmap_p_means$lib_size, pmax(0, s_xmap_p_means$rho), type = "l", col = "red", xlab = "Library Size", ylab = "Cross Map Skill (rho)", ylim = c(0, 0.2))
-lines(p_xmap_s_means$lib_size, pmax(0, p_xmap_s_means$rho), col = "blue")
-legend(x = "topleft", legend = c("A. repens xmap Precip.", "Precip. xmap A. repens"), col = c("red", "blue"), lwd = 1, inset = 0.02, bty = "n")
+<!-- #Plot output -->
+<!-- par(mar = c(4,4,1,1), mgp = c(2.5, 1, 0)) -->
+<!-- plot(s_xmap_p_means$lib_size, pmax(0, s_xmap_p_means$rho), type = "l", col = "red", xlab = "Library Size", ylab = "Cross Map Skill (rho)", ylim = c(0, 0.2)) -->
+<!-- lines(p_xmap_s_means$lib_size, pmax(0, p_xmap_s_means$rho), col = "blue") -->
+<!-- legend(x = "topleft", legend = c("A. repens xmap Precip.", "Precip. xmap A. repens"), col = c("red", "blue"), lwd = 1, inset = 0.02, bty = "n") -->
 
-plot(a_xmap_p_means$lib_size, pmax(0, a_xmap_p_means$rho), type = "l", col = "orange", xlab = "Library Size", ylab = "Cross Map Skill (rho)", ylim = c(0, 0.2))
-lines(p_xmap_a_means$lib_size, pmax(0, p_xmap_a_means$rho), col = "blue")
-legend(x = "topleft", legend = c("S. scoparium xmap Precip.", "Precip. xmap S. scoparium"), col = c("orange", "blue"), lwd = 1, inset = 0.02, bty = "n")
-```
+<!-- plot(a_xmap_p_means$lib_size, pmax(0, a_xmap_p_means$rho), type = "l", col = "orange", xlab = "Library Size", ylab = "Cross Map Skill (rho)", ylim = c(0, 0.2)) -->
+<!-- lines(p_xmap_a_means$lib_size, pmax(0, p_xmap_a_means$rho), col = "blue") -->
+<!-- legend(x = "topleft", legend = c("S. scoparium xmap Precip.", "Precip. xmap S. scoparium"), col = c("orange", "blue"), lwd = 1, inset = 0.02, bty = "n") -->
+<!-- ``` -->
 
-In each case, results suggest that species biomass is causally influenced by precipitation, but that causal forcing *A. repens* by precipitation is likely stronger. We could try to apply similar tests now for litter effects, or competitive interactions.
--->
+<!-- In each case, results suggest that species biomass is causally influenced by precipitation, but that causal forcing *A. repens* by precipitation is likely stronger. We could try to apply similar tests now for litter effects, or competitive interactions. -->
+
 ## Community Productivity and Invasibility
 
 The data presented here are part of Experiment 120, the “Big Biodiversity” experiment at Cedar Creek LTER. This experiment is the longest running randomized test for the effects of plant diversity on ecosystem functions. Plots were established in 1994 and planted with 1, 2, 4, 8, or 16 species, and have since then been sampled annually for above-ground plant biomass. Full methods are described in [@Tilman_1997]. The most well-known result from the experiment is that planted species number strongly, positively influences above-ground biomass production. However, because the diversity treatments are fixed, rather than dynamical variables, they do not lend themselves to state space reconstruction.
