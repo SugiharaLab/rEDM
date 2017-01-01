@@ -225,7 +225,9 @@ abline(a = 0, b = 1, lty = 2, col = "blue")
 
 One of the corollaries to the Generalized Takens' Theorem is that it should be possible to cross-predict or cross-map between variables that are observed from the same system. Consider two variables, $x$ and $y$ that interact in a dynamic system. Then the univariate reconstructions based on $x$ or $y$ alone should uniquely identify the system state and the corresponding value of the other variable. Thus, it should be possible to use one variable to cross-predict the other.
 
-![Cross Mapping](figure_3.png)
+```{r, out.width = "480px", echo = FALSE}
+knitr::include_graphics("figure_3.png")
+```
 
 In the case of unidirectional causality, $x$ causes $y$, then the behavior of the causal variable ($x$) leaves a signature on the affected variable ($y$). In such cases, the reconstructed states based on $y$ can be used to cross-predict the values of $x$ (because the reconstruction based on $y$ must be complete, it must include information about the value of $x$). Note that this cross-prediction is in the *opposite* direction of the causal effect. At the same time, cross-prediction from $x$ to $y$ will fail, because the time series of $x$ behaves independently of $y$, so a univariate reconstruction using only lags of $x$ is necessarily incomplete.
 
