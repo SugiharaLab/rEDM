@@ -299,8 +299,8 @@ legend(x = "topleft", legend = c("anchovy xmap SST", "SST xmap anchovy"), col = 
 <!-- # make composite library -->
 <!-- segments <- NULL -->
 <!-- startpos <- 1 -->
-<!-- for(i in 2:NROW(composite_ts)) { -->
-<!--     if(composite_ts$year[i] < composite_ts$year[i-1]) { -->
+<!-- for(i in 1:(NROW(composite_ts)-1)) { -->
+<!--     if(composite_ts$year[i] > composite_ts$year[i+1]) { -->
 <!--         segments <- rbind(segments, c(startpos, i)) -->
 <!--         startpos <- i+1 -->
 <!--         } -->
