@@ -456,15 +456,15 @@ legend(x = "topleft", legend = c("anchovy xmap SST", "SST xmap anchovy"), col = 
 
 <!-- ```{r, ccm on e054, cache = TRUE, warning = FALSE, tidy = TRUE, fig.width = 6} -->
 <!-- #A. repens: -->
-<!-- ar_xmap_prec <- ccm(composite_ts, lib = segments, pred = segments, E = bestE[4], lib_column = "Agropyron.repens", target_column = "precipmm", lib_sizes = seq(1, 1000, by = 100), num_samples = 10) -->
-<!-- prec_xmap_ar <- ccm(composite_ts, lib = composite_lib, pred = composite_pred, E = bestE[1], lib_column = "precipmm", target_column = "Agropyron.repens", lib_sizes = seq(1, 1000, by = 100), num_samples = 10) -->
+<!-- ar_xmap_prec <- ccm(composite_ts, lib = segments, pred = segments, E = bestE[names(bestE)=="precipmm"], lib_column = "Agropyron.repens", target_column = "precipmm", lib_sizes = seq(1, 1000, by = 100), num_samples = 10) -->
+<!-- prec_xmap_ar <- ccm(composite_ts, lib = composite_lib, pred = composite_pred, E = bestE[names(bestE)=="Agropyron.repens"], lib_column = "precipmm", target_column = "Agropyron.repens", lib_sizes = seq(1, 1000, by = 100), num_samples = 10) -->
 
 <!-- a_xmap_p_means <- ccm_means(ar_xmap_prec) -->
 <!-- p_xmap_a_means <- ccm_means(prec_xmap_ar) -->
 
 <!-- #S. scoparium: -->
-<!-- ss_xmap_prec <- ccm(composite_ts, lib = segments, pred = segments, E = bestE[4], lib_column = "Schizachyrium.scoparium", target_column = "precipmm", lib_sizes = seq(1, 1000, by = 100), num_samples = 10) -->
-<!-- prec_xmap_ss <- ccm(composite_ts, lib = segments, pred = segments, E = bestE[2], lib_column = "precipmm", target_column = "Schizachyrium.scoparium", lib_sizes = seq(1, 1000, by = 100), num_samples = 10) -->
+<!-- ss_xmap_prec <- ccm(composite_ts, lib = segments, pred = segments, E = bestE[names(bestE)=="precipmm"], lib_column = "Schizachyrium.scoparium", target_column = "precipmm", lib_sizes = seq(1, 1000, by = 100), num_samples = 10) -->
+<!-- prec_xmap_ss <- ccm(composite_ts, lib = segments, pred = segments, E = bestE[names(bestE)=="Schizachyrium.scoparium"], lib_column = "precipmm", target_column = "Schizachyrium.scoparium", lib_sizes = seq(1, 1000, by = 100), num_samples = 10) -->
 
 <!-- s_xmap_p_means <- ccm_means(ss_xmap_prec) -->
 <!-- p_xmap_s_means <- ccm_means(prec_xmap_ss) -->
@@ -674,15 +674,15 @@ In each case, we use the embedding dimension corresponding to the "best" embeddi
 
 ```{r ccm on e120, cache = TRUE, warning = FALSE, tidy = TRUE, fig.width = 5, fig.height = 3.5}
 # A. repens:
-no_xmap_inv <- ccm(composite_ts, lib = segments, pred = segments, E = bestE[4], lib_column = "noh020tot", target_column = "invrichness", lib_sizes = c(seq(5, 55, by = 2), seq(55, 400, by = 50)), num_samples = 100, silent = TRUE)
-inv_xmap_no <- ccm(composite_ts, lib = composite_lib, pred = composite_pred, E = bestE[1], lib_column = "invrichness", target_column = "noh020tot", lib_sizes = c(seq(5, 55, by = 2), seq(55, 400, by = 50)), num_samples = 100, silent = TRUE)
+no_xmap_inv <- ccm(composite_ts, lib = segments, pred = segments, E = bestE[names(bestE)=="invrichness"], lib_column = "noh020tot", target_column = "invrichness", lib_sizes = c(seq(5, 55, by = 2), seq(55, 400, by = 50)), num_samples = 100, silent = TRUE)
+inv_xmap_no <- ccm(composite_ts, lib = composite_lib, pred = composite_pred, E = bestE[names(bestE)=="noh020tot"], lib_column = "invrichness", target_column = "noh020tot", lib_sizes = c(seq(5, 55, by = 2), seq(55, 400, by = 50)), num_samples = 100, silent = TRUE)
 
 n_xmap_i_means <- data.frame(ccm_means(no_xmap_inv), sd.rho = with(no_xmap_inv, tapply(rho, lib_size, sd)))
 i_xmap_n_means <- data.frame(ccm_means(inv_xmap_no), sd.rho = with(inv_xmap_no, tapply(rho, lib_size, sd)))
 
 # S. scoparium:
-ab_xmap_inv <- ccm(composite_ts, lib = segments, pred = segments, E = bestE[4], lib_column = "AbvBioAnnProd", target_column = "invrichness", lib_sizes = c(seq(5, 55, by = 2), seq(55, 400, by = 50)), num_samples = 100, silent = TRUE)
-inv_xmap_ab <- ccm(composite_ts, lib = segments, pred = segments, E = bestE[2], lib_column = "invrichness", target_column = "AbvBioAnnProd", lib_sizes = c(seq(5, 55, by = 2), seq(55, 400, by = 50)), num_samples = 100, silent = TRUE)
+ab_xmap_inv <- ccm(composite_ts, lib = segments, pred = segments, E = bestE[names(bestE)=="invrichness"], lib_column = "AbvBioAnnProd", target_column = "invrichness", lib_sizes = c(seq(5, 55, by = 2), seq(55, 400, by = 50)), num_samples = 100, silent = TRUE)
+inv_xmap_ab <- ccm(composite_ts, lib = segments, pred = segments, E = bestE[names(bestE)=="AbvBioAnnProd"], lib_column = "invrichness", target_column = "AbvBioAnnProd", lib_sizes = c(seq(5, 55, by = 2), seq(55, 400, by = 50)), num_samples = 100, silent = TRUE)
 
 a_xmap_i_means <- data.frame(ccm_means(ab_xmap_inv), sd.rho = with(ab_xmap_inv, tapply(rho, lib_size, sd)))
 i_xmap_a_means <- data.frame(ccm_means(inv_xmap_ab), sd.rho = with(inv_xmap_ab, tapply(rho, lib_size, sd)))
