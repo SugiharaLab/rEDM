@@ -26,21 +26,23 @@ public:
     void set_target_columns(const NumericVector new_targets);
     void set_params(const int new_tp, const size_t new_nn);
     void set_theta(const double new_theta);
+    void set_p(const double new_p);
     void suppress_warnings();
     void save_smap_coefficients();
     void run();
     DataFrame get_output();
     List get_smap_coefficients();
     DataFrame get_short_output(const size_t target_idx);
+    List get_short_smap_coefficients();
     DataFrame get_stats();
     
 private:
     void prepare_forecast();
     void make_vectors();
     void make_targets();
-    std::vector<vec> block;
     
     // *** local parameters *** //
+    std::vector<vec> block;
     int tp;
     size_t E;
     std::vector<size_t> embedding;

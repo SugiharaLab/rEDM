@@ -6,12 +6,16 @@
 #include <numeric>
 #include <thread>
 #include <stdexcept>
+#include <algorithm>
 #include <math.h>
 #include <Rcpp.h>
 #include "data_types.h"
-#include <Eigen/Dense>
+//#include <Eigen/Dense>
+#include <RcppEigen.h>
 
-using namespace Eigen;
+//using namespace Eigen;
+using Eigen::MatrixXd;
+using Eigen::VectorXd;
 using namespace Rcpp;
 
 class ForecastMachine
@@ -24,7 +28,7 @@ protected:
     void init_distances();
     void compute_distances();
     //void sort_neighbors();
-    std::vector<size_t> find_nearest_neighbors(const size_t curr_pred, const std::vector<bool>& valid_lib_indices);
+    std::vector<size_t> find_nearest_neighbors(const vec& dist);
 
     void forecast();
     void set_indices_from_range(std::vector<bool>& indices, const std::vector<time_range>& range, 
@@ -32,7 +36,6 @@ protected:
     void check_cross_validation();
     bool is_vec_valid(const size_t vec_index);
     bool is_target_valid(const size_t vec_index);
-    PredStats compute_stats(const vec& obs, const vec& pred);
     PredStats make_stats(const size_t target_idx);
     PredStats make_const_stats(const size_t target_idx);
     void LOG_WARNING(const char* warning_text);
@@ -54,9 +57,9 @@ protected:
     std::vector<vec> const_targets;
     std::vector<vec> const_predicted;
     size_t num_vectors;
-    double (*dist_func)(const vec&, const vec&);
-    std::vector<vec> distances;
-    
+    std::function<double (const vec&, const vec&)> dist_func;
+    std::vector<vec > distances;
+
     // *** parameters *** //
     bool CROSS_VALIDATION;
     bool SUPPRESS_WARNINGS;
@@ -67,6 +70,7 @@ protected:
     double theta;
     double exclusion_radius;
     double epsilon;
+    double p;
     std::vector<time_range> lib_ranges;
     std::vector<time_range> pred_ranges;
     static const double qnan;
@@ -78,14 +82,14 @@ private:
     void simplex_prediction(const size_t start, const size_t end);
     void smap_prediction(const size_t start, const size_t end);
     void const_prediction(const size_t start, const size_t end);
-    std::vector<bool> adjust_lib(const size_t curr_pred);
+    void adjust_lib(const size_t curr_pred);
     
     //int num_threads;
 };
 
 std::vector<size_t> which_indices_true(const std::vector<bool>& indices);
-double l1_distance_func(const vec& A, const vec& B);
-double l2_distance_func(const vec& A, const vec& B);
 std::vector<size_t> sort_indices(const std::vector<double>& v, const std::vector<size_t> idx);
+PredStats compute_stats_internal(const vec& obs, const vec& pred);
+DataFrame get_stats(const vec& obs, const vec& pred);
 
 #endif

@@ -23,6 +23,7 @@ public:
     void set_epsilon(const double new_epsilon);
     void set_params(const size_t new_E, const size_t new_tau, const int new_tp, const size_t new_nn);
     void set_theta(const double new_theta);
+    void set_p(const double new_p);
     void suppress_warnings();
     void save_smap_coefficients();
     void run();
@@ -35,9 +36,9 @@ private:
     void prepare_forecast();
     void make_vectors();
     void make_targets();
-    vec time_series;
     
     // *** local parameters *** //
+    vec time_series;
     int tp;
     size_t E, tau;
     bool remake_vectors;

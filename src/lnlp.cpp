@@ -1,7 +1,9 @@
 #include "lnlp.h"
 
 /*** Constructors ***/
-LNLP::LNLP(): remake_vectors(true), remake_targets(true), remake_ranges(true)
+LNLP::LNLP(): 
+    time_series(vec()), tp(1), E(1), tau(1), 
+    remake_vectors(true), remake_targets(true), remake_ranges(true)
 {
 }
 
@@ -28,6 +30,9 @@ void LNLP::set_norm_type(const int norm_type)
             break;
         case 2:
             norm_mode = L2_NORM;
+            break;
+        case 3:
+            norm_mode = P_NORM;
             break;
         default:
             throw(std::domain_error("unknown norm type selected"));
@@ -116,6 +121,12 @@ void LNLP::set_theta(const double new_theta)
     return;
 }
 
+void LNLP::set_p(const double new_p)
+{
+    p = new_p;
+    return;
+}
+
 void LNLP::suppress_warnings()
 {
     SUPPRESS_WARNINGS = true;
@@ -175,11 +186,13 @@ DataFrame LNLP::get_stats()
                               Named("mae") = output.mae, 
                               Named("rmse") = output.rmse,
                               Named("perc") = output.perc, 
+                              Named("p_val") = output.p_val, 
                               Named("const_pred_num_pred") = const_output.num_pred, 
                               Named("const_pred_rho") = const_output.rho, 
                               Named("const_pred_mae") = const_output.mae, 
                               Named("const_pred_rmse") = const_output.rmse, 
-                              Named("const_pred_perc") = const_output.perc);
+                              Named("const_pred_perc") = const_output.perc, 
+                              Named("const_p_val") = const_output.p_val);
 }
 
 // *** PRIVATE METHODS FOR INTERNAL USE ONLY *** //
@@ -273,6 +286,7 @@ RCPP_MODULE(lnlp_module)
     .method("set_epsilon", &LNLP::set_epsilon)
     .method("set_params", &LNLP::set_params)
     .method("set_theta", &LNLP::set_theta)
+    .method("set_p", &LNLP::set_p)
     .method("suppress_warnings", &LNLP::suppress_warnings)
     .method("save_smap_coefficients", &LNLP::save_smap_coefficients)
     .method("run", &LNLP::run)

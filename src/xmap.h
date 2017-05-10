@@ -23,11 +23,13 @@ public:
     void set_lib_sizes(const NumericVector new_lib_sizes);
     void set_exclusion_radius(const double new_exclusion_radius);
     void set_epsilon(const double new_epsilon);
+    void set_p(const double new_p);
     void set_lib_column(const size_t new_lib_col);
     void set_target_columns(const NumericVector new_targets);
     void set_params(const size_t new_E, const size_t new_tau, const int new_tp, 
                     const size_t new_nn, const bool new_random_libs, 
                     const size_t new_num_samples, const bool new_replace);
+    void set_seed(const size_t new_seed);
     void suppress_warnings();
     void run();
     DataFrame get_output();
@@ -36,9 +38,9 @@ private:
     void prepare_forecast();
     void make_vectors();
     void make_targets();
-    std::vector<vec> block;
     
     // *** local parameters *** //
+    std::vector<vec> block;
     std::vector<size_t> lib_sizes;
     int tp;
     size_t E, tau;
@@ -46,6 +48,7 @@ private:
     std::vector<size_t> target_cols;
     bool random_libs;
     size_t num_samples;
+    size_t seed;
     bool replace;
     bool remake_vectors;
     bool remake_targets;

@@ -16,7 +16,8 @@ enum PredEnum
 enum NormEnum
 {
     L1_NORM,
-    L2_NORM
+    L2_NORM, 
+    P_NORM
 };
 
 struct PredStats
@@ -26,6 +27,7 @@ struct PredStats
     double mae;
     double rmse;
     double perc;
+    double p_val;
 };
 
 #endif
