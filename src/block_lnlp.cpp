@@ -1,8 +1,8 @@
 #include "block_lnlp.h"
 
 /*** Constructors ***/
-BlockLNLP::BlockLNLP(): 
-    block(std::vector<vec>()), tp(0), E(0), embedding(std::vector<size_t>()), 
+BlockLNLP::BlockLNLP():
+    block(std::vector<vec>()), tp(0), E(0), embedding(std::vector<size_t>()),
     remake_vectors(true), remake_targets(true), remake_ranges(true)
 {
 }
@@ -127,9 +127,9 @@ void BlockLNLP::set_params(const int new_tp, const size_t new_nn)
         remake_targets = true;
     if(remake_vectors || remake_targets)
         remake_ranges = true;
-    
+
     tp = new_tp;
-    nn = new_nn;    
+    nn = new_nn;
     return;
 }
 
@@ -166,14 +166,14 @@ void BlockLNLP::run()
 
 DataFrame BlockLNLP::get_output()
 {
-    return DataFrame::create( Named("time") = target_time, 
-                              Named("obs") = targets, 
-                              Named("pred") = predicted, 
-                              Named("pred_var") = predicted_var);
+    return DataFrame::create( Named("time") = target_time,
+                              Named("obs") = targets[0],
+                              Named("pred") = predicted[0],
+                              Named("pred_var") = predicted_var[0]);
 }
 
 List BlockLNLP::get_smap_coefficients()
-{     
+{
     return(wrap(smap_coefficients));
 }
 
@@ -183,7 +183,7 @@ DataFrame BlockLNLP::get_short_output(size_t target_idx)
     vec short_obs(which_pred.size(), qnan);
     vec short_pred(which_pred.size(), qnan);
     vec short_pred_var(which_pred.size(), qnan);
-    
+
     for(size_t i = 0; i < which_pred.size(); ++i)
     {
         short_time[i] = target_time[which_pred[i]];
@@ -191,10 +191,10 @@ DataFrame BlockLNLP::get_short_output(size_t target_idx)
         short_pred[i] = predicted[target_idx][which_pred[i]];
         short_pred_var[i] = predicted_var[target_idx][which_pred[i]];
     }
-    
-    return DataFrame::create( Named("time") = short_time, 
-                              Named("obs") = short_obs, 
-                              Named("pred") = short_pred, 
+
+    return DataFrame::create( Named("time") = short_time,
+                              Named("obs") = short_obs,
+                              Named("pred") = short_pred,
                               Named("pred_var") = short_pred_var);
 }
 
@@ -223,7 +223,7 @@ DataFrame BlockLNLP::get_stats()
     std::vector<double> const_rmse(num_targets, 0);
     std::vector<double> const_perc(num_targets, 0);
     std::vector<double> const_p_val(num_targets, 0);
-    
+
     // assemble each column
     for(size_t target_idx = 0; target_idx < num_targets; ++target_idx)
     {
@@ -236,7 +236,7 @@ DataFrame BlockLNLP::get_stats()
         rmse[target_idx] = output.rmse;
         perc[target_idx] = output.perc;
         p_val[target_idx] = output.p_val;
-        
+
         PredStats const_output = make_const_stats(target_idx);
         const_num_pred[target_idx] = const_output.num_pred;
         const_rho[target_idx] = const_output.rho;
@@ -245,19 +245,19 @@ DataFrame BlockLNLP::get_stats()
         const_perc[target_idx] = const_output.perc;
         const_p_val[target_idx] = const_output.p_val;
     }
-    
-    return DataFrame::create( Named("target") = target, 
-                              Named("num_pred") = num_pred, 
-                              Named("rho") = rho, 
-                              Named("mae") = mae, 
+
+    return DataFrame::create( Named("target") = target,
+                              Named("num_pred") = num_pred,
+                              Named("rho") = rho,
+                              Named("mae") = mae,
                               Named("rmse") = rmse,
-                              Named("perc") = perc, 
-                              Named("p_val") = p_val, 
-                              Named("const_pred_num_pred") = const_num_pred, 
-                              Named("const_pred_rho") = const_rho, 
-                              Named("const_pred_mae") = const_mae, 
-                              Named("const_pred_rmse") = const_rmse, 
-                              Named("const_pred_perc") = const_perc, 
+                              Named("perc") = perc,
+                              Named("p_val") = p_val,
+                              Named("const_pred_num_pred") = const_num_pred,
+                              Named("const_pred_rho") = const_rho,
+                              Named("const_pred_mae") = const_mae,
+                              Named("const_pred_rmse") = const_rmse,
+                              Named("const_pred_perc") = const_perc,
                               Named("const_p_val") = const_p_val);
 }
 
@@ -270,10 +270,10 @@ void BlockLNLP::prepare_forecast()
         make_vectors();
         init_distances();
     }
-    
+
     if(remake_targets)
         make_targets();
-        
+
     if(remake_ranges)
     {
         set_indices_from_range(lib_indices, lib_ranges, 0, -std::max(0, tp), true);
@@ -283,13 +283,13 @@ void BlockLNLP::prepare_forecast()
 
         which_lib = which_indices_true(lib_indices);
         which_pred = which_indices_true(pred_indices);
-        
+
         remake_ranges = false;
     }
-    
+
     compute_distances();
     //sort_neighbors();
-    
+
     return;
 }
 
@@ -313,7 +313,7 @@ void BlockLNLP::make_targets()
     targets.clear();
     const_targets.clear();
     vec curr_target;
-    
+
     if(tp >= 0)
     {
         target_time.assign(time.begin()+tp, time.end());
@@ -324,9 +324,10 @@ void BlockLNLP::make_targets()
         target_time.assign(time.begin(), time.end()+tp);
         target_time.insert(target_time.begin(), -tp, qnan);
     }
-    
+
     for(auto& curr_col: target_cols)
     {
+        Rcpp::warning("checking a target column");
         if((curr_col < 1) || (curr_col-1 >= block.size()))
         {
             throw std::domain_error("invalid target column");
@@ -353,7 +354,7 @@ void BlockLNLP::make_targets()
 RCPP_MODULE(block_lnlp_module)
 {
     class_<BlockLNLP>("BlockLNLP")
-    
+
     .constructor()
 
     .method("set_time", &BlockLNLP::set_time)
