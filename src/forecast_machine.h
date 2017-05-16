@@ -50,7 +50,6 @@ protected:
     vec target_time;
     std::vector<vec> data_vectors;
     std::vector<vec> smap_coefficients;
-    size_t num_targets;
     std::vector<vec> targets;
     std::vector<vec> predicted;
     std::vector<vec> predicted_var;

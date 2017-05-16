@@ -7,7 +7,7 @@ ForecastMachine::ForecastMachine():
 lib_indices(std::vector<bool>()), pred_indices(std::vector<bool>()),
 which_lib(std::vector<size_t>()), which_pred(std::vector<size_t>()),
 time(vec()), data_vectors(std::vector<vec>()), smap_coefficients(std::vector<vec>()), 
-num_targets(0), targets(std::vector<vec>()), predicted(std::vector<vec>()), predicted_var(std::vector<vec>()), 
+targets(std::vector<vec>()), predicted(std::vector<vec>()), predicted_var(std::vector<vec>()), 
 const_targets(std::vector<vec>()), const_predicted(std::vector<vec>()), 
 num_vectors(0), distances(std::vector<vec>()), 
 CROSS_VALIDATION(false), SUPPRESS_WARNINGS(false), SAVE_SMAP_COEFFICIENTS(false), 
@@ -225,12 +225,10 @@ std::vector<size_t> ForecastMachine::find_nearest_neighbors(const vec& dist)
 
 void ForecastMachine::forecast()
 {
-    num_targets = targets.size();
-    
-    predicted.assign(num_targets, vec());
-    predicted_var.assign(num_targets, vec());
-    const_predicted.assign(num_targets, vec());
-    for(size_t target_idx = 0; target_idx < num_targets; ++target_idx)
+    predicted.assign(targets.size(), vec());
+    predicted_var.assign(targets.size(), vec());
+    const_predicted.assign(targets.size(), vec());
+    for(size_t target_idx = 0; target_idx < targets.size(); ++target_idx)
     {
         predicted[target_idx].assign(num_vectors, qnan); // initialize predictions
         predicted_var[target_idx].assign(num_vectors, qnan);
@@ -321,7 +319,7 @@ bool ForecastMachine::is_vec_valid(const size_t vec_index)
 bool ForecastMachine::is_target_valid(const size_t vec_index)
 {
     // check target value
-    for(size_t target_idx = 0; target_idx < num_targets; ++target_idx)
+    for(size_t target_idx = 0; target_idx < targets.size(); ++target_idx)
     {
         if(std::isnan(targets[target_idx][vec_index])) return false;
     }
@@ -446,7 +444,7 @@ void ForecastMachine::simplex_prediction(const size_t start, const size_t end)
         
         if(effective_nn == 0)
         {
-            for(size_t target_idx = 0; target_idx < num_targets; ++target_idx)
+            for(size_t target_idx = 0; target_idx < targets.size(); ++target_idx)
             {
                 predicted[target_idx][curr_pred] = qnan;
             }
@@ -496,7 +494,7 @@ void ForecastMachine::simplex_prediction(const size_t start, const size_t end)
         }
         
         total_weight = accumulate(weights.begin(), weights.end(), 0.0);
-        for(size_t target_idx = 0; target_idx < num_targets; ++target_idx)
+        for(size_t target_idx = 0; target_idx < targets.size(); ++target_idx)
         {
             // make prediction
             temp_pred = 0;
@@ -548,7 +546,7 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
         
         if(effective_nn == 0)
         {
-            for(size_t target_idx = 0; target_idx < num_targets; ++target_idx)
+            for(size_t target_idx = 0; target_idx < targets.size(); ++target_idx)
             {
                 predicted[target_idx][curr_pred] = qnan;
             }
@@ -596,7 +594,7 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
                 S_inv(j, j) = 1/S(j);
         }
         
-        for(size_t target_idx = 0; target_idx < num_targets; ++target_idx)
+        for(size_t target_idx = 0; target_idx < targets.size(); ++target_idx)
         {
             for(size_t i = 0; i < effective_nn; ++i)
             {
@@ -641,7 +639,7 @@ void ForecastMachine::const_prediction(const size_t start, const size_t end)
     for(size_t k = start; k < end; ++k)
     {
         curr_pred = which_pred[k];
-        for(size_t target_idx = 0; target_idx < num_targets; ++target_idx)
+        for(size_t target_idx = 0; target_idx < targets.size(); ++target_idx)
         {
             const_predicted[target_idx][curr_pred] = const_targets[target_idx][curr_pred];
         }
