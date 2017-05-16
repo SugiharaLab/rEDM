@@ -176,7 +176,7 @@ void Xmap::run()
         {
             which_lib = full_lib; // use all lib vectors
             forecast();
-            for(size_t target_idx = 0; target_idx < num_targets; ++target_idx)
+            for(size_t target_idx = 0; target_idx < targets.size(); ++target_idx)
             {
                 predicted_stats.push_back(make_stats(target_idx));
                 predicted_lib_sizes.push_back(lib_size);
@@ -215,7 +215,7 @@ void Xmap::run()
                     }
                 }
                 forecast();
-                for(size_t target_idx = 0; target_idx < num_targets; ++target_idx)
+                for(size_t target_idx = 0; target_idx < targets.size(); ++target_idx)
                 {
                     predicted_stats.push_back(make_stats(target_idx));
                     predicted_lib_sizes.push_back(lib_size);
@@ -240,7 +240,7 @@ void Xmap::run()
                     which_lib.assign(full_lib.begin()+k, full_lib.begin()+k+lib_size);
                 }
                 forecast();
-                for(size_t target_idx = 0; target_idx < num_targets; ++target_idx)
+                for(size_t target_idx = 0; target_idx < targets.size(); ++target_idx)
                 {
                     predicted_stats.push_back(make_stats(target_idx));
                     predicted_lib_sizes.push_back(lib_size);

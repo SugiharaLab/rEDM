@@ -210,22 +210,22 @@ List BlockLNLP::get_short_smap_coefficients()
 
 DataFrame BlockLNLP::get_stats()
 {
-    std::vector<size_t> target(num_targets, 0);
-    std::vector<size_t> num_pred(num_targets, 0);
-    std::vector<double> rho(num_targets, 0);
-    std::vector<double> mae(num_targets, 0);
-    std::vector<double> rmse(num_targets, 0);
-    std::vector<double> perc(num_targets, 0);
-    std::vector<double> p_val(num_targets, 0);
-    std::vector<size_t> const_num_pred(num_targets, 0);
-    std::vector<double> const_rho(num_targets, 0);
-    std::vector<double> const_mae(num_targets, 0);
-    std::vector<double> const_rmse(num_targets, 0);
-    std::vector<double> const_perc(num_targets, 0);
-    std::vector<double> const_p_val(num_targets, 0);
+    std::vector<size_t> target(targets.size(), 0);
+    std::vector<size_t> num_pred(targets.size(), 0);
+    std::vector<double> rho(targets.size(), 0);
+    std::vector<double> mae(targets.size(), 0);
+    std::vector<double> rmse(targets.size(), 0);
+    std::vector<double> perc(targets.size(), 0);
+    std::vector<double> p_val(targets.size(), 0);
+    std::vector<size_t> const_num_pred(targets.size(), 0);
+    std::vector<double> const_rho(targets.size(), 0);
+    std::vector<double> const_mae(targets.size(), 0);
+    std::vector<double> const_rmse(targets.size(), 0);
+    std::vector<double> const_perc(targets.size(), 0);
+    std::vector<double> const_p_val(targets.size(), 0);
 
     // assemble each column
-    for(size_t target_idx = 0; target_idx < num_targets; ++target_idx)
+    for(size_t target_idx = 0; target_idx < targets.size(); ++target_idx)
     {
         target[target_idx] = target_cols[target_idx];
 

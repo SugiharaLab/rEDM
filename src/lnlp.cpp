@@ -272,6 +272,8 @@ void LNLP::make_targets()
 
 RCPP_MODULE(lnlp_module)
 {
+    using namespace Rcpp ;
+    
     class_<LNLP>("LNLP")
     
     .constructor()
