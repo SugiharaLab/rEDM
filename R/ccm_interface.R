@@ -139,6 +139,10 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
     
     model$set_lib(lib)
     model$set_pred(pred)
+    prev_num_lib_sizes <- length(lib_sizes)
+    lib_sizes <- unique(sort(lib_sizes))
+    if(length(lib_sizes) < prev_num_lib_sizes)
+        warning("Some requested lib sizes were redundant and ignored.")
     model$set_lib_sizes(lib_sizes)
     
     # handle exclusion radius

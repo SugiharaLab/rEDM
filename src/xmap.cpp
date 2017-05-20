@@ -153,7 +153,7 @@ void Xmap::suppress_warnings()
 void Xmap::run()
 {
     prepare_forecast(); // check parameters
-    
+
     // setup data structures and compute maximum lib size
     predicted_stats.clear();
     predicted_lib_sizes.clear();
@@ -174,10 +174,18 @@ void Xmap::run()
         // no possible lib variation if using all vectors and
         // [no random libs OR (random_libs and sampling without replacement)]
         {
+            if(lib_size > max_lib_size)
+            {
+                LOG_WARNING("lib size request was larger than maximum available; corrected");
+            }
             which_lib = full_lib; // use all lib vectors
             forecast();
             predicted_stats.push_back(make_stats());
-            predicted_lib_sizes.push_back(lib_size);
+            predicted_lib_sizes.push_back(max_lib_size);
+            if(lib_size != lib_sizes.back())
+            {
+                LOG_WARNING("maximum lib size reached; ignoring remainder");
+            }
             break;
         }
         else if(random_libs)
