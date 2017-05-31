@@ -1,5 +1,6 @@
 # rEDM
 
-[![DOI](https://zenodo.org/badge/27945067.svg)](https://zenodo.org/badge/latestdoi/27945067)
+Concept (all versions) DOI:
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.596502.svg)](https://doi.org/10.5281/zenodo.596502)
 
 Please see DESCRIPTION for the R package details.
