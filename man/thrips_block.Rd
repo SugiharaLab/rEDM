@@ -10,4 +10,3 @@ Seasonal outbreaks of Thrips imaginis.
 \author{
 ****
 }
-

@@ -11,4 +11,3 @@ an experiment by Veilleux (1979)
 \author{
 Veilleux
 }
-

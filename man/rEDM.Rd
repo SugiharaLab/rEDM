@@ -14,4 +14,3 @@ forecasting.
 Hao Ye
 }
 \keyword{package}
-

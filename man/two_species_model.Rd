@@ -11,4 +11,3 @@ model exhibiting chaotic dynamics.
 \author{
 Hao Ye
 }
-

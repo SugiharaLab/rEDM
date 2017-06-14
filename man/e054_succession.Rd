@@ -11,4 +11,3 @@ of old field succession at the Cedar Creek LTER.
 \author{
 ****
 }
-

@@ -1,3 +1,10 @@
+%\VignetteIndexEntry{Simplex and S-map Algorithms}
+%\VignetteEngine{R.rsp::tex}
+%\VignetteKeyword{R}
+%\VignetteKeyword{package}
+%\VignetteKeyword{vignette}
+%\VignetteKeyword{LaTeX}
+
 \documentclass{article}
 
 \usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
@@ -59,7 +66,7 @@
 
 %\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
 \begin{document}
-\title{Canned Prediciton Algorithms}
+\title{Simplex and S-map Algorithms}
 
 \author{Yair Daon}
 
@@ -74,7 +81,7 @@
  
 \begin{abstract}
   Pseudo-code for the simplex projection algorithm
-  \cite{SugiharaMay90} and the S-map algorithm \cite{Sugihara94}.
+  \cite{Sugihara_1990} and the S-map algorithm \cite{Sugihara_1994}.
   Algorithms are presented for the simple case of predicting one
   variable using its own time series.
 \end{abstract}
@@ -161,7 +168,7 @@ Ignoring ties in distances, minimal distances, minimal weights and
 other potential hazards, the following algorithm performs Simplex
 projection to predict $T_p$ time-steps ahead.
 \begin{algorithm}
-  \caption{Simplex Projection \cite{SugiharaMay90}}\label{alg:simplex}
+  \caption{Simplex Projection \cite{Sugihara_1990}}\label{alg:simplex}
   \begin{algorithmic}[1]
     \Procedure{SimplexPrediction}{$y, X, E, T_p$}
 
@@ -189,7 +196,7 @@ other potential hazards, the following algorithm uses the S-map method
 to predict $T_p$ time-steps ahead.
 %
 \begin{algorithm}
-  \caption{S-map \cite{Sugihara94}}\label{alg:smap}
+  \caption{S-map \cite{Sugihara_1994}}\label{alg:smap}
   \begin{algorithmic}[1]
     \Procedure{SmapPrediction}{$y, X, E, k, \theta, T_p$ }
     \State $N \gets$ \textsc{NearNeighbour}($y, X, k$)

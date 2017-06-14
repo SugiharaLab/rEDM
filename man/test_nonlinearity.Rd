@@ -35,4 +35,3 @@ A data.frame containing the following components:
 comparing improvements in forecast skill (delta rho and delta mae) between 
 linear and nonlinear models with a null distribution from surrogate data.
 }
-

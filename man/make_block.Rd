@@ -26,4 +26,3 @@ A data.frame with the lagged columns and a time column
 tau, while respecting lib (by inserting NANs, when trying to lag past lib 
 regions)
 }
-

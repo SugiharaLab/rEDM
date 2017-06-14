@@ -10,4 +10,3 @@ First-differenced time series generated from the tent map recurrence relation wi
 \author{
 Hao Ye
 }
-
