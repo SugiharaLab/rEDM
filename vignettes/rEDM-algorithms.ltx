@@ -88,23 +88,24 @@
 
 \section{Notation}\label{section:notation}
 \begin{itemize}
-\item $E$ denotes the time lag (embedding dimension).
-\item $k$ denotes the number of nearest neighbours we use. For
-  the simplex method it is $k=E+1$ but for the S-map method it
+\item $E$ denotes the embedding dimension.
+\item $k$ denotes the number of nearest neighbors we use. For
+  the simplex method, the default is $k = E+1$ but for the S-map method it
   can be much larger.
 \item $T_p$ denotes how many time-steps into the future we are trying
   to predict.
-\item $X\in \R^n$ denotes a (potentially long) time series.
+\item $X\in \R$ denotes a (potentially long) time series.
 \item $y\in \R^{E}$ is a vector of lagged observations for which we
-  want to make a prediciton --- $y_1$ is the current value, $y_2$ is
-  the value one time step before and $y_{E}$ is the value $E-1$ time
-  steps before now.
+  want to make a prediction --- in the simplest case where all components
+  of the vector are single time step lags, $y_1$ represents the current value, 
+  $y_2$ is the value one time step prior and $y_{E}$ is the value $E-1$ time
+  steps prior.
 \item $\theta \geq 0$ is the tuning parameter in the S-map method.
-\item $X_t^E = (X_t, X_{t-1},..., X_{t-E+1} )' \in \R^E$ denotes the
+\item $X_t^E = (X_t, X_{t-1},\dots, X_{t-E+1} )' \in \R^E$ denotes the
   lagged embedding vectors.
 \item $\| v \|$ is an unspecified norm of $v$. We do not specify
   which norm to use and that choice is left to the user / reader.
-\item $\| v \|_2^2 = \sum_i v_i^2$ is the squared 2-norm. 
+\item $\| v \|_2^2 = \sum_i v_i^2$ is the squared L2-norm (squared Euclidean distances). 
 \item Entries of matrices and vectors are indexed in the standard
   linear algebraic fashion, starting at $1$ (like the R standard) and
   not at $0$ (like the C/C++ and python standard).
@@ -113,23 +114,23 @@
 
 \section{Helper Methods}
 
-\subsection{Nearest Neighbours}\label{subsec:NN}
-I will not write implementation of the nearst neighbours method, just
+\subsection{Nearest neighbors}\label{subsec:NN}
+I will not write implementation of the nearst neighbors method, just
 present its description. The method will be used with the signature
 presented in algorithm \ref{alg:NN}.
 
 The input variables $X,y$ and $k$ are defined in section
 \ref{section:notation}. The method returns a list of indices $N =
-\{N_1,...,N_k\}$ such that
+\{N_1,\dots,N_k\}$ such that
 \begin{equation*}
   \| X_{N_i}^{E} - y\| \leq \| X_{N_j}^{E} - y\|
   \text{ if } 1 \leq i \leq j \leq k,
 \end{equation*}
 %
 \begin{algorithm}
-  \caption{Find Nearest Neighbours}\label{alg:NN}
+  \caption{Find Nearest neighbors}\label{alg:NN}
   \begin{algorithmic}[1]
-    \Procedure{NearNeighbour}{$y, X, k$}
+    \Procedure{Nearneighbor}{$y, X, k$}
     \EndProcedure
   \end{algorithmic}
 \end{algorithm}
@@ -149,10 +150,10 @@ as outlined in algorithm \ref{alg:SVDLS}.
   \begin{algorithmic}[1]
     \Procedure{LeastSquares}{$A,b$}
     \Comment{Assume $A\in \R^{p \times q}, p > q$.}
-    \State $U, S, V \gets SVD(A)$ \Comment{Thus, $A = U S V'$}
+    \State $U, S, V \gets \text{SVD}(A)$ \Comment{Thus, $A = U S V'$}
     \State $S^{inv} \gets \textsc{zeros}( q,p )$
     \Comment{The zero matrix in $\R^{q \times p}$}
-    \For{ $i =1,...,q$ }
+    \For{ $i =1,\dots,q$ }
     \If{ $S_{ii} > 10^{-5}S_{11}$ } \Comment{Note that $10^{-5}$ is arbitrary}
     \State $S^{inv}_{ii} \gets \frac{1}{S_{ii}}$
     \EndIf
@@ -170,19 +171,19 @@ projection to predict $T_p$ time-steps ahead.
 \begin{algorithm}
   \caption{Simplex Projection \cite{Sugihara_1990}}\label{alg:simplex}
   \begin{algorithmic}[1]
-    \Procedure{SimplexPrediction}{$y, X, E, T_p$}
+    \Procedure{SimplexPrediction}{$y, X, E, k, T_p$}
 
-    \State $N \gets$ \textsc{NearNeighbour}($y, X, E+1$)
-    \Comment{Find $E+1$ nearest neighbours.}
+    \State $N \gets$ \textsc{Nearneighbor}($y, X, k$)
+    \Comment{Find $k$ nearest neighbors.}
     \State $d \gets  \| X_{N_1}^{E} - y\|$ \Comment{Define the distance scale.}
 
-    \For{$i=1,...,E+1$}  
+    \For{$i=1,\dots,k$}  
     \State $w_i \gets \exp (-\| X_{N_i}^{E} - y\| / d )$
     \Comment{Compute weights.}
     \EndFor
 
-    \State $\hat{y} \gets \sum_{i = 1}^{E+1} w_iX_{N_i+T_p} /
-    \sum_{i = 1}^{E+1} w_i$ 
+    \State $\hat{y} \gets \sum_{i = 1}^{k} \left(w_iX_{N_i+T_p}\right) /
+    \sum_{i = 1}^{k} w_i$ 
     \Comment{prediction = average of predicitions.}
     
     \State \Return $\hat{y}$
@@ -198,12 +199,12 @@ to predict $T_p$ time-steps ahead.
 \begin{algorithm}
   \caption{S-map \cite{Sugihara_1994}}\label{alg:smap}
   \begin{algorithmic}[1]
-    \Procedure{SmapPrediction}{$y, X, E, k, \theta, T_p$ }
-    \State $N \gets$ \textsc{NearNeighbour}($y, X, k$)
+    \Procedure{SmapPrediction}{$y, X, E, k, T_p, \theta$ }
+    \State $N \gets$ \textsc{Nearneighbor}($y, X, k$)
     \Comment{Find NN to use for prediciton.}
     \State $d \gets \frac{1}{k} \sum_{i=1}^k \| X_{N_i}^{E} - y\|$
     \Comment{Sum of distances.}
-    \For {$i=1,...,k$} 
+    \For {$i=1,\dots,k$} 
     \State $w_i \gets \exp (-\theta \| X_{N_i}^{E} - y\| / d )$
     \Comment{Compute weights.}
     \EndFor
@@ -236,12 +237,12 @@ to predict $T_p$ time-steps ahead.
   \end{algorithmic}
 \end{algorithm}
 
-Note that $k$, the number of nearest neighbours used for prediciton,
+Note that $k$, the number of nearest neighbors used for prediciton,
 can be very large compared to the embedding dimension $E$. Since $A
 \in \R^{k \times (1+E)}$, this means that $A$ is ``tall and skinny''
 and the system $Ac = b$ is \emph{over-determined} (it has more
 equations than variables). This means (typically) that there does not
-exist any $c$ that solves said system. This is why we seek a
+exist any unique $c$ that solves said system. This is why we seek a
 least-squares solution instead.
 
 
