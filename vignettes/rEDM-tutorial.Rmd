@@ -1,5 +1,5 @@
 ---
-title: "rEDM: an R package for Empirical Dynamic Modeling and Convergent Cross-Mapping"
+title: "rEDM: an R package for Empirical Dynamic Modeling and Convergent Cross Mapping"
 author:
 - Hao Ye
 - Adam Clark
@@ -8,154 +8,147 @@ author:
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{"rEDM: an R package for Empirical Dynamic Modeling and Convergent Cross-Mapping"}
+  %\VignetteIndexEntry{"rEDM: an R package for Empirical Dynamic Modeling and Convergent Cross Mapping"}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 csl: ecology.csl
 bibliography: refs.bib
 ---
+# Abstract
+Empirical dynamic modeling (EDM) is an emerging non-parametric framework for modeling nonlinear dynamic systems. EDM is based on the mathematical theory of recontructing attractor manifolds from time series data [@Takens_1981]. The **rEDM** package collects several EDM methods, including simplex projection [@Sugihara_1990], S-map [@Sugihara_1994], multivariate embeddings [@Dixon_1999], convergent cross mapping [@Sugihara_2012], and multiview embedding [@Ye_2016]. Here, we introduce the basic underlying theory, and describe the functionality of the **rEDM**, using examples from both model simulations and real data.
+
 # Introduction
-Empirical dynamic modeling (EDM) is an emerging non-parametric framework for modeling nonlinear dynamic systems. In an ecological context, EDM has numerous applications, including forecasting population abundances, unraveling species interactions, and identifying causal drivers. In contrast to the conventional approach of fitting assumed model equations to data, EDM relies on the fact that ecosystems have dynamics that allows us to reconstruct attractors directly from time series. This approach (with minimal assumptions) makes EDM particularly suitable for studying ecosystems, which exhibit non-equilibrium dynamics (problematic for models that typically assume stable equilibria) and state-dependent behavior (interactions that change with system state). This guide is designed to introduce both the theory behind EDM, as well as providing practical examples for using the rEDM software package.
+Many scientific fields use modesl as approximations of reality and for various purposes (e.g. testing hypotheses regarding mechanisms or processes, explaining past observations, predicting future outcomes). In most cases these models are based on hypothesized parametric equations; however explicit equations can be impractical when the exact mechanisms are unknown or too complex to be characterized with existing datasets. Empirical models, that infer patterns and associations from the data (instead of using hypothesized equations), represent an alternative and highly flexible approach. Here, we review the theoretical background for the emerging framework of empirical dynamic modeling (EDM) and the functionality of the **rEDM** package, which are intended for the study nonlinear dynamic systems that can prove problematic for traditional modeling approaches.
 
-# Logistics
-In this workshop, we will be exclusively using the statistical language **R**. 
+The basic goal underlying EDM is to reconstruct the behavior of dynamic systems using time series data. This approach is based on mathematical theory developed initially by [@Takens_1981], and expanded on by others [@Sauer_1991; @Casdagli_1991; @Deyle_2011]. Because these methods operate with minimal assumptions, they are particularly suitable for studying systems that exhibit non-equilibrium dynamics and nonlinear state-dependent behavior (i.e. where interactions change over time and as a function of the system state).
 
-There are numerous reasons for choosing a language, but the primary advantages of R are that it is freely available and open-source, and with much added functionality (by way of R's package system) that facilitates data analysis, modeling, and statistics. These traits make it well-suited for Ecology, as evinced by several popular books on R aimed at Ecologists and at least 5 other R-based workshops at this conference.
+## Installation Instructions
 
-## Installing R
+The **rEDM** package can be obtained in two main ways. The standard version of the package can be obtained through CRAN (the Comprehensive R Archive Network): https://cran.r-project.org/package=rEDM:
 
-R can be obtained from the main [CRAN website](https://cran.r-project.org/). In nearly all cases, you can simply download the appropriate installer for your operating system and run it to install R on your system. This installation includes 3 main components:
-
-* an interactive R console (where you can enter commands aka Read-Eval-Print-Loop)
-* a basic text editor with some R script functionality
-* the basic R software packages (`base`, `stats`, etc.)
-
-## Installing RStudio
-
-The R console is usable by itself, but many people find the interface of an Integrated Development Environment (IDE) to be more convenient. [RStudio](https://www.rstudio.com/) is one of the more popular ones for R, with many added features for project management, version control, etc. Although all of our code examples will run fine in base R, if you are new to R or do not yet have a preferred IDE, we recommend you give RStudio a try.
-
-## R packages and Installing Rcpp
-
-R's basic functionality is extended through packages. These extend the base functionality of R with additional functions, datasets, etc. Many packages are distributed through the [Comprehensive R Archive Network (CRAN)](https://cran.r-project.org/), though there are other, often more specialized, archives. For example, [Bioconductor](https://www.bioconductor.org/) primarily focuses on high-throughput genomic data, but also distributes other packages. Many packages are also available independently on code-sharing sites, such as [GitHub](https://github.com/).
-
-R packages can be installed manually by downloading the package file and using the R interface with the `install.packages` function. However, both the R console application and RStudio also have menu options to manage packages. Here, we will first install the **Rcpp** package, which allows R to interface with C++ code, and is required by rEDM, our R package for Empirical Dynamic Modeling.
-
-## Installing rEDM
-
-rEDM is an Rcpp package, and contains both C++ and R code. Because the C++ code needs to be compiled prior to usage, we present several different options for obtaining and installing the rEDM package, depending on your preference.
-
-### Binary Version
-Most users will want the precompiled binary version. This can be downloaded from Github [here](https://github.com/ha0ye/rEDM-binary). Please be sure to download the latest version (0.3.1 as of October 17, 2015). Clicking on the "view the full file" link should initiate a downlaod of the .tgz or .zip file, which you can save anywhere you like. Note that you do not want to unpack the .tgz or .zip file, since R expects a single package file, rather than a folder.
-
-To install the downloaded package, use the standard R command (`install.packages`) as below. This should open a dialog window where you can select the downloaded package file (.tgz or .zip) to install.
-
-```{r install rEDM from package file, eval = FALSE}
-install.packages(file.choose(), type = "source", repos = NULL)
+```{r CRAN installation instructions, eval = FALSE}
+install.packages("rEDM")
 ```
 
-### Source Version
-For users who prefer to download and compile the source version of rEDM, a raw source version is available from Github [here](https://github.com/ha0ye/rEDM). Note that this approach requires a **C++11** compiler, in addition to the **Rcpp** package. We have successfully tested this method of installation using both **Rtools 3.1** for Windows and **XCode 5.0+** for Macintosh.
+However, the most recent version is available on GitHub: https://github.com/ha0ye/rEDM, and can be installed using the `install_github` function in the **devtools** package.
 
-An alternative option for users familiar with using Git with Rstudio projects is to clone the rEDM package directly.
-
-A third option uses the `install_github` function from the **devtools** package to download and install directly from Github.
-
-```{r install rEDM from GitHub, eval = FALSE}
-library(devtools)
-install_github("ha0ye/rEDM")
+```{r GitHub installation instructions, eval = FALSE}
+devtools::install_github("ha0ye/rEDM")
 ```
 
 # Empirical Dynamic Modeling
 
 ## Time Series as Observations of a Dynamic System
 
-The essential concept behind Empirical Dynamic Modeling (EDM) is that time series can be viewed as projections of the behavior of a dynamic system. This framework requires only a few modest assumptions:
+The essential concept is that time series can be viewed as projections of the behavior of a dynamic system. Here, only a few modest assumptions are required. First, that the system state can be described as a point in a high-dimensional space. The axes of this space can be thought of as fundamental state variables; in an ecosystem, these variables might correspond to population abundances, resources, or environmental conditions. Second, that the system state changes through time following a set of deterministic rules. In other words, the behavior of the system is not completely stochastic.
 
-* The system state can be described as a single point in a high-dimensional space. Axes can be thought of as fundamental state variables, such as population abundances, resources, or environmental properties a la the Hutchinson Niche.
-* The system state changes through time following some deterministic rules. In other words, the behavior is not completely random.
+Consequently, it is possible to project the system state onto one of the coordinate axes to obtain the value of the corresponding state variable. Thus, sequential projections over time will form a time series for that variable. For example, in Figure \ref{fig_time_series_projection}, the states of the canonical Lorenz Attractor [@Lorenz_1963] are projected to the $x$-axis, creating a time series for variable $x$.
 
-Projecting the system state to an axis then gives the value of the corresponding state variable, and sequential projections over time produce a time series. Different time series observed from the system can capture different state variables, but are more generally, some function of the system state and may convolve several different state variables.
+![Time Series Projection from Lorenz Attractor](figure_1.svg)
 
-![Time Series Projection from Lorenz Attractor](figure_1.pdf)
+Although different time series observed from the system can represent different state variables, in general, each time series is a function of the system state and may potentially convolve several different state variables.
 
 ## Attractor Reconstruction / Takens' Theorem
 
-To reproduce this fundamental, geometric view of the system, one might suppose that time series of all the state variables are required. However, Takens' Theorem [@Takens_1981] states that a mathematically equivalent reconstruction can be created by substituting lags of a time series for the unknown or unobserved variables.
-
-In other words, instead of representing a system state as being composed of multiple different state variables, we instead use a lagged-coordinate embedding:
+The goal of EDM is to reconstruct the system dynamics from time series data. As seen above, a time series can be thought of as sequential projections of the motion on an attractor; in other words, information about the behavior is encoded in the temporal ordering of the time series. Takens' Theorem [@Takens_1981] states that mathematically valid and equivalent reconstructions of the attractor can be created using lags of just a single time series, by substituting those lags for unknown or unobserved variables. In other words, instead of representing the system state using a complete set of state variables, we can instead use a lagged-coordinate embedding:
 $$ \vec{x}_t = \langle x_t, x_{t-\tau}, \dots, x_{t-(E-1)\tau} \rangle $$
 
-![Attractor Reconstruction](figure_2.pdf)
+![Attractor Reconstruction](figure_2.svg)
 
-If sufficient lags are used, the reconstruction preserves essential mathematical properties of the original system. For instance, the points will map one-to-one to actual system states, and nearest neighbors in the reconstruction correspond to similar system states and behave similarly in the near future. 
+If sufficient lags are used, the reconstruction preserves essential mathematical properties of the original system: reconstructed states will map one-to-one to actual system states, and nearby points in the reconstruction will correspond to similar system states. Figure \ref{fig_attractor_reconstruction} shows a reconstruction of the Lorenz attractor (from Figure \ref{fig_time_series_projection}) where the reconstructed system state is comprised of 3 lags of variable $x$. Here, the visual similarity between the reconstruction and the original Lorenz Attractor is quite clear.
+
+As a consequence of the fact that these mathematical properties of the original system can be recovered from a single time series, there are multiple applications. For example, empirical models can be used for forecasting [@Sugihara_1990], to understand nonlinear behavior [@Sugihara_1994], or to uncover mechanism [@Dixon_1999]. Moreover, recent work describes how EDM can be used to identify causal interactions, by testing whether two time series are observed from the same system [@Sugihara_2012]. In the next section, we demonstrate how the **rEDM** software package can be used to accomplish these various tasks.
+
+# Demonstration of EDM
 
 ## Nearest Neighbor Forecasting using Simplex Projection
 
-One application of the reconstructed attractor is prediction. This can be accomplished using nearest neighbor forecasting methods, because of the similar behavior of nearby points in the reconstruction. One such method is **simplex projection** [@Sugihara_1990]. Simplex Projection is implemented in rEDM as the function `simplex`, and can be used both for prediction or to identify the optimal embedding dimension by quantifying the forecast skill of reconstructions with different dimensionality.
+As mentioned previously, the reconstruction will map one-to-one to the original attractor manifold if enough lags are used (i.e. if the reconstruction has a sufficiently large embedding dimension). If the embedding dimension is too small, then reconstructed states will overlap and appear to be the same even though they actually correspond to different states. These "singularities" will result in poor forecast performance, because the system behavior cannot be uniquely determined in the reconstruction. Thus, we can use prediction skill as an indicator for identifying the optimal embedding dimension. In the following example, we demonstrate how this can be accomplished using a nearest neighbor forecastaing method, Simplex Projection [@Sugihara_1990], implemented in **rEDM** as the function `simplex`.
 
 ### Example
 
-First, we load the data and look at the format. Because this dataset is part of the `rEDM` package, we need to first load the package into R, before we have access to its datasets and functions.
+In this example, we use simulated time series from the classical tent map that exhibits chaotic behavior. The tent map is a discrete time dynamic system, where a sequence, $x_t$, on the interval $[0, 1]$ is iterated according to:
+
+\begin{equation*}
+x_{t+1} = \begin{cases}
+2x_t & x_t < \frac{1}{2}\\
+2(1-x_t) & x_t \ge \frac{1}{2}
+\end{cases}
+\end{equation*}
+
+In **rEDM**, a sample time series of the first-differenced values can be found in dataset `tentmap_del`.
 
 ```{r load tentmap data}
 library(rEDM)
 data(tentmap_del)
-head(tentmap_del)
+str(tentmap_del)
 ```
 
-We can see that the data consists of just a single vector, containing the raw data (first-differences from a tentmap). Because the `simplex` function can accept a single vector as the input time series, we don't need further processing of the data. Furthermore, because the data come from a discrete-time model, we can let many of the parameters be default values (e.g., $\tau = 1$, $\text{tp} = 1$). The default values for the embedding dimension, $E$, range from $1$ to $10$, and so the output will allow us to determine which embedding dimension best unfolds the attractor.
-
-We need to specify what portions of the data to use for constructing the simplex projection model, and what portions to use for testing the forecast skill. By default, `simplex` will use leave-one-out cross-validation over the entire time series, but because the data contain no observational noise, and are particularly long, we'd like to be more conservative.
+We can see that the data consists of just a single vector, containing the raw first-differences values of $x_t$. Because the `simplex` function can accept a single vector as the input time series, no further processing of the data is required.
 
 ```{r lib and pred for tentmap}
+ts <- tentmap_del
 lib <- c(1, 100)
 pred <- c(201, 500)
 ```
 
-This will use the first 100 points (time = 1 to 100) in the time series as the "library" to construct the model, and 300 points (time = 201 to 500) as the "prediction set" to test the model.
+We begin by initializing the `lib` and `pred` variables. These determine which portions of the data will be used to create the reconstruction, and which portions of the data the reconstruction will be used to make forecasts on. In other words, defining the "training" and "test" subsets of the data. Here, the first 100 points (rows 1 to 100) in the time series constitute the "library", and 300 points (rows 201 to 500) are the "prediction set" for which the model will produce forecasts.
+
+The remaining parameters will be left at their default values (see section \ref{sec_general_parameters} for details). For the `simplex` function, this means that the embedding dimension, $E$, will range from $1$ to $10$.
 
 *Note that if the code detects any overlap in the lib and pred, it will enable leave-one-out cross-validation and return a warning message.*
 
 ```{r simplex on tentmap}
-ts <- tentmap_del
 simplex_output <- simplex(ts, lib, pred)
+str(simplex_output)
 ```
 
-The results are a simple data.frame with columns for each of the model parameters and forecast statistics, and rows for each run of the model. In this case, there is one run for each value of $E$, so we can simply plot $E$ against $\rho$, the correlation between observed and predicted values:
+The returned object from `simplex` is a simple data.frame with columns for each of the model parameters and forecast statistics, and rows for each separate model (i.e. different parameter combinations). For `simplex`, the model parameters are `E`, embedding dimension; `tau`, time lag between successive dimensions; `tp`, time to prediction; and `nn`, number of nearest neighbors (see section \ref{sec_general_parameters} for a detailed description). The forecast statistics are `num_pred`, the number of predictions made; `rho`, Pearson's correlation coefficient between predictions and observations; `mae`, mean absolute error of predictions; `rmse`, root mean squared error of predictions; `perc`, the percent of predictions that are the same sign as observations; and `p_val`, the p-value for `rho` being significantly greater than 0, using Fisher's transformation [@Fisher_1915]. The last 6 columns give those same forecast statistics, but for a naive constant predictor (where the forecast is simply the current value) over the same set of predictions.
+
+In this case, there are 10 separate models (one for each value of `E`), so we can simply plot `E` against `rho` (the correlation between observed and predicted values) to determine the optimal embedding dimension (i.e. the number of dimensions for which the reconstructed attractor is best unfolded, producing the highest forecast skill).
 
 ```{r rho vs. E for tentmap, tidy = TRUE, fig.width = 5, fig.height = 3.5}
-par(mar = c(4,4,1,1), mgp = c(2.5, 1, 0))
+par(mar = c(4, 4, 1, 1), mgp = c(2.5, 1, 0)) # set up margins for plotting
 plot(simplex_output$E, simplex_output$rho, type = "l", xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)")
 ```
 
+Here, we observe that forecast skill peaks at $E = 2$, indicating that the dynamics of our data are unfolded best in 2 dimensions. Note that this optimal value for `E` may not be the same as the actual dimensionality of the corresponding dynamic systems, since predictability will be limited by observational error, process noise, and time series length.
+
 ## Prediction Decay
 
-An important property of deterministic chaos is that nearby trajectories eventually diverge over time (the so-called "butterfly effect"). This means that prediction is primarily limited to short-term forecasts, because over the long-term, the system state may be viewed as essentially random. This property also differentiates nonlinear systems from the equilibrium view, where the system can be expected to settle around a stable point.
+An important property of many natural systems is that nearby trajectories eventually diverge over time (i.e. "deterministic chaos" or the so-called "butterfly effect"). In essence, this means that short-term prediction is possible, because the near future is well-constrained, but in the long-term, states of the system are essentially random and not predictable. We can demonstrate this effect by examining how prediction skill changes as the `tp` parameter is increased; recall that this parameter describes the forecast horizon for how far ahead into the future forecasts are made.
 
 ### Example
 
-We can test for this property by adjusting the `tp` parameter in the models, which determines how far into the future the model seeks to predict:
+Using the same tent map time series, we supply a range for the `tp` parameter in the `simplex` function, but fix the embedding dimension to the value determined above ($E = 2$):
 
 ```{r simplex varying tp for tentmap}
 simplex_output <- simplex(ts, lib, pred, E = 2, tp = 1:10)
 ```
 
-Here, we can simply plot $tp$ against $\rho$ to see how forecast accuracy changes as we predict further and further into the future:
+As above, the returned object is a data.frame, and the prediction decay can be studied by plotting forecast skill (`rho`) against the time to prediction (`tp`).
 
 ```{r rho vs. tp for tentmap, tidy = TRUE, fig.width = 5, fig.height = 3.5}
 par(mar = c(4,4,1,1))
-plot(simplex_output$tp, simplex_output$rho, type = "l", xlab = "Time to Prediction (tp)", ylab = "Forecast Skill (rho)")
+plot(simplex_output$tp, simplex_output$rho, type = "l", 
+     xlab = "Time to Prediction (tp)", ylab = "Forecast Skill (rho)")
 ```
+
+As expected (because the parameters chosen for the tent map fall in the region for chaotic behavior), the clear decline in forecast skill (`rho` $\rightarrow 0$) indicates that the system is chaotic.
 
 ## Identifying Nonlinearity
 
-One concern is that many time series may show predictability even if they are purely stochastic, because they behave similarly to autocorrelated red noise. Luckily, there are additional tests that can be done to distinguish between red noise and deterministic behavior, by quantifying the degree of "nonlinearity" in the data.
+One concern is that many time series may show predictability even if they are purely stochastic, because they behave similarly to autocorrelated red noise. Fortunately, we can distinguish between red noise and nonlinear deterministic behavior by using S-maps as described in [@Sugihara_1994].
 
-Here, we use the **S-map** forecasting method, that is based on fitting local linear maps for prediction instead of the nearest-neighbor interpolation of simplex projection [@Sugihara_1994]. In addition to the parameters for simplex projection, S-map also contains a nonlinear tuning parameter, $\theta$ that affects the weights associated with individual points when fitting the local linear map. When $\theta = 0$, all weights are equal, and the S-map is identical to an autoregressive model; values of $\theta$ above $0$ give greater weight to nearby points in the state space, thereby accommodating nonlinear behavior by allowing the local linear map to vary in state-space. For autoregressive red noise, the linear model should perform better, because the S-map model can reduce observation error by averaging over many points instead of just the most nearby points.
+In contrast to the nearest-neighbor interpolation of simplex projection, the S-map forecasting method [@Sugihara_1994] fits local linear maps to describe the dynamics. In addition to the standard set of parameters for a lagged-coordinate reconstruction (as in `simplex`), S-maps also contain a nonlinear tuning parameter, $\theta$, that determines the degree to which points are weighted when fitting the local linear map. For example, when $\theta = 0$, all points are equally weighted, such that the local linear map is identical for different points in the reconstructed state-space. As such, the S-map will be identical to a global linear map (i.e. an autoregressive model). When values of $\theta$ are greater than $0$, nearby points in the state space receive larger weights, and the local linear map can vary in state-space to accommodate nonlinear behavior. 
 
-Thus, varying $\theta$ allows us to compare equivalent linear and nonlinear models as a test for nonlinear dynamics (after first using simplex projection to estimate the optimal embedding dimension for a time-series.) 
+Consequently, if the time series are sampled from autoregressive red noise, then the linear model ($\theta = 0$) should produce better forecasts, because the global linear map (which will, in effect, be fitted to more data points) will reduce the effects of observation error compared to local linear maps. In contrast, if forecast skill increases for $\theta > 0$, then the results are suggestive of nonlinear dynamics, because better forecasts are achieved when the local linear map can change depending on the location in state-space: it is a better description of state-dependent behavior.
 
 ### Example
+
+The S-map method is implemented as the function `s_map` in the **rEDM** package. Much like in the previous use of `simplex`, we can leave many of the parameters at default settings (see section \ref{sec_general_parameters} for details). Here, by default the $\theta$ parameter (`theta`) will range from $0$ to $8$, enabling us to test for nonlinearity. Here again, we will use the tent map time series, and set $E = 2$ based on the results from simplex projection.
+
+Note that the default value for `num_neighbors` is `0`. Typically, when using `s_map` to test for nonlinear behavior, we want to use all points in the reconstruction when constructing the local linear map, and allow the `theta` parameter to control the weighting assigned to individual points. This is in contrast to simplex projection, where only the nearest neighbors are used. Here the function recognizes that all values < 1 are nonsensical and all the points will be used instead.
 
 Following from the previous example, we set `E = 2` based on the results from simplex projection. Again, note that we allow many of the parameters to take on default values (e.g., $\tau = 1$, $\text{tp} = 1$). If we had changed these for simplex projection, we would want to propagate them here. The default values for the nonlinear tuning parameter, $\theta$, range from $0$ to $8$, and are suitable for our purposes.
 
@@ -165,98 +158,122 @@ Note also, that the default value for `num_neighbors` is `0`. Typically, when us
 smap_output <- s_map(ts, lib, pred, E = 2)
 ```
 
-Again, the results are a simple data.frame with columns for each of the model parameters and forecast statistics, and rows for each run of the model. In this case, there is one run for each value of $\theta$, so we can simply plot $\theta$ against $\rho$:
+Again, the results are a data.frame with columns for each of the model parameters and forecast statistics, with rows for each run of the model. In this case, there is one run for each value of `theta`, so we can simply plot `theta` against `rho`:
 
 ```{r rho vs. theta for tentmap, tidy = TRUE, fig.width = 5, fig.height = 3.5}
-par(mar = c(4,4,1,1), mgp = c(2.5, 1, 0))
-plot(smap_output$theta, smap_output$rho, type = "l", xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)")
+par(mar = c(4, 4, 1, 1), mgp = c(2.5, 1, 0))
+plot(smap_output$theta, smap_output$rho, type = "l", 
+     xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)")
 ```
 
+Here, we can see that forecast skill substantially improves as `theta` increases, indicating the presence of nonlinear dynamics. Typically, we would expect forecast skill to decrease at high values of `theta`, because as `theta`, the local linear map can become overfitted to the nearest points. However, because the example data are observed without any error, even a very localized linear map can continue to produce good forecasts. By simulating the addition of a small amount of observational error, a more typical `rho` vs. `theta` plot can be achieved:
 
-
+```{r rho vs. theta with noise, tidy = TRUE, fig.width = 5, fig.height = 3.5}
+ts <- ts + rnorm(length(ts), sd = sd(ts) * 0.2)
+smap_output <- s_map(ts, lib, pred, E = 2)
+par(mar = c(4, 4, 1, 1), mgp = c(2.5, 1, 0))
+plot(smap_output$theta, smap_output$rho, type = "l", 
+     xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)")
+```
 
 ## Generalized Takens' Theorem
 
-Instead of creating an attractor by taking lags of a single time series, it is possible to combine lags from different time series, if they are all observed from the same system [@Sauer_1991; @Deyle_2011]. The practical reality of applying EDM to systems with finite data, noisy observations, and stochastic influences means that such "multivariate" reconstructions can often be a better depiction of the true dynamics than "univariate" counterparts.
+Instead of creating an attractor by taking lags of a single time series, it is possible to combine lags from different time series, if they are all observed from the same system [@Sauer_1991; @Deyle_2011]. The practical reality of applying EDM to systems with finite data, noisy observations, and stochastic influences means that such "multivariate" reconstructions can often be a better description of the true dynamics than "univariate" reconstructions
 
-In rEDM, the `block_lnlp` function generalizes the `simplex` and `s_map` functions, allowing generic reconstructions to be used with either of the simplex projection or S-map algorithms. The main data input for `block_lnlp` is a matrix or data.frame of the time series observations, where each column is a separate time series and each row represents the variables observed at the same time. In addition to the typical arguments for `simplex` or `s_map`, `block_lnlp` contains arguments to specify which column is to be forecast (`target_column`) as well as which columns to use to construct the attractor (`columns`). In both cases, either a numerical index or the column name can be given. For obvious reasons, column names will work only if the input data has column names.
-
-*Note that if lagged coordinates are intended to be used, they need to be manually created as separate columns in the matrix or data.frame.*
+In **rEDM**, the `block_lnlp` function generalizes the `simplex` and `s_map` functions, allowing generic reconstructions to be used with either the simplex projection or S-map methods The main data input for `block_lnlp` is a matrix or data.frame of the time series observations, where each column is a separate time series with rows representing "simultaneous" observations. In addition to the standard parameters for `simplex` or `s_map`, `block_lnlp` contains parameters to specify which column is to be forecast (`target_column`) as well as which columns to use to construct the attractor (`columns`). For both parameters, either a numerical index or the column name can be given. Note that if lagged coordinates are intended to be used, they need to be manually created as separate columns in the matrix or data.frame.
 
 ### Example
 
-We begin by loading an example dataset of time series and lags from a coupled 3-species model system. Here, the `block_3sp` variable is a 10-column data.frame with 1 column for time, and 3 columns for each of the variables (unlagged, t-1, and t-2 lags).
+We begin by loading an example dataset of time series and lags from a coupled 3-species model system. Here, the `block_3sp` variable is a 10-column data.frame with 1 column for time, and 3 columns for each of the variables (unlagged, $t-1$, and $t-2$ lags). Note that the lagged columns begin with `NA` values because there are no observations of the variables for times $t < 1$. In **rEDM**, vectors that include `NA` values are excluded if they would be used for computation, but predictions will still be made if only the observed values are missing (see section \ref{sec_data_input} for more details).
 
 ```{r load block_3sp data}
 data(block_3sp)
-head(block_3sp)
+str(block_3sp)
 ```
 
 In order to correctly index into columns, `block_lnlp` has an option to indicate that the first column is actually a time index. When `first_column_time` is set to `TRUE`, a value of `1` for `target_column` now points to the first *data* column in the data.frame, as opposed to the time column (`columns` is similarly indexed).
+
+In order to correctly index into columns, `block_lnlp` has an option to indicate that the first column is actually a time index. When `first_column_time` is set to \code{TRUE}, a value of `1` for `target_column` will refer to the first *data* column in the data.frame, and skip the "time" column (the parameter `columns` is similarly indexed). If column names are used, then the `first_column_time` parameter is ignored, except to label the output.
 
 ```{r block_lnlp for block_3sp, tidy = TRUE, warning = FALSE}
 lib <- c(1, NROW(block_3sp))
 pred <- c(1, NROW(block_3sp))
 
-block_lnlp_output <- block_lnlp(block_3sp, lib = lib, pred = pred, columns = c(1,2,4), target_column = 1, stats_only = FALSE, first_column_time = TRUE)
+cols <- c(1, 2, 4) # c("x_t", "x_t-1", "y_t")
+target <- 1 # "x_t"
+
+block_lnlp_output <- block_lnlp(block_3sp, lib = lib, pred = pred, 
+                                columns = cols, target_column = target, 
+                                stats_only = FALSE, first_column_time = TRUE)
 ```
 
-We can also run the same model by referring to the names of the columns directly.
+Note that the default value for the `tp` parameter is `1`, indicating that predictions will be made for 1 time step into the future (i.e. the subsequent row of the input data). In some cases, the data may already be processed such that the predictions are already aligned in the same row, but a different column, in which case the `tp` parameter should be set to `0`.
 
-```{r block_lnlp with named columns, tidy = TRUE, eval = FALSE}
-block_lnlp_output <- block_lnlp(block_3sp, lib = lib, pred = pred, columns = c("x_t", "x_t-1", "y_t"), target_column = "x_t", stats_only = FALSE, first_column_time = TRUE)
+```{r}
+str(block_lnlp_output)
 ```
 
-Note that we did not specify a value for the `tp` parameter. Here, the default value of `1` means that the program will predict the target variable 1 time step into the future (based on the row-structure of the input data). In some cases, the data may already be processed into a format where one wants to predict a different column that has already been aligned correctly. In that case, one can set `tp = 0` when calling `block_lnlp`.
+By setting `stats_only` to `FALSE`, the output is a list with the full model output. Because only 1 model (1 combination of input parameters) was run, the output is a list with 1 element. This element is actually another list with 4 named elements: `params`, a data.frame of the input parameters; `embedding`, a vector of the columns used to construct the model; `model_output`, a data.frame of the full set of observed and predicted values; and `stats`, a data.frame of the forecast statistics.
 
-By setting `stats_only` to `FALSE`, we get back a list with the full model output. Only 1 model was run, so the output is a list with 1 element. To extract the raw predictions, we can go into the `model_output` variable and pull out the observed and predicted values, plotting them to see how well the model fit relative to the expected 1:1 line.
+To compare the observed and predicted values, we must therefore index correctly into the output. We can then plot the observed and predicted values and see how well the model did relative to the expected 1:1 line.
 
 ```{r observed vs predicted for block_lnlp, tidy = TRUE, fig.width = 4, fig.height = 4}
 observed <- block_lnlp_output[[1]]$model_output$obs
 predicted <- block_lnlp_output[[1]]$model_output$pred
 
-par(mar = c(4,4,1,1), pty = "s")
+par(mar = c(4, 4, 1, 1), mgp = c(2.5, 1, 0), pty = "s")
 plot_range <- range(c(observed, predicted), na.rm = TRUE)
-plot(observed, predicted, xlim = plot_range, ylim = plot_range, xlab = "Observed", ylab = "Predicted")
+plot(observed, predicted, xlim = plot_range, ylim = plot_range, 
+     xlab = "Observed", ylab = "Predicted")
 abline(a = 0, b = 1, lty = 2, col = "blue")
 ```
 
 ## Causality Inference and Cross Mapping
 
-One of the corollaries to the Generalized Takens' Theorem is that it should be possible to cross-predict or cross-map between variables that are observed from the same system. Consider two variables, $x$ and $y$ that interact in a dynamic system. Then the univariate reconstructions based on $x$ or $y$ alone should uniquely identify the system state and the corresponding value of the other variable. Thus, it should be possible to use one variable to cross-predict the other.
+One of the corollaries to the Generalized Takens' Theorem is that it should be possible to cross predict or cross map between variables that are observed from the same system. Consider two variables, $x$ and $y$ that interact in a dynamic system. Then the univariate reconstructions based on $x$ or $y$ alone should uniquely identify the system state and and thus the corresponding value of the other variable.
 
-```{r, out.width = "480px", echo = FALSE}
-knitr::include_graphics("figure_3.png")
-```
+![Cross Mapping Between Univariate Reconstructions of the Lorenz Attractor](figure_3.png)
 
-In the case of unidirectional causality, $x$ causes $y$, then the behavior of the causal variable ($x$) leaves a signature on the affected variable ($y$). In such cases, the reconstructed states based on $y$ can be used to cross-predict the values of $x$ (because the reconstruction based on $y$ must be complete, it must include information about the value of $x$). Note that this cross-prediction is in the *opposite* direction of the causal effect. At the same time, cross-prediction from $x$ to $y$ will fail, because the time series of $x$ behaves independently of $y$, so a univariate reconstruction using only lags of $x$ is necessarily incomplete.
+In the case of unidirectional causality, e.g. $x$ causes $y$, the causal variable ($x$) leaves a signature on the affected variable ($y$). Consequently, the reconstructed states based on $y$ can be used to cross predict the values of $x$ (because the reconstruction based on $y$ must be complete, it must include information about the value of $x$). Note that this cross prediction is in the *opposite* direction of the causal effect. At the same time, cross prediction from $x$ to $y$ will fail, because the time series of $x$ behaves independently of $y$, so a univariate reconstruction using only lags of $x$ is necessarily incomplete.
 
-Although $x$ has incomplete information for predicting $y$, it does affect the values of $y$, and therefore will likely to have nonzero predictive skill. However, this cross-mapping will be limited to the statistical association between $x$ and $y$ and fail to improve as longer time series are used for reconstruction. In contrast, in the absence of noise, the cross-prediction of $x$ from $y$ will continually improve. This convergence is therefore necessary to infer causality. 
+Although $x$ has incomplete information for predicting $y$, it does affect the values of $y$, and therefore will likely to have nonzero predictive skill. However, this cross mapping will be limited to the statistical association between $x$ and $y$ and will generally not improve as longer time series are used for reconstruction. In contrast, the cross prediction of $x$ from $y$ will generally improve. This convergence is therefore a crucial property for inferring causality. For practical reasons, the sensitivity of detecting causality this way is improved if, instead of predicting the future value of another variable, we estimate the concurrent value of another variable. We refer to this modified method as cross mapping, because we are not ``predicting'' the future.
 
-For practical reasons, the sensitivity of detecting causality this way is improved if, instead of predicting the future value of another variable, we estimate the concurrent value of another variable. We refer to this modified method as cross-mapping, because we are not "predicting" the future.
+For a more detailed description of using cross mapping to infer causation, see [@Sugihara_2012].
 
 ## Convergent Cross Mapping (CCM)
 
-In the rEDM package, the `ccm` function presents an easy way to compute cross map skill for different subsamples of the time series, enabling observation of both convergence and uncertainty regarding cross map skill. In the following example, we use CCM to identify causality between anchovy landings in California and Newport Pier sea-surface temperature. 
+In **rEDM**, convergent cross mapping is implemented as the `ccm` function, which provides an easy way to compute cross map skill for different subsamples of the time series. In the following example, we reproduce the analysis from [@Sugihara_2012], identifying causality between anchovy landings in California and Newport Pier sea-surface temperature. For this example, a previously identified value of `3` for the embedding dimension will be used.
 
-Here, we use a previously identified value of `3` for the embedding dimension. We set `lib_sizes` (the number of library vectors) to vary from `10` to `80` in steps of `10`. Setting `num_samples` to `100` means that 100 different library samples will be generated, by random sampling (`random_libs = TRUE` by default) from the possible vectors with replacement (`replace = TRUE` by default). 
+To quantify convergence, we compute the cross map skill over many random subsamples of the time series. The `lib_sizes` parameter specifies the "library" size of the subsamples that we use, and the `num_samples` parameter specifies the number of subsamples to be generated at each library size. The `random_libs` and `replace` parameters specify how the subsamples will be generated. Here, setting both to `TRUE` means that random sampling with replacement will be used.
 
 ```{r sardine anchovy ccm, tidy = TRUE, warning = FALSE, cache = TRUE}
 data(sardine_anchovy_sst)
-anchovy_xmap_sst <- ccm(sardine_anchovy_sst, E = 3, lib_column = "anchovy", target_column = "np_sst", lib_sizes = seq(10, 80, by = 10), random_libs = FALSE)
-sst_xmap_anchovy <- ccm(sardine_anchovy_sst, E = 3, lib_column = "np_sst", target_column = "anchovy", lib_sizes = seq(10, 80, by = 10), random_libs = FALSE)
+anchovy_xmap_sst <- ccm(sardine_anchovy_sst, E = 3, 
+                        lib_column = "anchovy", target_column = "np_sst", 
+                        lib_sizes = seq(10, 80, by = 10), num_samples = 100, 
+                        random_libs = TRUE, replace = TRUE)
+sst_xmap_anchovy <- ccm(sardine_anchovy_sst, E = 3, 
+                        lib_column = "np_sst", target_column = "anchovy", 
+                        lib_sizes = seq(10, 80, by = 10), num_samples = 100, 
+                        random_libs = TRUE, replace = TRUE)
+str(anchovy_xmap_sst)
 ```
 
-The output from CCM is a data.frame with statistics for each model run (in thise case, 100 models at each of 8 library sizes = 800 rows). Because we cross map using multiple libraries at each library size, we'd like to aggregate the results and plot the average cross map skill at each library size. Because average cross map skill less than $0$ is noninformative, we filter out negative values when plotting.
+The output from CCM is a data.frame with statistics for each model run (in this case, 100 models at each of 8 library sizes). To interpret the results, we aggregate the cross map performance at each library size using the `ccm_means` function, which computes a mean value for the forecast statistics. Because average cross map skill less than 0 means there is no prediction skill, (predictions should not be anticorrelated with observations), we filter out negative values when plotting.
 
 ```{r sardine anchovy ccm plot, tidy = TRUE, fig.width = 5, fig.height = 3.5}
 a_xmap_t_means <- ccm_means(anchovy_xmap_sst)
 t_xmap_a_means <- ccm_means(sst_xmap_anchovy)
 
-par(mar = c(4,4,1,1), mgp = c(2.5, 1, 0))
-plot(a_xmap_t_means$lib_size, pmax(0, a_xmap_t_means$rho), type = "l", col = "red", xlab = "Library Size", ylab = "Cross Map Skill (rho)", ylim = c(0, 0.4))
-lines(t_xmap_a_means$lib_size, pmax(0, t_xmap_a_means$rho), col = "blue")
-legend(x = "topleft", legend = c("anchovy xmap SST", "SST xmap anchovy"), col = c("red", "blue"), lwd = 1, inset = 0.02, cex = 0.8)
+par(mar = c(4, 4, 1, 1), mgp = c(2.5, 1, 0)) # set up margins for plotting
+y1 <- pmax(0, a_xmap_t_means$rho)
+y2 <- pmax(0, t_xmap_a_means$rho)
+
+plot(a_xmap_t_means$lib_size, y1, type = "l", col = "red", 
+     xlab = "Library Size", ylab = "Cross Map Skill (rho)", ylim = c(0, 0.25))
+lines(t_xmap_a_means$lib_size, y2, col = "blue")
+legend(x = "topleft", legend = c("anchovy xmap SST", "SST xmap anchovy"), 
+       col = c("red", "blue"), lwd = 1, bty = "n", inset = 0.02, cex = 0.8)
 ```
 
 # Real Data Examples
@@ -492,7 +509,7 @@ The columns in the dataset `e120_biodiversity` are as follows: `Exp`, `Year`, `M
 
 ### Preparing the Data
 
-E120 includes data from multiple plots, meaning that we first need to collapse it into a single composite time series. As before, we begin by normalizing each time series. 
+E120 includes data from multiple plots, meaning that we first need to collapse it into a single composite time series. As before, we begin by normalizing each time series.
 
 ```{r load e120 data, tidy = TRUE}
 data(e120_biodiversity)
@@ -537,7 +554,7 @@ composite_pred <- segments[-rndlib, ]
 ```
 
 Because the time series for precipitation does not vary among replicates, we also need to construct separate variables for analyzing precipitation dynamics:
- 
+
 ```{r precip for e120}
 precip_ts <- unique(e120_biodiversity[, c("Year", "SummerPrecip.mm.")])
 precip_ts <- precip_ts[order(precip_ts$Year), ]
@@ -546,7 +563,7 @@ precip_ts <- precip_ts[order(precip_ts$Year), ]
 ### Applying Simplex and S-map Algorithms
 
 We can then use the **rEDM** functions as normal for each of our time series. First, we apply simplex projection:
- 
+
 ```{r simplex on e120, tidy = TRUE, cache = TRUE, warning = FALSE, fig.width = 6}
 par(mar = c(4,4,1,1), mfrow = c(2,2), mgp = c(2.5, 1, 0))
 varlst <- colnames(composite_ts)[2:4]
@@ -738,7 +755,7 @@ plot(time_dec, thrips_block$Season, type = 'l', col = 'magenta', ylab = 'Season'
 
 Note that all the time-series variables, particularly the mean maximum daily Temperature, show marked seasonality.
 
-### Univariate Analysis 
+### Univariate Analysis
 
 ```{r univariate thrips, warning = FALSE}
 ts <- thrips_block$Thrips_imaginis
@@ -772,7 +789,7 @@ The S-map results demonstrate clear nonlinearity in the Thrips time series, as n
 
 ### Seasonal Drivers
 
-Recall that there is a two-part criterion for CCM to be a rigorous test of causality. (1) The cross-map prediction skill with the full time-series is statistically significant. (2) Cross-map prediction demonstrates convergence, i.e. prediction skill increases as more of the time-series is used. 
+Recall that there is a two-part criterion for CCM to be a rigorous test of causality. (1) The cross-map prediction skill with the full time-series is statistically significant. (2) Cross-map prediction demonstrates convergence, i.e. prediction skill increases as more of the time-series is used.
 
 #### Cross-map matrix
 For an initial summary, we first simply compute the cross-map skill (measured with Pearson's $\rho$) with the full time-series.
@@ -784,11 +801,11 @@ M_rho <- array(NA, dim = c(ncol,ncol), dimnames = list(colnames(thrips_block[3:6
 for (i in 1:ncol) {
     for (j in 1:ncol) {
         if (i != j) {
-            out_temp <- ccm(thrips_block, E = 8, lib_column = 2 + i, 
-                            target_column = 2 + j, lib_sizes = dim(thrips_block)[1], 
+            out_temp <- ccm(thrips_block, E = 8, lib_column = 2 + i,
+                            target_column = 2 + j, lib_sizes = dim(thrips_block)[1],
                             replace = FALSE, silent = TRUE)
             M_rho[i, j] <- out_temp$rho
-            } 
+            }
         }
     }
 ```
@@ -802,7 +819,7 @@ M_corr <- array(NA, dim = c(ncol, ncol), dimnames = list(colnames(thrips_block[3
 for (i in 1:ncol) {
     for (j in 1:ncol) {
         if (i != j) {
-            cf_temp <- ccf(x = thrips_block[, 2 + i], y = thrips_block[, 2 + j], 
+            cf_temp <- ccf(x = thrips_block[, 2 + i], y = thrips_block[, 2 + j],
                            type = "correlation", lag.max = 6, plot = FALSE)$acf
             M_corr[i, j] <- max(abs(cf_temp))
             }
@@ -856,7 +873,7 @@ par(mar = c(4,4,1,1), mgp = c(2.5, 1, 0))
 plot(xmap_means[[1]]$lib_size, pmax(0, xmap_means[[1]]$rho), type = "l", col = "red", xlab = "Library Size", ylab = "Cross Map Skill (rho)", ylim = c(0, 1))
 lines(xmap_means[[2]]$lib_size, pmax(0, xmap_means[[2]]$rho), col = "blue")
 abline(h = M_corr['Thrips_imaginis','Rain_mm'], col = 'black', lty = 2)
-legend(x = "topleft", legend = c("Thrips xmap Rain", "Rain xmap Thrips"), 
+legend(x = "topleft", legend = c("Thrips xmap Rain", "Rain xmap Thrips"),
  col = c("red", "blue"), lwd = 1, inset = 0.02)
 ```
 
@@ -894,7 +911,7 @@ rho_surr <- data.frame(maxT = numeric(num_surr), Rain = numeric(num_surr))
 
 for (i in 1:num_surr) {
     rho_surr$maxT[i] <- ccm(cbind(thrips_block$Thrips_imaginis, surr_maxT[,i]), E = 8, lib_column = 1, target_column = 2, lib_sizes = NROW(thrips_block), replace = FALSE)$rho
-    
+
     rho_surr$Rain[i] <- ccm(cbind(thrips_block$Thrips_imaginis, surr_Rain[,i]), E = 8, lib_column = 1, target_column = 2, lib_sizes = NROW(thrips_block), replace = FALSE)$rho
     }
 ```
