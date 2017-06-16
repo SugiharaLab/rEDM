@@ -1,0 +1,29 @@
+{
+"title": "rEDM",
+"creators": [{
+    "name": "Ye, Hao"
+}, {
+    "name": "Clark, Adam"
+}, {
+    "name": "Deyle, Ethan"
+}, {
+    "name": "Keyes, Oliver"
+}, {
+    "name": "Cai, Jun"
+}, {
+    "name": "White, Ethan"
+}, {
+    "name": "Cowles, Jane"
+}, {
+    "name": "Stagge, James"
+}, {
+    "name": "Daon, Yair"
+}, {
+    "name": "Sugihara, George"
+}
+],
+    "description": "Applications of Empirical Dynamic Modeling from Time Series",
+    "access_right": "open",
+    "license": "other-open",
+    "upload_type": "software",
+}
