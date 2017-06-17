@@ -1,12 +1,12 @@
 #!/usr/bin/Rscript
-% This script finds the best predictors and their number
-for prediction of the abundancy of Dinoflagellate A, Dinoflagellate B
-and Cyanobacteria, based on the model described in the data
-entered from the file "monod_2box_2bloom.species.csv". The idea
-is to first learn a model that predicts algal bloom for each animal
-and then see that unless some serios changes are made, even these models
-cannot predict algal blooms when combined (???).
-%
+## This script finds the best predictors and their number for
+## prediction of the abundancy of Dinoflagellate A, Dinoflagellate B
+## and Cyanobacteria, based on the model described in the data entered
+## from the file "monod_2box_2bloom.species.csv". The idea is to first
+## learn a model that predicts algal bloom for each animal and then
+## see that unless some serios changes are made, even these models
+## cannot predict algal blooms when combined (???).
+
 
 library(rEDM)
 
