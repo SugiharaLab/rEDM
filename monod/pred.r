@@ -131,6 +131,7 @@ dataFile <- "monod_2box_2bloom.species.csv"
 predict( "DinoA", dataFile )
 predict( "DinoB", dataFile )
 predict( "CynB" , dataFile )
+
 ## obs  <- predictor[[1]]$model_output$obs
 ## pred <- predictor[[1]]$model_output$pred
     
