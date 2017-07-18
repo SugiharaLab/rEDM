@@ -6,7 +6,7 @@ hold <- function(k=0){
     invisible(readLines("stdin", n=k))
 }
 
-block <- read.csv( "lotka.csv" )
+block <- read.csv( "lotka.csv", nrows = 2*T )
 
 
 ## Create the sum of the three species
@@ -27,8 +27,8 @@ x11()
 
 
 T = 1000
-lib  <- c(1, T )
-pred <- c(T+1, T + 500  )
+lib  <- c( 1  , T   )
+pred <- c( T+1, 2*T )
 simplex_sum <- simplex(block$sum, lib, pred)
 simplex_y   <- simplex(block$y,   lib, pred)
 simplex_w   <- simplex(block$w,   lib, pred)
