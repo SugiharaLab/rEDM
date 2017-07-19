@@ -1,0 +1,1035 @@
+---
+title: "rEDM: an R package for Empirical Dynamic Modeling and Convergent Cross Mapping"
+author:
+- Hao Ye
+- Adam Clark
+- Ethan Deyle
+- George Sugihara
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{"rEDM: an R package for Empirical Dynamic Modeling and Convergent Cross Mapping"}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+csl: ecology.csl
+bibliography: refs.bib
+---
+# Abstract
+Empirical dynamic modeling (EDM) is an emerging non-parametric framework for modeling nonlinear dynamic systems. EDM is based on the mathematical theory of recontructing attractor manifolds from time series data [@Takens_1981]. The **rEDM** package collects several EDM methods, including simplex projection [@Sugihara_1990], S-map [@Sugihara_1994], multivariate embeddings [@Dixon_1999], convergent cross mapping [@Sugihara_2012], and multiview embedding [@Ye_2016]. Here, we introduce the basic underlying theory, and describe the functionality of the **rEDM**, using examples from both model simulations and real data.
+
+# Introduction
+Many scientific fields use modesl as approximations of reality and for various purposes (e.g. testing hypotheses regarding mechanisms or processes, explaining past observations, predicting future outcomes). In most cases these models are based on hypothesized parametric equations; however explicit equations can be impractical when the exact mechanisms are unknown or too complex to be characterized with existing datasets. Empirical models, that infer patterns and associations from the data (instead of using hypothesized equations), represent an alternative and highly flexible approach. Here, we review the theoretical background for the emerging framework of empirical dynamic modeling (EDM) and the functionality of the **rEDM** package, which are intended for the study nonlinear dynamic systems that can prove problematic for traditional modeling approaches.
+
+The basic goal underlying EDM is to reconstruct the behavior of dynamic systems using time series data. This approach is based on mathematical theory developed initially by [@Takens_1981], and expanded on by others [@Sauer_1991; @Casdagli_1991; @Deyle_2011]. Because these methods operate with minimal assumptions, they are particularly suitable for studying systems that exhibit non-equilibrium dynamics and nonlinear state-dependent behavior (i.e. where interactions change over time and as a function of the system state).
+
+## Installation Instructions
+
+The **rEDM** package can be obtained in two main ways. The standard version of the package can be obtained through CRAN (the Comprehensive R Archive Network): https://cran.r-project.org/package=rEDM:
+
+```{r CRAN installation instructions, eval = FALSE}
+install.packages("rEDM")
+```
+
+However, the most recent version is available on GitHub: https://github.com/ha0ye/rEDM, and can be installed using the `install_github` function in the **devtools** package.
+
+```{r GitHub installation instructions, eval = FALSE}
+devtools::install_github("ha0ye/rEDM")
+```
+
+# Empirical Dynamic Modeling
+
+## Time Series as Observations of a Dynamic System
+
+The essential concept is that time series can be viewed as projections of the behavior of a dynamic system. Here, only a few modest assumptions are required. First, that the system state can be described as a point in a high-dimensional space. The axes of this space can be thought of as fundamental state variables; in an ecosystem, these variables might correspond to population abundances, resources, or environmental conditions. Second, that the system state changes through time following a set of deterministic rules. In other words, the behavior of the system is not completely stochastic.
+
+Consequently, it is possible to project the system state onto one of the coordinate axes to obtain the value of the corresponding state variable. Thus, sequential projections over time will form a time series for that variable. For example, in Figure \ref{fig_time_series_projection}, the states of the canonical Lorenz Attractor [@Lorenz_1963] are projected to the $x$-axis, creating a time series for variable $x$.
+
+![Time Series Projection from Lorenz Attractor](figure_1.svg)
+
+Although different time series observed from the system can represent different state variables, in general, each time series is a function of the system state and may potentially convolve several different state variables.
+
+## Attractor Reconstruction / Takens' Theorem
+
+The goal of EDM is to reconstruct the system dynamics from time series data. As seen above, a time series can be thought of as sequential projections of the motion on an attractor; in other words, information about the behavior is encoded in the temporal ordering of the time series. Takens' Theorem [@Takens_1981] states that mathematically valid and equivalent reconstructions of the attractor can be created using lags of just a single time series, by substituting those lags for unknown or unobserved variables. In other words, instead of representing the system state using a complete set of state variables, we can instead use a lagged-coordinate embedding:
+$$ \vec{x}_t = \langle x_t, x_{t-\tau}, \dots, x_{t-(E-1)\tau} \rangle $$
+
+![Attractor Reconstruction](figure_2.svg)
+
+If sufficient lags are used, the reconstruction preserves essential mathematical properties of the original system: reconstructed states will map one-to-one to actual system states, and nearby points in the reconstruction will correspond to similar system states. Figure \ref{fig_attractor_reconstruction} shows a reconstruction of the Lorenz attractor (from Figure \ref{fig_time_series_projection}) where the reconstructed system state is comprised of 3 lags of variable $x$. Here, the visual similarity between the reconstruction and the original Lorenz Attractor is quite clear.
+
+As a consequence of the fact that these mathematical properties of the original system can be recovered from a single time series, there are multiple applications. For example, empirical models can be used for forecasting [@Sugihara_1990], to understand nonlinear behavior [@Sugihara_1994], or to uncover mechanism [@Dixon_1999]. Moreover, recent work describes how EDM can be used to identify causal interactions, by testing whether two time series are observed from the same system [@Sugihara_2012]. In the next section, we demonstrate how the **rEDM** software package can be used to accomplish these various tasks.
+
+# Demonstration of EDM
+
+## Nearest Neighbor Forecasting using Simplex Projection
+
+As mentioned previously, the reconstruction will map one-to-one to the original attractor manifold if enough lags are used (i.e. if the reconstruction has a sufficiently large embedding dimension). If the embedding dimension is too small, then reconstructed states will overlap and appear to be the same even though they actually correspond to different states. These "singularities" will result in poor forecast performance, because the system behavior cannot be uniquely determined in the reconstruction. Thus, we can use prediction skill as an indicator for identifying the optimal embedding dimension. In the following example, we demonstrate how this can be accomplished using a nearest neighbor forecastaing method, Simplex Projection [@Sugihara_1990], implemented in **rEDM** as the function `simplex`.
+
+### Example
+
+In this example, we use simulated time series from the classical tent map that exhibits chaotic behavior. The tent map is a discrete time dynamic system, where a sequence, $x_t$, on the interval $[0, 1]$ is iterated according to:
+
+\begin{equation*}
+x_{t+1} = \begin{cases}
+2x_t & x_t < \frac{1}{2}\\
+2(1-x_t) & x_t \ge \frac{1}{2}
+\end{cases}
+\end{equation*}
+
+In **rEDM**, a sample time series of the first-differenced values can be found in dataset `tentmap_del`.
+
+```{r load tentmap data}
+library(rEDM)
+data(tentmap_del)
+str(tentmap_del)
+```
+
+We can see that the data consists of just a single vector, containing the raw first-differences values of $x_t$. Because the `simplex` function can accept a single vector as the input time series, no further processing of the data is required.
+
+```{r lib and pred for tentmap}
+ts <- tentmap_del
+lib <- c(1, 100)
+pred <- c(201, 500)
+```
+
+We begin by initializing the `lib` and `pred` variables. These determine which portions of the data will be used to create the reconstruction, and which portions of the data the reconstruction will be used to make forecasts on. In other words, defining the "training" and "test" subsets of the data. Here, the first 100 points (rows 1 to 100) in the time series constitute the "library", and 300 points (rows 201 to 500) are the "prediction set" for which the model will produce forecasts.
+
+The remaining parameters will be left at their default values (see section \ref{sec_general_parameters} for details). For the `simplex` function, this means that the embedding dimension, $E$, will range from $1$ to $10$.
+
+*Note that if the code detects any overlap in the lib and pred, it will enable leave-one-out cross-validation and return a warning message.*
+
+```{r simplex on tentmap}
+simplex_output <- simplex(ts, lib, pred)
+str(simplex_output)
+```
+
+The returned object from `simplex` is a simple data.frame with columns for each of the model parameters and forecast statistics, and rows for each separate model (i.e. different parameter combinations). For `simplex`, the model parameters are `E`, embedding dimension; `tau`, time lag between successive dimensions; `tp`, time to prediction; and `nn`, number of nearest neighbors (see section \ref{sec_general_parameters} for a detailed description). The forecast statistics are `num_pred`, the number of predictions made; `rho`, Pearson's correlation coefficient between predictions and observations; `mae`, mean absolute error of predictions; `rmse`, root mean squared error of predictions; `perc`, the percent of predictions that are the same sign as observations; and `p_val`, the p-value for `rho` being significantly greater than 0, using Fisher's transformation [@Fisher_1915]. The last 6 columns give those same forecast statistics, but for a naive constant predictor (where the forecast is simply the current value) over the same set of predictions.
+
+In this case, there are 10 separate models (one for each value of `E`), so we can simply plot `E` against `rho` (the correlation between observed and predicted values) to determine the optimal embedding dimension (i.e. the number of dimensions for which the reconstructed attractor is best unfolded, producing the highest forecast skill).
+
+```{r rho vs. E for tentmap, tidy = TRUE, fig.width = 5, fig.height = 3.5}
+par(mar = c(4, 4, 1, 1), mgp = c(2.5, 1, 0)) # set up margins for plotting
+plot(simplex_output$E, simplex_output$rho, type = "l", xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)")
+```
+
+Here, we observe that forecast skill peaks at $E = 2$, indicating that the dynamics of our data are unfolded best in 2 dimensions. Note that this optimal value for `E` may not be the same as the actual dimensionality of the corresponding dynamic systems, since predictability will be limited by observational error, process noise, and time series length.
+
+## Prediction Decay
+
+An important property of many natural systems is that nearby trajectories eventually diverge over time (i.e. "deterministic chaos" or the so-called "butterfly effect"). In essence, this means that short-term prediction is possible, because the near future is well-constrained, but in the long-term, states of the system are essentially random and not predictable. We can demonstrate this effect by examining how prediction skill changes as the `tp` parameter is increased; recall that this parameter describes the forecast horizon for how far ahead into the future forecasts are made.
+
+### Example
+
+Using the same tent map time series, we supply a range for the `tp` parameter in the `simplex` function, but fix the embedding dimension to the value determined above ($E = 2$):
+
+```{r simplex varying tp for tentmap}
+simplex_output <- simplex(ts, lib, pred, E = 2, tp = 1:10)
+```
+
+As above, the returned object is a data.frame, and the prediction decay can be studied by plotting forecast skill (`rho`) against the time to prediction (`tp`).
+
+```{r rho vs. tp for tentmap, tidy = TRUE, fig.width = 5, fig.height = 3.5}
+par(mar = c(4,4,1,1))
+plot(simplex_output$tp, simplex_output$rho, type = "l", 
+     xlab = "Time to Prediction (tp)", ylab = "Forecast Skill (rho)")
+```
+
+As expected (because the parameters chosen for the tent map fall in the region for chaotic behavior), the clear decline in forecast skill (`rho` $\rightarrow 0$) indicates that the system is chaotic.
+
+## Identifying Nonlinearity
+
+One concern is that many time series may show predictability even if they are purely stochastic, because they behave similarly to autocorrelated red noise. Fortunately, we can distinguish between red noise and nonlinear deterministic behavior by using S-maps as described in [@Sugihara_1994].
+
+In contrast to the nearest-neighbor interpolation of simplex projection, the S-map forecasting method [@Sugihara_1994] fits local linear maps to describe the dynamics. In addition to the standard set of parameters for a lagged-coordinate reconstruction (as in `simplex`), S-maps also contain a nonlinear tuning parameter, $\theta$, that determines the degree to which points are weighted when fitting the local linear map. For example, when $\theta = 0$, all points are equally weighted, such that the local linear map is identical for different points in the reconstructed state-space. As such, the S-map will be identical to a global linear map (i.e. an autoregressive model). When values of $\theta$ are greater than $0$, nearby points in the state space receive larger weights, and the local linear map can vary in state-space to accommodate nonlinear behavior. 
+
+Consequently, if the time series are sampled from autoregressive red noise, then the linear model ($\theta = 0$) should produce better forecasts, because the global linear map (which will, in effect, be fitted to more data points) will reduce the effects of observation error compared to local linear maps. In contrast, if forecast skill increases for $\theta > 0$, then the results are suggestive of nonlinear dynamics, because better forecasts are achieved when the local linear map can change depending on the location in state-space: it is a better description of state-dependent behavior.
+
+### Example
+
+The S-map method is implemented as the function `s_map` in the **rEDM** package. Much like in the previous use of `simplex`, we can leave many of the parameters at default settings (see section \ref{sec_general_parameters} for details). Here, by default the $\theta$ parameter (`theta`) will range from $0$ to $8$, enabling us to test for nonlinearity. Here again, we will use the tent map time series, and set $E = 2$ based on the results from simplex projection.
+
+Note that the default value for `num_neighbors` is `0`. Typically, when using `s_map` to test for nonlinear behavior, we want to use all points in the reconstruction when constructing the local linear map, and allow the `theta` parameter to control the weighting assigned to individual points. This is in contrast to simplex projection, where only the nearest neighbors are used. Here the function recognizes that all values < 1 are nonsensical and all the points will be used instead.
+
+Following from the previous example, we set `E = 2` based on the results from simplex projection. Again, note that we allow many of the parameters to take on default values (e.g., $\tau = 1$, $\text{tp} = 1$). If we had changed these for simplex projection, we would want to propagate them here. The default values for the nonlinear tuning parameter, $\theta$, range from $0$ to $8$, and are suitable for our purposes.
+
+Note also, that the default value for `num_neighbors` is `0`. Typically, when using `s_map` to test for nonlinear behavior, we allow all points in the reconstruction to be used, subject only to the weighting based on distance. By using `0` for this parameter (an otherwise nonsensical value), the program will use all nearest neighbors.
+
+```{r smap for tentmap}
+smap_output <- s_map(ts, lib, pred, E = 2)
+```
+
+Again, the results are a data.frame with columns for each of the model parameters and forecast statistics, with rows for each run of the model. In this case, there is one run for each value of `theta`, so we can simply plot `theta` against `rho`:
+
+```{r rho vs. theta for tentmap, tidy = TRUE, fig.width = 5, fig.height = 3.5}
+par(mar = c(4, 4, 1, 1), mgp = c(2.5, 1, 0))
+plot(smap_output$theta, smap_output$rho, type = "l", 
+     xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)")
+```
+
+Here, we can see that forecast skill substantially improves as `theta` increases, indicating the presence of nonlinear dynamics. Typically, we would expect forecast skill to decrease at high values of `theta`, because as `theta`, the local linear map can become overfitted to the nearest points. However, because the example data are observed without any error, even a very localized linear map can continue to produce good forecasts. By simulating the addition of a small amount of observational error, a more typical `rho` vs. `theta` plot can be achieved:
+
+```{r rho vs. theta with noise, tidy = TRUE, fig.width = 5, fig.height = 3.5}
+ts <- ts + rnorm(length(ts), sd = sd(ts) * 0.2)
+smap_output <- s_map(ts, lib, pred, E = 2)
+par(mar = c(4, 4, 1, 1), mgp = c(2.5, 1, 0))
+plot(smap_output$theta, smap_output$rho, type = "l", 
+     xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)")
+```
+
+## Generalized Takens' Theorem
+
+Instead of creating an attractor by taking lags of a single time series, it is possible to combine lags from different time series, if they are all observed from the same system [@Sauer_1991; @Deyle_2011]. The practical reality of applying EDM to systems with finite data, noisy observations, and stochastic influences means that such "multivariate" reconstructions can often be a better description of the true dynamics than "univariate" reconstructions
+
+In **rEDM**, the `block_lnlp` function generalizes the `simplex` and `s_map` functions, allowing generic reconstructions to be used with either the simplex projection or S-map methods The main data input for `block_lnlp` is a matrix or data.frame of the time series observations, where each column is a separate time series with rows representing "simultaneous" observations. In addition to the standard parameters for `simplex` or `s_map`, `block_lnlp` contains parameters to specify which column is to be forecast (`target_column`) as well as which columns to use to construct the attractor (`columns`). For both parameters, either a numerical index or the column name can be given. Note that if lagged coordinates are intended to be used, they need to be manually created as separate columns in the matrix or data.frame.
+
+### Example
+
+We begin by loading an example dataset of time series and lags from a coupled 3-species model system. Here, the `block_3sp` variable is a 10-column data.frame with 1 column for time, and 3 columns for each of the variables (unlagged, $t-1$, and $t-2$ lags). Note that the lagged columns begin with `NA` values because there are no observations of the variables for times $t < 1$. In **rEDM**, vectors that include `NA` values are excluded if they would be used for computation, but predictions will still be made if only the observed values are missing (see section \ref{sec_data_input} for more details).
+
+```{r load block_3sp data}
+data(block_3sp)
+str(block_3sp)
+```
+
+In order to correctly index into columns, `block_lnlp` has an option to indicate that the first column is actually a time index. When `first_column_time` is set to `TRUE`, a value of `1` for `target_column` now points to the first *data* column in the data.frame, as opposed to the time column (`columns` is similarly indexed).
+
+In order to correctly index into columns, `block_lnlp` has an option to indicate that the first column is actually a time index. When `first_column_time` is set to \code{TRUE}, a value of `1` for `target_column` will refer to the first *data* column in the data.frame, and skip the "time" column (the parameter `columns` is similarly indexed). If column names are used, then the `first_column_time` parameter is ignored, except to label the output.
+
+```{r block_lnlp for block_3sp, tidy = TRUE, warning = FALSE}
+lib <- c(1, NROW(block_3sp))
+pred <- c(1, NROW(block_3sp))
+
+cols <- c(1, 2, 4) # c("x_t", "x_t-1", "y_t")
+target <- 1 # "x_t"
+
+block_lnlp_output <- block_lnlp(block_3sp, lib = lib, pred = pred, 
+                                columns = cols, target_column = target, 
+                                stats_only = FALSE, first_column_time = TRUE)
+```
+
+Note that the default value for the `tp` parameter is `1`, indicating that predictions will be made for 1 time step into the future (i.e. the subsequent row of the input data). In some cases, the data may already be processed such that the predictions are already aligned in the same row, but a different column, in which case the `tp` parameter should be set to `0`.
+
+```{r}
+str(block_lnlp_output)
+```
+
+By setting `stats_only` to `FALSE`, the output is a list with the full model output. Because only 1 model (1 combination of input parameters) was run, the output is a list with 1 element. This element is actually another list with 4 named elements: `params`, a data.frame of the input parameters; `embedding`, a vector of the columns used to construct the model; `model_output`, a data.frame of the full set of observed and predicted values; and `stats`, a data.frame of the forecast statistics.
+
+To compare the observed and predicted values, we must therefore index correctly into the output. We can then plot the observed and predicted values and see how well the model did relative to the expected 1:1 line.
+
+```{r observed vs predicted for block_lnlp, tidy = TRUE, fig.width = 4, fig.height = 4}
+observed <- block_lnlp_output[[1]]$model_output$obs
+predicted <- block_lnlp_output[[1]]$model_output$pred
+
+par(mar = c(4, 4, 1, 1), mgp = c(2.5, 1, 0), pty = "s")
+plot_range <- range(c(observed, predicted), na.rm = TRUE)
+plot(observed, predicted, xlim = plot_range, ylim = plot_range, 
+     xlab = "Observed", ylab = "Predicted")
+abline(a = 0, b = 1, lty = 2, col = "blue")
+```
+
+## Causality Inference and Cross Mapping
+
+One of the corollaries to the Generalized Takens' Theorem is that it should be possible to cross predict or cross map between variables that are observed from the same system. Consider two variables, $x$ and $y$ that interact in a dynamic system. Then the univariate reconstructions based on $x$ or $y$ alone should uniquely identify the system state and and thus the corresponding value of the other variable.
+
+![Cross Mapping Between Univariate Reconstructions of the Lorenz Attractor](figure_3.png)
+
+In the case of unidirectional causality, e.g. $x$ causes $y$, the causal variable ($x$) leaves a signature on the affected variable ($y$). Consequently, the reconstructed states based on $y$ can be used to cross predict the values of $x$ (because the reconstruction based on $y$ must be complete, it must include information about the value of $x$). Note that this cross prediction is in the *opposite* direction of the causal effect. At the same time, cross prediction from $x$ to $y$ will fail, because the time series of $x$ behaves independently of $y$, so a univariate reconstruction using only lags of $x$ is necessarily incomplete.
+
+Although $x$ has incomplete information for predicting $y$, it does affect the values of $y$, and therefore will likely to have nonzero predictive skill. However, this cross mapping will be limited to the statistical association between $x$ and $y$ and will generally not improve as longer time series are used for reconstruction. In contrast, the cross prediction of $x$ from $y$ will generally improve. This convergence is therefore a crucial property for inferring causality. For practical reasons, the sensitivity of detecting causality this way is improved if, instead of predicting the future value of another variable, we estimate the concurrent value of another variable. We refer to this modified method as cross mapping, because we are not ``predicting'' the future.
+
+For a more detailed description of using cross mapping to infer causation, see [@Sugihara_2012].
+
+## Convergent Cross Mapping (CCM)
+
+In **rEDM**, convergent cross mapping is implemented as the `ccm` function, which provides an easy way to compute cross map skill for different subsamples of the time series. In the following example, we reproduce the analysis from [@Sugihara_2012], identifying causality between anchovy landings in California and Newport Pier sea-surface temperature. For this example, a previously identified value of `3` for the embedding dimension will be used.
+
+To quantify convergence, we compute the cross map skill over many random subsamples of the time series. The `lib_sizes` parameter specifies the "library" size of the subsamples that we use, and the `num_samples` parameter specifies the number of subsamples to be generated at each library size. The `random_libs` and `replace` parameters specify how the subsamples will be generated. Here, setting both to `TRUE` means that random sampling with replacement will be used.
+
+```{r sardine anchovy ccm, tidy = TRUE, warning = FALSE, cache = TRUE}
+data(sardine_anchovy_sst)
+anchovy_xmap_sst <- ccm(sardine_anchovy_sst, E = 3, 
+                        lib_column = "anchovy", target_column = "np_sst", 
+                        lib_sizes = seq(10, 80, by = 10), num_samples = 100, 
+                        random_libs = TRUE, replace = TRUE)
+sst_xmap_anchovy <- ccm(sardine_anchovy_sst, E = 3, 
+                        lib_column = "np_sst", target_column = "anchovy", 
+                        lib_sizes = seq(10, 80, by = 10), num_samples = 100, 
+                        random_libs = TRUE, replace = TRUE)
+str(anchovy_xmap_sst)
+```
+
+The output from CCM is a data.frame with statistics for each model run (in this case, 100 models at each of 8 library sizes). To interpret the results, we aggregate the cross map performance at each library size using the `ccm_means` function, which computes a mean value for the forecast statistics. Because average cross map skill less than 0 means there is no prediction skill, (predictions should not be anticorrelated with observations), we filter out negative values when plotting.
+
+```{r sardine anchovy ccm plot, tidy = TRUE, fig.width = 5, fig.height = 3.5}
+a_xmap_t_means <- ccm_means(anchovy_xmap_sst)
+t_xmap_a_means <- ccm_means(sst_xmap_anchovy)
+
+par(mar = c(4, 4, 1, 1), mgp = c(2.5, 1, 0)) # set up margins for plotting
+y1 <- pmax(0, a_xmap_t_means$rho)
+y2 <- pmax(0, t_xmap_a_means$rho)
+
+plot(a_xmap_t_means$lib_size, y1, type = "l", col = "red", 
+     xlab = "Library Size", ylab = "Cross Map Skill (rho)", ylim = c(0, 0.25))
+lines(t_xmap_a_means$lib_size, y2, col = "blue")
+legend(x = "topleft", legend = c("anchovy xmap SST", "SST xmap anchovy"), 
+       col = c("red", "blue"), lwd = 1, bty = "n", inset = 0.02, cex = 0.8)
+```
+
+# Real Data Examples
+
+<!-- ## Old Field Succession -->
+
+<!-- Dataset E054 is a subset of the long-term observational study of old field succession at the Cedar Creek LTER. Full methods can be found in [@Inouye_1987]. This subset includes annual species-level above-ground biomass and precipitation for 1988-2011 ("Year" colum in dataset), recorded in four transects ("Transect") in each of 15 fields ("OldField"). -->
+
+<!-- Fields were abandoned between 1927 and 1998 ("YearAb"). The columns include abundance (g/m) for two common grass species at Cedar Creek (*Agropyron (Elymus) repens* and *Schizachyrium scoparium*), as well as for total leaf litter biomass. The "precipmm" column shows summer annual precipitation (June - August) in mm. -->
+
+<!-- In general, *A. repens* is a fast disperser, but inferior nitrogen competitor, meaning that it usually colonizes fields quickly, but is eventually displaced by *S. scoparium* [@Tilman_1994a]. However, when leaf litter is very abundant, this process appears to slow, leading to persistance of *A. repens* late into succession [@Isbell_2013]. Furthermore, *A. repens* and *S. scoparium* utilize C3 and C4 photosynthetic pathways respectively, suggesting that *A. repens* is likely to be more strongly influenced by water availability [@Tilman_1994]. All of these interactions are likely influenced by multiple variables and time lags, making the system an ideal candidate for simplex analysis. -->
+
+<!-- ### Preparing the Data -->
+
+<!-- E054 includes data from multiple fields and transects, meaning that we first need to collapse it into a single composite time series. As before, we begin by normalizing each time series. -->
+
+<!-- ```{r load e054 data, tidy = TRUE} -->
+<!-- data(e054_succession) -->
+<!-- head(e054_succession) -->
+
+<!-- # separate time column from data -->
+<!-- composite_ts <- e054_succession[,-c(1:5)] -->
+
+<!-- # normalize each time series -->
+<!-- n <- NCOL(composite_ts) -->
+<!-- blocks <- paste(e054_succession$Exp, e054_succession$OldField, e054_succession$Transect) -->
+<!-- blocks_index <- sort(unique(blocks)) -->
+<!-- for(j in 1:n) { -->
+<!--     for(i in 1:length(blocks_index)) { -->
+<!--         subs <- which(blocks == blocks_index[i]) -->
+<!--         composite_ts[subs,j] <- (composite_ts[subs,j] - mean(composite_ts[subs,j])) / sd(composite_ts[subs,j]) -->
+<!--         } -->
+<!--     } -->
+<!-- composite_ts <- cbind(year = e054_succession$Year, composite_ts) -->
+<!-- ``` -->
+
+<!-- Again, we need to indicate separations between transects and fields so that lagged vectors are not constructed that contain coordinates spanning multiple time series. -->
+
+<!-- ```{r library for e054} -->
+<!-- # make composite library -->
+<!-- segments <- NULL -->
+<!-- startpos <- 1 -->
+<!-- for(i in 1:(NROW(composite_ts)-1)) { -->
+<!--     if(composite_ts$year[i] > composite_ts$year[i+1]) { -->
+<!--         segments <- rbind(segments, c(startpos, i)) -->
+<!--         startpos <- i+1 -->
+<!--         } -->
+<!--     } -->
+<!-- segments <- rbind(segments, c(max(segments)+1, NROW(composite_ts))) -->
+
+<!-- composite_lib <- segments[1:floor(NROW(segments)/2),] -->
+<!-- composite_pred <- segments[(floor(NROW(segments)/2)+1):NROW(segments),] -->
+<!-- ``` -->
+
+<!-- Because the time series for precipitation does not vary among replicates, we also need to construct separate variables for analyzing precipitation dynamics: -->
+
+<!-- ```{r precipitation variable for e054} -->
+<!-- precip_ts <- unique(e054_succession[,c("Year", "precipmm")]) -->
+<!-- precip_ts <- precip_ts[order(precip_ts$Year),] -->
+<!-- ``` -->
+
+<!-- ### Applying Simplex and S-map Algorithms -->
+
+<!-- We can then use the **rEDM** functions as normal for each of our time series. First, we apply simplex projection: -->
+
+<!-- ```{r simplex for e054, tidy = TRUE, warning = FALSE, fig.width = 6, results = "hold"} -->
+<!-- par(mar = c(4,4,1,1), mfrow = c(2,2), mgp = c(2,1,0)) -->
+<!-- varlst <- colnames(composite_ts)[2:4] -->
+<!-- simplex_output_list <- NULL -->
+
+<!-- for(i in 1:length(varlst)) { -->
+<!--     simplex_output_list[[i]] <- simplex(composite_ts[,varlst[i]], lib = composite_lib, pred = composite_pred, E = 2:6) -->
+<!--     plot(simplex_output_list[[i]]$E, simplex_output_list[[i]]$rho, type = "l", xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)", main = varlst[i]) -->
+<!--     } -->
+
+<!-- simplex_output_list[[4]] <- simplex(precip_ts, E = 2:6, silent = TRUE) -->
+<!-- names(simplex_output_list) <- c(varlst, "precipmm") -->
+<!-- plot(simplex_output_list[[4]]$E, simplex_output_list[[4]]$rho, type = "l", xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)", main = "Precip") -->
+<!-- ``` -->
+
+<!-- These results give us the best embedding dimension for each of our projections: -->
+
+<!-- ```{r get best E} -->
+<!-- bestE <- sapply(simplex_output_list, function(simplex_output) { -->
+<!--     simplex_output$E[which.max(simplex_output$rho)] -->
+<!--     }) -->
+<!-- bestE -->
+<!-- ``` -->
+
+<!-- Using these embedding dimensions, we can now apply S-maps to identify nonlinearity: -->
+
+<!-- ```{r smap for e054, cache = TRUE, tidy = TRUE, warning = FALSE, fig.width = 6} -->
+<!-- par(mar = c(4,4,1,1), mfrow=c(2,2), mgp = c(2,1,0)) -->
+<!-- smap_output_list <- NULL -->
+
+<!-- for(i in 1:length(varlst)) { -->
+<!--     smap_output_list[[i]] <- s_map(composite_ts[,c("year", varlst[i])], lib = composite_lib, pred = composite_pred, E = bestE[i]) -->
+<!--     plot(smap_output_list[[i]]$theta, smap_output_list[[i]]$rho, type = "l", xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)", main=varlst[i]) -->
+<!--     } -->
+
+<!-- smap_output_list[[4]] <- s_map(precip_ts, lib = c(1,24), pred = c(1,24), E = bestE[4]) -->
+<!-- plot(smap_output_list[[4]]$theta, smap_output_list[[4]]$rho, type = "l", xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)", main="Precip") -->
+<!-- ``` -->
+
+<!-- Note that all time series suggest nonlinear dynamics in the data (because of the initial rise in rho for non-zero theta, followed by a sharp drop-off in rho with theta). -->
+
+<!-- ### Multivariate Models -->
+
+<!-- Next, we can use information from several time series to make better predictions about system dynamics. We can accomplish this with the `block_lnlp` command. First, we need to manually construct lagged vectors for each variable. This requires a bit of care in coding, as we need to ensure that lagged components come only from observations within a single field and transect. -->
+
+<!-- ```{r make blocks for e054} -->
+<!-- n <- NROW(composite_ts) -->
+
+<!-- #Make lags -->
+<!-- block_e54 <- data.frame(year=composite_ts$year) -->
+<!-- block_e54$AR_tm <- composite_ts$Agropyron.repens -->
+<!-- block_e54$AR_tm1 <- c(NA, block_e54$AR_tm[-n]) -->
+<!-- block_e54$AR_tm2 <- c(NA, block_e54$AR_tm1[-n]) -->
+<!-- block_e54$AR_tm3 <- c(NA, block_e54$AR_tm2[-n]) -->
+
+<!-- block_e54$SS_tm <- composite_ts$Schizachyrium.scoparium -->
+<!-- block_e54$SS_tm1 <- c(NA, block_e54$SS_tm[-n]) -->
+<!-- block_e54$SS_tm2 <- c(NA, block_e54$SS_tm1[-n]) -->
+<!-- block_e54$SS_tm3 <- c(NA, block_e54$SS_tm2[-n]) -->
+
+<!-- block_e54$ML_tm <- composite_ts$Miscellaneous.litter -->
+<!-- block_e54$ML_tm1 <- c(NA, block_e54$ML_tm[-n]) -->
+<!-- block_e54$ML_tm2 <- c(NA, block_e54$ML_tm1[-n]) -->
+<!-- block_e54$ML_tm3 <- c(NA, block_e54$ML_tm2[-n]) -->
+
+<!-- block_e54$PR_tm <- composite_ts$precipmm -->
+<!-- block_e54$PR_tm1 <- c(NA, block_e54$PR_tm[-n]) -->
+<!-- block_e54$PR_tm2 <- c(NA, block_e54$PR_tm1[-n]) -->
+<!-- block_e54$PR_tm3 <- c(NA, block_e54$PR_tm2[-n]) -->
+
+<!-- #Remove overlaps from other plots -->
+<!-- startyear <- 2001 -->
+<!-- for(i in 2:nrow(block_e54)) { -->
+<!--     if(block_e54$year[i]<block_e54$year[i-1]) { -->
+<!--         startyear <- block_e54$year[i] -->
+<!--         } -->
+<!--     if(block_e54$year[i]==startyear) { -->
+<!--         block_e54[i,c("AR_tm1", "SS_tm1", "ML_tm1", "PR_tm1")] <- NA -->
+<!--         block_e54[i,c("AR_tm2", "SS_tm2", "ML_tm2", "PR_tm2")] <- NA -->
+<!--         block_e54[i,c("AR_tm3", "SS_tm3", "ML_tm3", "PR_tm3")] <- NA -->
+<!--         } -->
+<!--     if(block_e54$year[i]==(startyear+1)) { -->
+<!--         block_e54[i,c("AR_tm2", "SS_tm2", "ML_tm2", "PR_tm2")] <- NA -->
+<!--         block_e54[i,c("AR_tm3", "SS_tm3", "ML_tm3", "PR_tm3")] <- NA -->
+<!--         } -->
+<!--     if(block_e54$year[i]==(startyear+2)) { -->
+<!--         block_e54[i,c("AR_tm3", "SS_tm3", "ML_tm3", "PR_tm3")] <- NA -->
+<!--         } -->
+<!--     } -->
+<!-- head(block_e54) -->
+<!-- ``` -->
+
+<!-- Now, we can run the `block_lnlp` algorithm on the composite, multi-variate time series. First, we run the algorithm to predict *A. repens* dynamics, based on its own lagged dynamics, and on additional information included in litter abundance, summer precipitation, and abundance of *S. scoparium*: -->
+
+<!-- ```{r block_lnlp for e054, warning = FALSE, tidy = TRUE} -->
+<!-- block_lnlp_output_AR <- block_lnlp(block_e54, lib = composite_lib, pred = composite_pred, columns = c("AR_tm", "AR_tm1", "AR_tm2", "AR_tm3"), target_column = "AR_tm", stats_only = FALSE) -->
+
+<!-- block_lnlp_output_ML <- block_lnlp(block_e54, lib = composite_lib, pred = composite_pred, columns = c("AR_tm", "AR_tm1", "AR_tm2", "AR_tm3", "ML_tm1", "PR_tm"), target_column = "AR_tm", stats_only = FALSE) -->
+
+<!-- block_lnlp_output_SS <- block_lnlp(block_e54, lib = composite_lib, pred = composite_pred, columns = c("AR_tm", "AR_tm1", "AR_tm2", "AR_tm3", "ML_tm1", "PR_tm", "SS_tm3"), target_column = "AR_tm", stats_only = FALSE) -->
+<!-- ``` -->
+
+<!-- Note that each additional variable adds slightly to the predictive power of the model. -->
+
+<!-- ```{r block_lnlp plot for e054, fig.width = 6, tidy = TRUE, warning = FALSE} -->
+<!-- observed_AR <- block_lnlp_output_AR[[1]]$model_output$obs -->
+<!-- predicted_AR <- block_lnlp_output_AR[[1]]$model_output$pred -->
+
+<!-- observed_ML <- block_lnlp_output_ML[[1]]$model_output$obs -->
+<!-- predicted_ML <- block_lnlp_output_ML[[1]]$model_output$pred -->
+
+<!-- observed_SS <- block_lnlp_output_SS[[1]]$model_output$obs -->
+<!-- predicted_SS <- block_lnlp_output_SS[[1]]$model_output$pred -->
+
+<!-- par(mar = c(4,4,1,1), pty = "s") -->
+<!-- plot_range <- range(c(observed_AR, predicted_AR), na.rm = TRUE) -->
+<!-- plot(observed_AR, predicted_AR, xlim = plot_range, ylim = plot_range, xlab = "Observed", ylab = "Predicted") -->
+<!-- abline(a = 0, b = 1, lty = 2, col = "darkgrey") -->
+
+<!-- abline(lm(predicted_AR~observed_AR), col="black", lty=3) -->
+<!-- points(observed_ML, predicted_ML, pch=2, col="red") -->
+<!-- abline(lm(predicted_ML~observed_ML), col="red", lty=3) -->
+<!-- points(observed_SS, predicted_SS, pch=3, col="blue") -->
+<!-- abline(lm(predicted_SS~observed_SS), col="blue", lty=3) -->
+<!-- ``` -->
+
+<!-- ### Convergent Cross Mapping -->
+
+<!-- Finally, we can apply CCM to our data in order to test for causal links among variables. Because C3 grasses are thought to be more vulnerable to drought conditions than C4 grasses, we start by testing each species against precipitation dynamics for causal links. -->
+
+<!-- In each case, we use the embedding dimension corresponding to the "best" embedding dimension for the variable that we are trying to predict (i.e. the putative causal process). -->
+
+<!-- ```{r, ccm on e054, cache = TRUE, warning = FALSE, tidy = TRUE, fig.width = 6} -->
+<!-- #A. repens: -->
+<!-- ar_xmap_prec <- ccm(composite_ts, lib = segments, pred = segments, E = bestE[names(bestE)=="precipmm"], lib_column = "Agropyron.repens", target_column = "precipmm", lib_sizes = seq(1, 1000, by = 100), num_samples = 10) -->
+<!-- prec_xmap_ar <- ccm(composite_ts, lib = composite_lib, pred = composite_pred, E = bestE[names(bestE)=="Agropyron.repens"], lib_column = "precipmm", target_column = "Agropyron.repens", lib_sizes = seq(1, 1000, by = 100), num_samples = 10) -->
+
+<!-- a_xmap_p_means <- ccm_means(ar_xmap_prec) -->
+<!-- p_xmap_a_means <- ccm_means(prec_xmap_ar) -->
+
+<!-- #S. scoparium: -->
+<!-- ss_xmap_prec <- ccm(composite_ts, lib = segments, pred = segments, E = bestE[names(bestE)=="precipmm"], lib_column = "Schizachyrium.scoparium", target_column = "precipmm", lib_sizes = seq(1, 1000, by = 100), num_samples = 10) -->
+<!-- prec_xmap_ss <- ccm(composite_ts, lib = segments, pred = segments, E = bestE[names(bestE)=="Schizachyrium.scoparium"], lib_column = "precipmm", target_column = "Schizachyrium.scoparium", lib_sizes = seq(1, 1000, by = 100), num_samples = 10) -->
+
+<!-- s_xmap_p_means <- ccm_means(ss_xmap_prec) -->
+<!-- p_xmap_s_means <- ccm_means(prec_xmap_ss) -->
+
+<!-- #Plot output -->
+<!-- par(mar = c(4,4,1,1), mgp = c(2.5, 1, 0)) -->
+<!-- plot(s_xmap_p_means$lib_size, pmax(0, s_xmap_p_means$rho), type = "l", col = "red", xlab = "Library Size", ylab = "Cross Map Skill (rho)", ylim = c(0, 0.2)) -->
+<!-- lines(p_xmap_s_means$lib_size, pmax(0, p_xmap_s_means$rho), col = "blue") -->
+<!-- legend(x = "topleft", legend = c("A. repens xmap Precip.", "Precip. xmap A. repens"), col = c("red", "blue"), lwd = 1, inset = 0.02, bty = "n") -->
+
+<!-- plot(a_xmap_p_means$lib_size, pmax(0, a_xmap_p_means$rho), type = "l", col = "orange", xlab = "Library Size", ylab = "Cross Map Skill (rho)", ylim = c(0, 0.2)) -->
+<!-- lines(p_xmap_a_means$lib_size, pmax(0, p_xmap_a_means$rho), col = "blue") -->
+<!-- legend(x = "topleft", legend = c("S. scoparium xmap Precip.", "Precip. xmap S. scoparium"), col = c("orange", "blue"), lwd = 1, inset = 0.02, bty = "n") -->
+<!-- ``` -->
+
+<!-- In each case, results suggest that species biomass is causally influenced by precipitation, but that causal forcing *A. repens* by precipitation is likely stronger. We could try to apply similar tests now for litter effects, or competitive interactions. -->
+
+## Community Productivity and Invasibility
+
+The data presented here are part of Experiment 120, the “Big Biodiversity” experiment at Cedar Creek LTER. This experiment is the longest running randomized test for the effects of plant diversity on ecosystem functions. Plots were established in 1994 and planted with 1, 2, 4, 8, or 16 species, and have since then been sampled annually for above-ground plant biomass. Full methods are described in [@Tilman_1997]. The most well-known result from the experiment is that planted species number strongly, positively influences above-ground biomass production. However, because the diversity treatments are fixed, rather than dynamical variables, they do not lend themselves to state space reconstruction.
+
+Instead, we focus a different set of published results from the experiment: interactions between primary productivity, soil nitrate, and invasion rates by non-planted species. These show that increased biomass is associated with decreases in soil nitrate levels and decreases in invasion success [@Fargione_2005]. A posited mechanism for this is soil nitrate: increased primary productivity leads to decreased soil nitrate, which in turn reduces resources available to invaders. For the analyses here, we combine planted diversity treatments from 4-8 species planted treatments, and analyze them as a block.
+
+The columns in the dataset `e120_biodiversity` are as follows: `Exp`, `Year`, `Month`, `Plot`, `Field`, and `FieldPlot` describe experiment, plot identity, and sampling time. `NumSp` and `SpNum` show the planted and realized species diversity in the plot respectively. `AbvBioAnnProd` shows annual above ground productivity of planted species, in $g/m^2$. `noh020tot` shows soil nitrate levels in the top 20 cm of soil, measured in $\mu g/kg$ soil. `invrichness` shows species richness of unplanted species in the plot. `SummerPrecip.mm.` shows precipitation annual from May to August measured in mm.
+
+### Preparing the Data
+
+E120 includes data from multiple plots, meaning that we first need to collapse it into a single composite time series. As before, we begin by normalizing each time series.
+
+```{r load e120 data, tidy = TRUE}
+data(e120_biodiversity)
+head(e120_biodiversity)
+
+# separate time column from data
+composite_ts <- e120_biodiversity[,c(7:9,12)]
+
+# normalize each time series
+n <- NCOL(composite_ts)
+blocks <- e120_biodiversity$Plot
+blocks_index <- sort(unique(blocks))
+for (j in 1:n) {
+    for (i in 1:length(blocks_index)) {
+        subs <- which(blocks == blocks_index[i])
+        composite_ts[subs,j] <- (composite_ts[subs,j] - mean(composite_ts[subs,j])) / sd(composite_ts[subs,j])
+        }
+    }
+
+composite_ts <- cbind(year = e120_biodiversity$Year, composite_ts)
+```
+
+Again, we need to indicate separations between plots so that lagged vectors are not constructed that contain coordinates spanning multiple time series.
+
+```{r make composite ts for e120}
+# make composite library
+segments <- NULL
+startpos <- 1
+for (i in 2:nrow(composite_ts)) {
+  if (composite_ts$year[i] < composite_ts$year[i - 1]) {
+    segments <- rbind(segments, c(startpos, i))
+    startpos <- i + 1
+  }
+}
+segments <- rbind(segments, c(max(segments) + 1, nrow(composite_ts)))
+
+# choose random segments for prediction
+set.seed(2312)
+rndlib <- sort(sample(1:nrow(segments), round(nrow(segments)/2, 0), replace = FALSE))
+composite_lib <- segments[rndlib, ]
+composite_pred <- segments[-rndlib, ]
+```
+
+Because the time series for precipitation does not vary among replicates, we also need to construct separate variables for analyzing precipitation dynamics:
+
+```{r precip for e120}
+precip_ts <- unique(e120_biodiversity[, c("Year", "SummerPrecip.mm.")])
+precip_ts <- precip_ts[order(precip_ts$Year), ]
+```
+
+### Applying Simplex and S-map Algorithms
+
+We can then use the **rEDM** functions as normal for each of our time series. First, we apply simplex projection:
+
+```{r simplex on e120, tidy = TRUE, cache = TRUE, warning = FALSE, fig.width = 6}
+par(mar = c(4,4,1,1), mfrow = c(2,2), mgp = c(2.5, 1, 0))
+varlst <- colnames(composite_ts)[2:4]
+simplex_output_list <- NULL
+
+for (i in 1:length(varlst)) {
+    simplex_output_list[[i]] <- simplex(composite_ts[,c("year", varlst[i])], lib = composite_lib, pred = composite_pred, E = c(2:6))
+    plot(simplex_output_list[[i]]$E, simplex_output_list[[i]]$rho, type = "l", xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)", main = varlst[i])
+    }
+
+simplex_output_list[[4]] <- simplex(precip_ts, lib = c(1,7), pred = c(1,7), E = c(2:5), silent = TRUE)
+names(simplex_output_list) <- c(varlst, "precipmm")
+plot(simplex_output_list[[4]]$E, simplex_output_list[[4]]$rho, type = "l", xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)", main = "Precip")
+```
+
+These results give us the best embedding dimension for each of our projections:
+
+```{r best E for e120}
+bestE <- sapply(simplex_output_list, function(simplex_output) {
+    simplex_output$E[which.max(simplex_output$rho)]
+    })
+bestE
+```
+
+Using these embedding dimensions, we can now apply S-maps to identify nonlinearity:
+
+```{r smap on e120, cache = TRUE, warning = FALSE, tidy = TRUE, fig.width = 6}
+par(mar = c(4,4,1,1), mfrow = c(2,2), mgp = c(2.5, 1, 0))
+smap_output_list <- NULL
+
+for (i in 1:length(varlst)) {
+    smap_output_list[[i]] <- s_map(composite_ts[,c("year", varlst[i])], lib = composite_lib, pred = composite_pred, E = bestE[i], silent = TRUE)
+    plot(smap_output_list[[i]]$theta, smap_output_list[[i]]$rho, type = "l", xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)", main = varlst[i])
+    }
+
+smap_output_list[[4]] <- s_map(precip_ts, E = bestE[4], silent = TRUE)
+plot(smap_output_list[[4]]$theta, smap_output_list[[4]]$rho, type = "l", xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)", main = "Precip")
+```
+
+Note that all time series suggest nonlinear dynamics in the data (because of the initial rise in rho for non-zero theta, followed by a sharp drop-off in rho with theta).
+
+### Multivariate Models
+
+Next, we can use information from several time series to make better predictions about system dynamics. We can accomplish this with the `block_lnlp` command. First, we need to manually construct lagged vectors for each variable. This requires a bit of care in coding, as we need to ensure that lagged components come only from observations within a single field and transect.
+
+```{r make block for e120, tidy = TRUE}
+n <- NROW(composite_ts)
+
+# make lags
+block_data <- data.frame(year = composite_ts$year)
+block_data$AB_tm <- composite_ts$AbvBioAnnProd
+block_data$AB_tm1 <- c(NA, block_data$AB_tm[-n])
+block_data$AB_tm2 <- c(NA, block_data$AB_tm1[-n])
+block_data$AB_tm3 <- c(NA, block_data$AB_tm2[-n])
+
+block_data$NO_tm <- composite_ts$noh020tot
+block_data$NO_tm1 <- c(NA, block_data$NO_tm[-n])
+block_data$NO_tm2 <- c(NA, block_data$NO_tm1[-n])
+block_data$NO_tm3 <- c(NA, block_data$NO_tm2[-n])
+
+block_data$IV_tm <- composite_ts$invrichness
+block_data$IV_tm1 <- c(NA, block_data$IV_tm[-n])
+block_data$IV_tm2 <- c(NA, block_data$IV_tm1[-n])
+block_data$IV_tm3 <- c(NA, block_data$IV_tm2[-n])
+
+block_data$PR_tm <- composite_ts$SummerPrecip.mm
+block_data$PR_tm1 <- c(NA, block_data$PR_tm[-n])
+block_data$PR_tm2 <- c(NA, block_data$PR_tm1[-n])
+block_data$PR_tm3 <- c(NA, block_data$PR_tm2[-n])
+
+# remove overlaps from other plots
+startyear <- 1996
+for (i in 2:nrow(block_data)) {
+    if (block_data$year[i] < block_data$year[i - 1]) {
+        startyear <- block_data$year[i]
+        }
+    if (block_data$year[i] == startyear) {
+        block_data[i,c("AB_tm1", "NO_tm1", "IV_tm1", "PR_tm1")] <- NA
+        block_data[i,c("AB_tm2", "NO_tm2", "IV_tm2", "PR_tm2")] <- NA
+        block_data[i,c("AB_tm3", "NO_tm3", "IV_tm3", "PR_tm3")] <- NA
+        }
+    if (block_data$year[i] == (startyear + 1)) {
+        block_data[i,c("AB_tm2", "NO_tm2", "IV_tm2", "PR_tm2")] <- NA
+        block_data[i,c("AB_tm3", "NO_tm3", "IV_tm3", "PR_tm3")] <- NA
+        }
+    if (block_data$year[i] == (startyear + 2)) {
+        block_data[i,c("AB_tm3", "NO_tm3", "IV_tm3", "PR_tm3")] <- NA
+        }
+    }
+head(block_data[,1:5],20)
+```
+
+Now, we can run the `block_lnlp` algorithm on the composite, multi-variate time series. First, we run the algorithm to predict primary productivity dynamics, based on its own lagged dynamics. Next, we add additional information about precipitation:
+
+```{r block_lnlp for e120, tidy=TRUE, warning = FALSE, cache = TRUE}
+block_lnlp_output_AB <- block_lnlp(block_data, lib = composite_lib, pred = composite_pred, columns = c("AB_tm", "AB_tm1", "AB_tm2"), target_column = 1, stats_only = FALSE, first_column_time = TRUE)
+
+block_lnlp_output_ABPR <- block_lnlp(block_data, lib = composite_lib, pred = composite_pred, columns = c("AB_tm", "AB_tm1", "AB_tm2", "PR_tm", "PR_tm1", "PR_tm2"), target_column = 1, stats_only = FALSE, first_column_time = TRUE)
+```
+
+Note that each additional variable adds slightly to the predictive power of the model.
+
+```{r block_lnlp on e120, tidy = TRUE, warning = FALSE, fig.width = 4, fig.height = 4}
+observed_AB <- block_lnlp_output_AB[[1]]$model_output$obs
+predicted_AB <- block_lnlp_output_AB[[1]]$model_output$pred
+
+observed_ABPR <- block_lnlp_output_ABPR[[1]]$model_output$obs
+predicted_ABPR <- block_lnlp_output_ABPR[[1]]$model_output$pred
+
+par(mar = c(4,4,1,1), pty = "s", mgp = c(2.5, 1, 0))
+plot_range <- range(c(observed_AB, predicted_AB), na.rm = TRUE)
+plot(observed_AB, predicted_AB, xlim = plot_range, ylim = plot_range, xlab = "Observed", ylab = "Predicted")
+abline(a = 0, b = 1, lty = 2, col = "darkgrey", lwd = 2)
+abline(lm(predicted_AB~observed_AB), col = "black", lty = 3, lwd = 2)
+
+points(observed_ABPR, predicted_ABPR, pch = 2, col = "red")
+abline(lm(predicted_ABPR~observed_ABPR), col = "red", lty = 3, lwd = 2)
+```
+
+### Convergent Cross Mapping
+
+Finally, we can apply CCM to our data in order to test for causal links among variables.
+
+In each case, we use the embedding dimension corresponding to the "best" embedding dimension for the variable that we are trying to predict (i.e. the putative causal process).
+
+```{r ccm on e120, cache = TRUE, warning = FALSE, tidy = TRUE, fig.width = 5, fig.height = 3.5}
+# A. repens:
+no_xmap_inv <- ccm(composite_ts, lib = segments, pred = segments, E = bestE[names(bestE)=="invrichness"], lib_column = "noh020tot", target_column = "invrichness", lib_sizes = c(seq(5, 55, by = 2), seq(55, 400, by = 50)), num_samples = 100, silent = TRUE)
+inv_xmap_no <- ccm(composite_ts, lib = composite_lib, pred = composite_pred, E = bestE[names(bestE)=="noh020tot"], lib_column = "invrichness", target_column = "noh020tot", lib_sizes = c(seq(5, 55, by = 2), seq(55, 400, by = 50)), num_samples = 100, silent = TRUE)
+
+n_xmap_i_means <- data.frame(ccm_means(no_xmap_inv), sd.rho = with(no_xmap_inv, tapply(rho, lib_size, sd)))
+i_xmap_n_means <- data.frame(ccm_means(inv_xmap_no), sd.rho = with(inv_xmap_no, tapply(rho, lib_size, sd)))
+
+# S. scoparium:
+ab_xmap_inv <- ccm(composite_ts, lib = segments, pred = segments, E = bestE[names(bestE)=="invrichness"], lib_column = "AbvBioAnnProd", target_column = "invrichness", lib_sizes = c(seq(5, 55, by = 2), seq(55, 400, by = 50)), num_samples = 100, silent = TRUE)
+inv_xmap_ab <- ccm(composite_ts, lib = segments, pred = segments, E = bestE[names(bestE)=="AbvBioAnnProd"], lib_column = "invrichness", target_column = "AbvBioAnnProd", lib_sizes = c(seq(5, 55, by = 2), seq(55, 400, by = 50)), num_samples = 100, silent = TRUE)
+
+a_xmap_i_means <- data.frame(ccm_means(ab_xmap_inv), sd.rho = with(ab_xmap_inv, tapply(rho, lib_size, sd)))
+i_xmap_a_means <- data.frame(ccm_means(inv_xmap_ab), sd.rho = with(inv_xmap_ab, tapply(rho, lib_size, sd)))
+
+# plot output
+par(mar = c(4,4,1,1))
+plot(n_xmap_i_means$lib_size, pmax(0, n_xmap_i_means$rho), type = "l", col = "red", xlab = "Library Size", ylab = "Cross Map Skill (rho)", ylim = c(0, 0.6), lwd = 2)
+lines(i_xmap_n_means$lib_size, pmax(0, i_xmap_n_means$rho), col = "blue", lwd = 2)
+legend(x = "topleft", legend = c("Nitrate xmap Inv. Richness", "Inv. Richness xmap Nitrate"), col = c("red", "blue"), lwd = 2, inset = 0.02, bty = "n", cex = 0.8)
+abline(h = 0, lty = 3, col = "darkgrey", lwd = 2)
+
+# add CI's
+lines(n_xmap_i_means$lib_size, n_xmap_i_means$rho + n_xmap_i_means$sd.rho, col = "red", lty = 2, lwd = 2)
+lines(n_xmap_i_means$lib_size, n_xmap_i_means$rho - n_xmap_i_means$sd.rho, col = "red", lty = 2, lwd = 2)
+lines(i_xmap_n_means$lib_size, i_xmap_n_means$rho + i_xmap_n_means$sd.rho, col = "blue", lty = 2, lwd = 2)
+lines(i_xmap_n_means$lib_size, i_xmap_n_means$rho - i_xmap_n_means$sd.rho, col = "blue", lty = 2, lwd = 2)
+
+plot(a_xmap_i_means$lib_size, pmax(0, a_xmap_i_means$rho), type = "l", col = "orange", xlab = "Library Size", ylab = "Cross Map Skill (rho)", ylim = c(0, 0.6), lwd = 2)
+lines(i_xmap_a_means$lib_size, pmax(0, i_xmap_a_means$rho), col = "blue", lwd = 2)
+legend(x = "topleft", legend = c("Abv. Biomass xmap Inv. Richness", "Inv. Richness xmap Abv. Biomass"), col = c("orange", "blue"), lwd = 2, inset = 0.02, bty = "n", cex = 0.8)
+abline(h = 0, lty = 3, col = "darkgrey", lwd = 2)
+
+# add CI's
+lines(a_xmap_i_means$lib_size, a_xmap_i_means$rho + a_xmap_i_means$sd.rho, col = "orange", lty = 2, lwd = 2)
+lines(a_xmap_i_means$lib_size, a_xmap_i_means$rho - a_xmap_i_means$sd.rho, col = "orange", lty = 2, lwd = 2)
+lines(i_xmap_a_means$lib_size, i_xmap_a_means$rho + i_xmap_a_means$sd.rho, col = "blue", lty = 2, lwd = 2)
+lines(i_xmap_a_means$lib_size, i_xmap_a_means$rho - i_xmap_a_means$sd.rho, col = "blue", lty = 2, lwd = 2)
+```
+
+In each case, results suggest that invasive richness is driven by other variables more strongly than it influences them in return. In particular, while invasion dynamics appear to be strongly forced by soil nitrate dynamics, invasion does not appear influence plot soil nitrate at all. This makes sense, as invading species in these plots are quickly weeded out and should not have time to influence local environmental conditions. Causal forcing between biomass and invasion, on the other hand, may be bi-directional based on our analyses. Again, though, it makes sense that there should only be moderate effects of invading species on plot-level biomass (e.g. by decreasing biomass of planted species through light competition), while effects of plot-level planted biomass on invader success should be much stronger (e.g. through competition for space or soil resources).
+
+## Apple-Blossom Thrips
+
+In this next example, we will use EDM methods to re-examine the classic apple-blossom thrips (Thrips imaginis) time series from the Wait Institute in Australia [@Davidson_1948; @Davidson_1948a]. Seasonal outbreaks of Thrips imaginis were observed to vary greatly in magnitude from year to year, but large outbreaks tended to coincide across large spatial domains. This lead to the hypothesis that regional-scale climatic factors were responsible for controlling the size of the seasonal outbreaks (what might now be called the Moran effect).
+
+```{r thrips data}
+data(thrips_block)
+colnames(thrips_block)
+```
+
+The first data column `r colnames(thrips_block)[3]` contains counts of Thrips imaginis obtained from the Global Population Dynamics Database. `r colnames(thrips_block)[4]` is the mean maximum daily temperature (degrees F) taken over each month and `r colnames(thrips_block)[5]` is the monthly rainfall (mm), both from the Waite Institute. The final column `r colnames(thrips_block)[6]` is a simple annual sinusoid that peaks in December (the Austral summer) that acts as an indicator of season.
+
+First, we plot the data.
+
+```{r thrips plot, echo = FALSE, fig.width = 6, fig.height = 7}
+par(mar = c(4,4,1,1), mfrow = c(4,1), mgp = c(2.5,1,0))
+time_dec <- thrips_block$Year + (thrips_block$Month)/12
+plot(time_dec, thrips_block$Thrips_imaginis, type = 'l', col = 'green', ylab = 'Thrips')
+plot(time_dec, thrips_block$maxT_degC, type = 'l', col = 'red', ylab = 'maxT (oC)')
+plot(time_dec, thrips_block$Rain_mm, type = 'l', col = 'blue', ylab = 'Rain (mm)')
+plot(time_dec, thrips_block$Season, type = 'l', col = 'magenta', ylab = 'Season')
+```
+
+Note that all the time-series variables, particularly the mean maximum daily Temperature, show marked seasonality.
+
+### Univariate Analysis
+
+```{r univariate thrips, warning = FALSE}
+ts <- thrips_block$Thrips_imaginis
+lib <- c(1, length(ts))
+pred <- c(1, length(ts))
+simplex_output <- simplex(ts, lib, pred, tau = 1)
+```
+
+```{r rho vs. e for thrips, echo=FALSE, fig.width = 5, fig.height = 3.5, tidy = TRUE}
+par(mar = c(4,4,1,1))
+plot(simplex_output$E, simplex_output$rho, type = "l", xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)")
+```
+
+While there is an initial peak in the simplex prediction at $E=4$, the global maximum is at $E=8$. This suggests that both $E = 4$ and $E = 8$ are practical embedding dimensions.
+
+To test for nonlinearity, we examine both $E = 4$ and $E = 8$ to verify that the S-maps result is robust to the choice of embedding dimension.
+
+```{r smap for thrips, warning = FALSE}
+smap_output <- list()
+smap_output[[1]] <- s_map(ts, lib, pred, E = 4)
+smap_output[[2]] <- s_map(ts, lib, pred, E = 8)
+```
+
+```{r rho vs. theta for thrips, echo=FALSE, tidy = TRUE, fig.width = 6, fig.height = 3.5}
+par(mar = c(4,4,1,1), mfrow = c(1,2))
+plot(smap_output[[1]]$theta, smap_output[[1]]$rho, type = "l", xlim = c(0,4), xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)")
+plot(smap_output[[2]]$theta, smap_output[[2]]$rho, type = "l", xlim = c(0,4), xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)")
+```
+
+The S-map results demonstrate clear nonlinearity in the Thrips time series, as nonlinear models $\theta > 0$ give substantially better predictions than the linear model $\theta = 0$. This suggests that Thrips, despite the strong seasonal dynamics, do not simply track the environment passively, but have some intrinsic dynamics. To look more closely at the issue of seasonal drivers, however, we turn to convergent cross-mapping (CCM).
+
+### Seasonal Drivers
+
+Recall that there is a two-part criterion for CCM to be a rigorous test of causality. (1) The cross-map prediction skill with the full time-series is statistically significant. (2) Cross-map prediction demonstrates convergence, i.e. prediction skill increases as more of the time-series is used.
+
+#### Cross-map matrix
+For an initial summary, we first simply compute the cross-map skill (measured with Pearson's $\rho$) with the full time-series.
+
+```{r compute ccm matrix for thrips, results='hold', tidy=TRUE, cache = TRUE, warning = FALSE}
+ncol <- dim(thrips_block)[2] - 2
+M_rho <- array(NA, dim = c(ncol,ncol), dimnames = list(colnames(thrips_block[3:6]),colnames(thrips_block[3:6])))
+
+for (i in 1:ncol) {
+    for (j in 1:ncol) {
+        if (i != j) {
+            out_temp <- ccm(thrips_block, E = 8, lib_column = 2 + i,
+                            target_column = 2 + j, lib_sizes = dim(thrips_block)[1],
+                            replace = FALSE, silent = TRUE)
+            M_rho[i, j] <- out_temp$rho
+            }
+        }
+    }
+```
+
+#### Correlation matrix
+
+For comparison we also compute the lag cross-correlation, allowing lags up to $\pm 6$ months.
+```{r compute corr matrix for thrips, tidy=TRUE}
+M_corr <- array(NA, dim = c(ncol, ncol), dimnames = list(colnames(thrips_block[3:6]), colnames(thrips_block[3:6])))
+
+for (i in 1:ncol) {
+    for (j in 1:ncol) {
+        if (i != j) {
+            cf_temp <- ccf(x = thrips_block[, 2 + i], y = thrips_block[, 2 + j],
+                           type = "correlation", lag.max = 6, plot = FALSE)$acf
+            M_corr[i, j] <- max(abs(cf_temp))
+            }
+        }
+}
+```
+
+We compare the two matrices.
+
+**Cross-map**
+```{r xmap matrix for thrips, echo=FALSE}
+head(M_rho)
+```
+
+**Correlation**
+```{r corr matrix for thrips, echo=FALSE}
+head(M_corr)
+```
+
+Notice that the lagged correlation between $maxT$ and the seasonal indicator is extremely high, and $Season$ can almost perfectly cross-map $maxT$, $\rho =$ `r M_rho['Season','maxT_degC']`. This makes the interpretation of cross-mapping more complicated, because we have to consider synchrony. Let's ellaborate. It is clear from cross-mapping (or even just visual inspection) that seasonality drives Thrips abundance. Since the monthly mean maximum temperature is almost perfectly synchorinzed to the seasons, it contains the same information as the simple season indicator. Any variable that can predict (cross-map) the seasonal cycle, i.e. was influenced by seasonality, will therefore also predict $maxT$, regardless of if temperature is actually the mechanism of seasonal forcing.
+
+#### Convergent Cross-Mapping
+With this in mind, we examine convergence in cross-map predictability, i.e. we compute $\rho$ as a function of library size $L$. We first look at Thrips and temperature.
+
+```{r ccm on thrips, results='hide', tidy=TRUE, cache = TRUE, warning=FALSE}
+thrips_xmap_maxT <- ccm(thrips_block, E = 8, random_libs = TRUE, lib_column = "Thrips_imaginis", target_column = "maxT_degC", lib_sizes = seq(10, 75, by = 5), num_samples = 300)
+maxT_xmap_thrips <- ccm(thrips_block, E = 8, random_libs = TRUE, lib_column = "maxT_degC", target_column = "Thrips_imaginis", lib_sizes = seq(10, 75, by = 5), num_samples = 300)
+
+xmap_means <- list(ccm_means(thrips_xmap_maxT),ccm_means(maxT_xmap_thrips))
+```
+
+```{r ccm plot, echo=FALSE, tidy = TRUE, fig.width = 5, fig.height = 3.5}
+par(mar = c(4,4,1,1), mgp = c(2.5, 1, 0))
+plot(xmap_means[[1]]$lib_size, pmax(0, xmap_means[[1]]$rho), type = "l", col = "red",  xlab = "Library Size", ylab = "Cross Map Skill (rho)", ylim = c(0, 1))
+lines(xmap_means[[2]]$lib_size, pmax(0, xmap_means[[2]]$rho), col = "blue")
+abline(h = M_corr['Thrips_imaginis','maxT_degC'], col = "black", lty = 2)
+legend(x = "bottomright", legend = c("Thrips xmap maxT", "maxT xmap Thrips"), col = c("red", "blue"), lwd = 1, inset = 0.02)
+```
+
+The magnitude of the cross-correlation is shown as a black dashed line for comparison. We repeat the analysis for rainfall.
+
+```{r ccm on thrips and rainfall, results='hide', tidy=TRUE, cache = TRUE, warning = FALSE}
+thrips_xmap_Rain <- ccm(thrips_block, E = 8, random_libs = TRUE, lib_column = "Thrips_imaginis", target_column = "Rain_mm", lib_sizes = seq(10, 75, by = 5), num_samples = 300)
+Rain_xmap_thrips <- ccm(thrips_block, E = 8, random_libs = TRUE, lib_column = "Rain_mm", target_column = "Thrips_imaginis", lib_sizes = seq(10, 75, by = 5), num_samples = 300, silent = TRUE)
+
+xmap_means <- list(ccm_means(thrips_xmap_Rain),ccm_means(Rain_xmap_thrips))
+```
+
+```{r rainfall and thrips ccm plot, echo=FALSE, tidy = TRUE, fig.width = 5, fig.height = 3.5}
+par(mar = c(4,4,1,1), mgp = c(2.5, 1, 0))
+plot(xmap_means[[1]]$lib_size, pmax(0, xmap_means[[1]]$rho), type = "l", col = "red", xlab = "Library Size", ylab = "Cross Map Skill (rho)", ylim = c(0, 1))
+lines(xmap_means[[2]]$lib_size, pmax(0, xmap_means[[2]]$rho), col = "blue")
+abline(h = M_corr['Thrips_imaginis','Rain_mm'], col = 'black', lty = 2)
+legend(x = "topleft", legend = c("Thrips xmap Rain", "Rain xmap Thrips"),
+ col = c("red", "blue"), lwd = 1, inset = 0.02)
+```
+
+And finally for the deterministic seasonal cycle.
+
+```{r ccm on thrips and season, results='hide', tidy=TRUE, cache = TRUE, warning = FALSE}
+thrips_xmap_Season <- ccm(thrips_block, E = 8, random_libs = TRUE, lib_column = "Thrips_imaginis", target_column = "Season", lib_sizes = seq(10, 75, by = 5), num_samples = 300)
+Season_xmap_thrips <- ccm(thrips_block, E = 8, random_libs = TRUE, lib_column = "Season", target_column = "Thrips_imaginis", lib_sizes = seq(10, 75, by = 5), num_samples = 300)
+
+xmap_means <- list(ccm_means(thrips_xmap_Season), ccm_means(Season_xmap_thrips))
+```
+
+```{r season and thrips ccm plot, echo=FALSE, fig.width = 5, fig.height = 3.5, tidy = TRUE}
+par(mar = c(4,4,1,1), mgp = c(2.5, 1, 0))
+plot(xmap_means[[1]]$lib_size, pmax(0, xmap_means[[1]]$rho), type = "l", col = "red", xlab = "Library Size", ylab = "Cross Map Skill (rho)", ylim = c(0, 1))
+lines(xmap_means[[2]]$lib_size, pmax(0, xmap_means[[2]]$rho), col = "blue")
+abline(h = M_corr['Thrips_imaginis','Season'], col = 'black', lty = 2)
+legend(x = "bottomright", legend = c("Thrips xmap Season", "Season xmap Thrips"), col = c("red", "blue"), lwd = 1, inset = 0.02)
+```
+
+Importantly, the results show clear evidence of convergence for $Thrips$ cross-mapping the climactic variables, and the $\rho$ at maximum $L$ greatly exceeds the linear correlation.
+
+However, we are still left with the conundrum that $maxT$ and to a lesser extent $Rain$ are easily predicted from the seasonal cycle, and so we cannot immediately ignore the possibility that $maxT$ and $Rain$ only show CCM with $Thrips$ because they share strong forcing.
+
+To reframe, we would like to reject the null hypothesis that the causal effects we measure for $maxT$ and $Rain$ with CCM can be solely explained by their shared seasonality. This hypothesis is readily tested using surrogate methods.
+
+#### Seasonal Surrogate Test
+
+```{r seasonal surrogates for thrips, cache = TRUE, warning = FALSE, tidy = TRUE}
+num_surr <- 1000
+surr_maxT <- make_surrogate_data(thrips_block$maxT_degC, method = "seasonal", T_period = 12, num_surr = num_surr)
+surr_Rain <- make_surrogate_data(thrips_block$Rain_mm, method = "seasonal", T_period = 12, num_surr = num_surr)
+
+rho_surr <- data.frame(maxT = numeric(num_surr), Rain = numeric(num_surr))
+
+for (i in 1:num_surr) {
+    rho_surr$maxT[i] <- ccm(cbind(thrips_block$Thrips_imaginis, surr_maxT[,i]), E = 8, lib_column = 1, target_column = 2, lib_sizes = NROW(thrips_block), replace = FALSE)$rho
+
+    rho_surr$Rain[i] <- ccm(cbind(thrips_block$Thrips_imaginis, surr_Rain[,i]), E = 8, lib_column = 1, target_column = 2, lib_sizes = NROW(thrips_block), replace = FALSE)$rho
+    }
+```
+
+We now have a null distribution, and can easily estimate the $p$ value for rejecting the null hypothesis of mutual seasonality.
+
+```{r significance of randomization test}
+(sum(M_rho['Thrips_imaginis','Rain_mm'] < rho_surr$Rain) + 1) / (length(rho_surr$Rain) + 1)
+(sum(M_rho['Thrips_imaginis','maxT_degC'] < rho_surr$maxT) + 1) / (length(rho_surr$maxT) + 1)
+```
+
+In both cases, the CCM we measure for the real time series are better than the median expectation under the null hypothesis. For rainfall, moreover, the effect is clearly significant based on the common threshold of $p < 0.05$. Howover, the high correlation between the maximum daily temperature averaged over a month and the seasonal cycle makes it harder to establish significance for the effect of $maxT$. We note that the original Thrips data collections were at a much higher frequency than those available through the GPDD, and that $maxT$ shows much larger departures from the seasonal cycle on shorter time-scales. With more highly resolved data, it may well be possible to establish significance.
+
+# Technical Details
+
+## Data Input
+
+The **rEDM** functions are designed to accept data in common R data formats, namely vectors, matrices, and data.frames. Depending on the specific function, one or the other data type is preferred. Please see the documentation associated with individual functions for more details.
+
+Missing data can be input using either `NA` or `NAN`. The program will automatically ignore such missing values as appropriate. For instance, simplex projection will not select nearest neighbors if any of the state vector coordinates is missing or if the corresponding target value is missing.
+
+Note that when there is no observed target value, it is still possible to predict from a given state vector, if it has no missing values. Thus, it is possible to use the software to forecast ahead from an observed state into an unobserved future. This can be done simply by substituting `NA` or `NAN` for unknown future values. However, be aware that the performance metrics will be computed so as to ignore such predictions (since there are no observed values to compare against). Thus, the statistics (e.g., $\rho$, MAE, RMSE) may be computed based on fewer predictions than those actually made by the software.
+
+## General Parameters
+
+Many of the functions in **rEDM** are designed around the same prediction engine, and so share many of the following parameters. Please see the documentation associated with individual functions to verify which parameters are applicable as well as the default values (which can change from function to function)
+
+* lib
+    + a 2-column matrix (or 2-element vector) where each row specifies the portions of the time series to use for attractor reconstruction (i.e., the set of vectors that can be selected as nearest neighbors)
+    + e.g., `(1, n)` specifies that the first n *rows* (from 1 to n) of data are a contiguous time series block, each point of which can be used to construct state vectors
+    + by default, lib uses the entire input as a single contiguous segment
+* pred
+    + (same format as lib, but specifes the portions of the time series to make predictions for)
+* norm_type
+    + `"L2 norm"` (default) or `"L1 norm"`: specifies which distance metric to use when doing calculations
+    + `"L2 norm"` is the standard Euclidean distance, where the distance between a vector $\vec{x} = \langle x_1, x_2, \dots, x_n \rangle$ and $\vec{y} = \langle y_1, y_2, \dots, y_n \rangle$ is computed as $\sqrt{(x_1 - y_1)^2 + (x_2 - y_2)^x + \dots + (x_n - y_n)^2}$.
+    + `"L1 norm"` is the Manhattan norm (also known as taxicab distance), where the distance between a vector $\vec{x} = \langle x_1, x_2, \dots, x_n \rangle$ and $\vec{y} = \langle y_1, y_2, \dots, y_n \rangle$ is computed as $|x_1 - y_1| + |x_2 - y_2| + \dots + |x_n - y_n|$.
+* E
+    + the embedding dimension to use for attractor reconstruction
+* tau
+    + the lag to use for attractor reconstruction; by default, tau is set to `1`
+* tp
+    + the prediction horizon (how many steps ahead to make forecasts)
+    + negative values will also work
+* num_neighbors
+    + the number of neighbors to use
+    + `"e+1"`, `"E+1"`, `"e + 1"`, and `"E + 1"` will all peg this parameter to be `E+1` for each run
+    + values less than 1 will use all possible neighbors
+* theta
+    + the nonlinear tuning parameter (for use with S-maps) that adjusts how distance is factored into computation of the local linear map (`0` corresponds to a globally linear map, while values greater than 0 correspond to nonlinear models where the local linear map changes as a function of state-space)
+* stats_only
+    + `TRUE` (default) or `FALSE`: specifies whether the output should just contain statistics of the predictions, or also contain all the predictions that were made
+* exclusion_radius
+    + `exclusion_radius` sets the threshold whereby all vectors with time indices too close to the predictee will be excluded from being considered nearest neighbors
+    + e.g., `1` means that vectors must have an associated time index more than 1 away from potential nearest neighbors
+    + by default, exclusion_radius is set to NULL (turning this filtering off)
+* epsilon
+    + `epsilon` sets the threshold whereby all vectors with distance too far away from the predictee will be excluded from being considered nearest neighbors
+    + e.g., `2` means that vectors must have be within a distance of 2 from potential nearest neighbors
+    + by default, epsilon is set to NULL (turning this filtering off)
+* silent
+    + `TRUE` or `FALSE` (default): specifies whether to suppress warning messages from being printed to the R console
+* save_smap_coefficients
+    + `TRUE` or `FALSE` (default): specifies whether to include a table of S-map coefficients with the output
+    + (note that setting this to `TRUE` forces the full output as if `stats_only = FALSE`)
+
+<!-- # Applications -->
+
+<!-- ## Composite Time Series -->
+
+<!-- In some cases, we may have multiple time series that can serve as spatial or ecological replicates. To treat these time series as replicates when applying EDM, we want to combine the data together into a single composite time series. Because the scale may differ across time series, we typically apply a normalization routine to linearly transform each time series to have mean = 0 and variance = 1 before concatenating.  -->
+
+<!-- ```{r load and composite sockeye data} -->
+<!-- data(sockeye_returns) -->
+
+<!-- # separate time column from data -->
+<!-- time <- sockeye_returns$year -->
+<!-- sockeye_returns <- sockeye_returns[,-1] -->
+
+<!-- # normalize each time series -->
+<!-- n <- NCOL(sockeye_returns) -->
+<!-- for (j in 1:n) -->
+<!--     { -->
+<!--     sockeye_returns[,j] <- (sockeye_returns[,j] - mean(sockeye_returns[,j])) / sd(sockeye_returns[,j]) -->
+<!--     } -->
+
+<!-- # make composite time series -->
+<!-- composite_ts <- data.frame(year = time,  -->
+<!--                            returns = stack(sockeye_returns)$value) -->
+<!-- ``` -->
+
+<!-- Before applying EDM, however, we want to make sure that EDM will properly recognize the different time series segments as being different, so that lagged vectors are not constructed that contain coordinates spanning multiple time series. This is simply handled by constructing the lib and pred so that the first column designates the start of each time series segment, and the second column designates the end. -->
+
+<!-- ```{r composite lib and pred for sockeye, tidy = TRUE} -->
+<!-- # make composite library -->
+<!-- segments <- cbind(seq(from = 1, by = NROW(sockeye_returns), length.out = n),  seq(from = NROW(sockeye_returns), by = NROW(sockeye_returns), length.out = n)) -->
+<!-- composite_lib <- segments[1:5,] -->
+<!-- composite_pred <- segments[6:9,] -->
+<!-- ``` -->
+
+<!-- We can then use the **rEDM** functions as normal: -->
+
+<!-- ```{r simplex for composite sockeye, tidy = TRUE, fig.width = 6} -->
+<!-- simplex_output <- simplex(composite_ts, composite_lib, composite_pred) -->
+<!-- par(mar = c(4,4,1,1), mgp = c(2.5, 1, 0)) -->
+<!-- plot(simplex_output$E, simplex_output$rho, type = "l",  xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)") -->
+<!-- ``` -->
+
+<!-- ```{r smap for composite sockeye, tidy = TRUE, fig.width = 6} -->
+<!-- smap_output <- s_map(composite_ts, composite_lib, composite_pred, E = 8) -->
+<!-- par(mar = c(4,4,1,1), mgp = c(2.5, 1, 0)) -->
+<!-- plot(smap_output$theta, smap_output$rho, type = "l", xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)") -->
+<!-- ``` -->
+
+# Acknowledgements
+
+**rEDM** is the latest incarnation of EDM code. Past versions have been developed by George Sugihara, Alan Trombla, Richard Penner, Victor Wong, Martin Casdagli, Jerome Cartagena, Mohsen Azarbayejani, Ava Pierce, Jennifer Trezzo, and Hao Ye.
+
+We thank Ethan White and Jun Cai for their suggestions on earlier versions of this document.
+
+# References

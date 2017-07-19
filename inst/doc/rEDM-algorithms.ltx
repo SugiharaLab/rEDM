@@ -1,0 +1,252 @@
+%\VignetteIndexEntry{Simplex and S-map Algorithms}
+%\VignetteEngine{R.rsp::tex}
+%\VignetteKeyword{R}
+%\VignetteKeyword{package}
+%\VignetteKeyword{vignette}
+%\VignetteKeyword{LaTeX}
+
+\documentclass{article}
+
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+\usepackage[english]{babel} % English language/hyphenation
+\usepackage{amsmath, amsfonts, amsthm} % Math packages
+\usepackage{cite}
+%\usepackage[sort&compress,square,comma,authoryear]{natbib}
+
+% makes color citations
+%% \usepackage[
+%%   %dvips,dvipdfm,
+%%   colorlinks=true,urlcolor=blue,citecolor=red,linkcolor=red,bookmarks=true]{hyperref}
+
+\usepackage{color}
+\usepackage{pgfplots}
+\usepackage{tikz}
+%\pgfplotsset{compat=1.9} 
+%\usepackage{hyperref}
+
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+
+\usepackage{graphicx}
+%\usepackage{wrapfig}
+\usepackage{paralist}
+\usepackage{graphics} %% add this and next lines if pictures should be in esp format
+\usepackage{epsfig} %For pictures: screened artwork should be set up with an 85 or 100 line screen
+
+\usepackage{epstopdf} 
+\usepackage[colorlinks=true]{hyperref}
+\hypersetup{urlcolor=blue, citecolor=red}
+%\usepackage{showkeys}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}
+\newtheorem*{main}{Main Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{conjecture}{Conjecture}
+\newtheorem*{problem}{Problem}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}{Remark}
+\newtheorem*{notation}{Notation}
+\newcommand{\ep}{\varepsilon}
+\newcommand{\eps}[1]{{#1}_{\varepsilon}}
+\newcommand{\bs}{\boldsymbol}
+\allowdisplaybreaks[3]
+
+
+% new commands %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\diag}{\text{diag}}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+\makeatletter
+\def\BState{\State\hskip-\ALG@thistlm}
+\makeatother
+
+%\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
+\begin{document}
+\title{Simplex and S-map Algorithms}
+
+\author{Yair Daon}
+
+\maketitle
+
+{\footnotesize 
+ \centerline{Courant Institute, New York University}
+   \centerline{New York, NY 10012, USA}
+}
+
+\bigskip
+ 
+\begin{abstract}
+  Pseudo-code for the simplex projection algorithm
+  \cite{Sugihara_1990} and the S-map algorithm \cite{Sugihara_1994}.
+  Algorithms are presented for the simple case of predicting one
+  variable using its own time series.
+\end{abstract}
+
+\section{Notation}\label{section:notation}
+\begin{itemize}
+\item $E$ denotes the embedding dimension.
+\item $k$ denotes the number of nearest neighbors we use. For
+  the simplex method, the default is $k = E+1$ but for the S-map method it
+  can be much larger.
+\item $T_p$ denotes how many time-steps into the future we are trying
+  to predict.
+\item $X\in \R$ denotes a (potentially long) time series.
+\item $y\in \R^{E}$ is a vector of lagged observations for which we
+  want to make a prediction --- in the simplest case where all components
+  of the vector are single time step lags, $y_1$ represents the current value, 
+  $y_2$ is the value one time step prior and $y_{E}$ is the value $E-1$ time
+  steps prior.
+\item $\theta \geq 0$ is the tuning parameter in the S-map method.
+\item $X_t^E = (X_t, X_{t-1},\dots, X_{t-E+1} )' \in \R^E$ denotes the
+  lagged embedding vectors.
+\item $\| v \|$ is an unspecified norm of $v$. We do not specify
+  which norm to use and that choice is left to the user / reader.
+\item $\| v \|_2^2 = \sum_i v_i^2$ is the squared L2-norm (squared Euclidean distances). 
+\item Entries of matrices and vectors are indexed in the standard
+  linear algebraic fashion, starting at $1$ (like the R standard) and
+  not at $0$ (like the C/C++ and python standard).
+\end{itemize}
+
+
+\section{Helper Methods}
+
+\subsection{Nearest neighbors}\label{subsec:NN}
+I will not write implementation of the nearst neighbors method, just
+present its description. The method will be used with the signature
+presented in algorithm \ref{alg:NN}.
+
+The input variables $X,y$ and $k$ are defined in section
+\ref{section:notation}. The method returns a list of indices $N =
+\{N_1,\dots,N_k\}$ such that
+\begin{equation*}
+  \| X_{N_i}^{E} - y\| \leq \| X_{N_j}^{E} - y\|
+  \text{ if } 1 \leq i \leq j \leq k,
+\end{equation*}
+%
+\begin{algorithm}
+  \caption{Find Nearest neighbors}\label{alg:NN}
+  \begin{algorithmic}[1]
+    \Procedure{Nearneighbor}{$y, X, k$}
+    \EndProcedure
+  \end{algorithmic}
+\end{algorithm}
+
+\subsection{Least Squares}
+A least squares method finds $x$ that minimizes the error in the
+solution of an over-determined linear system (more equations than
+variables). Below, $A \in \R^{p \times q},p > q$ and $b\in \R^p$ and
+the least squares problem is to find
+\begin{equation*}
+  \hat{x} := \argmin_{x\in \R^q} \|Ax-b\|_2^2.
+\end{equation*}
+This problem can be solved using a Singular Value Decompostion (SVD),
+as outlined in algorithm \ref{alg:SVDLS}.
+\begin{algorithm}
+  \caption{Least Squares via SVD}\label{alg:SVDLS}
+  \begin{algorithmic}[1]
+    \Procedure{LeastSquares}{$A,b$}
+    \Comment{Assume $A\in \R^{p \times q}, p > q$.}
+    \State $U, S, V \gets \text{SVD}(A)$ \Comment{Thus, $A = U S V'$}
+    \State $S^{inv} \gets \textsc{zeros}( q,p )$
+    \Comment{The zero matrix in $\R^{q \times p}$}
+    \For{ $i =1,\dots,q$ }
+    \If{ $S_{ii} > 10^{-5}S_{11}$ } \Comment{Note that $10^{-5}$ is arbitrary}
+    \State $S^{inv}_{ii} \gets \frac{1}{S_{ii}}$
+    \EndIf
+    \EndFor
+    \State $x \gets V S^{inv} U'b$
+    \State \Return $x$
+    \EndProcedure
+  \end{algorithmic}
+\end{algorithm}
+
+\section{Simplex Projection}\label{section:simplex}
+Ignoring ties in distances, minimal distances, minimal weights and
+other potential hazards, the following algorithm performs Simplex
+projection to predict $T_p$ time-steps ahead.
+\begin{algorithm}
+  \caption{Simplex Projection \cite{Sugihara_1990}}\label{alg:simplex}
+  \begin{algorithmic}[1]
+    \Procedure{SimplexPrediction}{$y, X, E, k, T_p$}
+
+    \State $N \gets$ \textsc{Nearneighbor}($y, X, k$)
+    \Comment{Find $k$ nearest neighbors.}
+    \State $d \gets  \| X_{N_1}^{E} - y\|$ \Comment{Define the distance scale.}
+
+    \For{$i=1,\dots,k$}  
+    \State $w_i \gets \exp (-\| X_{N_i}^{E} - y\| / d )$
+    \Comment{Compute weights.}
+    \EndFor
+
+    \State $\hat{y} \gets \sum_{i = 1}^{k} \left(w_iX_{N_i+T_p}\right) /
+    \sum_{i = 1}^{k} w_i$ 
+    \Comment{prediction = average of predicitions.}
+    
+    \State \Return $\hat{y}$
+    \EndProcedure
+  \end{algorithmic}
+\end{algorithm}
+
+\section{S-map}
+Ignoring ties in distances, minimal distances, minimal weights and
+other potential hazards, the following algorithm uses the S-map method
+to predict $T_p$ time-steps ahead.
+%
+\begin{algorithm}
+  \caption{S-map \cite{Sugihara_1994}}\label{alg:smap}
+  \begin{algorithmic}[1]
+    \Procedure{SmapPrediction}{$y, X, E, k, T_p, \theta$ }
+    \State $N \gets$ \textsc{Nearneighbor}($y, X, k$)
+    \Comment{Find NN to use for prediciton.}
+    \State $d \gets \frac{1}{k} \sum_{i=1}^k \| X_{N_i}^{E} - y\|$
+    \Comment{Sum of distances.}
+    \For {$i=1,\dots,k$} 
+    \State $w_i \gets \exp (-\theta \| X_{N_i}^{E} - y\| / d )$
+    \Comment{Compute weights.}
+    \EndFor
+    \State $W \gets \diag(w_i)$ \Comment{Reweighting matrix.}
+    \State $A \gets
+    \begin{bmatrix}
+      1          & X_{N_1} & X_{N_1- 1} & \dots  & X_{N_1 - E + 1} \\
+      1          & X_{N_2} & X_{N_2- 1} & \dots  & X_{N_2 - E + 1} \\
+      \vdots     & \vdots & \vdots   & \ddots & \vdots       \\
+      1          & X_{N_k} & X_{N_k- 1} & \dots  & X_{N_k - E + 1} 
+    \end{bmatrix} $
+    \Comment{Design matrix.}
+    
+    \State $A \gets WA$ \Comment{Weighted design matrix.}
+    \State $b \gets 
+    \begin{bmatrix}
+      X_{N_1 + T_p} \\
+      X_{N_2 + T_p} \\
+      \vdots  \\
+      X_{N_k + T_p} 
+    \end{bmatrix} $
+    \Comment{Response vector.}
+    \State $b \gets Wb$ \Comment{Weighted response vector.}
+    \State $\hat{c} \gets \argmin_{c} \| Ac - b \|_2^2$
+    \Comment{Least squares, can be solved via algorithm \ref{alg:SVDLS}.}
+    \State $\hat{y} \gets \hat{c}_0 + \sum_{i=1}^E\hat{c}_iy_i$
+    \Comment{Using the local linear model $\hat{c}$ for prediction.}
+    \State \Return $\hat{y}$
+    \EndProcedure
+  \end{algorithmic}
+\end{algorithm}
+
+Note that $k$, the number of nearest neighbors used for prediciton,
+can be very large compared to the embedding dimension $E$. Since $A
+\in \R^{k \times (1+E)}$, this means that $A$ is ``tall and skinny''
+and the system $Ac = b$ is \emph{over-determined} (it has more
+equations than variables). This means (typically) that there does not
+exist any unique $c$ that solves said system. This is why we seek a
+least-squares solution instead.
+
+
+\bibliographystyle{unsrt}
+\bibliography{refs}
+
+\end{document}
