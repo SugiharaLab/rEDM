@@ -560,9 +560,24 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
                 A(i, j) = weights(i) * data_vectors[nearest_neighbors[i]][j];
             A(i, E) = weights(i);
         }
-        
-        // perform SVD
-        Eigen::JacobiSVD<MatrixXd> svd(A, Eigen::ComputeThinU | Eigen::ComputeThinV);
+
+	// YAIR: Start
+	cout << "We are now using Yair's magnificent code\n";
+	MatrixXd covMat = MatrixXd::Identity(effective_nn);
+		
+	// The covariance matrix, should use different covariance function
+	// for(size_t i = 0; i < effective_nn; ++i) 
+	//   for(size_t j = 0; j < effective_nn; ++i) 
+	//     covMat(i,j) = exp( -distances[nearest_neighbors[i]][nearest_neighbors[j]]/avg_distance);      
+	
+	// Find the Cholesky factor, so that covMat = LL^t 
+	MatrixXd L = covMat;//.llt().matrixL();
+	cout << "We are done using Yair's code, but not for long!!\n";
+	// YAIR: end
+  
+        // perform SVD YAIR: Added L.solve(A) instead of A
+	cout << "Getting ready to call L.solve(A)\n";
+        Eigen::JacobiSVD<MatrixXd> svd(L.solve(A), Eigen::ComputeThinU | Eigen::ComputeThinV); 
         
         // remove singular values close to 0
         S = svd.singularValues();
@@ -574,8 +589,9 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
                 S_inv(j, j) = 1/S(j);
         }
         
-        // perform back-substitution to solve
-        x = svd.matrixV() * S_inv * svd.matrixU().transpose() * B;
+        // perform back-substitution to solve YAIR: added L.solve(B)
+	cout << "Getting ready to call L.solve(B)\n";
+	x = svd.matrixV() * S_inv * svd.matrixU().transpose() * L.solve(B);
         
         pred = 0;
         for(size_t j = 0; j < E; ++j)
