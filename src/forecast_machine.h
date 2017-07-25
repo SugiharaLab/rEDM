@@ -1,7 +1,6 @@
 #ifndef FORECAST_MACHINE_H
 #define FORECAST_MACHINE_H
 
-#include <iostream>
 #include <vector>
 #include <numeric>
 #include <thread>
@@ -27,6 +26,8 @@ protected:
     // *** computational methods *** //
     void init_distances();
     void compute_distances();
+    //void ForecastMachine::covariance_matrix(); // YAIR
+    void debug_print( MatrixXd mat, int lims, std::string name ); // YAIR
     //void sort_neighbors();
     std::vector<size_t> find_nearest_neighbors(const vec& dist);
 
@@ -58,6 +59,7 @@ protected:
     size_t num_vectors;
     std::function<double (const vec&, const vec&)> dist_func;
     std::vector<vec > distances;
+    
     
     // *** parameters *** //
     bool CROSS_VALIDATION;

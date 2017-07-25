@@ -18,34 +18,48 @@ lib_ranges(std::vector<time_range>()), pred_ranges(std::vector<time_range>())
     //num_threads = std::thread::hardware_concurrency();
 }
 
-/*
-void ForecastMachine::debug_print_vectors()
-{
-    size_t i = 0;
-    for(auto& v: data_vectors)
-    {
-        std::cerr << i << ": <";
-        for(auto& i: v)
-        {
-            std::cerr << i << " ";
-        }
-        std::cerr << "> --> " << targets[i] << "\n";
-        ++i;
+// YAIR: Start
+void ForecastMachine::debug_print( MatrixXd mat, int lims, std::string name ) {
+  if (lims == 0)
+    lims = mat.rows();
+  std::cerr << name << ":\n";
+  for(size_t i = 0; i < lims; ++i) {
+    for(size_t j = 0; j < lims; ++j) {
+      std::cerr << " " << mat(i,j) << " ";
     }
-    return;
-}
+    std::cerr << "\n";
+  }
+  
+} 
+// YAIR: end
 
-void ForecastMachine::debug_print_lib_and_pred()
-{
-    size_t i = 0;
-    for(auto l: lib_indices)
-    {
-        std::cerr << i << ": " << "lib = " << l << ", pred = " << pred_indices[i] << "\n";
-        ++i;
-    }
-    return;
-}
-*/
+// void ForecastMachine::debug_print_vectors()
+// {
+//     size_t i = 0;
+//     for(auto& v: data_vectors)
+//     {
+//         std::cerr << i << ": <";
+//         for(auto& i: v)
+//         {
+//             std::cerr << i << " ";
+//         }
+//         std::cerr << "> --> " << targets[i] << "\n";
+//         ++i;
+//     }
+//     return;
+// }
+
+// void ForecastMachine::debug_print_lib_and_pred()
+// {
+//     size_t i = 0;
+//     for(auto l: lib_indices)
+//     {
+//         std::cerr << i << ": " << "lib = " << l << ", pred = " << pred_indices[i] << "\n";
+//         ++i;
+//     }
+//     return;
+// }
+
 
 void ForecastMachine::init_distances()
 {
@@ -132,6 +146,7 @@ void ForecastMachine::compute_distances()
             }
         }
     }
+    
     /*
                                 }));
 
@@ -506,11 +521,12 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
     VectorXd B, S, x, weights;
     double max_s, pred;
     std::vector<size_t> temp_lib;
-    
+
     for(size_t k = start; k < end; ++k)
     {
+      std::cerr << "\n\n" << "Predicting " << k << "\n";
         curr_pred = which_pred[k];
-        
+      
         // find nearest neighbors
         if(CROSS_VALIDATION)
         {
@@ -542,12 +558,38 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
                 avg_distance += distances[curr_pred][neighbor];
             }
             avg_distance /= effective_nn;
-            
+	    // std::cerr << "WTF " << avg_distance << "\n"; // YAIR
             // compute weights
             for(size_t i = 0; i < effective_nn; ++i)
                 weights(i) = exp(-theta * distances[curr_pred][nearest_neighbors[i]] / avg_distance);
         }
-        
+
+	// YAIR START
+	MatrixXd covMat = MatrixXd::Zero(effective_nn, effective_nn);
+	// debug_print( covMat, 5, "CovMat zeros" );
+	
+	//The covariance matrix, should use different covariance function
+	double dist;
+	for(size_t i = 0; i < effective_nn; ++i) 
+	  for(size_t j = 0; j < effective_nn; ++j) {
+	    dist = dist_func(
+			     data_vectors[nearest_neighbors[i]],
+			     data_vectors[nearest_neighbors[j]]
+			     );
+	    
+	    // std::cerr << "Dist ij  = " << dist << "\n";
+	
+	    covMat(i,j) = dist; //exp( -dist*dist / avg_distance);      
+	  }
+	debug_print( covMat, 0, "CovMat initialized" );
+	std::cerr << "Avg Dist = " << avg_distance << "\n"; 
+
+	//Find the Cholesky factor, so that covMat = LL^t 
+	MatrixXd L = covMat.llt().matrixL();
+
+	// debug_print( L, 5, "L" );
+	// YAIR END
+	
         // setup matrices for SVD
         A.resize(effective_nn, E+1);
         B.resize(effective_nn);
@@ -706,3 +748,4 @@ DataFrame compute_stats(std::vector<double> observed, std::vector<double> predic
                               Named("perc") = output.perc,
                               Named("p_val") = output.p_val);
 }
+
