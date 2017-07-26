@@ -604,7 +604,6 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
                 weights(i) = exp(-theta * distances[curr_pred][nearest_neighbors[i]] / avg_distance);
         }
 
-	// YAIR START
 	MatrixXd covMat = MatrixXd::Zero(effective_nn, effective_nn);
 		
 	//The covariance matrix
@@ -623,7 +622,6 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
 	//Find the Cholesky factor, so that covMat = LL^t 
 	LDLT<MatrixXd> L = covMat.ldlt();
 	
-	
         // setup matrices for SVD
         A.resize(effective_nn, E+1);
         B.resize(effective_nn);
@@ -636,7 +634,7 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
                 A(i, j) = weights(i) * data_vectors[nearest_neighbors[i]][j];
             A(i, E) = weights(i);
         }
-        
+
         // perform SVD 
         Eigen::JacobiSVD<MatrixXd> svd( stable_cholesky_solver(A, L), Eigen::ComputeThinU | Eigen::ComputeThinV);
         
@@ -652,7 +650,7 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
         
         // perform back-substitution to solve 
         x = svd.matrixV() * S_inv * svd.matrixU().transpose() * stable_cholesky_solver(B, L);
-        
+
         pred = 0;
         for(size_t j = 0; j < E; ++j)
             pred += x(j) * data_vectors[curr_pred][j];
