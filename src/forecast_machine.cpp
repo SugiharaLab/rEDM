@@ -18,20 +18,60 @@ lib_ranges(std::vector<time_range>()), pred_ranges(std::vector<time_range>())
     //num_threads = std::thread::hardware_concurrency();
 }
 
-// YAIR: Start
-void ForecastMachine::debug_print( MatrixXd mat, int lims, std::string name ) {
-  if (lims == 0)
-    lims = mat.rows();
-  std::cerr << name << ":\n";
-  for(size_t i = 0; i < lims; ++i) {
-    for(size_t j = 0; j < lims; ++j) {
-      std::cerr << " " << mat(i,j) << " ";
-    }
-    std::cerr << "\n";
-  }
+// Other covariances probably better
+double ForecastMachine::cov( double dist, double charDist, double param ) {
+  double d = dist / charDist;
+  return exp( -param * d * d );
+}
+
+MatrixXd ForecastMachine::stable_cholesky_solver( MatrixXd A,
+				 LDLT<MatrixXd> ldltDecomp )
+{
+  // Preparations:
   
-} 
-// YAIR: end
+  // For some reason if I sub it below I get error
+  MatrixXd L = ldltDecomp.matrixL();
+
+  // Number of rows is all that matters, regardless if rhs is a
+  // matrix or a vector
+  int k = A.rows(); 
+
+  // Manually inverting D. This procedure has the advantage that
+  // D^{-1/2} can also be applied to matrices.
+  VectorXd diag;
+  diag.resize(k);
+  double t;
+  for( int i = 0 ; i < k ; ++i ) {
+    t =  ldltDecomp.vectorD()(i);
+    if( t <= 0 ) {
+      LOG_WARNING("Invalid value in matrix D. Covariance is not positive definite.");
+      diag(i) = 0;
+    } else {
+      diag(i) = 1. / sqrt(t) ; // Manual inversion
+    }
+  }
+  DiagonalMatrix<double, Dynamic > sqrtInvD = diag.asDiagonal();
+  
+  // The permutation "matrix" P
+  Transpositions<Dynamic> P = ldltDecomp.transpositionsP(); 
+
+  // Holds all the computations
+  MatrixXd x;
+  
+  // Now the actual computation
+
+  // x = PA
+  x = P * A;
+  
+  // x = L^{-1}PA
+  x = L.triangularView<Lower>().solve(x);
+  
+  // x = D^{-1/2}L^{-1}PA
+  x = sqrtInvD * x;
+  
+  return x;
+  
+}
 
 // void ForecastMachine::debug_print_vectors()
 // {
@@ -524,7 +564,7 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
 
     for(size_t k = start; k < end; ++k)
     {
-      std::cerr << "\n\n" << "Predicting " << k << "\n";
+      std::cout << "\n\n" << "Predicting " << int(k) << "\n";
         curr_pred = which_pred[k];
       
         // find nearest neighbors
@@ -558,7 +598,7 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
                 avg_distance += distances[curr_pred][neighbor];
             }
             avg_distance /= effective_nn;
-	    // std::cerr << "WTF " << avg_distance << "\n"; // YAIR
+	    
             // compute weights
             for(size_t i = 0; i < effective_nn; ++i)
                 weights(i) = exp(-theta * distances[curr_pred][nearest_neighbors[i]] / avg_distance);
@@ -566,29 +606,23 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
 
 	// YAIR START
 	MatrixXd covMat = MatrixXd::Zero(effective_nn, effective_nn);
-	// debug_print( covMat, 5, "CovMat zeros" );
-	
-	//The covariance matrix, should use different covariance function
+		
+	//The covariance matrix
 	double dist;
-	for(size_t i = 0; i < effective_nn; ++i) 
+	for(size_t i = 0; i < effective_nn; ++i) {
 	  for(size_t j = 0; j < effective_nn; ++j) {
 	    dist = dist_func(
 			     data_vectors[nearest_neighbors[i]],
 			     data_vectors[nearest_neighbors[j]]
 			     );
-	    
-	    // std::cerr << "Dist ij  = " << dist << "\n";
-	
-	    covMat(i,j) = dist; //exp( -dist*dist / avg_distance);      
+	    	
+	    covMat(i,j) = cov( dist, avg_distance, 1);      
 	  }
-	debug_print( covMat, 0, "CovMat initialized" );
-	std::cerr << "Avg Dist = " << avg_distance << "\n"; 
+	}
 
 	//Find the Cholesky factor, so that covMat = LL^t 
-	MatrixXd L = covMat.llt().matrixL();
-
-	// debug_print( L, 5, "L" );
-	// YAIR END
+	LDLT<MatrixXd> L = covMat.ldlt();
+	
 	
         // setup matrices for SVD
         A.resize(effective_nn, E+1);
@@ -603,8 +637,8 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
             A(i, E) = weights(i);
         }
         
-        // perform SVD
-        Eigen::JacobiSVD<MatrixXd> svd(A, Eigen::ComputeThinU | Eigen::ComputeThinV);
+        // perform SVD 
+        Eigen::JacobiSVD<MatrixXd> svd( stable_cholesky_solver(A, L), Eigen::ComputeThinU | Eigen::ComputeThinV);
         
         // remove singular values close to 0
         S = svd.singularValues();
@@ -616,8 +650,8 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
                 S_inv(j, j) = 1/S(j);
         }
         
-        // perform back-substitution to solve
-        x = svd.matrixV() * S_inv * svd.matrixU().transpose() * B;
+        // perform back-substitution to solve 
+        x = svd.matrixV() * S_inv * svd.matrixU().transpose() * stable_cholesky_solver(B, L);
         
         pred = 0;
         for(size_t j = 0; j < E; ++j)
