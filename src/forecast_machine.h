@@ -27,9 +27,8 @@ protected:
     void init_distances();
     void compute_distances();
     double cov( double distance, double charDist, double param ); // YAIR
-    void debug_print( MatrixXd mat, int lims, std::string name ); // YAIR
-    MatrixXd stable_cholesky_solver( MatrixXd A ,
-				     Eigen::LDLT<MatrixXd> ldltDecomp ); // YAIR 
+    MatrixXd least_squares_solver( MatrixXd A, MatrixXd B ); // YAIR
+    MatrixXd stable_cholesky_solver( MatrixXd A, Eigen::LDLT<MatrixXd> ldltDecomp ); // YAIR 
     //void sort_neighbors();
     std::vector<size_t> find_nearest_neighbors(const vec& dist);
 
@@ -67,6 +66,7 @@ protected:
     bool CROSS_VALIDATION;
     bool SUPPRESS_WARNINGS;
     bool SAVE_SMAP_COEFFICIENTS;
+    bool GPR; 
     PredEnum pred_mode;
     NormEnum norm_mode;
     size_t nn;

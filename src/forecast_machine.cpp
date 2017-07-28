@@ -10,7 +10,7 @@ time(vec()), data_vectors(std::vector<vec>()), smap_coefficients(std::vector<vec
 targets(vec()), predicted(vec()), predicted_var(vec()),
 const_targets(vec()), const_predicted(vec()),
 num_vectors(0), distances(std::vector<vec>()),
-CROSS_VALIDATION(false), SUPPRESS_WARNINGS(false), SAVE_SMAP_COEFFICIENTS(false),
+CROSS_VALIDATION(false), SUPPRESS_WARNINGS(false), SAVE_SMAP_COEFFICIENTS(false), GPR(false),
 pred_mode(SIMPLEX), norm_mode(L2_NORM),
 nn(0), exclusion_radius(-1), epsilon(-1), p(0.5),
 lib_ranges(std::vector<time_range>()), pred_ranges(std::vector<time_range>())
@@ -24,6 +24,27 @@ double ForecastMachine::cov( double dist, double charDist, double param )
    return  exp( -param * dist / charDist);
    // double d = dist / charDist;
    // return exp( -param * d * d );
+}
+
+MatrixXd ForecastMachine::least_squares_solver( MatrixXd A, MatrixXd B )
+// Solve a Least squares problem 
+{
+  
+  // perform SVD 
+  Eigen::JacobiSVD<MatrixXd> svd( A, Eigen::ComputeThinU | Eigen::ComputeThinV);
+  
+  // remove singular values close to 0
+  VectorXd S = svd.singularValues();
+  MatrixXd S_inv = MatrixXd::Zero(A.cols(), A.cols());
+  double max_s = S(0) * 1e-5;
+  for(size_t j = 0; j < A.cols(); ++j)
+    {
+      if(S(j) >= max_s)
+	S_inv(j, j) = 1/S(j);
+    }
+  
+  // perform back-substitution to solve
+  return svd.matrixV() * S_inv * svd.matrixU().transpose() * B;
 }
 
 MatrixXd ForecastMachine::stable_cholesky_solver( MatrixXd A,
@@ -576,9 +597,9 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
     double avg_distance;
     //    vec weights;
     std::vector<size_t> nearest_neighbors;
-    MatrixXd A, S_inv;
-    VectorXd B, S, x, weights;
-    double max_s, pred;
+    MatrixXd A;
+    VectorXd B, x, weights;
+    double pred;
     std::vector<size_t> temp_lib;
 
     for(size_t k = start; k < end; ++k)
@@ -621,33 +642,6 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
             for(size_t i = 0; i < effective_nn; ++i)
 	      weights(i) = exp(-theta * distances[curr_pred][nearest_neighbors[i]] / avg_distance);
         }
-
-	// Code for covariance matrix by Yair. It might be possible
-	// to do this calculation only once but then memory access
-	// for the effective nearest neighbours may be expensive. Also
-	// the software engineering is not too interesting so it just
-	// left here.
-	MatrixXd covMat = MatrixXd::Zero(effective_nn, effective_nn);
-		
-	//The covariance matrix
-	double dist;
-	for(size_t i = 0; i < effective_nn; ++i) {
-	  for(size_t j = 0; j < effective_nn; ++j) {
-	    // Note we use the distance function and covaraince
-	    // used by weights. This can be changed.
-	    dist = dist_func(
-			     data_vectors[nearest_neighbors[i]],
-			     data_vectors[nearest_neighbors[j]]
-			     );
-	    	
-	    covMat(i,j) = cov( dist, avg_distance, theta);      
-	  }
-	}
-
-	// Find the LDLT stable Cholesky factor of covMat, see
-	// doc for ForecastMachine::stable_cholesky_factorization
-	// For more details on what the object L actually holds.
-	Eigen::LDLT<MatrixXd> L = covMat.ldlt();
 	
         // setup matrices for SVD
         A.resize(effective_nn, E+1);
@@ -662,23 +656,46 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
             A(i, E) = weights(i);
         }
 
-        // perform SVD 
-        Eigen::JacobiSVD<MatrixXd> svd( stable_cholesky_solver(A, L), Eigen::ComputeThinU | Eigen::ComputeThinV);
-        
-        // remove singular values close to 0
-        S = svd.singularValues();
-        S_inv = MatrixXd::Zero(E+1, E+1);
-        max_s = S(0) * 1e-5;
-        for(size_t j = 0; j <= E; ++j)
-        {
-            if(S(j) >= max_s)
-                S_inv(j, j) = 1/S(j);
-        }
-        
-        // perform back-substitution to solve 
-        x = svd.matrixV() * S_inv * svd.matrixU().transpose() * stable_cholesky_solver(B, L);
+	// If we discount weights of close by measurements. Setting GPR
+	// to false gives the "Standard Smap algorithm
+	if( GPR ) {
+	  // Code for covariance matrix by Yair. It might be possible
+	  // to do this calculation only once but then memory access
+	  // for the effective nearest neighbours may be expensive. Also
+	  // the software engineering is not too interesting so it just
+	  // left here.
+	  MatrixXd covMat = MatrixXd::Zero(effective_nn, effective_nn);
+	  
+	  //The covariance matrix
+	  double dist;
+	  for(size_t i = 0; i < effective_nn; ++i) {
+	    for(size_t j = 0; j < effective_nn; ++j) {
+	      // Note we use the distance function and covaraince
+	      // used by weights. This can be changed.
+	      dist = dist_func(
+			       data_vectors[nearest_neighbors[i]],
+			       data_vectors[nearest_neighbors[j]]
+			       );
+	      
+	      covMat(i,j) = cov( dist, avg_distance, theta);      
+	    }
+	  }
+	  
+	  // Find the LDLT stable Cholesky factor of covMat, see
+	  // doc for ForecastMachine::stable_cholesky_factorization
+	  // For more details on what the object L actually holds.
+	  Eigen::LDLT<MatrixXd> L = covMat.ldlt();
 
-        pred = 0;
+	  // Solve the least squares problem Ax = B
+	  x = least_squares_solver( stable_cholesky_solver(A, L), stable_cholesky_solver(B, L) );
+
+	} else {
+	  // The "standard" smap algorithm now solves Ax = b (in least
+	  // squares sense) without the reweighting covariance matrix.
+	  x = least_squares_solver( A, B );
+	}
+	
+	pred = 0;
         for(size_t j = 0; j < E; ++j)
             pred += x(j) * data_vectors[curr_pred][j];
         pred += x(E);
