@@ -139,6 +139,12 @@ void LNLP::save_smap_coefficients()
     return;
 }
 
+void LNLP::gpr()
+{
+    GPR = true;
+    return;
+}
+
 void LNLP::run()
 {
     prepare_forecast(); // check parameters
@@ -284,6 +290,7 @@ RCPP_MODULE(lnlp_module)
     .method("set_p", &LNLP::set_p)
     .method("suppress_warnings", &LNLP::suppress_warnings)
     .method("save_smap_coefficients", &LNLP::save_smap_coefficients)
+    .method("gpr", &LNLP::gpr)
     .method("run", &LNLP::run)
     .method("get_output", &LNLP::get_output)
     .method("get_smap_coefficients", &LNLP::get_smap_coefficients)

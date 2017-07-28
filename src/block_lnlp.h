@@ -29,6 +29,7 @@ public:
     void set_p(const double new_p);
     void suppress_warnings();
     void save_smap_coefficients();
+    void gpr();
     void run();
     DataFrame get_output();
     List get_smap_coefficients();

@@ -28,7 +28,7 @@ protected:
     void compute_distances();
     double cov( double distance, double charDist, double param ); // YAIR
     MatrixXd least_squares_solver( MatrixXd A, MatrixXd B ); // YAIR
-    MatrixXd stable_cholesky_solver( MatrixXd A, Eigen::LDLT<MatrixXd> ldltDecomp ); // YAIR 
+    MatrixXd stable_cholesky_solver( MatrixXd A, Eigen::LDLT<MatrixXd> ldltSigma ); // YAIR 
     //void sort_neighbors();
     std::vector<size_t> find_nearest_neighbors(const vec& dist);
 

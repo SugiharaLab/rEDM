@@ -48,7 +48,7 @@ MatrixXd ForecastMachine::least_squares_solver( MatrixXd A, MatrixXd B )
 }
 
 MatrixXd ForecastMachine::stable_cholesky_solver( MatrixXd A,
-						  Eigen::LDLT<MatrixXd> ldltDecompSigma )
+						  Eigen::LDLT<MatrixXd> ldltSigma )
 // This method applies the inverse square root of a real positive
 // definite matrix Sigma to the matrix/vector A via Eigen's stable
 // Cholesky decomposition LDLT (see ref below). The decomposition held
@@ -73,7 +73,7 @@ MatrixXd ForecastMachine::stable_cholesky_solver( MatrixXd A,
   
   // L:
   // For some reason if I sub it below I get error
-  MatrixXd L = ldltDecompSigma.matrixL();
+  MatrixXd L = ldltSigma.matrixL();
 
   // D^{-1/2}:
   // Manually inverting D. This procedure has the advantage that
@@ -82,7 +82,7 @@ MatrixXd ForecastMachine::stable_cholesky_solver( MatrixXd A,
   diag.resize(k);
   double t;
   for( int i = 0 ; i < k ; ++i ) {
-    t =  ldltDecompSigma.vectorD()(i);
+    t =  ldltSigma.vectorD()(i);
     if( t <= 0 ) {
       LOG_WARNING("Invalid value in matrix D. Covariance is not positive definite.");
       diag(i) = 0;
@@ -93,7 +93,7 @@ MatrixXd ForecastMachine::stable_cholesky_solver( MatrixXd A,
   Eigen::DiagonalMatrix<double, Eigen::Dynamic> sqrtInvD = diag.asDiagonal();
   
   // P:
-  Eigen::Transpositions<Eigen::Dynamic> P = ldltDecompSigma.transpositionsP(); 
+  Eigen::Transpositions<Eigen::Dynamic> P = ldltSigma.transpositionsP(); 
 
   // The returned value. Will hold all the computations
   MatrixXd x;
@@ -659,6 +659,7 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
 	// If we discount weights of close by measurements. Setting GPR
 	// to false gives the "Standard Smap algorithm
 	if( GPR ) {
+	  std::cerr << "Using GPR code!!\n";
 	  // Code for covariance matrix by Yair. It might be possible
 	  // to do this calculation only once but then memory access
 	  // for the effective nearest neighbours may be expensive. Also
@@ -684,12 +685,13 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
 	  // Find the LDLT stable Cholesky factor of covMat, see
 	  // doc for ForecastMachine::stable_cholesky_factorization
 	  // For more details on what the object L actually holds.
-	  Eigen::LDLT<MatrixXd> L = covMat.ldlt();
+	  Eigen::LDLT<MatrixXd> covMatLDLT = covMat.ldlt();
 
 	  // Solve the least squares problem Ax = B
-	  x = least_squares_solver( stable_cholesky_solver(A, L), stable_cholesky_solver(B, L) );
+	  x = least_squares_solver( stable_cholesky_solver(A, covMatLDLT), stable_cholesky_solver(B, covMatLDLT) );
 
 	} else {
+	  std::cerr << "Not using GPR code\n";
 	  // The "standard" smap algorithm now solves Ax = b (in least
 	  // squares sense) without the reweighting covariance matrix.
 	  x = least_squares_solver( A, B );
