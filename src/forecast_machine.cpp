@@ -18,31 +18,50 @@ lib_ranges(std::vector<time_range>()), pred_ranges(std::vector<time_range>())
     //num_threads = std::thread::hardware_concurrency();
 }
 
-// Other covariances probably better
-double ForecastMachine::cov( double dist, double charDist, double param ) {
-  double d = dist / charDist;
-  return exp( -param * d * d );
+// Other covariances may be better
+double ForecastMachine::cov( double dist, double charDist, double param )
+{
+   return  exp( -param * dist / charDist);
+   // double d = dist / charDist;
+   // return exp( -param * d * d );
 }
 
 MatrixXd ForecastMachine::stable_cholesky_solver( MatrixXd A,
-				 LDLT<MatrixXd> ldltDecomp )
+						  Eigen::LDLT<MatrixXd> ldltDecompSigma )
+// This method applies the inverse square root of a real positive
+// definite matrix Sigma to the matrix/vector A via Eigen's stable
+// Cholesky decomposition LDLT (see ref below). The decomposition held
+// in the input variable ldltDecomp is
+//
+// Sigma = P^t L D L^t P
+//
+// and this methods returns x such that
+//
+// P^t L D^{1/2} x = A <==> x = D^{-1/2} L^{-1} P A.
+//
+// If we denote M := P^t L D^{1/2}, then Sigma = MM^t and
+// this method returns x = M^{-1}A.
+//
+// https://eigen.tuxfamily.org/dox/classEigen_1_1LDLT.html
 {
-  // Preparations:
-  
-  // For some reason if I sub it below I get error
-  MatrixXd L = ldltDecomp.matrixL();
-
   // Number of rows is all that matters, regardless if rhs is a
   // matrix or a vector
   int k = A.rows(); 
+  
+  // Preparations. Get components P,D^{-1/2} and L.
+  
+  // L:
+  // For some reason if I sub it below I get error
+  MatrixXd L = ldltDecompSigma.matrixL();
 
+  // D^{-1/2}:
   // Manually inverting D. This procedure has the advantage that
   // D^{-1/2} can also be applied to matrices.
   VectorXd diag;
   diag.resize(k);
   double t;
   for( int i = 0 ; i < k ; ++i ) {
-    t =  ldltDecomp.vectorD()(i);
+    t =  ldltDecompSigma.vectorD()(i);
     if( t <= 0 ) {
       LOG_WARNING("Invalid value in matrix D. Covariance is not positive definite.");
       diag(i) = 0;
@@ -50,21 +69,21 @@ MatrixXd ForecastMachine::stable_cholesky_solver( MatrixXd A,
       diag(i) = 1. / sqrt(t) ; // Manual inversion
     }
   }
-  DiagonalMatrix<double, Dynamic > sqrtInvD = diag.asDiagonal();
+  Eigen::DiagonalMatrix<double, Eigen::Dynamic> sqrtInvD = diag.asDiagonal();
   
-  // The permutation "matrix" P
-  Transpositions<Dynamic> P = ldltDecomp.transpositionsP(); 
+  // P:
+  Eigen::Transpositions<Eigen::Dynamic> P = ldltDecompSigma.transpositionsP(); 
 
-  // Holds all the computations
+  // The returned value. Will hold all the computations
   MatrixXd x;
   
-  // Now the actual computation
+  // Now to the actual computation
 
   // x = PA
   x = P * A;
   
   // x = L^{-1}PA
-  x = L.triangularView<Lower>().solve(x);
+  x = L.triangularView<Eigen::Lower>().solve(x);
   
   // x = D^{-1/2}L^{-1}PA
   x = sqrtInvD * x;
@@ -564,7 +583,6 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
 
     for(size_t k = start; k < end; ++k)
     {
-      std::cout << "\n\n" << "Predicting " << int(k) << "\n";
         curr_pred = which_pred[k];
       
         // find nearest neighbors
@@ -587,7 +605,7 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
             LOG_WARNING("no nearest neighbors found; using NA for forecast");
             continue;
         }
-        weights = Eigen::VectorXd::Constant(effective_nn, 1.0);
+        weights = VectorXd::Constant(effective_nn, 1.0);
         //        weights.assign(effective_nn, 1.0); // default is for theta = 0
         if(theta > 0.0)
         {
@@ -601,26 +619,35 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
 	    
             // compute weights
             for(size_t i = 0; i < effective_nn; ++i)
-                weights(i) = exp(-theta * distances[curr_pred][nearest_neighbors[i]] / avg_distance);
+	      weights(i) = exp(-theta * distances[curr_pred][nearest_neighbors[i]] / avg_distance);
         }
 
+	// Code for covariance matrix by Yair. It might be possible
+	// to do this calculation only once but then memory access
+	// for the effective nearest neighbours may be expensive. Also
+	// the software engineering is not too interesting so it just
+	// left here.
 	MatrixXd covMat = MatrixXd::Zero(effective_nn, effective_nn);
 		
 	//The covariance matrix
 	double dist;
 	for(size_t i = 0; i < effective_nn; ++i) {
 	  for(size_t j = 0; j < effective_nn; ++j) {
+	    // Note we use the distance function and covaraince
+	    // used by weights. This can be changed.
 	    dist = dist_func(
 			     data_vectors[nearest_neighbors[i]],
 			     data_vectors[nearest_neighbors[j]]
 			     );
 	    	
-	    covMat(i,j) = cov( dist, avg_distance, 1);      
+	    covMat(i,j) = cov( dist, avg_distance, theta);      
 	  }
 	}
 
-	//Find the Cholesky factor, so that covMat = LL^t 
-	LDLT<MatrixXd> L = covMat.ldlt();
+	// Find the LDLT stable Cholesky factor of covMat, see
+	// doc for ForecastMachine::stable_cholesky_factorization
+	// For more details on what the object L actually holds.
+	Eigen::LDLT<MatrixXd> L = covMat.ldlt();
 	
         // setup matrices for SVD
         A.resize(effective_nn, E+1);

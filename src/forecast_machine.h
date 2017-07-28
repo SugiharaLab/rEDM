@@ -15,14 +15,6 @@
 //using namespace Eigen; 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
-//YAIR start
-using Eigen::LDLT;
-using Eigen::DiagonalMatrix;
-using Eigen::Transpositions;
-using Eigen::Dynamic;
-using Eigen::Lower;
-/* // YAIR end */
-
 using namespace Rcpp;
 
 class ForecastMachine
@@ -37,7 +29,7 @@ protected:
     double cov( double distance, double charDist, double param ); // YAIR
     void debug_print( MatrixXd mat, int lims, std::string name ); // YAIR
     MatrixXd stable_cholesky_solver( MatrixXd A ,
-				     LDLT<MatrixXd> ldltDecomp ); // YAIR 
+				     Eigen::LDLT<MatrixXd> ldltDecomp ); // YAIR 
     //void sort_neighbors();
     std::vector<size_t> find_nearest_neighbors(const vec& dist);
 
