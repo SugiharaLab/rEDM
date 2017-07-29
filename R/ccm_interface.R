@@ -149,6 +149,10 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
     if (is.null(exclusion_radius))
         exclusion_radius = -1;
     model$set_exclusion_radius(exclusion_radius)
+
+    # handle gpr flag
+    if (gpr)
+        model$gpr()
     
     # TODO: handle epsilon
     

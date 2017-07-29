@@ -11,6 +11,7 @@
 #include "data_types.h"
 //#include <Eigen/Dense> 
 #include <RcppEigen.h>
+#include <string.h>
 
 //using namespace Eigen; 
 using Eigen::MatrixXd;

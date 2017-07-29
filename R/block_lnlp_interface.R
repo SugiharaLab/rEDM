@@ -100,7 +100,7 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
                        tp = 1, num_neighbors = "e+1", columns = NULL, 
                        target_column = 1, stats_only = TRUE, first_column_time = FALSE, 
                        exclusion_radius = NULL, epsilon = NULL, theta = NULL, 
-                       silent = FALSE, save_smap_coefficients = FALSE, short_output = FALSE)
+                       silent = FALSE, save_smap_coefficients = FALSE, short_output = FALSE, gpr = FALSE )
 {
     convert_to_column_indices <- function(columns)
     {
@@ -189,7 +189,7 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
     # handle silent flag
     if (silent)
         model$suppress_warnings()
-    
+
     # convert embeddings to column indices
     if(is.null(col_names)) {
         col_names <- paste("ts_", seq_len(NCOL(block)))
@@ -216,6 +216,11 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
         e_plus_1_index <- match(num_neighbors, c("e+1", "E+1", "e + 1", "E + 1"))
         if (any(e_plus_1_index, na.rm = TRUE))
             params$nn <- 1 + sapply(columns, length)
+        
+        ## handle gpr flag
+        if (gpr)
+            model$gpr()
+    
         # apply model prediction function to params
         if (stats_only)
         {

@@ -21,9 +21,10 @@ lib_ranges(std::vector<time_range>()), pred_ranges(std::vector<time_range>())
 // Other covariances may be better
 double ForecastMachine::cov( double dist, double charDist, double param )
 {
-   return  exp( -param * dist / charDist);
-   // double d = dist / charDist;
-   // return exp( -param * d * d );
+  double d = dist / charDist;
+  if(GPR)
+    return  exp( -param * d );
+  return exp( -param * d );
 }
 
 MatrixXd ForecastMachine::least_squares_solver( MatrixXd A, MatrixXd B )
@@ -65,10 +66,6 @@ MatrixXd ForecastMachine::stable_cholesky_solver( MatrixXd A,
 //
 // https://eigen.tuxfamily.org/dox/classEigen_1_1LDLT.html
 {
-  // Number of rows is all that matters, regardless if rhs is a
-  // matrix or a vector
-  int k = A.rows(); 
-  
   // Preparations. Get components P,D^{-1/2} and L.
   
   // L:
@@ -79,12 +76,14 @@ MatrixXd ForecastMachine::stable_cholesky_solver( MatrixXd A,
   // Manually inverting D. This procedure has the advantage that
   // D^{-1/2} can also be applied to matrices.
   VectorXd diag;
-  diag.resize(k);
+  diag.resize( A.rows() );
   double t;
-  for( int i = 0 ; i < k ; ++i ) {
+  for( int i = 0 ; i < A.rows() ; ++i ) {
     t =  ldltSigma.vectorD()(i);
     if( t <= 0 ) {
-      LOG_WARNING("Invalid value in matrix D. Covariance is not positive definite.");
+      std::stringstream warn;
+      warn << "Invalid value " << t << " in matrix D at " << i << " entry of " << A.rows() << ". Covariance matrix  not positive definite.";
+      LOG_WARNING( warn.str().c_str() );
       diag(i) = 0;
     } else {
       diag(i) = 1. / sqrt(t) ; // Manual inversion
@@ -638,10 +637,15 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
             }
             avg_distance /= effective_nn;
 	    
-            // compute weights
+            // compute weights. In the case GPR == false, cov amounts
+	    // to the exponential weighting used in standard
+	    // s-maps. If GPR == true, a different weighting scheme is used,
+	    // see the cov method for its implementation.
             for(size_t i = 0; i < effective_nn; ++i)
-	      weights(i) = exp(-theta * distances[curr_pred][nearest_neighbors[i]] / avg_distance);
-        }
+	      weights(i) = cov( distances[curr_pred][nearest_neighbors[i]],
+				avg_distance,
+				theta );
+	}
 	
         // setup matrices for SVD
         A.resize(effective_nn, E+1);
@@ -659,7 +663,6 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
 	// If we discount weights of close by measurements. Setting GPR
 	// to false gives the "Standard Smap algorithm
 	if( GPR ) {
-	  std::cerr << "Using GPR code!!\n";
 	  // Code for covariance matrix by Yair. It might be possible
 	  // to do this calculation only once but then memory access
 	  // for the effective nearest neighbours may be expensive. Also
@@ -691,7 +694,6 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
 	  x = least_squares_solver( stable_cholesky_solver(A, covMatLDLT), stable_cholesky_solver(B, covMatLDLT) );
 
 	} else {
-	  std::cerr << "Not using GPR code\n";
 	  // The "standard" smap algorithm now solves Ax = b (in least
 	  // squares sense) without the reweighting covariance matrix.
 	  x = least_squares_solver( A, B );
