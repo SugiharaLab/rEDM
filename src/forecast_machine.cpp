@@ -41,8 +41,8 @@ MatrixXd ForecastMachine::least_squares_solver( MatrixXd A, MatrixXd B )
   // May also use:
   // return A.colPivHouseholderQr().solve(B);
   
-  // // perform SVD 
-  // Eigen::JacobiSVD<MatrixXd> svd( A, Eigen::ComputeThinU | Eigen::ComputeThinV);
+  // perform SVD 
+  Eigen::JacobiSVD<MatrixXd> svd( A, Eigen::ComputeThinU | Eigen::ComputeThinV);
   
   // remove singular values close to 0
   VectorXd S = svd.singularValues();
