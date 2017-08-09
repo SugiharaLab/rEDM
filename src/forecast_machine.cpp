@@ -10,7 +10,7 @@ time(vec()), data_vectors(std::vector<vec>()), smap_coefficients(std::vector<vec
 targets(vec()), predicted(vec()), predicted_var(vec()),
 const_targets(vec()), const_predicted(vec()),
 num_vectors(0), distances(std::vector<vec>()),
-CROSS_VALIDATION(false), SUPPRESS_WARNINGS(false), SAVE_SMAP_COEFFICIENTS(false), GPR(false),
+CROSS_VALIDATION(false), SUPPRESS_WARNINGS(false), SAVE_SMAP_COEFFICIENTS(false), GLM(false),
 pred_mode(SIMPLEX), norm_mode(L2_NORM),
 nn(0), exclusion_radius(-1), epsilon(-1), p(0.5),
 lib_ranges(std::vector<time_range>()), pred_ranges(std::vector<time_range>())
@@ -19,20 +19,30 @@ lib_ranges(std::vector<time_range>()), pred_ranges(std::vector<time_range>())
 }
 
 // Other covariances may be better
-double ForecastMachine::cov( double dist, double charDist, double param )
+double ForecastMachine::cov_func( double dist, double charDist, double param )
 {
   double d = dist / charDist;
-  if(GPR)
-    return  exp( -param * d );
   return exp( -param * d );
+}
+
+
+// Other covariances may be better
+double ForecastMachine::weight_func( double dist, double charDist, double param )
+{
+  double d = dist / charDist;
+  return  exp( -param * d );
 }
 
 MatrixXd ForecastMachine::least_squares_solver( MatrixXd A, MatrixXd B )
 // Solve a Least squares problem 
 {
+  //return A.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(B);
+
+  // May also use:
+  // return A.colPivHouseholderQr().solve(B);
   
-  // perform SVD 
-  Eigen::JacobiSVD<MatrixXd> svd( A, Eigen::ComputeThinU | Eigen::ComputeThinV);
+  // // perform SVD 
+  // Eigen::JacobiSVD<MatrixXd> svd( A, Eigen::ComputeThinU | Eigen::ComputeThinV);
   
   // remove singular values close to 0
   VectorXd S = svd.singularValues();
@@ -41,7 +51,9 @@ MatrixXd ForecastMachine::least_squares_solver( MatrixXd A, MatrixXd B )
   for(size_t j = 0; j < A.cols(); ++j)
     {
       if(S(j) >= max_s)
-	S_inv(j, j) = 1/S(j);
+  	S_inv(j, j) = 1/S(j);
+      else
+  	LOG_WARNING( "Approximate zero singular value found" );
     }
   
   // perform back-substitution to solve
@@ -637,14 +649,14 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
             }
             avg_distance /= effective_nn;
 	    
-            // compute weights. In the case GPR == false, cov amounts
+            // compute weights. In the case GLM == false, cov amounts
 	    // to the exponential weighting used in standard
-	    // s-maps. If GPR == true, a different weighting scheme is used,
+	    // s-maps. If GLM == true, a different weighting scheme is used,
 	    // see the cov method for its implementation.
             for(size_t i = 0; i < effective_nn; ++i)
-	      weights(i) = cov( distances[curr_pred][nearest_neighbors[i]],
-				avg_distance,
-				theta );
+	      weights(i) = weight_func( distances[curr_pred][nearest_neighbors[i]],
+					avg_distance,
+					theta );
 	}
 	
         // setup matrices for SVD
@@ -660,9 +672,9 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
             A(i, E) = weights(i);
         }
 
-	// If we discount weights of close by measurements. Setting GPR
+	// If we discount weights of close by measurements. Setting GLM
 	// to false gives the "Standard Smap algorithm
-	if( GPR ) {
+	if( GLM ) {
 	  // Code for covariance matrix by Yair. It might be possible
 	  // to do this calculation only once but then memory access
 	  // for the effective nearest neighbours may be expensive. Also
@@ -680,8 +692,11 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
 			       data_vectors[nearest_neighbors[i]],
 			       data_vectors[nearest_neighbors[j]]
 			       );
-	      
-	      covMat(i,j) = cov( dist, avg_distance, theta);      
+
+	      if ( i == j )
+		covMat(i,j) = cov_func( dist, avg_distance, theta) + 0.001;
+	      else
+		covMat(i,j) = cov_func( dist, avg_distance, theta);
 	    }
 	  }
 	  

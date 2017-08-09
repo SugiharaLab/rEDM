@@ -100,7 +100,7 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
                        tp = 1, num_neighbors = "e+1", columns = NULL, 
                        target_column = 1, stats_only = TRUE, first_column_time = FALSE, 
                        exclusion_radius = NULL, epsilon = NULL, theta = NULL, 
-                       silent = FALSE, save_smap_coefficients = FALSE, short_output = FALSE, gpr = FALSE )
+                       silent = FALSE, save_smap_coefficients = FALSE, short_output = FALSE, glm = FALSE )
 {
     convert_to_column_indices <- function(columns)
     {
@@ -217,9 +217,9 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
         if (any(e_plus_1_index, na.rm = TRUE))
             params$nn <- 1 + sapply(columns, length)
         
-        ## handle gpr flag
-        if (gpr)
-            model$gpr()
+        ## handle glm flag
+        if (glm)
+            model$glm()
     
         # apply model prediction function to params
         if (stats_only)

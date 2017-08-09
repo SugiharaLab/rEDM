@@ -150,9 +150,9 @@ void Xmap::suppress_warnings()
     return;
 }
 
-void Xmap::gpr()
+void Xmap::glm()
 {
-    GPR = true;
+    GLM = true;
     return;
 }
 
@@ -382,7 +382,7 @@ RCPP_MODULE(xmap_module)
     .method("set_params", &Xmap::set_params)
     .method("set_seed", &Xmap::set_seed)
     .method("suppress_warnings", &Xmap::suppress_warnings)
-    .method("gpr", &Xmap::gpr)
+    .method("glm", &Xmap::glm)
     .method("run", &Xmap::run)
     .method("get_output", &Xmap::get_output)
     ;

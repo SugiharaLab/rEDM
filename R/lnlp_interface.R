@@ -216,7 +216,7 @@ s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
                   theta = c(0, 0.0001, 0.0003, 0.001, 0.003, 0.01, 0.03, 0.1, 
                             0.3, 0.5, 0.75, 1.0, 1.5, 2, 3, 4, 6, 8), 
                   stats_only = TRUE, exclusion_radius = NULL, epsilon = NULL, 
-                  silent = FALSE, save_smap_coefficients = FALSE, gpr = FALSE)
+                  silent = FALSE, save_smap_coefficients = FALSE, glm = FALSE)
 {
     # check inputs?
     
@@ -266,9 +266,9 @@ s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
     if (silent)
         model$suppress_warnings()
     
-    # handle gpr flag
-    if ( gpr )
-        model$gpr()
+    # handle glm flag
+    if ( glm )
+        model$glm()
     
     # handle smap coefficients flag
     if (save_smap_coefficients)

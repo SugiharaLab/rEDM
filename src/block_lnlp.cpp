@@ -157,9 +157,9 @@ void BlockLNLP::save_smap_coefficients()
     return;
 }
 
-void BlockLNLP::gpr()
+void BlockLNLP::glm()
 {
-  GPR = true;;
+  GLM = true;;
   return;
 }
 
@@ -328,7 +328,7 @@ RCPP_MODULE(block_lnlp_module)
     .method("set_p", &BlockLNLP::set_p)
     .method("suppress_warnings", &BlockLNLP::suppress_warnings)
     .method("save_smap_coefficients", &BlockLNLP::save_smap_coefficients)
-    .method("gpr", &BlockLNLP::gpr) 
+    .method("glm", &BlockLNLP::glm) 
     .method("run", &BlockLNLP::run)
     .method("get_output", &BlockLNLP::get_output)
     .method("get_smap_coefficients", &BlockLNLP::get_smap_coefficients)

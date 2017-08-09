@@ -27,7 +27,8 @@ protected:
     // *** computational methods *** //
     void init_distances();
     void compute_distances();
-    double cov( double distance, double charDist, double param ); // YAIR
+    double weight_func( double distance, double charDist, double param ); // YAIR
+    double cov_func( double distance, double charDist, double param ); // YAIR
     MatrixXd least_squares_solver( MatrixXd A, MatrixXd B ); // YAIR
     MatrixXd stable_cholesky_solver( MatrixXd A, Eigen::LDLT<MatrixXd> ldltSigma ); // YAIR 
     //void sort_neighbors();
@@ -67,7 +68,7 @@ protected:
     bool CROSS_VALIDATION;
     bool SUPPRESS_WARNINGS;
     bool SAVE_SMAP_COEFFICIENTS;
-    bool GPR; 
+    bool GLM; 
     PredEnum pred_mode;
     NormEnum norm_mode;
     size_t nn;
