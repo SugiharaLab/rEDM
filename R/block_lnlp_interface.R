@@ -9,11 +9,11 @@
 #' The default parameters are set so that passing a vector as the only 
 #' argument will use that vector to predict itself one time step ahead. If a 
 #' matrix or data.frame is given as the only argument, the first column will be 
-#' predicted, using the remaining columns as the embedding. Rownames will be 
-#' converted to numeric if possible to be used as the time index, otherwise 
-#' 1:NROW will be used instead. The default lib and pred are for leave-one-out 
-#' cross-validation over the whole time series, and returning just the forecast 
-#' statistics.
+#' predicted (one time step ahead), using the remaining columns as the embedding. 
+#' Rownames will be converted to numeric if possible to be used as the time 
+#' index, otherwise 1:NROW will be used instead. The default lib and pred are 
+#' for leave-one-out cross-validation over the whole time series, and returning 
+#' just the forecast statistics.
 #' 
 #' norm_type "L2 norm" (default) uses the typical Euclidean distance:
 #' \deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}}{distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
