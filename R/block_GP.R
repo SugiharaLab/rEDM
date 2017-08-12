@@ -71,7 +71,7 @@
 #' block <- two_species_model[1:200,]
 #' block_gp(block, columns = c("x", "y"), first_column_time = TRUE)
 #' @export
-block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib, 
+block_gp <- function(block, lib = c(1, NROW(block)), pred = lib, 
                        tp = 1, phi = 0, v_e = 0, tau = 0, 
                        columns = NULL, target_column = 1, 
                        stats_only = TRUE, first_column_time = FALSE, 
@@ -92,6 +92,7 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
             warning("Some column names could not be matched and were ignored.")
         return(indices[is.finite(indices)])
     }
+    
     # setup data
     if(first_column_time)
     {
@@ -115,83 +116,366 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
         if(any(is.na(time)))
             time <- 1:NROW(block)
     }
+    
+    # setup embeddings
     col_names <- colnames(block)
-
+    if(is.null(col_names)) {
+        col_names <- paste("ts_", seq_len(NCOL(block)))
+    }
+    if(is.null(columns)) {
+        columns <- list(1:NCOL(block))
+    } else if(is.list(columns)) {
+        columns <- lapply(columns, function(embedding) {
+            convert_to_column_indices(embedding)
+        })
+    } else if(is.vector(columns)) {
+        columns <- list(convert_to_column_indices(columns))
+    } else if(is.matrix(columns)) {
+        columns <- lapply(1:NROW(columns), function(i) convert_to_column_indices(columns[i,]))
+    }
+    
+    # setup target    
+    target_column <- convert_to_column_indices(target_column)
+    
     # setup lib and pred ranges
     if(is.vector(lib))
         lib <- matrix(lib, ncol = 2, byrow = TRUE)
     if(is.vector(pred))
         pred <- matrix(pred, ncol = 2, byrow = TRUE)
-    
     if(!all(lib[,2] >= lib[,1]))
         warning("Some library rows look incorrectly formatted, please check the lib argument.")
     if(!all(pred[,2] >= pred[,1]))
         warning("Some library rows look incorrectly formatted, please check the pred argument.")
+
+    # loop over combinations of columns, params, and tp
+    # 
+    # # setup other params in data.frame
+    # if(match.arg(method) == "s-map")
+    # {
+    #     params <- expand.grid(tp, num_neighbors, theta, embedding_index)
+#    embedding_index <- seq_along(columns)
+    # correct lib and pred for tp
+    if(tp > 0)
+    {
+        lib[, 2] <- pmax(1, lib[, 2] - tp)
+        pred[, 2] <- pmax(1, pred[, 2] - tp)
+    } else if (tp < 0) {
+        lib[, 1] <- pmin(NROW(block), lib[, 1] - tp)
+        pred[, 1] <- pmax(NROW(block), pred[, 1] - tp)
+    }
+    
+    # correct lib and pred if tp makes time series segments unusable
+    lib <- lib[lib[, 2] >= lib[, 1], , drop = FALSE]
+    pred <- pred[pred[, 2] >= pred[, 1], , drop = FALSE]
+    if(NROW(lib) == 0)
+        stop("No valid time series segments in lib (after correcting for tp)")
+    if(NROW(pred) == 0)
+        stop("No valid time series segments in pred (after correcting for tp)")
     
     # set indices for lib and pred
-    model$set_lib(lib)
-    model$set_pred(pred)
-    
-    
-    # define x_lib
-    model$set_block(data.matrix(block))
+    lib_idx <- sort(unique(do.call(c, lapply(1:NROW(lib), function(i) {seq(from = lib[i, 1], to = lib[i, 2])}))))
+    pred_idx <- sort(unique(do.call(c, lapply(1:NROW(pred), function(i) {seq(from = pred[i, 1], to = pred[i, 2])}))))
 
-    # define y_lib
-    model$set_target_column(convert_to_column_indices(target_column))
-
-    best_params <- c(phi = phi, v_e = v_e, tau = tau)
-
-    # check if fitting params
-    if(fit_params)
-    {
-        best_params <- get_mle_params_gp(x_lib = x_lib, y_lib = y_lib, 
-                                         params_init = best_params, 
-                                         ...) 
-    } 
     
-    # compute mean and covariance for pred
-    out <- compute_gp(x_lib = x_lib, y_lib = y_lib,
-                      params = best_params, cov_matrix = save_covariance_matrix, 
-                      x_pred = x_pred, ...)
-    
-    # massage gp output into correct return format
-    if (stats_only)
-    {
-        stats <- lapply(1:NROW(params), function(i) {
-            model$set_embedding(columns[[params$embedding[i]]])
-            model$set_params(params$tp[i], params$nn[i])
-            model$set_theta(params$theta[i])
-            model$run()
-            return(model$get_stats())
-        })
-        params$embedding <- sapply(params$embedding, function(i) {
-            paste(columns[[i]], sep = "", collapse = ", ")})
-        output <- cbind(params, do.call(rbind, stats), row.names = NULL)
-    } else {
-        output <- lapply(1:NROW(params), function(i) {
-            model$set_embedding(columns[[params$embedding[i]]])
-            model$set_params(params$tp[i], params$nn[i])
-            model$set_theta(params$theta[i])
-            model$run()
-            
-            if(short_output)
+    output <- do.call(rbind, lapply(columns, function(embedding) {
+        # define inputs to fitting of GP (data, and params)
+        x_lib <- block[lib_idx, embedding, drop = FALSE]
+        y_lib <- block[lib_idx + tp, target_column]
+        x_pred <- block[pred_idx, embedding, drop = FALSE]
+        y_pred <- block[pred_idx + tp, target_column]
+        
+        best_params <- c(phi = phi, v_e = v_e, tau = tau)
+        
+        # check if fitting params
+        if(fit_params)
+        {
+            best_params <- get_mle_params_gp(x_lib = x_lib, y_lib = y_lib, 
+                                             params_init = best_params, 
+                                             ...) 
+        } 
+        
+        # compute mean and covariance for pred
+        out_gp <- compute_gp(x_lib = x_lib, y_lib = y_lib,
+                             params = best_params, cov_matrix = save_covariance_matrix, 
+                             x_pred = x_pred, ...)
+        
+        stats <- compute_stats(y_pred, out_gp$mean_pred)
+        
+        # massage gp output into correct return format
+        
+        out_df <- data.frame(embedding = paste(embedding, sep = "", collapse = ", "), 
+                             phi = best_params["phi"], 
+                             v_e = best_params["v_e"], 
+                             tau = best_params["tau"], 
+                             fit_params = fit_params, 
+                             stats)
+        
+        if (!stats_only)
+        {
+            out_df$model_output <- list(data.frame(time = time[pred_idx], 
+                                                   obs = y_pred, 
+                                                   pred = out_gp$mean_pred))
+            if(save_covariance_matrix)
             {
-                to_return <- list(params = params[i,],
-                                  embedding = paste(columns[[params$embedding[i]]], sep = "", collapse = ", "), 
-                                  model_output = model$get_short_output(), 
-                                  stats = model$get_stats())
-                if(save_smap_coefficients)
-                    to_return$smap_coefficients <- do.call(rbind, model$get_short_smap_coefficients())
-            } else {
-                to_return <- list(params = params[i,],
-                                  embedding = paste(columns[[params$embedding[i]]], sep = "", collapse = ", "), 
-                                  model_output = model$get_output(), 
-                                  stats = model$get_stats())
-                if(save_smap_coefficients)
-                    to_return$smap_coefficients <- do.call(rbind, model$get_smap_coefficients())
+                out_df$covariance_matrix <- list(out_gp$covariance_pred)
             }
-            return(to_return)
-        })
-    }
+        }
+        row.names(out_df) <- NULL
+        return(out_df)
+    }))
+    
     return(output)
+}
+
+get_mle_params_gp <- function(x_lib, y_lib, 
+                              params_init = c(phi = 0, v_e = 0, tau = 0), 
+                              mean_y = 0, var_y_lib = var(y_lib), 
+                              param_rescaling_tol = 1e-3)
+{
+    likelihood_func <- function(x)
+    {
+        out <- compute_gp(x_lib, y_lib, params = x, 
+                          mean_y = mean_y, var_y_lib = var_y_lib, 
+                          gradient = TRUE, 
+                          param_rescaling_tol = param_rescaling_tol)
+        return(list(val = out$neg_log_likelihood, 
+                    grad = out$gradient_neg_log_likelihood))
+    }
+    
+    return(optim_rprop(likelihood_func, 
+                       params_init))
+}
+
+optim_rprop <- function(func, x_init, 
+                        max_iter = 200, delta_init = 0.1,
+                        delta_min = 1e-6, delta_max = 50, 
+                        eta_minus = 0.5, eta_plus = 1.2)
+{
+    ### Inputs:
+    # func        function to minimize
+    # x_init      initial value of x
+    # max_iter    maximum # of iterations
+    # delta_init  initial value for step size
+    # delta_min   minimum value for step size
+    # delta_max   maximum value for step size
+    # eta_minus   scaling for decreasing step size
+    # eta_plus    scaling for increasing step size
+    
+    ### Outputs:
+    # x           "optimized" value of x (that minimizes func)
+    
+    ### Description
+    # Perform function minimization using resilient backpropagation gradient descent
+    
+    # initial calulation of likelihood
+    x <- x_init
+    out <- func(x)
+    s <- sqrt(sum(out$grad * out$grad))
+    
+    iter_count <- 0
+    delta <- rep(delta_init, length(x_init))
+    delta_f <- 10
+    # message(iter_count, ": likelihood == ", format(out$val, 3))
+    # message("  x == ", paste(format(x, 3), collapse = ", "))
+    # message("  grad == ", paste(format(out$grad, 3), collapse = ", "))
+    # message("  delta == ", paste(format(delta, 3), collapse = ", "))
+    
+    # begin iterations
+    while((s > 1e-4) &&                # STOP  if gradient is 0
+          (iter_count < max_iter) &&   #    or if max iterations reached
+          (delta_f > 1e-7))            #    or if no change in func output
+    {
+        # step 1: move
+        x_new <- x - sign(out$grad) * delta
+        out_new <- func(x_new)
+        s <- sqrt(sum(out_new$grad * out_new$grad))
+        delta_f <- abs(out_new$val/out$val - 1)
+        
+        # step 2: update step size
+        grad_c <- sign(out$grad) * sign(out_new$grad)
+        delta <- delta * (1 + 
+                              (eta_plus - 1) * (grad_c > 0) + 
+                              (eta_minus - 1) * (grad_c < 0))
+        
+        delta <- pmin(delta_max, pmax(delta_min, delta))
+        
+        # step 3: reset
+        x <- x_new
+        out <- out_new
+        iter_count <- iter_count + 1
+        # message(iter_count, ": likelihood == ", format(out$val, 3))
+        # message("  x == ", paste(format(x, 3), collapse = ", "))
+        # message("  grad == ", paste(format(out$grad, 3), collapse = ", "))
+        # message("  grad_c == ", paste(format(grad_c, 3), collapse = ", "))
+        # message("  delta == ", paste(format(delta, 3), collapse = ", "))
+    }
+    
+    return(x)
+}
+
+compute_gp <- function(x_lib, y_lib, 
+                       params = c(phi = 0, v_e = 0, tau = 0), 
+                       mean_y = 0, 
+                       max_x_lib = max(abs(x_lib)), 
+                       var_y_lib = var(y_lib), 
+                       x_pred = NULL, gradient = FALSE, cov_matrix = TRUE, 
+                       param_rescaling_tol = 1e-3)
+{
+    ### Inputs: 
+    # params     vector of parameters: [phi, v_e, tau]
+    #              corresponding to length scale, process noise, pointwise variance
+    # x_lib      the n x E matrix of input states
+    # y_lib      the n x 1 vector of corresponding outputs
+    # mean_y     mean value of y (default is 0)
+    # var_y_lib  variance for y (used because v_E and tau are proportional;
+    #              default is variance of y_lib)
+    # x_pred     the m x E matrix of input states to predict from (default is NULL)
+    # gradient   whether to compute the gradient of likelihood for params, used 
+    #              for optimizing param values (default is FALSE)
+    # param_rescaling_tol   tolerance for parameter rescaling (default is 0.001)
+    
+    ### Output
+    # out        list with the following components:
+    #   neg_log_likelihood   negative log likelihood (of lib vals and params)
+    #
+    #   (if gradient == TRUE)
+    #     gradient_neg_log_likelihood   gradient of the negative log likelihood
+    #                                     w.r.t. params
+    #
+    #   (if x_pred != NULL)
+    #     mean_pred         mean value of predictions
+    #     covariance_pred   covariance of predictions
+    out <- list()
+    
+    ### Description
+    # The basic model is:
+    #     y = f(x) + noise
+    # which we approximate using Gaussian Processes:
+    #     y ~ GP(0, C)
+    # with mean = 0,
+    # and covariance is sum of a squared-exponential kernel,
+    #     K_ij = tau * exp(-phi^2 * ||x_i - x_j||^2)
+    # and normally-distributed i.i.d. process noise,
+    #     e ~ N(0, v_e)
+    # such that
+    #     C = K_ij + eI
+    # with I the identity matrix or a kronecker delta
+    
+    ### Usage
+    # (1)
+    # create an anonymous function that computes likelihood | params, x_lib, y_lib
+    #   this can be sent to a function optimizer to select best params value, or
+    #   sample from the posterior if we want to create distributions for the params
+    #   optionally, a gradient can be computed 
+    #
+    # (2)
+    # compute predictions, y_pred | params, x_lib, y_lib, x_pred
+    # note that the return value gives mean and variance
+    
+    ### Transform parameters
+    # We do a transformation so that the parameters are constrained to (0, 1)
+    v_e_min <- param_rescaling_tol
+    v_e_max <- 1 - param_rescaling_tol
+    tau_min <- param_rescaling_tol
+    tau_max <- 1 - param_rescaling_tol
+    
+    phi <- exp(params["phi"]) / max_x_lib
+    v_e <- v_e_min + (v_e_max - v_e_min) / (1 + exp(-params["v_e"]))
+    tau <- tau_min + (tau_max - tau_min) / (1 + exp(-params["tau"]))
+    d_params <- c(phi = phi,
+                  v_e = v_e * (v_e_max - v_e_min - v_e) / (v_e_max - v_e_min),
+                  tau = tau * (tau_max - tau_min - tau) / (tau_max - tau_min))
+    
+    ### Define priors
+    # Gaussian prior with E(phi) = 1
+    lambda_phi <- pi/2
+    log_likelihood_phi <- -0.5 * phi^2 / lambda_phi
+    d_log_likelihood_phi <- -phi / lambda_phi
+    
+    # Beta prior for v_e (alpha = beta = 2, E(v_e) = 1/2)
+    a_v_e <- 2
+    b_v_e <- 2
+    log_likelihood_v_e <- (a_v_e - 1) * log(v_e) + (b_v_e - 1) * log(1 - v_e)
+    d_log_likelihood_v_e <- (a_v_e - 1) / v_e - (b_v_e - 1) / (1 - v_e)
+    
+    # Beta prior for tau (alpha = beta = 2, E(tau) = 1/2)
+    a_tau <- 2
+    b_tau <- 2
+    log_likelihood_tau <- (a_tau - 1) * log(tau) + (b_tau - 1) * log(1 - tau)
+    d_log_likelihood_tau <- (a_tau - 1) / tau - (b_tau - 1) / (1 - tau)
+    
+    log_likelihood_params <- log_likelihood_phi + log_likelihood_v_e + log_likelihood_tau
+    d_log_likelihood_params <- c(d_log_likelihood_phi, 
+                                 d_log_likelihood_v_e, 
+                                 d_log_likelihood_tau)
+    
+    ### start computing stuff
+    # note that our parameter values for tau and v_e are between 0 and 1:
+    #   i.e. they are relative to the variance in y
+    #   the var_y_lib argument can be set on call to the this function (to 
+    #     facilitate model comparisons with different settings), and with the 
+    #     default to compute from y_lib directly
+    
+    tau_scaled <- tau * var_y_lib
+    v_e_scaled <- v_e * var_y_lib
+    
+    # covariance calcs
+    if (!is.null(x_pred)) # compute full distance matrix using lib and pred
+    {
+        dist_xy <- as.matrix(dist(rbind(x_lib, x_pred)))
+        lib_idx <- 1:NROW(x_lib)
+        pred_idx <- NROW(x_lib) + 1:NROW(x_pred)
+        
+        squared_dist_lib_lib <- dist_xy[lib_idx, lib_idx]^2
+        K_pred_pred <- tau_scaled * exp(-phi^2 * dist_xy[pred_idx, pred_idx]^2)
+        K_pred_lib <- tau_scaled * exp(-phi^2 * dist_xy[pred_idx, lib_idx]^2)
+    } else { # compute distance matrix using just lib
+        squared_dist_lib_lib <- (as.matrix(dist(x_lib)))^2
+    }
+    K_lib_lib <- tau_scaled * exp(-phi^2 * squared_dist_lib_lib)
+    Sigma <- K_lib_lib + v_e_scaled * diag(NROW(x_lib))
+    
+    # cholesky algorithm from Rasmussen & Williams (2006, algorithm 2.1)
+    R <- chol(Sigma)
+    alpha <- backsolve(R, forwardsolve(t(R), y_lib - mean_y))
+    L_inv <- forwardsolve(t(R), diag(NROW(x_lib)))
+    Sigma_inv <-  t(L_inv) %*% L_inv
+    
+    # likelihood
+    log_likelihood_lib <- (-0.5 * t(y_lib - mean_y) %*% alpha) - sum(log(diag(R)))
+    out$neg_log_likelihood <- -(log_likelihood_lib + log_likelihood_params)
+    # out$neg_log_likelihood_L00 <- 
+    #     0.5 * sum(log(diag(Sigma_inv))) -
+    #     0.5 * sum(alpha ^ 2 / diag(Sigma_inv))
+    
+    ### Compute gradient if requested
+    if(gradient)
+    {
+        # derivative of R
+        # R = exp(-phi^2 * sq_dist)
+        # d(R) = -2 * phi * sq_dist   *   exp(-phi^2 * sq_dist)
+        #      = log(R) * 2 / phi     *   R
+        d_R_d_p <- -2 * phi * squared_dist_lib_lib * (K_lib_lib / tau_scaled)
+        W <- tau_scaled * d_R_d_p
+        vQ <- alpha %*% t(alpha) - Sigma_inv
+        d_log_likelihood_lib <- c(phi = 0.5 * sum(vQ * W), 
+                                  v_e = 0.5 * sum(diag(vQ)), 
+                                  tau = 0.5 * sum(vQ * K_lib_lib / tau_scaled))
+        
+        # J is gradient in parameter space - need gradient in transformed parameters
+        J <- d_log_likelihood_lib + d_log_likelihood_params
+        out$gradient_neg_log_likelihood <- - J * d_params
+    }
+    
+    ### Compute mean and variance for x_pred if given
+    if (!is.null(x_pred))
+    {
+        out$mean_pred <- mean_y + K_pred_lib %*% alpha
+        if(cov_matrix)
+        {
+            out$covariance_pred <- K_pred_pred - K_pred_lib %*% Sigma_inv %*% t(K_pred_lib) + v_e_scaled
+        }
+    }
+    
+    return(out)
 }
