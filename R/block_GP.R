@@ -12,8 +12,13 @@
 #' predicted (one time step ahead), using the remaining columns as the 
 #' embedding. Rownames will be converted to numeric if possible to be used as 
 #' the time index, otherwise 1:NROW will be used instead. The default lib and 
-#' pred are for leave-one-out cross-validation over the whole time series, and 
-#' returning just the forecast statistics.
+#' pred are to perform maximum likelihood estimation of the phi, v_e, and eta 
+#' parameters over the whole time series, and return just the forecast 
+#' statistics.
+#' 
+#' If phi, v_e, and eta parameters are given, all combinations of their values 
+#' will be tried. If fit_params is also set to TRUE, these values will be the 
+#' initial values for subsequent optimization of likelihood.
 #' 
 #' [[DETAILS ABOUT IMPLEMENTATION]]
 #' 
@@ -27,27 +32,28 @@
 #' @param phi length-scale parameter. see 'Details'
 #' @param v_e noise-variance parameter. see 'Details'
 #' @param eta signal-variance parameter. see 'Details'
+#' @param fit_params specify whether to use MLE to estimate params over the lib
 #' @param columns either a vector with the columns to use (indices or names), 
 #'   or a list of such columns
 #' @param target_column the index (or name) of the column to forecast
 #' @param stats_only specify whether to output just the forecast statistics or 
 #'   the raw predictions for each run
-#' @param first_column_time indicates whether the first column of the given 
-#'   block is a time column (and therefore excluded when indexing)
-#' @param fit_params specify whether to use MLE to estimate params over the lib
-#' @param silent prevents warning messages from being printed to the R console
 #' @param save_covariance_matrix specifies whether to include the full 
 #'   covariance matrix with the output (and forces the full output as if 
 #'   stats_only were set to FALSE)
+#' @param first_column_time indicates whether the first column of the given 
+#'   block is a time column (and therefore excluded when indexing)
+#' @param silent prevents warning messages from being printed to the R console
 #' @param ... other parameters. see 'Details'
 #' @return If stats_only, then a data.frame with components for the parameters 
 #'   and forecast statistics:
 #' \tabular{ll}{
-#'   cols \tab embedding\cr
+#'   embedding \tab embedding\cr
 #'   tp \tab prediction horizon\cr
 #'   phi \tab length-scale parameter\cr
 #'   v_e \tab noise-variance parameter\cr
 #'   eta \tab signal-variance parameter\cr
+#'   fit_params \tab whether params were fitted or not\cr
 #'   num_pred \tab number of predictions\cr
 #'   rho \tab correlation coefficient between observations and predictions\cr
 #'   mae \tab mean absolute error\cr
@@ -56,15 +62,15 @@
 #'   p_val \tab p-value that rho is significantly greater than 0 using Fisher's 
 #'   z-transformation\cr
 #' }
-#' Otherwise, a list where the number of elements is equal to the number of runs 
-#'   (unique parameter combinations). Each element is a list with the following 
-#'   components:
+#' If stats_only is FALSE or save_covariance_matrix is TRUE, then there is an 
+#' additional list-column variable:
 #' \tabular{ll}{
-#'   params \tab data.frame of parameters (embedding, tp, nn)\cr
-#'   
 #'   model_output \tab data.frame with columns for the time index, observations, 
-#'     and predictions\cr
-#'   stats \tab data.frame of forecast statistics\cr
+#'     and mean-value for predictions\cr
+#' }
+#' If save_covariance_matrix is TRUE, then there is an additional list-column variable:
+#' \tabular{ll}{
+#'   covariance_matrix \tab covariance matrix for predictions\cr
 #' }
 #' @examples 
 #' data("two_species_model")
@@ -72,11 +78,11 @@
 #' block_gp(block, columns = c("x", "y"), first_column_time = TRUE)
 #' @export
 block_gp <- function(block, lib = c(1, NROW(block)), pred = lib, 
-                       tp = 1, phi = 0, v_e = 0, eta = 0, 
-                       columns = NULL, target_column = 1, 
-                       stats_only = TRUE, first_column_time = FALSE, 
-                       fit_params = TRUE, silent = FALSE, 
-                       save_covariance_matrix = FALSE, ...)
+                     tp = 1, phi = 0, v_e = 0, eta = 0, 
+                     fit_params = TRUE, 
+                     columns = NULL, target_column = 1, 
+                     stats_only = TRUE, save_covariance_matrix = FALSE, 
+                     first_column_time = FALSE, silent = FALSE, ...)
 {
     convert_to_column_indices <- function(columns)
     {
@@ -146,21 +152,18 @@ block_gp <- function(block, lib = c(1, NROW(block)), pred = lib,
         warning("Some library rows look incorrectly formatted, please check the lib argument.")
     if(!all(pred[,2] >= pred[,1]))
         warning("Some library rows look incorrectly formatted, please check the pred argument.")
-
-    length_params_gp <- max(length(phi), length(v_e), length(eta))
-    params_gp <- data.frame(phi = rep(phi, length.out = length_params_gp), 
-                            v_e = rep(v_e, length.out = length_params_gp), 
-                            eta = rep(eta, length.out = length_params_gp))
     
     params <- expand.grid(tp = tp, 
-                          param_index = seq_len(length_params_gp), 
+                          phi = phi, 
+                          v_e = v_e, 
+                          eta = eta, 
                           embedding_index = seq_along(columns))
     
     output <- do.call(rbind, lapply(1:NROW(params), function(i) {
         tp <- params$tp[i]
-        phi <- params_gp$phi[params$param_index[i]]
-        v_e <- params_gp$v_e[params$param_index[i]]
-        eta <- params_gp$eta[params$param_index[i]]
+        phi <- params$phi[i]
+        v_e <- params$v_e[i]
+        eta <- params$eta[i]
         embedding <- columns[[params$embedding_index[i]]]
         
         # correct lib and pred for tp
@@ -191,6 +194,26 @@ block_gp <- function(block, lib = c(1, NROW(block)), pred = lib,
         x_pred <- block[pred_idx, embedding, drop = FALSE]
         y_pred <- block[pred_idx + tp, target_column]
         
+        # filter x_lib and y_lib to finite values
+        valid_lib_idx <- apply(is.finite(x_lib), 1, all) & is.finite(y_lib)
+        if(sum(valid_lib_idx) < length(valid_lib_idx))
+        {
+            warning("Trimmed ", length(valid_lib_idx), " lib points down to ", sum(valid_lib_idx), " valid ones.")
+            x_lib <- x_lib[valid_lib_idx, , drop = FALSE]
+            y_lib <- y_lib[valid_lib_idx]
+        }
+        if(NROW(x_lib) < 2)
+            stop("Not enough data points in lib: n = ", NROW(x_lib))
+        
+        # filter x_pred and y_pred to finite values
+        valid_pred_idx <- apply(is.finite(x_pred), 1, all)
+        if(sum(valid_pred_idx) < length(valid_pred_idx))
+        {
+            warning("Trimmed ", length(valid_pred_idx), " lib points down to ", sum(valid_pred_idx), " valid ones.")
+            x_pred <- x_pred[valid_pred_idx, , drop = FALSE]
+            y_pred <- y_pred[valid_pred_idx]
+        }
+
         # fit params if option is set, otherwise use as given
         best_params <- c(phi = phi, v_e = v_e, eta = eta)
         if(fit_params)
@@ -218,7 +241,7 @@ block_gp <- function(block, lib = c(1, NROW(block)), pred = lib,
                              stats)
         
         # add in full output if requested
-        if (!stats_only)
+        if (!stats_only || save_covariance_matrix)
         {
             out_df$model_output <- list(data.frame(time = time[pred_idx], 
                                                    obs = y_pred, 
@@ -231,7 +254,7 @@ block_gp <- function(block, lib = c(1, NROW(block)), pred = lib,
         row.names(out_df) <- NULL
         return(out_df)
     }))
-
+    
     return(output)
 }
 
