@@ -66,7 +66,7 @@ tde_gp <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
                    E = 1:10, tau = 1, tp = 1, 
                    phi = 0, v_e = 0, eta = 0, fit_params = TRUE, 
                    stats_only = TRUE, save_covariance_matrix = FALSE, 
-                   first_column_time = FALSE, silent = FALSE, ...)
+                   silent = FALSE, ...)
 {
     # restructure lib and pred if necessary
     if(is.vector(lib))

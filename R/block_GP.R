@@ -139,7 +139,7 @@ block_gp <- function(block, lib = c(1, NROW(block)), pred = lib,
     } else if(is.matrix(columns)) {
         columns <- lapply(1:NROW(columns), function(i) convert_to_column_indices(columns[i,]))
     }
-    
+
     # setup target    
     target_column <- convert_to_column_indices(target_column)
     
@@ -189,9 +189,9 @@ block_gp <- function(block, lib = c(1, NROW(block)), pred = lib,
         pred_idx <- sort(unique(do.call(c, lapply(1:NROW(pred), function(i) {seq(from = pred[i, 1], to = pred[i, 2])}))))
         
         # define inputs to fitting of GP (data, and params)
-        x_lib <- block[lib_idx, embedding, drop = FALSE]
+        x_lib <- as.matrix(block[lib_idx, embedding, drop = FALSE])
         y_lib <- block[lib_idx + tp, target_column]
-        x_pred <- block[pred_idx, embedding, drop = FALSE]
+        x_pred <- as.matrix(block[pred_idx, embedding, drop = FALSE])
         y_pred <- block[pred_idx + tp, target_column]
         
         # filter x_lib and y_lib to finite values
