@@ -255,12 +255,35 @@ void ForecastMachine::set_indices_from_range(std::vector<bool>& indices, const s
             start_shift = 0;
         }
         start_of_range = range_iter.first + start_shift;
+        if(start_of_range >= num_vectors) // check start of range
+        {
+            std::ostringstream temp;
+            temp << "start_of_range = ";
+            temp << start_of_range + 1;
+            temp << ", but num_vectors = ";
+            temp << num_vectors;
+            std::string temp_str = temp.str();
+            LOG_WARNING(temp_str.c_str());
+            LOG_WARNING("start of time_range was greater than the number of vectors; skipping");
+            continue;
+        }
+
         end_of_range = range_iter.second + end_shift;
+        if(end_shift < 0 && range_iter.second < abs(end_shift))
+        {
+            std::ostringstream temp;
+            temp << "end_of_range = ";
+            temp << int(range_iter.second) + end_shift + 1;
+            temp << ", which is not positive; skipping";
+            std::string temp_str = temp.str();
+            LOG_WARNING(temp_str.c_str());
+            continue;
+        }
         if(end_of_range >= num_vectors) // check end of range
         {
             std::ostringstream temp;
             temp << "end_of_range = ";
-            temp << end_of_range;
+            temp << end_of_range + 1;
             temp << ", but num_vectors = ";
             temp << num_vectors;
             std::string temp_str = temp.str();
