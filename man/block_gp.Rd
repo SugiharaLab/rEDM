@@ -81,7 +81,7 @@ If save_covariance_matrix is TRUE, then there is an additional list-column varia
 \code{block_gp} uses multiple time series given as input to generate an 
 attractor reconstruction, and then applies Gaussian process regression to 
 approximate the dynamics and make forecasts. This method is the 
-generalized version of \code{tde_gp}, which constructs the block from time 
+generalized version of \code{tde_gp}, which constructs the block from 
 lags of a time series to pass into this function.
 }
 \details{
@@ -99,7 +99,52 @@ If phi, v_e, and eta parameters are given, all combinations of their values
 will be tried. If fit_params is also set to TRUE, these values will be the 
 initial values for subsequent optimization of likelihood.
 
-[[DETAILS ABOUT IMPLEMENTATION]]
+The basic model is:
+  \deqn{y = f(x) + noise}
+in which the function f(x) is modeled using a Gaussian process prior:
+  \deqn{f ~ GP(0, C)}
+with mean = 0,
+and covariance function, C, which is given by the squared-exponential kernel:
+    \deqn{C_{ij} = eta * exp(-phi^2 * ||x_i - x_j||^2)}
+
+y is a realization from process f with normally-distributed i.i.d. process 
+noise,
+  \deqn{noise ~ N(0, v_e)}
+such that the covariance of observations y_i and y_j is
+\deqn{K_{ij} = C_{ij} + v_e * \delta_{ij}}
+where \eqn{\delta_{ij}} is the kronecker delta (i.e. it is 1 if \eqn{i = j} 
+and 0 otherwise)
+
+From the model definition, the variance in y, after marginalizing over f, is 
+given by eta + v_e. Thus to simplify specification of priors for the 
+hyperparameters eta and v_e, the outputs y are normalized to zero mean and 
+unit variance prior to fitting. This allows us to set (0, 1) bounds on 
+eta and v_e which facilitates parameter estimation.  We set Beta(2, 2) priors 
+for both eta and v_e to partition prior uncertainty equally across 
+structural and process uncertainty.
+
+For a scalar input, the length-scale parameter phi controls the expected 
+number of zero crossings on the unit interval as 
+  \deqn{E(crossings) = \frac{\sqrt(2)}{\pi} \phi \approx 0.45 \phi}
+
+Thus to facilitate interpretation and prior specification, the distances in C 
+are scaled by the max distance so that a model with \eqn{\phi = 2} would have 
+roughly one zero crossing over the range of the data.  We assign phi a 
+half-Normal prior with variance \eqn{\pi / 2} so that the prior mean phi is 1 
+which tends to avoid overfitting. 
+To fit the GP we estimate eta, v_e, and phi by maximizing the posterior after 
+marginalizing over f(x). This is given by the multivariate normal likelihood 
+  \deqn{logL = -1/2 \log{|K_d|}^{-1/2} y_d^T [K_d]^{-1} y_d}
+where \eqn{K_d} is the matrix obtained by evaluating the covariance function at all 
+pairs of inputs and \eqn{y_d} is the column vector of outputs. 
+Predictions for new values of x are obtained by setting eta, v_e, and phi to 
+the Maximum a Posteriori (MAP) estimates and using the GP conditional on the 
+observed data.  Specifically, given \eqn{x_d} and \eqn{y_d}, 
+the mean and variance for y evaluated at a new value of x are
+  \deqn{E(y) = C(x, x_d) [K_d]^(-1) y_d}
+  \deqn{V(y) = eta + v_e - C(x, x_d)[K_d]^{-1} C(x_d, x)}
+where the vector \eqn{C(x, x_d)} is obtained by evaluating C at x and each of the observed inputs 
+while holding eta, phi, and v_e at the MAP estimates.
 }
 \examples{
 data("two_species_model")

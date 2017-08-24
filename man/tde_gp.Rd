@@ -6,8 +6,7 @@
 \usage{
 tde_gp(time_series, lib = c(1, NROW(time_series)), pred = lib, E = 1:10,
   tau = 1, tp = 1, phi = 0, v_e = 0, eta = 0, fit_params = TRUE,
-  stats_only = TRUE, save_covariance_matrix = FALSE,
-  first_column_time = FALSE, silent = FALSE, ...)
+  stats_only = TRUE, save_covariance_matrix = FALSE, silent = FALSE, ...)
 }
 \arguments{
 \item{time_series}{either a vector to be used as the time series, or a 
