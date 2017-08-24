@@ -3,7 +3,7 @@
 #' \code{block_gp} uses multiple time series given as input to generate an 
 #' attractor reconstruction, and then applies Gaussian process regression to 
 #' approximate the dynamics and make forecasts. This method is the 
-#' generalized version of \code{tde_gp}, which constructs the block from time 
+#' generalized version of \code{tde_gp}, which constructs the block from 
 #' lags of a time series to pass into this function.
 #' 
 #' The default parameters are set so that passing a vector as the only 
@@ -21,7 +21,51 @@
 #' initial values for subsequent optimization of likelihood.
 #' 
 #' [[DETAILS ABOUT IMPLEMENTATION]]
-#' 
+#'  ### Description
+#' The basic model is:
+#'     y = f(x) + noise
+#' in which the function f(x) is modeled using a Gaussian process prior:
+#'     f ~ GP(0, C)
+#' with mean = 0,
+#' and covariance function, C, which is given by the squared-exponential kernel:
+#'     C_ij = eta * exp(-phi^2 * ||x_i - x_j||^2)
+#' y is a realization from process f with normally-distributed i.i.d. process 
+#' noise,
+#'     noise ~ N(0, v_e)
+#' such that the covariance of observations y_i and y_j is
+#'     K_ij = C_ij + v_e * $\delta_ij$
+#' where $\delta_ij$ is the kronecker delta (i.e. it is 1 if i=j and 0 otherwise)
+#'
+#' From the model definition, the variance in y, after marginalizing over f, is 
+#' given by eta + v_e. Thus to simplify specification of priors for the 
+#' hyperparameters eta and v_e, the outputs y are normalized to zero mean and 
+#' unit variance prior to fitting. This allows us to set (0, 1) bounds on 
+#' eta and v_e which facilitates parameter estimation.  We set Beta(2, 2) priors 
+#' for both eta and v_e to partition prior uncertainty equally across 
+#' structural and process uncertainty.
+#'
+#' For a scalar input, the length-scale parameter phi controls the expected 
+#' number of zero crossings on the unit interval as 
+#' $E(crossings) =   \frac{\sqrt(2)}{??} \phi ~0.45 \phi$ 
+#' Thus to facilitate interpretation and prior specification, the distances in C 
+#' are scaled by the max distance so that a model with $\phi = 2$ would have 
+#' roughly one zero crossing over the range of the data.  We assign phi a 
+#' half-Normal prior with variance $\pi$ / 2 so that the prior mean phi is 1 
+#' which tends to avoid overfitting. 
+
+#' To fit the GP we estimate eta, v_e, and phi by maximizing the posterior after 
+#' marginalizing over f(x). This is given by the multivariate normal likelihood 
+#' $$ logL = -1/2 log|K_d|-1/2 y_d^T [K_d]^{-1} y_d$$
+#' where $K_d$ is the matrix obtained by evaluating the covariance function at all 
+#' pairs of inputs and $y_d$ is the column vector of outputs. 
+#' Predictions for new values of x are obtained by setting eta, v_e, and phi to 
+#' the Maximum A Posteriori (MAP) estimates and using the GP conditional on the 
+#' observed data.  Specifically, given x_d and y_d, 
+#' the mean and variance for y evaluated at a new value of x are
+#'   E(y) = C(x, x_d) [K_d]^(-1) y_d
+#'   V(y) = eta+v_e-C(x, x_d)[K_d]^(-1) C(x_d,x)
+#' where the vector C(x, x_d) is obtained by evaluating C at x and each of the observed inputs 
+#' while holding eta, phi, and v_e at the MAP estimates.
 #' @param block either a vector to be used as the time series, or a 
 #'   data.frame or matrix where each column is a time series
 #' @param lib a 2-column matrix (or 2-element vector) where each row specifes the 
@@ -139,7 +183,7 @@ block_gp <- function(block, lib = c(1, NROW(block)), pred = lib,
     } else if(is.matrix(columns)) {
         columns <- lapply(1:NROW(columns), function(i) convert_to_column_indices(columns[i,]))
     }
-
+    
     # setup target    
     target_column <- convert_to_column_indices(target_column)
     
@@ -382,14 +426,14 @@ compute_gp <- function(x_lib, y_lib,
     # The basic model is:
     #     y = f(x) + noise
     # which we approximate using Gaussian Processes:
-    #     y ~ GP(0, C)
+    #     f ~ GP(0, C)
     # with mean = 0,
-    # and covariance is sum of a squared-exponential kernel,
-    #     K_ij = eta * exp(-phi^2 * ||x_i - x_j||^2)
-    # and normally-distributed i.i.d. process noise,
+    # and covariance C which is given by the squared-exponential kernel,
+    #     C_ij = eta * exp(-phi^2 * ||x_i - x_j||^2)
+    # y is a realization from process f with normally-distributed i.i.d. process noise,
     #     e ~ N(0, v_e)
-    # such that
-    #     C = K_ij + eI
+    # such that the covariance of observations y_i and y_j is
+    #     K_ij =C_ij + v_e I_ij
     # with I the identity matrix or a kronecker delta
     
     ### Usage
@@ -472,7 +516,7 @@ compute_gp <- function(x_lib, y_lib,
     L_inv <- forwardsolve(t(R), diag(NROW(x_lib)))
     Sigma_inv <-  t(L_inv) %*% L_inv
     
-    # likelihood
+    # marginal likelihood
     log_likelihood_lib <- (-0.5 * t(y_lib - mean_y) %*% alpha) - sum(log(diag(R)))
     out$neg_log_likelihood <- -(log_likelihood_lib + log_likelihood_params)
     # out$neg_log_likelihood_L00 <- 
