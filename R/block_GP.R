@@ -26,13 +26,13 @@
 #'   \deqn{f ~ GP(0, C)}
 #' with mean = 0,
 #' and covariance function, C, which is given by the squared-exponential kernel:
-#'     \deqn{C_{ij} = eta * exp(-phi^2 * ||x_i - x_j||^2)}
+#'   \deqn{C_{ij} = eta * exp(-phi^2 * ||x_i - x_j||^2)}
 #' 
 #' y is a realization from process f with normally-distributed i.i.d. process 
 #' noise,
 #'   \deqn{noise ~ N(0, v_e)}
 #' such that the covariance of observations y_i and y_j is
-#' \deqn{K_{ij} = C_{ij} + v_e * \delta_{ij}}
+#'   \deqn{K_{ij} = C_{ij} + v_e * \delta_{ij}}
 #' where \eqn{\delta_{ij}} is the kronecker delta (i.e. it is 1 if \eqn{i = j} 
 #' and 0 otherwise)
 #'
