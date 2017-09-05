@@ -6,7 +6,8 @@
 \usage{
 block_lnlp(block, lib = c(1, NROW(block)), pred = lib,
   norm_type = c("L2 norm", "L1 norm", "P norm"), P = 0.5,
-  method = c("simplex", "s-map"), tp = 1, num_neighbors = "e+1",
+  method = c("simplex", "s-map"), tp = 1,
+  num_neighbors = switch(match.arg(method), simplex = "e+1", `s-map` = 0),
   columns = NULL, target_column = 1, stats_only = TRUE,
   first_column_time = FALSE, exclusion_radius = NULL, epsilon = NULL,
   theta = NULL, silent = FALSE, save_smap_coefficients = FALSE,
@@ -30,7 +31,8 @@ series to forecast.}
 
 \item{tp}{the prediction horizon (how far ahead to forecast)}
 
-\item{num_neighbors}{the number of nearest neighbors to use (any of "e+1", 
+\item{num_neighbors}{the number of nearest neighbors to use. Note that the 
+default value will change depending on the method selected. (any of "e+1", 
 "E+1", "e + 1", "E + 1" will peg this parameter to E+1 for each run, any
 value < 1 will use all possible neighbors.)}
 
