@@ -36,7 +36,8 @@
 #' @param P the exponent for the P norm
 #' @param method the prediction method to use. see 'Details'
 #' @param tp the prediction horizon (how far ahead to forecast)
-#' @param num_neighbors the number of nearest neighbors to use (any of "e+1", 
+#' @param num_neighbors the number of nearest neighbors to use. Note that the 
+#'   default value will change depending on the method selected. (any of "e+1", 
 #'   "E+1", "e + 1", "E + 1" will peg this parameter to E+1 for each run, any
 #'   value < 1 will use all possible neighbors.)
 #' @param columns either a vector with the columns to use (indices or names), 
@@ -97,7 +98,9 @@
 block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib, 
                        norm_type = c("L2 norm", "L1 norm", "P norm"), P = 0.5, 
                        method = c("simplex", "s-map"), 
-                       tp = 1, num_neighbors = "e+1", columns = NULL, 
+                       tp = 1, 
+                       num_neighbors = switch(match.arg(method), "simplex" = "e+1", "s-map" = 0), 
+                       columns = NULL, 
                        target_column = 1, stats_only = TRUE, first_column_time = FALSE, 
                        exclusion_radius = NULL, epsilon = NULL, theta = NULL, 
                        silent = FALSE, save_smap_coefficients = FALSE, short_output = FALSE)

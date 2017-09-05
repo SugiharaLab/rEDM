@@ -612,7 +612,8 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
         // save prediction
         predicted[curr_pred] = pred;
         
-        // compute variance of prediction
+        // compute variance of prediction through residuals of fitted s-map model
+        /*
         VectorXd w_resid = B - A * x;
         double total_w = 0;
         for(size_t i = 0; i < effective_nn; ++i)
@@ -620,6 +621,16 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
             total_w += weights(i) * weights(i);
         }
         predicted_var[curr_pred] = w_resid.dot(w_resid) / total_w;
+        */
+        // compute variance of prediction (using same approach as simplex)
+        predicted_var[curr_pred] = 0;
+        double total_weight = 0;
+        for(size_t k = 0; k < effective_nn; ++k)
+        {
+            total_weight += weights(k);
+            predicted_var[curr_pred] += weights[k] * pow(targets[nearest_neighbors[k]] - predicted[curr_pred], 2);
+        }
+        predicted_var[curr_pred] = predicted_var[curr_pred] / total_weight;
     }
     return;
 }
