@@ -420,7 +420,7 @@ void ForecastMachine::smap_forecast()
     */
     if(SAVE_SMAP_COEFFICIENTS)
     {
-        smap_coefficients.assign(num_vectors, vec(data_vectors[0].size()+1, qnan));
+        smap_coefficients.assign(data_vectors[0].size()+1, vec(num_vectors, qnan));
     }
     smap_prediction(0, which_pred.size());
     const_prediction(0, which_pred.size());
@@ -607,7 +607,7 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
         if(SAVE_SMAP_COEFFICIENTS)
         {
             for(size_t j = 0; j <= E; ++j)
-                smap_coefficients[curr_pred][j] = x(j);
+                smap_coefficients[j][curr_pred] = x(j);
         }
         // save prediction
         predicted[curr_pred] = pred;

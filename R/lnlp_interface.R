@@ -276,35 +276,23 @@ s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
         params$nn <- params$E+1
     
     # apply model prediction function to params
-    if (stats_only)
-    {
-        stats <- lapply(1:NROW(params), function(i) {
-            model$set_params(params$E[i], params$tau[i], params$tp[i], params$nn[i])
-            model$set_theta(params$theta[i])
-            model$run()
-            return(model$get_stats())
-        })
-        return(cbind(params, do.call(rbind, stats), row.names = NULL))
-    }
-    
-    # else
     output <- lapply(1:NROW(params), function(i) {
         model$set_params(params$E[i], params$tau[i], params$tp[i], params$nn[i])
         model$set_theta(params$theta[i])
         model$run()
-        if(save_smap_coefficients)
+        if(stats_only)
         {
-            return(list(params = params[i,], 
-                        model_output = model$get_output(), 
-                        smap_coefficients = do.call(rbind, model$get_smap_coefficients()), 
-                        stats = model$get_stats()))
+            df <- model$get_stats()
+        } else {
+            df <- model$get_stats()
+            df$model_output <- I(list(model$get_output()))
+            if(save_smap_coefficients)
+            {
+                df$smap_coefficients <- I(list(model$get_smap_coefficients()))
+            }
         }
-        else
-        {
-            return(list(params = params[i,], 
-                        model_output = model$get_output(), 
-                        stats = model$get_stats()))
-        }
+        return(df)
     })
-    return(output)
+    
+    return(cbind(params, do.call(rbind, output), row.names = NULL))
 }
