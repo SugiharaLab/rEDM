@@ -172,11 +172,23 @@ DataFrame BlockLNLP::get_output()
                               Named("pred_var") = predicted_var);
 }
 
-List BlockLNLP::get_smap_coefficients()
+DataFrame BlockLNLP::get_smap_coefficients()
 {     
-    return(wrap(smap_coefficients));
+    size_t embed_dim = smap_coefficients.size();
+    List tmp_lst(embed_dim);
+    CharacterVector df_names(embed_dim);
+    for(size_t j = 0; j < embed_dim; ++j)
+    {
+        tmp_lst[j] = smap_coefficients[j];
+        df_names[j] = "c_" + std::to_string(j+1);
+    }
+    df_names[embed_dim - 1] = "c_0";
+    DataFrame df(tmp_lst);
+    df.attr("names") = df_names;
+    return(df);
 }
 
+/*
 DataFrame BlockLNLP::get_short_output()
 {
     vec short_time(which_pred.size(), qnan);
@@ -207,6 +219,7 @@ List BlockLNLP::get_short_smap_coefficients()
     }
     return(wrap(short_smap_coefficients));
 }
+ */
 
 DataFrame BlockLNLP::get_stats()
 {
@@ -325,8 +338,6 @@ RCPP_MODULE(block_lnlp_module)
     .method("run", &BlockLNLP::run)
     .method("get_output", &BlockLNLP::get_output)
     .method("get_smap_coefficients", &BlockLNLP::get_smap_coefficients)
-    .method("get_short_output", &BlockLNLP::get_short_output)
-    .method("get_short_smap_coefficients", &BlockLNLP::get_short_smap_coefficients)
     .method("get_stats", &BlockLNLP::get_stats)
     ;
 }

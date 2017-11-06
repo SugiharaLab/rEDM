@@ -220,44 +220,24 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
         if (any(e_plus_1_index, na.rm = TRUE))
             params$nn <- 1 + sapply(columns, length)
         # apply model prediction function to params
-        if (stats_only)
-        {
-            stats <- lapply(1:NROW(params), function(i) {
-                model$set_embedding(columns[[params$embedding[i]]])
-                model$set_params(params$tp[i], params$nn[i])
-                model$set_theta(params$theta[i])
-                model$run()
-                return(model$get_stats())
-            })
-            params$embedding <- sapply(params$embedding, function(i) {
-                paste(columns[[i]], sep = "", collapse = ", ")})
-            output <- cbind(params, do.call(rbind, stats), row.names = NULL)
-        } else {
-            output <- lapply(1:NROW(params), function(i) {
-                model$set_embedding(columns[[params$embedding[i]]])
-                model$set_params(params$tp[i], params$nn[i])
-                model$set_theta(params$theta[i])
-                model$run()
-                
-                if(short_output)
+        output <- lapply(1:NROW(params), function(i) {
+            model$set_embedding(columns[[params$embedding[i]]])
+            model$set_params(params$tp[i], params$nn[i])
+            model$set_theta(params$theta[i])
+            model$run()
+            if(stats_only)
+            {
+                df <- model$get_stats()
+            } else {
+                df <- model$get_stats()
+                df$model_output <- I(list(model$get_output()))
+                if(save_smap_coefficients)
                 {
-                    to_return <- list(params = params[i,],
-                                      embedding = paste(columns[[params$embedding[i]]], sep = "", collapse = ", "), 
-                                      model_output = model$get_short_output(), 
-                                      stats = model$get_stats())
-                    if(save_smap_coefficients)
-                        to_return$smap_coefficients <- do.call(rbind, model$get_short_smap_coefficients())
-                } else {
-                    to_return <- list(params = params[i,],
-                                      embedding = paste(columns[[params$embedding[i]]], sep = "", collapse = ", "), 
-                                      model_output = model$get_output(), 
-                                      stats = model$get_stats())
-                    if(save_smap_coefficients)
-                        to_return$smap_coefficients <- do.call(rbind, model$get_smap_coefficients())
+                    df$smap_coefficients <- I(list(model$get_smap_coefficients()))
                 }
-                return(to_return)
-            })
-        }
+            }
+            return(df)
+        })
     } else {
         # simplex
         params <- expand.grid(tp, num_neighbors, embedding_index)
@@ -267,37 +247,23 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
         if (any(e_plus_1_index, na.rm = TRUE))
             params$nn <- 1 + sapply(columns, length)
         # apply model prediction function to params
-        if (stats_only)
-        {
-            stats <- lapply(1:NROW(params), function(i) {
-                model$set_embedding(columns[[params$embedding[i]]])
-                model$set_params(params$tp[i], params$nn[i])
-                model$run()
-                return(model$get_stats())
-            })
-            params$embedding <- sapply(params$embedding, function(i) {
-                paste(columns[[i]], sep = "", collapse = ", ")})
-            output <- cbind(params, do.call(rbind, stats), row.names = NULL)
-        } else {
-            output <- lapply(1:NROW(params), function(i) {
-                model$set_embedding(columns[[params$embedding[i]]])
-                model$set_params(params$tp[i], params$nn[i])
-                model$run()
-                
-                if(short_output)
-                {
-                    return(list(params = params[i,], 
-                                embedding = paste(columns[[params$embedding[i]]], sep = "", collapse = ", "), 
-                                model_output = model$get_short_output(), 
-                                stats = model$get_stats()))                  
-                } else {
-                    return(list(params = params[i,], 
-                                embedding = paste(columns[[params$embedding[i]]], sep = "", collapse = ", "), 
-                                model_output = model$get_output(), 
-                                stats = model$get_stats()))
-                }
-            })
-        }
+        output <- lapply(1:NROW(params), function(i) {
+            model$set_embedding(columns[[params$embedding[i]]])
+            model$set_params(params$tp[i], params$nn[i])
+            model$run()
+            if(stats_only)
+            {
+                df <- model$get_stats()
+            } else {
+                df <- model$get_stats()
+                df$model_output <- I(list(model$get_output()))
+            }
+            return(df)
+        })
     }
-    return(output)
+    
+    # create embedding column in params
+    params$embedding <- sapply(params$embedding, function(i) {
+        paste(columns[[i]], sep = "", collapse = ", ")})
+    return(cbind(params, do.call(rbind, output), row.names = NULL))
 }
