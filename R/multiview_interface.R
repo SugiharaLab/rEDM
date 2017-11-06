@@ -56,8 +56,6 @@
 #'   neighbors if their *time index* is within exclusion_radius (NULL turns 
 #'   this option off)
 #' @param silent prevents warning messages from being printed to the R console
-#' @param short_output specifies whether to return a truncated output data.frame
-#'   whose rows only include the predictions made and not the whole input block
 #' @return If stats_only, then a data.frame with components for the parameters 
 #'   and forecast statistics:
 #' \tabular{ll}{
@@ -95,13 +93,12 @@
 #' multiview(block, k = c(1, 3, "sqrt"))
 #' @export
 multiview <- function(block, lib = c(1, floor(NROW(block)/2)), 
-                      pred = c(floor(NROW(block)/2), NROW(block)), 
+                      pred = c(floor(NROW(block)/2) + 1, NROW(block)), 
                       norm_type = c("L2 norm", "L1 norm", "P norm"), P = 0.5, 
                       E = 3, tau = 1, tp = 1, max_lag = 3, num_neighbors = "e+1", 
                       k = "sqrt", na.rm = FALSE, target_column = 1, 
                       stats_only = TRUE, first_column_time = FALSE, 
-                      exclusion_radius = NULL, silent = FALSE, 
-                      short_output = FALSE)
+                      exclusion_radius = NULL, silent = FALSE)
 {
     # setup params
     if(is.vector(lib))
@@ -154,11 +151,10 @@ multiview <- function(block, lib = c(1, floor(NROW(block)/2)),
                                      tp = tp, num_neighbors = 1, 
                                      columns = best_embeddings, target_column = target_column, 
                                      stats_only = FALSE, first_column_time = TRUE, 
-                                     exclusion_radius = exclusion_radius, silent = silent, 
-                                     short_output = short_output)
-    out_sample_output <- out_sample_results[[1]]$model_output
-    out_sample_forecasts <- do.call(cbind, lapply(out_sample_results, function(block_lnlp_output) {
-        block_lnlp_output$model_output$pred}))
+                                     exclusion_radius = exclusion_radius, silent = silent)
+    out_sample_output <- out_sample_results$model_output[[1]]
+    out_sample_forecasts <- do.call(cbind, lapply(out_sample_results$model_output, function(df) {
+        df$pred}))
     
     # compute mve forecasts
     mve_forecasts <- lapply(k_list, function(k) {

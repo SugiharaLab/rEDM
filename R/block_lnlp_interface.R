@@ -59,8 +59,6 @@
 #' @param save_smap_coefficients specifies whether to include the s_map 
 #'   coefficients with the output (and forces the full output as if stats_only 
 #'   were set to FALSE)
-#' @param short_output specifies whether to return a truncated output data.frame
-#'   whose rows only include the predictions made and not the whole input block
 #' @return If stats_only, then a data.frame with components for the parameters 
 #'   and forecast statistics:
 #' \tabular{ll}{
@@ -103,7 +101,7 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
                        columns = NULL, 
                        target_column = 1, stats_only = TRUE, first_column_time = FALSE, 
                        exclusion_radius = NULL, epsilon = NULL, theta = NULL, 
-                       silent = FALSE, save_smap_coefficients = FALSE, short_output = FALSE)
+                       silent = FALSE, save_smap_coefficients = FALSE)
 {
     convert_to_column_indices <- function(columns)
     {
