@@ -254,7 +254,7 @@ block_gp <- function(block, lib = c(1, NROW(block)), pred = lib,
         valid_pred_idx <- apply(is.finite(x_pred), 1, all)
         if(sum(valid_pred_idx) < length(valid_pred_idx))
         {
-            warning("Trimmed ", length(valid_pred_idx), " lib points down to ", sum(valid_pred_idx), " valid ones.")
+            warning("Trimmed ", length(valid_pred_idx), " pred points down to ", sum(valid_pred_idx), " valid ones.")
             x_pred <- x_pred[valid_pred_idx, , drop = FALSE]
             y_pred <- y_pred[valid_pred_idx]
         }
@@ -288,7 +288,7 @@ block_gp <- function(block, lib = c(1, NROW(block)), pred = lib,
         # add in full output if requested
         if (!stats_only || save_covariance_matrix)
         {
-            out_df$model_output <- list(data.frame(time = time[pred_idx], 
+            out_df$model_output <- list(data.frame(time = time[valid_pred_idx], 
                                                    obs = y_pred, 
                                                    pred = out_gp$mean_pred))
             if(save_covariance_matrix)
