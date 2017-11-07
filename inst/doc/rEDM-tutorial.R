@@ -1,3 +1,6 @@
+## ----setup, include=FALSE------------------------------------------------
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+
 ## ----CRAN installation instructions, eval = FALSE------------------------
 #  install.packages("rEDM")
 
@@ -64,8 +67,8 @@ block_lnlp_output <- block_lnlp(block_3sp, lib = lib, pred = pred,
 str(block_lnlp_output)
 
 ## ----observed vs predicted for block_lnlp, tidy = TRUE, fig.width = 4, fig.height = 4----
-observed <- block_lnlp_output[[1]]$model_output$obs
-predicted <- block_lnlp_output[[1]]$model_output$pred
+observed <- block_lnlp_output$model_output[[1]]$obs
+predicted <- block_lnlp_output$model_output[[1]]$pred
 
 par(mar = c(4, 4, 1, 1), mgp = c(2.5, 1, 0), pty = "s")
 plot_range <- range(c(observed, predicted), na.rm = TRUE)
@@ -148,7 +151,7 @@ out<-lapply(names(simplex_out), function(var) {
 best_E <- sapply(simplex_out, function(df) {df$E[which.max(df$rho)]})
 best_E
 
-## ----smap on e120, cache = TRUE, warning = FALSE, tidy = TRUE, fig.width = 6----
+## ----smap on e120, cache = TRUE, warning = FALSE, tidy = TRUE, fig.width = 6, results = "hide"----
 smap_out <- lapply(names(composite_ts)[2:4], function(var) {
     s_map(composite_ts[, c("Year", var)], E = best_E[var], 
             lib = composite_lib, pred = composite_pred)
@@ -205,11 +208,11 @@ ABNO_output <- block_lnlp(block_data, lib = composite_lib, pred = composite_pred
 
 
 ## ----block_lnlp on e120, tidy = TRUE, warning = FALSE, fig.width = 4, fig.height = 4----
-observed_AB <- AB_output[[1]]$model_output$obs
-predicted_AB <- AB_output[[1]]$model_output$pred
+observed_AB <- AB_output$model_output[[1]]$obs
+predicted_AB <- AB_output$model_output[[1]]$pred
 
-observed_ABNO <- ABNO_output[[1]]$model_output$obs
-predicted_ABNO <- ABNO_output[[1]]$model_output$pred
+observed_ABNO <- ABNO_output$model_output[[1]]$obs
+predicted_ABNO <- ABNO_output$model_output[[1]]$pred
 
 par(mar = c(4, 4, 1, 1), mgp = c(2.5, 1, 0), pty = "s") # set up margins for plotting
 plot_range <- range(c(observed_AB, predicted_AB), na.rm = TRUE)
@@ -221,8 +224,8 @@ abline(lm(predicted_AB ~ observed_AB), col = "black", lty = 3, lwd = 2)
 points(observed_ABNO, predicted_ABNO, pch = 2, col = "red")
 abline(lm(predicted_ABNO ~ observed_ABNO), col = "red", lty = 3, lwd = 2)
 
-legend("topleft", legend = c(paste("rho =", round(AB_output[[1]]$stats$rho, 2)), 
-                             paste("rho =", round(ABNO_output[[1]]$stats$rho, 2))), 
+legend("topleft", legend = c(paste("rho =", round(AB_output$rho, 2)), 
+                             paste("rho =", round(ABNO_output$rho, 2))), 
        lty = 3, lwd = 2, col = c("black", "red"), bty = "n")
 
 ## ----ccm on e120, cache = TRUE, warning = FALSE, tidy = TRUE, fig.width = 5, fig.height = 3.5----

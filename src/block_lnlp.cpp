@@ -166,31 +166,6 @@ void BlockLNLP::run()
 
 DataFrame BlockLNLP::get_output()
 {
-    return DataFrame::create( Named("time") = target_time, 
-                              Named("obs") = targets, 
-                              Named("pred") = predicted, 
-                              Named("pred_var") = predicted_var);
-}
-
-DataFrame BlockLNLP::get_smap_coefficients()
-{     
-    size_t embed_dim = smap_coefficients.size();
-    List tmp_lst(embed_dim);
-    CharacterVector df_names(embed_dim);
-    for(size_t j = 0; j < embed_dim; ++j)
-    {
-        tmp_lst[j] = smap_coefficients[j];
-        df_names[j] = "c_" + std::to_string(j+1);
-    }
-    df_names[embed_dim - 1] = "c_0";
-    DataFrame df(tmp_lst);
-    df.attr("names") = df_names;
-    return(df);
-}
-
-/*
-DataFrame BlockLNLP::get_short_output()
-{
     vec short_time(which_pred.size(), qnan);
     vec short_obs(which_pred.size(), qnan);
     vec short_pred(which_pred.size(), qnan);
@@ -210,16 +185,27 @@ DataFrame BlockLNLP::get_short_output()
                               Named("pred_var") = short_pred_var);
 }
 
-List BlockLNLP::get_short_smap_coefficients()
+DataFrame BlockLNLP::get_smap_coefficients()
 {
-    std::vector<vec> short_smap_coefficients;
-    for(auto curr_pred: which_pred)
+    size_t embed_dim = smap_coefficients.size();
+    List tmp_lst(embed_dim);
+    CharacterVector df_names(embed_dim);
+    vec temp_coeff;
+    for(size_t j = 0; j < embed_dim; ++j)
     {
-        short_smap_coefficients.push_back(smap_coefficients[curr_pred]);
+        temp_coeff.assign(which_pred.size(), qnan);
+        for(size_t i = 0; i < which_pred.size(); ++i)
+        {
+            temp_coeff[i] = smap_coefficients[j][which_pred[i]];
+        }
+        tmp_lst[j] = temp_coeff;
+        df_names[j] = "c_" + std::to_string(j+1);
     }
-    return(wrap(short_smap_coefficients));
+    df_names[embed_dim - 1] = "c_0";
+    DataFrame df(tmp_lst);
+    df.attr("names") = df_names;
+    return(df);
 }
- */
 
 DataFrame BlockLNLP::get_stats()
 {
