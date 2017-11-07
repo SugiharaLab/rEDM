@@ -14,6 +14,10 @@ vignette: >
 csl: ecology.csl
 bibliography: refs.bib
 ---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+```
 # Abstract
 Empirical dynamic modeling (EDM) is an emerging non-parametric framework for modeling nonlinear dynamic systems. EDM is based on the mathematical theory of recontructing attractor manifolds from time series data [@Takens_1981]. The **rEDM** package collects several EDM methods, including simplex projection [@Sugihara_1990], S-map [@Sugihara_1994], multivariate embeddings [@Dixon_1999], convergent cross mapping [@Sugihara_2012], and multiview embedding [@Ye_2016]. Here, we introduce the basic underlying theory, and describe the functionality of the **rEDM**, using examples from both model simulations and real data.
 
@@ -213,13 +217,13 @@ Note that the default value for the `tp` parameter is `1`, indicating that predi
 str(block_lnlp_output)
 ```
 
-By setting `stats_only` to `FALSE`, the output is a list with the full model output. Because only 1 model (1 combination of input parameters) was run, the output is a list with 1 element. This element is actually another list with 4 named elements: `params`, a data.frame of the input parameters; `embedding`, a vector of the columns used to construct the model; `model_output`, a data.frame of the full set of observed and predicted values; and `stats`, a data.frame of the forecast statistics.
+By setting `stats_only` to `FALSE`, the output includes a list column with the full model output. Note that unlike other columns, which are vectors of simple types (e.g. numeric, character), `model_output` is a vector of lists. Here, because only 1 model (1 combination of input parameters) was run, the column has 1 element, which is a list that contains a single element, the data.frame of the full set of observed and predicted values.
 
 To compare the observed and predicted values, we must therefore index correctly into the output. We can then plot the observed and predicted values and see how well the model did relative to the expected 1:1 line.
 
 ```{r observed vs predicted for block_lnlp, tidy = TRUE, fig.width = 4, fig.height = 4}
-observed <- block_lnlp_output[[1]]$model_output$obs
-predicted <- block_lnlp_output[[1]]$model_output$pred
+observed <- block_lnlp_output$model_output[[1]]$obs
+predicted <- block_lnlp_output$model_output[[1]]$pred
 
 par(mar = c(4, 4, 1, 1), mgp = c(2.5, 1, 0), pty = "s")
 plot_range <- range(c(observed, predicted), na.rm = TRUE)
@@ -358,7 +362,7 @@ Note that for two variables (nitrogen and invasive richness), the best embedding
 
 Using these embedding dimensions, we can now apply S-maps to identify nonlinearity:
 
-```{r smap on e120, cache = TRUE, warning = FALSE, tidy = TRUE, fig.width = 6}
+```{r smap on e120, cache = TRUE, warning = FALSE, tidy = TRUE, fig.width = 6, results = "hide"}
 smap_out <- lapply(names(composite_ts)[2:4], function(var) {
     s_map(composite_ts[, c("Year", var)], E = best_E[var], 
             lib = composite_lib, pred = composite_pred)
@@ -428,11 +432,11 @@ ABNO_output <- block_lnlp(block_data, lib = composite_lib, pred = composite_pred
 Note that each additional variable adds slightly to the predictive power of the model.
 
 ```{r block_lnlp on e120, tidy = TRUE, warning = FALSE, fig.width = 4, fig.height = 4}
-observed_AB <- AB_output[[1]]$model_output$obs
-predicted_AB <- AB_output[[1]]$model_output$pred
+observed_AB <- AB_output$model_output[[1]]$obs
+predicted_AB <- AB_output$model_output[[1]]$pred
 
-observed_ABNO <- ABNO_output[[1]]$model_output$obs
-predicted_ABNO <- ABNO_output[[1]]$model_output$pred
+observed_ABNO <- ABNO_output$model_output[[1]]$obs
+predicted_ABNO <- ABNO_output$model_output[[1]]$pred
 
 par(mar = c(4, 4, 1, 1), mgp = c(2.5, 1, 0), pty = "s") # set up margins for plotting
 plot_range <- range(c(observed_AB, predicted_AB), na.rm = TRUE)
@@ -444,8 +448,8 @@ abline(lm(predicted_AB ~ observed_AB), col = "black", lty = 3, lwd = 2)
 points(observed_ABNO, predicted_ABNO, pch = 2, col = "red")
 abline(lm(predicted_ABNO ~ observed_ABNO), col = "red", lty = 3, lwd = 2)
 
-legend("topleft", legend = c(paste("rho =", round(AB_output[[1]]$stats$rho, 2)), 
-                             paste("rho =", round(ABNO_output[[1]]$stats$rho, 2))), 
+legend("topleft", legend = c(paste("rho =", round(AB_output$rho, 2)), 
+                             paste("rho =", round(ABNO_output$rho, 2))), 
        lty = 3, lwd = 2, col = c("black", "red"), bty = "n")
 ```
 

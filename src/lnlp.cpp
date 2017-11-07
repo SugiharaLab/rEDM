@@ -148,33 +148,45 @@ void LNLP::run()
 
 DataFrame LNLP::get_output()
 {
-    return DataFrame::create( Named("time") = target_time, 
-                              Named("obs") = targets, 
-                              Named("pred") = predicted, 
-                              Named("pred_var") = predicted_var);
-}
-
-List LNLP::get_smap_coefficients()
-{     
-    return(wrap(smap_coefficients));
-}
-
-DataFrame LNLP::get_short_output()
-{
     vec short_time(which_pred.size(), qnan);
     vec short_obs(which_pred.size(), qnan);
     vec short_pred(which_pred.size(), qnan);
+    vec short_pred_var(which_pred.size(), qnan);
     
     for(size_t i = 0; i < which_pred.size(); ++i)
     {
         short_time[i] = target_time[which_pred[i]];
         short_obs[i] = targets[which_pred[i]];
         short_pred[i] = predicted[which_pred[i]];
+        short_pred_var[i] = predicted_var[which_pred[i]];
     }
     
     return DataFrame::create( Named("time") = short_time, 
                               Named("obs") = short_obs, 
-                              Named("pred") = short_pred);
+                              Named("pred") = short_pred, 
+                              Named("pred_var") = short_pred_var);
+}
+
+DataFrame LNLP::get_smap_coefficients()
+{
+    size_t embed_dim = smap_coefficients.size();
+    List tmp_lst(embed_dim);
+    CharacterVector df_names(embed_dim);
+    vec temp_coeff;
+    for(size_t j = 0; j < embed_dim; ++j)
+    {
+        temp_coeff.assign(which_pred.size(), qnan);
+        for(size_t i = 0; i < which_pred.size(); ++i)
+        {
+            temp_coeff[i] = smap_coefficients[j][which_pred[i]];
+        }
+        tmp_lst[j] = temp_coeff;
+        df_names[j] = "c_" + std::to_string(j+1);
+    }
+    df_names[embed_dim - 1] = "c_0";
+    DataFrame df(tmp_lst);
+    df.attr("names") = df_names;
+    return(df);
 }
 
 DataFrame LNLP::get_stats()
@@ -287,7 +299,6 @@ RCPP_MODULE(lnlp_module)
     .method("run", &LNLP::run)
     .method("get_output", &LNLP::get_output)
     .method("get_smap_coefficients", &LNLP::get_smap_coefficients)
-    .method("get_short_output", &LNLP::get_short_output)
     .method("get_stats", &LNLP::get_stats)
     ;
 }

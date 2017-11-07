@@ -8,7 +8,7 @@ block <- two_species_model[1:200,]
 output <- block_lnlp(block, columns = c("x", "y"), 
                      first_column_time = TRUE, stats_only = FALSE)
 
-output <- output[[1]]$model_output
+output <- output$model_output[[1]]
 output$pred_err <- sqrt(output$pred_var)
 t <- 1:50
 plot(t, output$obs[t], type = "l")
