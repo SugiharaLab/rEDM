@@ -56,8 +56,8 @@
 #'   neighbors if their *time index* is within exclusion_radius (NULL turns 
 #'   this option off)
 #' @param silent prevents warning messages from being printed to the R console
-#' @return If stats_only, then a data.frame with components for the parameters 
-#'   and forecast statistics:
+#' @return A data.frame with components for the parameters and forecast 
+#'   statistics:
 #' \tabular{ll}{
 #'   E \tab embedding dimension\cr
 #'   tau \tab time lag\cr
@@ -77,15 +77,10 @@
 #'   const_perc \tab same as perc, but for the constant predictor\cr
 #'   const_p_val \tab same as p_val, but for the constant predictor
 #' }
-#' Otherwise, a list where the number of elements is equal to the number of runs 
-#'   (unique parameter combinations). Each element is a list with the following 
-#'   components:
+#' If \code{stats_only == FALSE}, then additionally a list column:
 #' \tabular{ll}{
-#'   params \tab data.frame of parameters (E, tau, tp, nn, k)\cr
-#'   lib_stats \tab data.frame of in-sample forecast statistics\cr
 #'   model_output \tab data.frame with columns for the time index, observations, 
 #'     and predictions\cr
-#'   pred_stats \tab data.frame of forecast statistics\cr
 #' }
 #' @examples 
 #' data("block_3sp")

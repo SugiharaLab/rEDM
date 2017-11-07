@@ -60,12 +60,12 @@
 
 #' @rdname simplex
 #' 
-#' @description \code{simplex} uses time delay embedding on a single time series to 
-#' generate an attractor reconstruction, and then applies the simplex 
-#' projection algorithm to make forecasts.
+#' @description \code{simplex} uses time delay embedding on a single time series 
+#'   to generate an attractor reconstruction, and then applies the simplex 
+#'   projection algorithm to make forecasts.
 #' 
-#' @return For \code{simplex}, if \code{stats_only = TRUE}, then a data.frame 
-#' with components for the parameters and forecast statistics:
+#' @return For \code{simplex}, a data.frame with components for the parameters 
+#'   and forecast statistics:
 #' \tabular{ll}{
 #'   E \tab embedding dimension\cr
 #'   tau \tab time lag\cr
@@ -84,14 +84,10 @@
 #'   const_perc \tab same as perc, but for the constant predictor\cr
 #'   const_p_val \tab same as p_val, but for the constant predictor
 #' }
-#' Otherwise, a list where the number of elements is equal to the number of runs 
-#'   (unique parameter combinations). Each element is a list with the following 
-#'   components:
+#'   If \code{stats_only == FALSE}, then additionally a list column:
 #' \tabular{ll}{
-#'   params \tab data.frame of parameters (E, tau, tp, nn)\cr
 #'   model_output \tab data.frame with columns for the time index, observations, 
 #'     and predictions\cr
-#'   stats \tab data.frame of forecast statistics\cr
 #' }
 #' @examples 
 #' data("two_species_model")
@@ -192,10 +188,9 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
 #' @description \code{s_map} is similar to \code{simplex}, but uses the S-map algorithm to 
 #' make forecasts.
 #' 
-#' @return For \code{s_map}, the same as for \code{simplex}, but with an additional 
-#' column for the value of theta. If \code{stats_only = FALSE} and 
-#' \code{save_smap_coefficients = TRUE}, then a matrix of S-map coefficients 
-#' will appear in the full output.
+#' @return For \code{s_map}, the same as for \code{simplex}, but with an 
+#'   additional column for the value of theta. If \code{save_smap_coefficients == TRUE}, 
+#'   then an additional list-column for the S-map coefficients.
 #' @examples 
 #' data("two_species_model")
 #' ts <- two_species_model$x[1:200]

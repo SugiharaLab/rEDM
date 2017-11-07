@@ -10,8 +10,7 @@ block_lnlp(block, lib = c(1, NROW(block)), pred = lib,
   num_neighbors = switch(match.arg(method), simplex = "e+1", `s-map` = 0),
   columns = NULL, target_column = 1, stats_only = TRUE,
   first_column_time = FALSE, exclusion_radius = NULL, epsilon = NULL,
-  theta = NULL, silent = FALSE, save_smap_coefficients = FALSE,
-  short_output = FALSE)
+  theta = NULL, silent = FALSE, save_smap_coefficients = FALSE)
 }
 \arguments{
 \item{block}{either a vector to be used as the time series, or a 
@@ -61,15 +60,11 @@ method == "s-map")}
 \item{silent}{prevents warning messages from being printed to the R console}
 
 \item{save_smap_coefficients}{specifies whether to include the s_map 
-coefficients with the output (and forces the full output as if stats_only 
-were set to FALSE)}
-
-\item{short_output}{specifies whether to return a truncated output data.frame
-whose rows only include the predictions made and not the whole input block}
+coefficients with the output (and forces stats_only = FALSE, as well)}
 }
 \value{
-If stats_only, then a data.frame with components for the parameters 
-  and forecast statistics:
+A data.frame with components for the parameters and forecast 
+  statistics:
 \tabular{ll}{
   cols \tab embedding\cr
   tp \tab prediction horizon\cr
@@ -87,15 +82,14 @@ If stats_only, then a data.frame with components for the parameters
   const_perc \tab same as perc, but for the constant predictor\cr
   const_p_val \tab same as p_val, but for the constant predictor
 }
-Otherwise, a list where the number of elements is equal to the number of runs 
-  (unique parameter combinations). Each element is a list with the following 
-  components:
+If \code{stats_only == FALSE}, then additionally a list column:
 \tabular{ll}{
-  params \tab data.frame of parameters (embedding, tp, nn)\cr
-  
   model_output \tab data.frame with columns for the time index, observations, 
     and predictions\cr
-  stats \tab data.frame of forecast statistics\cr
+}
+If \code{save_smap_coefficients == TRUE} and "s-map" is the method, then another list column:
+\tabular{ll}{
+  smap_coefficients \tab data.frame with columns for the coefficients of the s-map\cr
 }
 }
 \description{

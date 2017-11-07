@@ -64,8 +64,8 @@ coefficients with the output (and forces the full output as if stats_only
 were set to FALSE)}
 }
 \value{
-For \code{simplex}, if \code{stats_only = TRUE}, then a data.frame 
-with components for the parameters and forecast statistics:
+For \code{simplex}, a data.frame with components for the parameters 
+  and forecast statistics:
 \tabular{ll}{
   E \tab embedding dimension\cr
   tau \tab time lag\cr
@@ -84,25 +84,20 @@ with components for the parameters and forecast statistics:
   const_perc \tab same as perc, but for the constant predictor\cr
   const_p_val \tab same as p_val, but for the constant predictor
 }
-Otherwise, a list where the number of elements is equal to the number of runs 
-  (unique parameter combinations). Each element is a list with the following 
-  components:
+  If \code{stats_only == FALSE}, then additionally a list column:
 \tabular{ll}{
-  params \tab data.frame of parameters (E, tau, tp, nn)\cr
   model_output \tab data.frame with columns for the time index, observations, 
     and predictions\cr
-  stats \tab data.frame of forecast statistics\cr
 }
 
-For \code{s_map}, the same as for \code{simplex}, but with an additional 
-column for the value of theta. If \code{stats_only = FALSE} and 
-\code{save_smap_coefficients = TRUE}, then a matrix of S-map coefficients 
-will appear in the full output.
+For \code{s_map}, the same as for \code{simplex}, but with an 
+  additional column for the value of theta. If \code{save_smap_coefficients == TRUE}, 
+  then an additional list-column for the S-map coefficients.
 }
 \description{
-\code{simplex} uses time delay embedding on a single time series to 
-generate an attractor reconstruction, and then applies the simplex 
-projection algorithm to make forecasts.
+\code{simplex} uses time delay embedding on a single time series 
+  to generate an attractor reconstruction, and then applies the simplex 
+  projection algorithm to make forecasts.
 
 \code{s_map} is similar to \code{simplex}, but uses the S-map algorithm to 
 make forecasts.

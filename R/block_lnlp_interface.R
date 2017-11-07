@@ -57,10 +57,9 @@
 #'   method == "s-map")
 #' @param silent prevents warning messages from being printed to the R console
 #' @param save_smap_coefficients specifies whether to include the s_map 
-#'   coefficients with the output (and forces the full output as if stats_only 
-#'   were set to FALSE)
-#' @return If stats_only, then a data.frame with components for the parameters 
-#'   and forecast statistics:
+#'   coefficients with the output (and forces stats_only = FALSE, as well)
+#' @return A data.frame with components for the parameters and forecast 
+#'   statistics:
 #' \tabular{ll}{
 #'   cols \tab embedding\cr
 #'   tp \tab prediction horizon\cr
@@ -78,15 +77,14 @@
 #'   const_perc \tab same as perc, but for the constant predictor\cr
 #'   const_p_val \tab same as p_val, but for the constant predictor
 #' }
-#' Otherwise, a list where the number of elements is equal to the number of runs 
-#'   (unique parameter combinations). Each element is a list with the following 
-#'   components:
+#' If \code{stats_only == FALSE}, then additionally a list column:
 #' \tabular{ll}{
-#'   params \tab data.frame of parameters (embedding, tp, nn)\cr
-#'   
 #'   model_output \tab data.frame with columns for the time index, observations, 
 #'     and predictions\cr
-#'   stats \tab data.frame of forecast statistics\cr
+#' }
+#' If \code{save_smap_coefficients == TRUE} and "s-map" is the method, then another list column:
+#' \tabular{ll}{
+#'   smap_coefficients \tab data.frame with columns for the coefficients of the s-map\cr
 #' }
 #' @examples 
 #' data("two_species_model")
