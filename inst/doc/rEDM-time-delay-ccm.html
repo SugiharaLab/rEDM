@@ -86,10 +86,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <h1>Method</h1>
 <p>We can determine the optimal values of <code>tp</code> by testing different values within the <code>ccm</code> function. Conventionally, we do this with as much of the data as possible, to obtain the cleanest signal.</p>
 <p>First, we grab some demo time series from the <code>block_3sp</code> data.frame:</p>
-<pre><code>```r
-library(rEDM)
-data(paramecium_didinium)
-```</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(rEDM)
+<span class="kw">data</span>(paramecium_didinium)</code></pre></div>
 <p>Setup the cross mapping runs we want to do:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">vars &lt;-<span class="st"> </span><span class="kw">names</span>(paramecium_didinium)[<span class="dv">2</span><span class="op">:</span><span class="dv">3</span>] <span class="co"># c(&quot;paramecium&quot;, &quot;didinium&quot;)</span>
 

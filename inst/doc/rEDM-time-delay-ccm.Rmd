@@ -31,7 +31,7 @@ would be best at a positive values of `tp` ($tp > 0$).
 We can determine the optimal values of `tp` by testing different values within the `ccm` function. Conventionally, we do this with as much of the data as possible, to obtain the cleanest signal.
 
 First, we grab some demo time series from the `block_3sp` data.frame:
-    ```{r}
+```{r}
 library(rEDM)
 data(paramecium_didinium)
 ```
