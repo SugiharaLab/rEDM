@@ -92,7 +92,7 @@ str(anchovy_xmap_sst)
 a_xmap_t_means <- ccm_means(anchovy_xmap_sst)
 t_xmap_a_means <- ccm_means(sst_xmap_anchovy)
 
-par(mar = c(4, 4, 1, 1), mgp = c(2.5, 1, 0)) # set up margins for plotting
+par(mar = c(4, 4, 1, 1), mgp = c(2.5, 1, 0))
 y1 <- pmax(0, a_xmap_t_means$rho)
 y2 <- pmax(0, t_xmap_a_means$rho)
 
@@ -132,16 +132,16 @@ composite_pred <- segments[-rndlib, ]
 precip_ts <- unique(e120_biodiversity[, c("Year", "SummerPrecip.mm.")])
 precip_ts <- precip_ts[order(precip_ts$Year), ]
 
-## ----simplex on e120, tidy = TRUE, cache = TRUE, warning = FALSE, fig.width = 6----
+## ----simplex on e120, tidy = TRUE, warning = FALSE, fig.width = 6--------
 simplex_out <- lapply(names(composite_ts)[2:4], function(var) {
     simplex(composite_ts[, c("Year", var)], E = 2:4, 
             lib = composite_lib, pred = composite_pred)
 })
-simplex_out[[length(simplex_out)+1]] <- simplex(precip_ts, E = 2:5)
+simplex_out[[length(simplex_out) + 1]] <- simplex(precip_ts, E = 2:5)
 names(simplex_out) <- names(composite_ts)[-1]
 
-par(mar = c(4, 4, 1, 1), mfrow = c(2, 2), mgp = c(2.5, 1, 0)) # set up margins for plotting
-out<-lapply(names(simplex_out), function(var) {
+par(mar = c(4, 4, 1, 1), mfrow = c(2, 2), mgp = c(2.5, 1, 0))
+out <- lapply(names(simplex_out), function(var) {
     plot(simplex_out[[var]]$E, simplex_out[[var]]$rho, type = "l", 
          xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)", 
          main = var)

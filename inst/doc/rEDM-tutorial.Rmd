@@ -18,6 +18,7 @@ bibliography: refs.bib
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
 ```
+
 # Abstract
 Empirical dynamic modeling (EDM) is an emerging non-parametric framework for modeling nonlinear dynamic systems. EDM is based on the mathematical theory of recontructing attractor manifolds from time series data [@Takens_1981]. The **rEDM** package collects several EDM methods, including simplex projection [@Sugihara_1990], S-map [@Sugihara_1994], multivariate embeddings [@Dixon_1999], convergent cross mapping [@Sugihara_2012], and multiview embedding [@Ye_2016]. Here, we introduce the basic underlying theory, and describe the functionality of the **rEDM**, using examples from both model simulations and real data.
 
@@ -269,7 +270,7 @@ The output from CCM is a data.frame with statistics for each model run (in this 
 a_xmap_t_means <- ccm_means(anchovy_xmap_sst)
 t_xmap_a_means <- ccm_means(sst_xmap_anchovy)
 
-par(mar = c(4, 4, 1, 1), mgp = c(2.5, 1, 0)) # set up margins for plotting
+par(mar = c(4, 4, 1, 1), mgp = c(2.5, 1, 0))
 y1 <- pmax(0, a_xmap_t_means$rho)
 y2 <- pmax(0, t_xmap_a_means$rho)
 
@@ -335,16 +336,16 @@ precip_ts <- precip_ts[order(precip_ts$Year), ]
 
 We can then use the **rEDM** functions as normal for each of our time series. First, we apply simplex projection:
 
-```{r simplex on e120, tidy = TRUE, cache = TRUE, warning = FALSE, fig.width = 6}
+```{r simplex on e120, tidy = TRUE, warning = FALSE, fig.width = 6}
 simplex_out <- lapply(names(composite_ts)[2:4], function(var) {
     simplex(composite_ts[, c("Year", var)], E = 2:4, 
             lib = composite_lib, pred = composite_pred)
 })
-simplex_out[[length(simplex_out)+1]] <- simplex(precip_ts, E = 2:5)
+simplex_out[[length(simplex_out) + 1]] <- simplex(precip_ts, E = 2:5)
 names(simplex_out) <- names(composite_ts)[-1]
 
-par(mar = c(4, 4, 1, 1), mfrow = c(2, 2), mgp = c(2.5, 1, 0)) # set up margins for plotting
-out<-lapply(names(simplex_out), function(var) {
+par(mar = c(4, 4, 1, 1), mfrow = c(2, 2), mgp = c(2.5, 1, 0))
+out <- lapply(names(simplex_out), function(var) {
     plot(simplex_out[[var]]$E, simplex_out[[var]]$rho, type = "l", 
          xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)", 
          main = var)

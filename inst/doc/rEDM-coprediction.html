@@ -12,7 +12,7 @@
 
 <meta name="author" content="Hao Ye" />
 
-<meta name="date" content="2017-11-07" />
+<meta name="date" content="2017-11-09" />
 
 <title>co-prediction: using rEDM to quantify dynamic similarity</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">co-prediction: using rEDM to quantify dynamic similarity</h1>
 <h4 class="author"><em>Hao Ye</em></h4>
-<h4 class="date"><em>2017-11-07</em></h4>
+<h4 class="date"><em>2017-11-09</em></h4>
 
 
 
@@ -82,10 +82,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <h1>Method</h1>
 <p>We can accomplish this task using rEDM by constructing concatenated time series and applying simplex or s-map to make predictions with appropriately defined libs and preds.</p>
 <p>First, we grab some demo time series from the <code>block_3sp</code> data.frame:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(rEDM)</code></pre></div>
-<pre><code>## If you're new to the rEDM package, please check out the tutorial:
-## &gt; vignette(&quot;rEDM-tutorial&quot;)</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(block_3sp)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(rEDM)
+<span class="kw">data</span>(block_3sp)
 
 x &lt;-<span class="st"> </span>block_3sp<span class="op">$</span>x_t
 y &lt;-<span class="st"> </span>block_3sp<span class="op">$</span>y_t</code></pre></div>
