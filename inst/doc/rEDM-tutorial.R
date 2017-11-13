@@ -7,6 +7,12 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
 ## ----GitHub installation instructions, eval = FALSE----------------------
 #  devtools::install_github("ha0ye/rEDM")
 
+## ----fig_time_series_projection, echo = FALSE, fig.cap = "Time Series Projection from the Lorenz Attractor"----
+knitr::include_graphics("figure_1.svg")
+
+## ----fig_attractor_reconstruction, echo = FALSE, fig.cap = "Attractor Reconstruction from Lagged Coordinates"----
+knitr::include_graphics("figure_2.svg")
+
 ## ----load tentmap data---------------------------------------------------
 library(rEDM)
 data(tentmap_del)

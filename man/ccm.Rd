@@ -15,8 +15,9 @@ ccm(block, lib = c(1, NROW(block)), pred = lib, norm_type = c("L2 norm",
 \item{block}{either a vector to be used as the time series, or a 
 data.frame or matrix where each column is a time series}
 
-\item{lib}{a 2-column matrix (or 2-element vector) where each row specifes the 
-first and last *rows* of the time series to use for attractor reconstruction}
+\item{lib}{a 2-column matrix (or 2-element vector) where each row specifies 
+the first and last *rows* of the time series to use for attractor 
+reconstruction}
 
 \item{pred}{(same format as lib), but specifying the sections of the time 
 series to forecast.}
@@ -91,11 +92,15 @@ second column, letting the library size vary from 10 to 100 in increments of
 10.
 
 norm_type "L2 norm" (default) uses the typical Euclidean distance:
-\deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}}{distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
+\deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}}
+{distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
 norm_type "L1 norm" uses the Manhattan distance:
-\deqn{distance(a,b) := \sum_i{|a_i - b_i|}}{distance(a, b) := \sum|a_i - b_i|}
-norm type "P norm" uses the LP norm, generalizing the L1 and L2 norm to use $p$ as the exponent:
-\deqn{distance(a,b) := \sum_i{(a_i - b_i)^p}^{1/p}}{distance(a, b) := (\sum(a_i - b_i)^p)^(1/p)}
+\deqn{distance(a,b) := \sum_i{|a_i - b_i|}}
+{distance(a, b) := \sum|a_i - b_i|}
+norm type "P norm" uses the P norm, generalizing the L1 and L2 norm to use 
+  $P$ as the exponent:
+\deqn{distance(a,b) := \sum_i{(a_i - b_i)^P}^{1/P}}
+{distance(a, b) := (\sum(a_i - b_i)^P)^(1/P)}
 }
 \examples{
 data("sardine_anchovy_sst")

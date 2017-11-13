@@ -16,8 +16,9 @@ block_lnlp(block, lib = c(1, NROW(block)), pred = lib,
 \item{block}{either a vector to be used as the time series, or a 
 data.frame or matrix where each column is a time series}
 
-\item{lib}{a 2-column matrix (or 2-element vector) where each row specifes the 
-first and last *rows* of the time series to use for attractor reconstruction}
+\item{lib}{a 2-column matrix (or 2-element vector) where each row specifies 
+the first and last *rows* of the time series to use for attractor 
+reconstruction}
 
 \item{pred}{(same format as lib), but specifying the sections of the time 
 series to forecast.}
@@ -84,37 +85,44 @@ A data.frame with components for the parameters and forecast
 }
 If \code{stats_only == FALSE}, then additionally a list column:
 \tabular{ll}{
-  model_output \tab data.frame with columns for the time index, observations, 
-    and predictions\cr
+  model_output \tab data.frame with columns for the time index, 
+    observations, predictions, and estimated prediction variance\cr
 }
-If \code{save_smap_coefficients == TRUE} and "s-map" is the method, then another list column:
+If \code{save_smap_coefficients == TRUE} and "s-map" is the method, then 
+  another list column:
 \tabular{ll}{
-  smap_coefficients \tab data.frame with columns for the coefficients of the s-map\cr
+  smap_coefficients \tab data.frame with columns for the coefficients of the 
+  s-map\cr
 }
 }
 \description{
 \code{block_lnlp} uses multiple time series given as input to generate an 
-attractor reconstruction, and then applies the simplex projection or s-map 
-algorithm to make forecasts. This method generalizes the \code{simplex} and 
-\code{s-map} routines, and allows for "mixed" embeddings, where multiple time 
-series can be used as different dimensions of an attractor reconstruction.
+  attractor reconstruction, and then applies the simplex projection or s-map 
+  algorithm to make forecasts. This method generalizes the \code{simplex} 
+  and \code{s-map} routines, and allows for "mixed" embeddings, where 
+  multiple time series can be used as different dimensions of an attractor 
+  reconstruction.
 }
 \details{
-The default parameters are set so that passing a vector as the only 
-argument will use that vector to predict itself one time step ahead. If a 
-matrix or data.frame is given as the only argument, the first column will be 
-predicted (one time step ahead), using the remaining columns as the embedding. 
-Rownames will be converted to numeric if possible to be used as the time 
-index, otherwise 1:NROW will be used instead. The default lib and pred are 
-for leave-one-out cross-validation over the whole time series, and returning 
-just the forecast statistics.
+The default parameters are set so that passing a vector as the only argument
+  will use that vector to predict itself one time step ahead. If a matrix or 
+  data.frame is given as the only argument, the first column will be 
+  predicted (one time step ahead), using the remaining columns as the 
+  embedding. Rownames will be converted to numeric if possible to be used as 
+  the time index, otherwise 1:NROW will be used instead. The default lib and 
+  pred are for leave-one-out cross-validation over the whole time series, 
+  and returning just the forecast statistics.
 
 norm_type "L2 norm" (default) uses the typical Euclidean distance:
-\deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}}{distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
+\deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}}
+{distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
 norm_type "L1 norm" uses the Manhattan distance:
-\deqn{distance(a,b) := \sum_i{|a_i - b_i|}}{distance(a, b) := \sum|a_i - b_i|}
-norm type "P norm" uses the P norm, generalizing the L1 and L2 norm to use $p$ as the exponent:
-\deqn{distance(a,b) := \sum_i{(a_i - b_i)^p}^{1/p}}{distance(a, b) := (\sum(a_i - b_i)^p)^(1/p)}
+\deqn{distance(a,b) := \sum_i{|a_i - b_i|}}
+{distance(a, b) := \sum|a_i - b_i|}
+norm type "P norm" uses the P norm, generalizing the L1 and L2 norm to use 
+  $P$ as the exponent:
+\deqn{distance(a,b) := \sum_i{(a_i - b_i)^P}^{1/P}}
+{distance(a, b) := (\sum(a_i - b_i)^P)^(1/P)}
 
 method "simplex" (default) uses the simplex projection forecasting algorithm
 

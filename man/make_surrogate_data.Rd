@@ -14,10 +14,12 @@ make_surrogate_data(ts, method = c("random_shuffle", "ebisuzaki", "seasonal"),
 
 \item{num_surr}{the number of null surrogates to generate}
 
-\item{T_period}{the period of seasonality for seasonal surrogates (ignored for other methods)}
+\item{T_period}{the period of seasonality for seasonal surrogates 
+(ignored for other methods)}
 }
 \value{
-A matrix where each column is a separate surrogate with the same length as \code{ts}.
+A matrix where each column is a separate surrogate with the same 
+  length as \code{ts}.
 }
 \description{
 \code{make_surrogate_data} generates surrogate data under several different 

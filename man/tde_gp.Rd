@@ -10,11 +10,13 @@ tde_gp(time_series, lib = c(1, NROW(time_series)), pred = lib, E = 1:10,
 }
 \arguments{
 \item{time_series}{either a vector to be used as the time series, or a 
-data.frame or matrix with at least 2 columns (in which case the first column 
-will be used as the time index, and the second column as the time series)}
+data.frame or matrix with at least 2 columns (in which case the first 
+column will be used as the time index, and the second column as the time 
+series)}
 
-\item{lib}{a 2-column matrix (or 2-element vector) where each row specifes the 
-first and last *rows* of the time series to use for attractor reconstruction}
+\item{lib}{a 2-column matrix (or 2-element vector) where each row specifes 
+the first and last *rows* of the time series to use for attractor 
+reconstruction}
 
 \item{pred}{(same format as lib), but specifying the sections of the time 
 series to forecast.}
@@ -65,10 +67,11 @@ If stats_only, then a data.frame with components for the parameters
 If stats_only is FALSE or save_covariance_matrix is TRUE, then there is an 
 additional list-column variable:
 \tabular{ll}{
-  model_output \tab data.frame with columns for the time index, observations, 
-    and mean-value for predictions\cr
+  model_output \tab data.frame with columns for the time index, 
+  observations, and mean-value for predictions\cr
 }
-If save_covariance_matrix is TRUE, then there is an additional list-column variable:
+If save_covariance_matrix is TRUE, then there is an additional list-column 
+  variable:
 \tabular{ll}{
   covariance_matrix \tab covariance matrix for predictions\cr
 }

@@ -15,8 +15,9 @@ multiview(block, lib = c(1, floor(NROW(block)/2)),
 \item{block}{either a vector to be used as the time series, or a 
 data.frame or matrix where each column is a time series}
 
-\item{lib}{a 2-column matrix (or 2-element vector) where each row specifes the 
-first and last *rows* of the time series to use for attractor reconstruction}
+\item{lib}{a 2-column matrix (or 2-element vector) where each row specifes 
+the first and last *rows* of the time series to use for attractor 
+reconstruction}
 
 \item{pred}{(same format as lib), but specifying the sections of the time 
 series to forecast.}
@@ -33,9 +34,10 @@ series to forecast.}
 
 \item{max_lag}{the maximum number of lags to use for variable combinations}
 
-\item{num_neighbors}{the number of nearest neighbors to use for the in-sample 
-prediction (any of "e+1", "E+1", "e + 1", "E + 1" will peg this parameter 
-to E+1 for each run, any value < 1 will use all possible neighbors.)}
+\item{num_neighbors}{the number of nearest neighbors to use for the 
+in-sample prediction (any of "e+1", "E+1", "e + 1", "E + 1" will peg this 
+parameter to E+1 for each run, any value < 1 will use all possible 
+neighbors.)}
 
 \item{k}{the number of embeddings to use (any of "sqrt", "SQRT" will use 
 k = floor(sqrt(m)))}
@@ -81,39 +83,44 @@ A data.frame with components for the parameters and forecast
 }
 If \code{stats_only == FALSE}, then additionally a list column:
 \tabular{ll}{
-  model_output \tab data.frame with columns for the time index, observations, 
-    and predictions\cr
+  model_output \tab data.frame with columns for the time index, 
+  observations, and predictions\cr
 }
 }
 \description{
 \code{multiview} applies the method described in Ye & Sugihara (2016) for 
-forecasting, wherein multiple attractor reconstructions are tested, and a 
-single nearest neighbor is selected from each of the top "k" reconstructions 
-to produce final forecasts.
+  forecasting, wherein multiple attractor reconstructions are tested, and a 
+  single nearest neighbor is selected from each of the top "k" 
+  reconstructions to produce final forecasts.
 }
 \details{
-uses multiple time series given as input to generate an 
-attractor reconstruction, and then applies the simplex projection or s-map 
-algorithm to make forecasts. This method generalizes the \code{simplex} and 
-\code{s-map} routines, and allows for "mixed" embeddings, where multiple time 
-series can be used as different dimensions of an attractor reconstruction.
+uses multiple time series given as input to generate an attractor 
+  reconstruction, and then applies the simplex projection or s-map algorithm 
+  to make forecasts. This method generalizes the \code{simplex} and 
+  \code{s-map} routines, and allows for "mixed" embeddings, where multiple 
+  time series can be used as different dimensions of an attractor 
+  reconstruction.
 
 The default parameters are set so that, given a matrix of time series, 
-forecasts will be produced for the first column. By default, all possible 
-combinations of the columns are used for the attractor construction, the 
-k = sqrt(m) heuristic will be used, forecasts will be one time step ahead. 
-Rownames will be converted to numeric if possible to be used as the time 
-index, otherwise 1:NROW will be used instead. The default lib and pred are 
-to use the first half of the data for the "library" and to predict over the 
-second half of the data. Unless otherwise set, the output will be just the 
-forecast statistics.
+  forecasts will be produced for the first column. By default, all possible 
+  combinations of the columns are used for the attractor construction, the 
+  k = sqrt(m) heuristic will be used, forecasts will be one time step ahead. 
+  Rownames will be converted to numeric if possible to be used as the time 
+  index, otherwise 1:NROW will be used instead. The default lib and pred are 
+  to use the first half of the data for the "library" and to predict over the
+  second half of the data. Unless otherwise set, the output will be just the 
+  forecast statistics.
 
 norm_type "L2 norm" (default) uses the typical Euclidean distance:
-\deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}}{distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
+\deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}}
+  {distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
 norm_type "L1 norm" uses the Manhattan distance:
-\deqn{distance(a,b) := \sum_i{|a_i - b_i|}}{distance(a, b) := \sum|a_i - b_i|}
-norm type "P norm" uses the P norm, generalizing the L1 and L2 norm to use $p$ as the exponent:
-\deqn{distance(a,b) := \sum_i{(a_i - b_i)^p}^{1/p}}{distance(a, b) := (\sum(a_i - b_i)^p)^(1/p)}
+\deqn{distance(a,b) := \sum_i{|a_i - b_i|}}
+  {distance(a, b) := \sum|a_i - b_i|}
+norm type "P norm" uses the P norm, generalizing the L1 and L2 norm to use 
+  $P$ as the exponent:
+\deqn{distance(a,b) := \sum_i{(a_i - b_i)^P}^{1/P}}
+  {distance(a, b) := (\sum(a_i - b_i)^P)^(1/P)}
 }
 \examples{
 data("block_3sp")

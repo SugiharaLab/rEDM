@@ -5,7 +5,8 @@
 \alias{tentmap_del}
 \title{Time series for a tent map with mu = 2.}
 \description{
-First-differenced time series generated from the tent map recurrence relation with mu = 2.
+First-differenced time series generated from the tent map 
+  recurrence relation with mu = 2.
 }
 \author{
 Hao Ye

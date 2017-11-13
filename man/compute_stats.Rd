@@ -20,8 +20,8 @@ A data.frame with components for the various performance metrics:
 }
 }
 \description{
-Computes the rho, MAE, RMSE, perc, and p-val performance metrics
-using the compiled C++ function
+Computes the rho, MAE, RMSE, perc, and p-val performance 
+  metrics using the compiled C++ function
 }
 \examples{
 compute_stats(rnorm(100), rnorm(100))

@@ -6,9 +6,9 @@
 \alias{rEDM-package}
 \title{Applications of empirical dynamic modeling from time series.}
 \description{
-The rEDM package provides an interface from R to C++ compiled objects 
-that use time delay embedding to perform state-space reconstruction and nonlinear 
-forecasting.
+The rEDM package provides an interface from R to C++ compiled 
+  objects that use time delay embedding to perform state-space 
+  reconstruction and nonlinear forecasting.
 }
 \author{
 Hao Ye

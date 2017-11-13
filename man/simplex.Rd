@@ -20,11 +20,13 @@ s_map(time_series, lib = c(1, NROW(time_series)), pred = lib,
 }
 \arguments{
 \item{time_series}{either a vector to be used as the time series, or a 
-data.frame or matrix with at least 2 columns (in which case the first column 
-will be used as the time index, and the second column as the time series)}
+data.frame or matrix with at least 2 columns (in which case the first 
+column will be used as the time index, and the second column as the time 
+series)}
 
-\item{lib}{a 2-column matrix (or 2-element vector) where each row specifes the 
-first and last *rows* of the time series to use for attractor reconstruction}
+\item{lib}{a 2-column matrix (or 2-element vector) where each row specifes 
+the first and last *rows* of the time series to use for attractor 
+reconstruction}
 
 \item{pred}{(same format as lib), but specifying the sections of the time 
 series to forecast.}
@@ -86,27 +88,28 @@ For \code{simplex}, a data.frame with components for the parameters
 }
   If \code{stats_only == FALSE}, then additionally a list column:
 \tabular{ll}{
-  model_output \tab data.frame with columns for the time index, observations, 
-    and predictions\cr
+  model_output \tab data.frame with columns for the time index, 
+    observations, predictions, and estimated prediction variance\cr
 }
 
 For \code{s_map}, the same as for \code{simplex}, but with an 
-  additional column for the value of theta. If \code{save_smap_coefficients == TRUE}, 
-  then an additional list-column for the S-map coefficients.
+  additional column for the value of theta. If 
+  \code{save_smap_coefficients == TRUE}, then an additional list-column for 
+  the S-map coefficients.
 }
 \description{
-\code{simplex} uses time delay embedding on a single time series 
-  to generate an attractor reconstruction, and then applies the simplex 
-  projection algorithm to make forecasts.
+\code{simplex} uses time delay embedding on a single time 
+  series to generate an attractor reconstruction, and then applies the 
+  simplex projection algorithm to make forecasts.
 
-\code{s_map} is similar to \code{simplex}, but uses the S-map algorithm to 
-make forecasts.
+\code{s_map} is similar to \code{simplex}, but uses the S-map 
+  algorithm to make forecasts.
 }
 \details{
 \code{simplex} is typically applied, and the embedding dimension 
 varied, to find an optimal embedding dimension for the data. Thus, the 
-default parameters are set so that passing a time series as the only argument 
-will run over E = 1:10 (embedding dimension), using leave-one-out 
+default parameters are set so that passing a time series as the only 
+argument will run over E = 1:10 (embedding dimension), using leave-one-out 
 cross-validation over the whole time series, and returning just the forecast 
 statistics.
 
@@ -115,18 +118,19 @@ varied, to test for nonlinear dynamics in the data. Thus, the default
 parameters are set so that passing a time series as the only  argument will 
 run over a default list of thetas (0, 0.0001, 0.0003, 0.001, 0.003, 0.01, 
 0.03, 0.1, 0.3, 0.5, 0.75, 1.0, 1.5, 2, 3, 4, 6, and 8), using E = 1, 
-leave-one-out cross-validation over the whole time series, and returning just 
-the forecast statistics.
+leave-one-out cross-validation over the whole time series, and returning 
+just the forecast statistics.
 
 norm_type "L2 norm" (default) uses the typical Euclidean distance:
-\deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}}{distance(a, b) := 
-\sqrt(\sum(a_i - b_i)^2)}
+\deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}}
+{distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
 norm_type "L1 norm" uses the Manhattan distance:
 \deqn{distance(a,b) := \sum_i{|a_i - b_i|}}{distance(a, b) := 
 \sum|a_i - b_i|}
-norm type "P norm" uses the LP norm, generalizing the L1 and L2 norm to use $p$ as the exponent:
-\deqn{distance(a,b) := \sum_i{(a_i - b_i)^p}^{1/p}}{distance(a, b) := 
-(\sum(a_i - b_i)^p)^(1/p)}
+norm type "P norm" uses the LP norm, generalizing the L1 and L2 norm to use 
+  $P$ as the exponent:
+\deqn{distance(a,b) := \sum_i{(a_i - b_i)^P}^{1/P}}
+{distance(a, b) := (\sum(a_i - b_i)^P)^(1/P)}
 }
 \examples{
 data("two_species_model")
