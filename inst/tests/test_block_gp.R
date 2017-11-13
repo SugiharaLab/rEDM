@@ -2,7 +2,7 @@ library(rEDM)
 
 data("two_species_model")
 
-block <- two_species_model[1:200,]
+block <- two_species_model[1:200, ]
 
 # try different param combinations (no fitting)
 output <- block_gp(block, columns = c("x", "y"), 
@@ -18,4 +18,3 @@ plot(output$model_output[[4]]$obs,
 output <- block_gp(block, columns = c("x", "y"), 
                    first_column_time = TRUE, stats_only = FALSE, 
                    save_covariance_matrix = TRUE)
-

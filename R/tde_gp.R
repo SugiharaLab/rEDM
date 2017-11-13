@@ -10,10 +10,12 @@
 #' regression.
 #' 
 #' @param time_series either a vector to be used as the time series, or a 
-#'   data.frame or matrix with at least 2 columns (in which case the first column 
-#'   will be used as the time index, and the second column as the time series)
-#' @param lib a 2-column matrix (or 2-element vector) where each row specifes the 
-#'   first and last *rows* of the time series to use for attractor reconstruction
+#'   data.frame or matrix with at least 2 columns (in which case the first 
+#'   column will be used as the time index, and the second column as the time 
+#'   series)
+#' @param lib a 2-column matrix (or 2-element vector) where each row specifes 
+#'   the first and last *rows* of the time series to use for attractor 
+#'   reconstruction
 #' @param pred (same format as lib), but specifying the sections of the time 
 #'   series to forecast.
 #' @param E the embedding dimensions to use for time delay embedding
@@ -50,10 +52,11 @@
 #' If stats_only is FALSE or save_covariance_matrix is TRUE, then there is an 
 #' additional list-column variable:
 #' \tabular{ll}{
-#'   model_output \tab data.frame with columns for the time index, observations, 
-#'     and mean-value for predictions\cr
+#'   model_output \tab data.frame with columns for the time index, 
+#'   observations, and mean-value for predictions\cr
 #' }
-#' If save_covariance_matrix is TRUE, then there is an additional list-column variable:
+#' If save_covariance_matrix is TRUE, then there is an additional list-column 
+#'   variable:
 #' \tabular{ll}{
 #'   covariance_matrix \tab covariance matrix for predictions\cr
 #' }
@@ -69,23 +72,24 @@ tde_gp <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
                    silent = FALSE, ...)
 {
     # restructure lib and pred if necessary
-    if(is.vector(lib))
+    if (is.vector(lib))
         lib <- matrix(lib, ncol = 2, byrow = TRUE)
-    if(is.vector(pred))
+    if (is.vector(pred))
         pred <- matrix(pred, ncol = 2, byrow = TRUE)
     
     # setup data
     if (is.vector(time_series)) {
-        if(!is.null(names(time_series))) {
+        if (!is.null(names(time_series))) {
             time <- as.numeric(names(time_series))
-            if(any(is.na(time)))
+            if (any(is.na(time)))
                 time <- seq_along(time_series)
         } else {
             time <- seq_along(time_series)
         }
-    } else if ((is.matrix(time_series) || is.data.frame(time_series)) && NCOL(time_series) >= 2) {
-        time <- time_series[,1]
-        time_series <- time_series[,2]
+    } else if ((is.matrix(time_series) || is.data.frame(time_series)) && 
+               NCOL(time_series) >= 2) {
+        time <- time_series[, 1]
+        time_series <- time_series[, 2]
     }
     n <- length(time_series)
     
@@ -98,15 +102,15 @@ tde_gp <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
         block <- matrix(NA, nrow = n, ncol = E + 1)
         block[, 1] <- time
         block[, 2] <- time_series
-        if(E > 1)
+        if (E > 1)
         {
-            for(lag in 2:E)
+            for (lag in 2:E)
             {
                 # add lag of previous lag
                 block[, lag + 1] <- c(rep.int(NA, tau), block[1:(n - tau), lag])
                 
                 # set NAs for beginning of lib sections
-                block[as.vector(outer(lib[, 1], 1:tau, "+"))-1, lag + 1] <- NA
+                block[as.vector(outer(lib[, 1], 1:tau, "+")) - 1, lag + 1] <- NA
             }
         }
 

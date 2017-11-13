@@ -2,9 +2,9 @@
 #' @docType package
 #' @title Applications of empirical dynamic modeling from time series.
 #' @author Hao Ye
-#' @description The rEDM package provides an interface from R to C++ compiled objects 
-#' that use time delay embedding to perform state-space reconstruction and nonlinear 
-#' forecasting.
+#' @description The rEDM package provides an interface from R to C++ compiled 
+#'   objects that use time delay embedding to perform state-space 
+#'   reconstruction and nonlinear forecasting.
 #' @keywords package
 NULL
 
@@ -20,31 +20,33 @@ NULL
 #' @docType data
 #' @title Time series for the California Current Anchovy-Sardine-SST system
 #' @author ****
-#' @description Time series of Pacific sardine landings (CA), Northern anchovy landings (CA), 
-#' and sea-surface temperature (3-year average) at the SIO pier and Newport pier
+#' @description Time series of Pacific sardine landings (CA), Northern anchovy 
+#'   landings (CA), and sea-surface temperature (3-year average) at the SIO 
+#'   pier and Newport pier
 NULL
 
 #' @name tentmap_del
 #' @docType data
 #' @title Time series for a tent map with mu = 2.
 #' @author Hao Ye
-#' @description First-differenced time series generated from the tent map recurrence relation with mu = 2.
+#' @description First-differenced time series generated from the tent map 
+#'   recurrence relation with mu = 2.
 NULL
 
 #' @name two_species_model
 #' @docType data
 #' @title Time series for a two-species coupled model.
 #' @author Hao Ye
-#' @description Time series generated from a discrete-time coupled Lotka-Volterra 
-#' model exhibiting chaotic dynamics.
+#' @description Time series generated from a discrete-time coupled 
+#'   Lotka-Volterra model exhibiting chaotic dynamics.
 NULL
 
 #' @name block_3sp
 #' @docType data
 #' @title Time series for a three-species coupled model.
 #' @author Hao Ye
-#' @description Time series generated from a discrete-time coupled Lotka-Volterra 
-#' model exhibiting chaotic dynamics.
+#' @description Time series generated from a discrete-time coupled 
+#'   Lotka-Volterra model exhibiting chaotic dynamics.
 NULL
 
 #' @name sockeye_returns
@@ -67,9 +69,9 @@ NULL
 #' @docType data
 #' @title Biodiversity data at the Cedar Creek LTER
 #' @author ****
-#' @description Experiment 120, the "Big Biodiversity" experiment at Cedar Creek 
-#' LTER. This experiment is the longest running randomized test for the effects 
-#' of plant diversity on ecosystem functions.
+#' @description Experiment 120, the "Big Biodiversity" experiment at Cedar 
+#'   Creek LTER. This experiment is the longest running randomized test for the 
+#'   effects of plant diversity on ecosystem functions.
 NULL
 
 #' @name thrips_block
@@ -83,8 +85,8 @@ NULL
 #' 
 #' @title Compute performance metrics for predictions
 #'
-#' @description Computes the rho, MAE, RMSE, perc, and p-val performance metrics
-#' using the compiled C++ function
+#' @description Computes the rho, MAE, RMSE, perc, and p-val performance 
+#'   metrics using the compiled C++ function
 #' 
 #' @param observed a vector of the observed values
 #' @param predicted a vector of the corresponding predicted values

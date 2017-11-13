@@ -14,16 +14,21 @@
 #' 10.
 #' 
 #' norm_type "L2 norm" (default) uses the typical Euclidean distance:
-#' \deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}}{distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
+#' \deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}}
+#' {distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
 #' norm_type "L1 norm" uses the Manhattan distance:
-#' \deqn{distance(a,b) := \sum_i{|a_i - b_i|}}{distance(a, b) := \sum|a_i - b_i|}
-#' norm type "P norm" uses the LP norm, generalizing the L1 and L2 norm to use $p$ as the exponent:
-#' \deqn{distance(a,b) := \sum_i{(a_i - b_i)^p}^{1/p}}{distance(a, b) := (\sum(a_i - b_i)^p)^(1/p)}
+#' \deqn{distance(a,b) := \sum_i{|a_i - b_i|}}
+#' {distance(a, b) := \sum|a_i - b_i|}
+#' norm type "P norm" uses the P norm, generalizing the L1 and L2 norm to use 
+#'   $P$ as the exponent:
+#' \deqn{distance(a,b) := \sum_i{(a_i - b_i)^P}^{1/P}}
+#' {distance(a, b) := (\sum(a_i - b_i)^P)^(1/P)}
 #' 
 #' @param block either a vector to be used as the time series, or a 
 #'   data.frame or matrix where each column is a time series
-#' @param lib a 2-column matrix (or 2-element vector) where each row specifes the 
-#'   first and last *rows* of the time series to use for attractor reconstruction
+#' @param lib a 2-column matrix (or 2-element vector) where each row specifies 
+#'   the first and last *rows* of the time series to use for attractor 
+#'   reconstruction
 #' @param pred (same format as lib), but specifying the sections of the time 
 #'   series to forecast.
 #' @param norm_type the distance function to use. see 'Details'
@@ -75,33 +80,18 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
                 target_column = 2, first_column_time = FALSE, RNGseed = NULL, 
                 exclusion_radius = NULL, epsilon = NULL, silent = FALSE)
 {
-    convert_to_column_indices <- function(columns)
-    {
-        if(is.numeric(columns))
-        {
-            if(any(columns > NCOL(block)))
-                warning("Some column indices exceed the number of columns and were ignored.")
-            return(columns[columns <= NCOL(block)])
-        }
-        # else
-        indices <- match(columns, col_names)
-        if(any(is.na(indices)))
-            warning("Some column names could not be matched and were ignored.")
-        return(indices[is.finite(indices)])
-    }
-    
     # make new model object
     model <- new(Xmap)
     
     # setup data
-    if(first_column_time)
+    if (first_column_time)
     {
-        if(is.vector(block))
+        if (is.vector(block))
             time <- block
         else
         {
-            time <- block[,1]
-            block <- block[,-1]
+            time <- block[, 1]
+            block <- block[, -1]
         }
     }
     else
@@ -113,17 +103,17 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
         time <- 1:NROW(block)
     } else {
         time <- as.numeric(time)
-        if(any(is.na(time)))
+        if (any(is.na(time)))
             time <- 1:NROW(block)
     }
-    col_names <- colnames(block)
     model$set_time(time)
     model$set_block(data.matrix(block))
-    model$set_lib_column(convert_to_column_indices(lib_column))
-    model$set_target_column(convert_to_column_indices(target_column))
+    model$set_lib_column(convert_to_column_indices(lib_column, block))
+    model$set_target_column(convert_to_column_indices(target_column, block))
     
     # setup norm type
-    model$set_norm_type(switch(match.arg(norm_type), "P norm" = 3, "L2 norm" = 2, "L1 norm" = 1))
+    model$set_norm_type(switch(match.arg(norm_type), 
+                               "P norm" = 3, "L2 norm" = 2, "L1 norm" = 1))
     model$set_p(P)
     
     # setup lib and pred ranges
@@ -132,31 +122,39 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
     if (is.vector(pred))
         pred <- matrix(pred, ncol = 2, byrow = TRUE)
     
-    if(!all(lib[,2] >= lib[,1]))
-        warning("Some library rows look incorrectly formatted, please check the lib argument.")
-    if(!all(pred[,2] >= pred[,1]))
-        warning("Some library rows look incorrectly formatted, please check the pred argument.")
+    if (!all(lib[, 2] >= lib[, 1]))
+        warning("Some library rows look incorrectly formatted, please check ", 
+                "the lib argument.")
+    if (!all(pred[, 2] >= pred[, 1]))
+        warning("Some library rows look incorrectly formatted, please check ", 
+                "the pred argument.")
     
     model$set_lib(lib)
     model$set_pred(pred)
     prev_num_lib_sizes <- length(lib_sizes)
     lib_sizes <- unique(sort(lib_sizes))
-    if(length(lib_sizes) < prev_num_lib_sizes)
+    if (length(lib_sizes) < prev_num_lib_sizes)
         warning("Some requested lib sizes were redundant and ignored.")
     model$set_lib_sizes(lib_sizes)
     
     # handle exclusion radius
     if (is.null(exclusion_radius))
-        exclusion_radius = -1;
+    {
+        exclusion_radius <- -1
+    }
     model$set_exclusion_radius(exclusion_radius)
     
     # TODO: handle epsilon
     
     # handle silent flag
     if (silent)
+    {
         model$suppress_warnings()
-    else
-        warning("Note: CCM results are typically interpreted in the opposite direction of causation. Please see 'Detecting causality in complex ecosystems' (Sugihara et al. 2012) for more details.")
+    } else {
+        warning("Note: CCM results are typically interpreted in the opposite ", 
+                "direction of causation. Please see 'Detecting causality in ", 
+                "complex ecosystems' (Sugihara et al. 2012) for more details.")
+    }
     
     # check inputs?
     
@@ -167,7 +165,7 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
 
     model$set_params(params$E, params$tau, params$tp, params$num_neighbors, 
                      random_libs, num_samples, replace)
-    if(!is.null(RNGseed))
+    if (!is.null(RNGseed))
         model$set_seed(RNGseed)
     model$run()
     stats <- model$get_output()
@@ -176,14 +174,16 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
 
 #' Take output from ccm and compute means as a function of library size.
 #'
-#' \code{ccm_means} is a utility function to summarize output from the \code{\link{ccm}} 
-#' function
+#' \code{ccm_means} is a utility function to summarize output from the 
+#'   \code{\link{ccm}} function
 #' 
-#' @param ccm_df a data.frame, usually output from the \code{\link{ccm}} function
-#' @param FUN a function that aggregates the numerical statistics (by default, uses the mean)
+#' @param ccm_df a data.frame, usually output from the \code{\link{ccm}} 
+#'   function
+#' @param FUN a function that aggregates the numerical statistics (by default, 
+#'   uses the mean)
 #' @param ... optional arguments to FUN
-#' @return A data.frame with forecast statistics aggregated at each unique library
-#'   size
+#' @return A data.frame with forecast statistics aggregated at each unique 
+#'   library size
 #' @examples 
 #' data("sardine_anchovy_sst")
 #' anchovy_xmap_sst <- ccm(sardine_anchovy_sst, E = 3, 
@@ -199,8 +199,8 @@ ccm_means <- function(ccm_df, FUN = mean, ...)
     ccm_df$target_column <- NULL
     ccm_means <- aggregate(ccm_df, by = list(ccm_df$lib_size), FUN, ...)
     col_idx <- which(names(ccm_means) == "lib_size")
-    ccm_means <- cbind(ccm_means[,1:(col_idx-1)], 
+    ccm_means <- cbind(ccm_means[, 1:(col_idx - 1)], 
                        lib_column = lib, target_column = target, 
-                       ccm_means[,col_idx:NCOL(ccm_means)])
-    return(ccm_means[,-1]) # drop Group.1 column
+                       ccm_means[, col_idx:NCOL(ccm_means)])
+    return(ccm_means[, -1]) # drop Group.1 column
 }

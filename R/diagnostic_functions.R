@@ -7,7 +7,8 @@
 #' @param ts the original time series
 #' @param method which algorithm to use to generate surrogate data
 #' @param num_surr the number of null surrogates to generate
-#' @param T_period the period of seasonality for seasonal surrogates (ignored for other methods)
+#' @param T_period the period of seasonality for seasonal surrogates 
+#'   (ignored for other methods)
 #' @param E the embedding dimension for s_map
 #' @param ... optional arguments to s_map
 #' @return A data.frame containing the following components:
@@ -21,7 +22,8 @@
 #' @export 
 #' 
 
-test_nonlinearity <- function(ts, method = "ebisuzaki", num_surr = 200, T_period = 1, E = 1, ...)
+test_nonlinearity <- function(ts, method = "ebisuzaki", num_surr = 200, 
+                              T_period = 1, E = 1, ...)
 {
     compute_stats <- function(ts, ...)
     {
@@ -39,12 +41,15 @@ test_nonlinearity <- function(ts, method = "ebisuzaki", num_surr = 200, T_period
     surrogate_data <- make_surrogate_data(ts, method, num_surr, T_period)
     null_stats <- data.frame(t(apply(surrogate_data, 2, compute_stats, ...)))
     
-    return(data.frame(delta_rho = delta_rho, 
-                      delta_mae = delta_mae, 
-                      num_surr = num_surr, 
-                      E = E, 
-                      delta_rho_p_value = (sum(null_stats$delta_rho > delta_rho)+1) / (num_surr+1), 
-                      delta_mae_p_value = (sum(null_stats$delta_mae > delta_mae)+1) / (num_surr+1)))
+    return(data.frame(
+        delta_rho = delta_rho, 
+        delta_mae = delta_mae, 
+        num_surr = num_surr, 
+        E = E, 
+        delta_rho_p_value = (sum(null_stats$delta_rho > delta_rho) + 1) / 
+            (num_surr + 1), 
+        delta_mae_p_value = (sum(null_stats$delta_mae > delta_mae) + 1) / 
+            (num_surr + 1)))
 }
 
 
@@ -67,70 +72,74 @@ test_nonlinearity <- function(ts, method = "ebisuzaki", num_surr = 200, T_period
 #' @param ts the original time series
 #' @param method which algorithm to use to generate surrogate data
 #' @param num_surr the number of null surrogates to generate
-#' @param T_period the period of seasonality for seasonal surrogates (ignored for other methods)
-#' @return A matrix where each column is a separate surrogate with the same length as \code{ts}.
+#' @param T_period the period of seasonality for seasonal surrogates 
+#'   (ignored for other methods)
+#' @return A matrix where each column is a separate surrogate with the same 
+#'   length as \code{ts}.
 #' @examples
 #' data("two_species_model")
 #' ts <- two_species_model$x[1:200]
 #' make_surrogate_data(ts, method = "ebisuzaki")
 #' @export 
 #' 
-make_surrogate_data <- function(ts, method = c("random_shuffle", "ebisuzaki", "seasonal"), 
+make_surrogate_data <- function(ts, method = c("random_shuffle", "ebisuzaki", 
+                                               "seasonal"), 
                                 num_surr = 100, T_period = 1)
 {  
     method <- match.arg(method)
-    if(method == "random_shuffle")
+    if (method == "random_shuffle")
     {
         return(sapply(1:num_surr, function(i) {
             sample(ts, size = length(ts))
         }))
     }
-    else if(method == "ebisuzaki")
+    else if (method == "ebisuzaki")
     {
-        if(any(!is.finite(ts)))
+        if (any(!is.finite(ts)))
             stop("input time series contained invalid values")
         
         n <- length(ts)
-        n2 <- floor(n/2)
+        n2 <- floor(n / 2)
         
-        mu <- mean(ts)
         sigma <- sd(ts)
         a <- fft(ts)
         amplitudes <- abs(a)
         amplitudes[1] <- 0
         
         return(sapply(1:num_surr, function(i) {
-            if(n %% 2 == 0) # even length
+            if (n %% 2 == 0) # even length
             {
-                thetas <- 2*pi*runif(n2-1)
+                thetas <- 2 * pi * runif(n2 - 1)
                 angles <- c(0, thetas, 0, -rev(thetas))
                 recf <- amplitudes * exp(complex(imaginary = angles))
-                recf[n2] <- complex(real = sqrt(2) * amplitudes[n2] * cos(runif(1)*2*pi))
+                recf[n2] <- complex(real = sqrt(2) * amplitudes[n2] * 
+                                        cos(runif(1) * 2 * pi))
             }
             else # odd length
             {
-                thetas <- 2*pi*runif(n2)
+                thetas <- 2 * pi * runif(n2)
                 angles <- c(0, thetas, -rev(thetas))
                 recf <- amplitudes * exp(complex(imaginary = angles))
             }
             temp <- Re(fft(recf, inverse = T) / n)
             
-            # adjust variance of the surrogate time series to match the original            
+            # adjust variance of the surrogate time series to match original
             return(temp / sd(temp) * sigma)
         }))
     }
-    else
+    else # method = "seasonal"
     {
-        if(any(!is.finite(ts)))
+        if (any(!is.finite(ts)))
             stop("input time series contained invalid values")
                 
         n <- length(ts)
-        I_season <- suppressWarnings(matrix(1:T_period, nrow=n, ncol=1))
+        I_season <- suppressWarnings(matrix(1:T_period, nrow = n, ncol = 1))
         
         # Calculate seasonal cycle using smooth.spline
-        seasonal_F <- smooth.spline(c(I_season - T_period, I_season, I_season + T_period), 
+        seasonal_F <- smooth.spline(c(I_season - T_period, I_season, 
+                                      I_season + T_period), 
                                     c(ts, ts, ts))
-        seasonal_cyc <- predict(seasonal_F,I_season)$y
+        seasonal_cyc <- predict(seasonal_F, I_season)$y
         seasonal_resid <- ts - seasonal_cyc
         
         return(sapply(1:num_surr, function(i) {
@@ -138,11 +147,3 @@ make_surrogate_data <- function(ts, method = c("random_shuffle", "ebisuzaki", "s
         }))
     }
 }
-
-
-# test for cross map convergence with library size
-# equivalent of ccmtest from multispatialCCM
-# test_convergence <- function(ccm_results)
-# {
-#     return()
-# }

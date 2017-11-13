@@ -5,8 +5,8 @@
 
 #' @details \code{simplex} is typically applied, and the embedding dimension 
 #' varied, to find an optimal embedding dimension for the data. Thus, the 
-#' default parameters are set so that passing a time series as the only argument 
-#' will run over E = 1:10 (embedding dimension), using leave-one-out 
+#' default parameters are set so that passing a time series as the only 
+#' argument will run over E = 1:10 (embedding dimension), using leave-one-out 
 #' cross-validation over the whole time series, and returning just the forecast 
 #' statistics.
 #' 
@@ -15,24 +15,27 @@
 #' parameters are set so that passing a time series as the only  argument will 
 #' run over a default list of thetas (0, 0.0001, 0.0003, 0.001, 0.003, 0.01, 
 #' 0.03, 0.1, 0.3, 0.5, 0.75, 1.0, 1.5, 2, 3, 4, 6, and 8), using E = 1, 
-#' leave-one-out cross-validation over the whole time series, and returning just 
-#' the forecast statistics.
+#' leave-one-out cross-validation over the whole time series, and returning 
+#' just the forecast statistics.
 #' 
 #' norm_type "L2 norm" (default) uses the typical Euclidean distance:
-#' \deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}}{distance(a, b) := 
-#' \sqrt(\sum(a_i - b_i)^2)}
+#' \deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}}
+#' {distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
 #' norm_type "L1 norm" uses the Manhattan distance:
 #' \deqn{distance(a,b) := \sum_i{|a_i - b_i|}}{distance(a, b) := 
 #' \sum|a_i - b_i|}
-#' norm type "P norm" uses the LP norm, generalizing the L1 and L2 norm to use $p$ as the exponent:
-#' \deqn{distance(a,b) := \sum_i{(a_i - b_i)^p}^{1/p}}{distance(a, b) := 
-#' (\sum(a_i - b_i)^p)^(1/p)}
+#' norm type "P norm" uses the LP norm, generalizing the L1 and L2 norm to use 
+#'   $P$ as the exponent:
+#' \deqn{distance(a,b) := \sum_i{(a_i - b_i)^P}^{1/P}}
+#' {distance(a, b) := (\sum(a_i - b_i)^P)^(1/P)}
 #' 
 #' @param time_series either a vector to be used as the time series, or a 
-#'   data.frame or matrix with at least 2 columns (in which case the first column 
-#'   will be used as the time index, and the second column as the time series)
-#' @param lib a 2-column matrix (or 2-element vector) where each row specifes the 
-#'   first and last *rows* of the time series to use for attractor reconstruction
+#'   data.frame or matrix with at least 2 columns (in which case the first 
+#'   column will be used as the time index, and the second column as the time 
+#'   series)
+#' @param lib a 2-column matrix (or 2-element vector) where each row specifes 
+#'   the first and last *rows* of the time series to use for attractor 
+#'   reconstruction
 #' @param pred (same format as lib), but specifying the sections of the time 
 #'   series to forecast.
 #' @param norm_type the distance function to use. see 'Details'
@@ -60,9 +63,9 @@
 
 #' @rdname simplex
 #' 
-#' @description \code{simplex} uses time delay embedding on a single time series 
-#'   to generate an attractor reconstruction, and then applies the simplex 
-#'   projection algorithm to make forecasts.
+#' @description \code{simplex} uses time delay embedding on a single time 
+#'   series to generate an attractor reconstruction, and then applies the 
+#'   simplex projection algorithm to make forecasts.
 #' 
 #' @return For \code{simplex}, a data.frame with components for the parameters 
 #'   and forecast statistics:
@@ -86,8 +89,8 @@
 #' }
 #'   If \code{stats_only == FALSE}, then additionally a list column:
 #' \tabular{ll}{
-#'   model_output \tab data.frame with columns for the time index, observations, 
-#'     and predictions\cr
+#'   model_output \tab data.frame with columns for the time index, 
+#'     observations, predictions, and estimated prediction variance\cr
 #' }
 #' @examples 
 #' data("two_species_model")
@@ -118,17 +121,19 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
         } else {
             time <- seq_along(time_series)
         }
-    } else if ((is.matrix(time_series) || is.data.frame(time_series)) && NCOL(time_series) >= 2) {
-        time <- time_series[,1]
-        time_series <- time_series[,2]
+    } else if ((is.matrix(time_series) || is.data.frame(time_series)) && 
+               NCOL(time_series) >= 2) {
+        time <- time_series[, 1]
+        time_series <- time_series[, 2]
     }
     model$set_time(time)
     model$set_time_series(time_series)
            
     # setup norm and pred types
-    model$set_norm_type(switch(match.arg(norm_type), "P norm" = 3, "L2 norm" = 2, "L1 norm" = 1))
+    model$set_norm_type(switch(match.arg(norm_type), 
+                               "P norm" = 3, "L2 norm" = 2, "L1 norm" = 1))
     model$set_p(P)
-    model$set_pred_type(2) # 2 = simplex
+    model$set_pred_type(2)
     
     # setup lib and pred ranges
     if (is.vector(lib))
@@ -136,41 +141,49 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
     if (is.vector(pred))
         pred <- matrix(pred, ncol = 2, byrow = TRUE)
     
-    if(!all(lib[,2] >= lib[,1]))
-        warning("Some library rows look incorrectly formatted, please check the lib argument.")
-    if(!all(pred[,2] >= pred[,1]))
-        warning("Some library rows look incorrectly formatted, please check the pred argument.")
+    if(!all(lib[, 2] >= lib[, 1]))
+        warning("Some library rows look incorrectly formatted, please check ", 
+                "the lib argument.")
+    if(!all(pred[, 2] >= pred[, 1]))
+        warning("Some library rows look incorrectly formatted, please check ", 
+                "the pred argument.")
     
     model$set_lib(lib)
     model$set_pred(pred)
     
     # handle exclusion radius
     if (is.null(exclusion_radius))
-        exclusion_radius = -1;
+    {
+        exclusion_radius <- -1
+    }
     model$set_exclusion_radius(exclusion_radius)
-
+    
     # handle epsilon
     if (is.null(epsilon))
-        epsilon = -1;
+    {
+        epsilon <- -1
+    }
     model$set_epsilon(epsilon)
     
     # handle silent flag
     if (silent)
+    {
         model$suppress_warnings()
+    }
     
     # setup other params in data.frame
     params <- expand.grid(tp, num_neighbors, tau, E)
     names(params) <- c("tp", "nn", "tau", "E")
-    params <- params[,c("E", "tau", "tp", "nn")]
+    params <- params[, c("E", "tau", "tp", "nn")]
     e_plus_1_index <- match(num_neighbors, c("e+1", "E+1", "e + 1", "E + 1"))
     if (any(e_plus_1_index, na.rm = TRUE))
-        params$nn <- params$E+1
+        params$nn <- params$E + 1
         
     # apply model prediction function to params
     output <- lapply(1:NROW(params), function(i) {
         model$set_params(params$E[i], params$tau[i], params$tp[i], params$nn[i])
         model$run()
-        if(stats_only)
+        if (stats_only)
         {
             df <- model$get_stats()
         } else {
@@ -185,12 +198,12 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
 
 #' @rdname simplex
 #' 
-#' @description \code{s_map} is similar to \code{simplex}, but uses the S-map algorithm to 
-#' make forecasts.
-#' 
+#' @description \code{s_map} is similar to \code{simplex}, but uses the S-map 
+#'   algorithm to make forecasts.
 #' @return For \code{s_map}, the same as for \code{simplex}, but with an 
-#'   additional column for the value of theta. If \code{save_smap_coefficients == TRUE}, 
-#'   then an additional list-column for the S-map coefficients.
+#'   additional column for the value of theta. If 
+#'   \code{save_smap_coefficients == TRUE}, then an additional list-column for 
+#'   the S-map coefficients.
 #' @examples 
 #' data("two_species_model")
 #' ts <- two_species_model$x[1:200]
@@ -216,17 +229,19 @@ s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
     # setup data
     if (is.vector(time_series)) {
         time <- seq_along(time_series)
-    } else if ((is.matrix(time_series) || is.data.frame(time_series)) && NCOL(time_series) >= 2) {
-        time <- time_series[,1]
-        time_series <- time_series[,2]
+    } else if ((is.matrix(time_series) || is.data.frame(time_series)) && 
+               NCOL(time_series) >= 2) {
+        time <- time_series[, 1]
+        time_series <- time_series[, 2]
     }
     model$set_time(time)
     model$set_time_series(time_series)
     
     # setup norm and pred types
-    model$set_norm_type(switch(match.arg(norm_type), "P norm" = 3, "L2 norm" = 2, "L1 norm" = 1))
+    model$set_norm_type(switch(match.arg(norm_type), 
+                               "P norm" = 3, "L2 norm" = 2, "L1 norm" = 1))
     model$set_p(P)
-    model$set_pred_type(1) # 1 = s-map
+    model$set_pred_type(1)
     
     # setup lib and pred ranges
     if (is.vector(lib))
@@ -234,22 +249,28 @@ s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
     if (is.vector(pred))
         pred <- matrix(pred, ncol = 2, byrow = TRUE)
     
-    if(!all(lib[,2] >= lib[,1]))
-        warning("Some library rows look incorrectly formatted, please check the lib argument.")
-    if(!all(pred[,2] >= pred[,1]))
-        warning("Some library rows look incorrectly formatted, please check the pred argument.")
+    if (!all(lib[, 2] >= lib[, 1]))
+        warning("Some library rows look incorrectly formatted, please check ", 
+                "the lib argument.")
+    if (!all(pred[, 2] >= pred[, 1]))
+        warning("Some library rows look incorrectly formatted, please check ", 
+                "the pred argument.")
     
     model$set_lib(lib)
     model$set_pred(pred)
     
     # handle exclusion radius
     if (is.null(exclusion_radius))
-        exclusion_radius = -1;
+    {
+        exclusion_radius <- -1
+    }
     model$set_exclusion_radius(exclusion_radius)
     
     # handle epsilon
     if (is.null(epsilon))
-        epsilon = -1;
+    {
+        epsilon <- -1
+    }
     model$set_epsilon(epsilon)
     
     # handle silent flag
@@ -259,29 +280,29 @@ s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
     # handle smap coefficients flag
     if (save_smap_coefficients)
     {
-        stats_only = FALSE;
+        stats_only <- FALSE
         model$save_smap_coefficients()
     }
     # setup other params in data.frame
     params <- expand.grid(theta, tp, num_neighbors, tau, E)
     names(params) <- c("theta", "tp", "nn", "tau", "E")
-    params <- params[,c("E", "tau", "tp", "nn", "theta")]
+    params <- params[, c("E", "tau", "tp", "nn", "theta")]
     e_plus_1_index <- match(num_neighbors, c("e+1", "E+1", "e + 1", "E + 1"))
     if (any(e_plus_1_index, na.rm = TRUE))
-        params$nn <- params$E+1
+        params$nn <- params$E + 1
     
     # apply model prediction function to params
     output <- lapply(1:NROW(params), function(i) {
         model$set_params(params$E[i], params$tau[i], params$tp[i], params$nn[i])
         model$set_theta(params$theta[i])
         model$run()
-        if(stats_only)
+        if (stats_only)
         {
             df <- model$get_stats()
         } else {
             df <- model$get_stats()
             df$model_output <- I(list(model$get_output()))
-            if(save_smap_coefficients)
+            if (save_smap_coefficients)
             {
                 df$smap_coefficients <- I(list(model$get_smap_coefficients()))
             }

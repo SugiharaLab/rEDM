@@ -10,4 +10,5 @@ out <- tde_gp(ts)
 
 # univariate forecasting with Gaussian processes and E = 5, and first half to 
 # predict second half
-out <- tde_gp(ts, lib = c(1, 100), pred = c(101, 200), E = 5, stats_only = FALSE)
+out <- tde_gp(ts, lib = c(1, 100), pred = c(101, 200), 
+              E = 5, stats_only = FALSE)
