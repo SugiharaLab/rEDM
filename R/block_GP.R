@@ -21,16 +21,20 @@
 #' initial values for subsequent optimization of likelihood.
 #' 
 #' The basic model is:
-#'   \deqn{y = f(x) + noise}
+#'   \deqn{y = f(x) + \text{noise}
+#'   }{y = f(x) + noise}
 #' in which the function f(x) is modeled using a Gaussian process prior:
-#'   \deqn{f ~ GP(0, C)}
+#'   \deqn{f \sim \text{GP}(0, C)
+#' }{f ~ GP(0, C)}
 #' with mean = 0,
 #' and covariance function, C, which is given by the squared-exponential kernel:
-#'   \deqn{C_{ij} = eta * exp(-phi^2 * ||x_i - x_j||^2)}
+#'   \deqn{C_{ij} = eta * \exp(-phi^2 * ||x_i - x_j||^2)
+#' }{C_{ij} = eta * exp(-phi^2 * ||x_i - x_j||^2)}
 #' 
 #' y is a realization from process f with normally-distributed i.i.d. process 
 #' noise,
-#'   \deqn{noise ~ N(0, v_e)}
+#'   \deqn{noise \sim \mathcal(N)(0, v_e)
+#'   }{noise ~ N(0, v_e)}
 #' such that the covariance of observations y_i and y_j is
 #'   \deqn{K_{ij} = C_{ij} + v_e * \delta_{ij}}
 #' where \eqn{\delta_{ij}} is the kronecker delta (i.e. it is 1 if \eqn{i = j} 
@@ -46,7 +50,8 @@
 #'
 #' For a scalar input, the length-scale parameter phi controls the expected 
 #' number of zero crossings on the unit interval as 
-#'   \deqn{E(crossings) = \frac{\sqrt(2)}{\pi} \phi \approx 0.45 \phi}
+#'   \deqn{E(crossings) = \frac{\sqrt(2)}{\pi} \phi \approx 0.45 \phi
+#'   }{E(crossings) = \sqrt(2)/\pi \phi \approx 0.45 \phi}
 #' 
 #' Thus to facilitate interpretation and prior specification, the distances in 
 #' C are scaled by the max distance so that a model with \eqn{\phi = 2} would 
@@ -56,15 +61,18 @@
 
 #' To fit the GP we estimate eta, v_e, and phi by maximizing the posterior after
 #' marginalizing over f(x). This is given by the multivariate normal likelihood 
-#'   \deqn{logL = -1/2 \log{|K_d|}^{-1/2} y_d^T [K_d]^{-1} y_d}
+#'   \deqn{logL = -1/2 \log{|K_d|}^{-1/2} y_d^T [K_d]^{-1} y_d
+#' }{logL = -1/2 log(|K_d|)^(-1/2) y_d^T [K_d]^(-1) y_d}
 #' where \eqn{K_d} is the matrix obtained by evaluating the covariance function 
 #' at all pairs of inputs and \eqn{y_d} is the column vector of outputs. 
 #' Predictions for new values of x are obtained by setting eta, v_e, and phi to 
 #' the Maximum a Posteriori (MAP) estimates and using the GP conditional on the 
 #' observed data.  Specifically, given \eqn{x_d} and \eqn{y_d}, 
 #' the mean and variance for y evaluated at a new value of x are
-#'   \deqn{E(y) = C(x, x_d) [K_d]^(-1) y_d}
-#'   \deqn{V(y) = eta + v_e - C(x, x_d)[K_d]^{-1} C(x_d, x)}
+#'   \deqn{E(y) = C(x, x_d) [K_d]^{-1} y_d
+#'   }{E(y) = C(x, x_d) [K_d]^(-1) y_d}
+#'   \deqn{V(y) = eta + v_e - C(x, x_d)[K_d]^{-1} C(x_d, x)
+#'   }{V(y) = eta + v_e - C(x, x_d)[K_d]^(-1) C(x_d, x)}
 #' where the vector \eqn{C(x, x_d)} is obtained by evaluating C at x and each 
 #' of the observed inputs while holding eta, phi, and v_e at the MAP estimates.
 #' @param block either a vector to be used as the time series, or a 

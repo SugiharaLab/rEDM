@@ -112,15 +112,15 @@ The default parameters are set so that, given a matrix of time series,
   forecast statistics.
 
 norm_type "L2 norm" (default) uses the typical Euclidean distance:
-\deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}}
-  {distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
+\deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}
+}{distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
 norm_type "L1 norm" uses the Manhattan distance:
-\deqn{distance(a,b) := \sum_i{|a_i - b_i|}}
-  {distance(a, b) := \sum|a_i - b_i|}
+\deqn{distance(a,b) := \sum_i{|a_i - b_i|}
+}{distance(a, b) := \sum|a_i - b_i|}
 norm type "P norm" uses the P norm, generalizing the L1 and L2 norm to use 
   $P$ as the exponent:
-\deqn{distance(a,b) := \sum_i{(a_i - b_i)^P}^{1/P}}
-  {distance(a, b) := (\sum(a_i - b_i)^P)^(1/P)}
+\deqn{distance(a,b) := \sum_i{(a_i - b_i)^P}^{1/P}
+}{distance(a, b) := (\sum(a_i - b_i)^P)^(1/P)}
 }
 \examples{
 data("block_3sp")
