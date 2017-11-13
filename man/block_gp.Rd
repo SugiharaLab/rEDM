@@ -102,10 +102,10 @@ will be tried. If fit_params is also set to TRUE, these values will be the
 initial values for subsequent optimization of likelihood.
 
 The basic model is:
-  \deqn{y = f(x) + \text{noise}
+  \deqn{y = f(x) + \textnormal{noise}
   }{y = f(x) + noise}
 in which the function f(x) is modeled using a Gaussian process prior:
-  \deqn{f \sim \text{GP}(0, C)
+  \deqn{f \sim \textnormal{GP}(0, C)
 }{f ~ GP(0, C)}
 with mean = 0,
 and covariance function, C, which is given by the squared-exponential kernel:

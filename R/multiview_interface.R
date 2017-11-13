@@ -162,6 +162,7 @@ multiview <- function(block, lib = c(1, floor(NROW(block) / 2)),
                               stats_only = FALSE, first_column_time = TRUE, 
                               exclusion_radius = exclusion_radius, 
                               silent = silent)
+    out_time <- out_results$model_output[[1]]$time
     out_obs <- out_results$model_output[[1]]$obs
     out_forecasts <- do.call(cbind, 
                              lapply(out_results$model_output, function(df) {
@@ -178,29 +179,24 @@ multiview <- function(block, lib = c(1, floor(NROW(block) / 2)),
         }
     })
     
-    mve_stats <- do.call(rbind, 
-                         lapply(mve_forecasts, function(pred) {
-                             compute_stats(out_obs, pred)})
-    )
     params <- data.frame(E = E, tau = tau, tp = tp, 
                          nn = num_neighbors, k = k_list)
     
     # return output
-    if (stats_only)
-    {
-        output <- mve_stats
-    } else {
-        output <- do.call(rbind, lapply(seq_along(k_list), function(i) {
-            df <- mve_stats
+    output <- lapply(mve_forecasts, function(pred) {
+        if (stats_only)
+        {
+            df <- compute_stats(out_obs, pred)
+        } else {
+            df <- compute_stats(out_obs, pred)
             df$model_output <- I(list(data.frame(
-                time = out_sample_output$time,
-                obs = out_sample_output$obs, 
-                pred = mve_forecasts[[i]])))
-#            rankings <- in_sample_ranking[1:k_list[i]]
-            return(df)})
-        )
-    }
-    return(cbind(params, output))
+                time = out_time,
+                obs = out_obs, 
+                pred = pred)))
+        }
+        return(df)
+    })
+    return(cbind(params, do.call(rbind, output), row.names = NULL))
 }
 
 #' Make a lagged block for multiview
