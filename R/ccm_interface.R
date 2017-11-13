@@ -84,30 +84,7 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
     model <- new(Xmap)
     
     # setup data
-    if (first_column_time)
-    {
-        if (is.vector(block))
-            time <- block
-        else
-        {
-            time <- block[, 1]
-            block <- block[, -1]
-        }
-    }
-    else
-    {
-        time <- rownames(block)
-    }
-    if (is.null(time))
-    {
-        time <- 1:NROW(block)
-    } else {
-        time <- as.numeric(time)
-        if (any(is.na(time)))
-            time <- 1:NROW(block)
-    }
-    model$set_time(time)
-    model$set_block(data.matrix(block))
+    block <- setup_time_and_data_block(model, first_column_time, block)
     model$set_lib_column(convert_to_column_indices(lib_column, block))
     model$set_target_column(convert_to_column_indices(target_column, block))
     
@@ -117,20 +94,8 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
     model$set_p(P)
     
     # setup lib and pred ranges
-    if (is.vector(lib))
-        lib <- matrix(lib, ncol = 2, byrow = TRUE)
-    if (is.vector(pred))
-        pred <- matrix(pred, ncol = 2, byrow = TRUE)
-    
-    if (!all(lib[, 2] >= lib[, 1]))
-        warning("Some library rows look incorrectly formatted, please check ", 
-                "the lib argument.")
-    if (!all(pred[, 2] >= pred[, 1]))
-        warning("Some library rows look incorrectly formatted, please check ", 
-                "the pred argument.")
-    
-    model$set_lib(lib)
-    model$set_pred(pred)
+    setup_lib_and_pred(model, lib, pred)
+
     prev_num_lib_sizes <- length(lib_sizes)
     lib_sizes <- unique(sort(lib_sizes))
     if (length(lib_sizes) < prev_num_lib_sizes)

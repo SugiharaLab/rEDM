@@ -115,30 +115,7 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
     model <- new(BlockLNLP)
     
     # setup data
-    if (first_column_time)
-    {
-        if (is.vector(block))
-            time <- block
-        else
-        {
-            time <- block[, 1]
-            block <- block[, -1]
-        }
-    }
-    else
-    {
-        time <- rownames(block)
-    }
-    if (is.null(time))
-    {
-        time <- 1:NROW(block)
-    } else {
-        time <- as.numeric(time)
-        if (any(is.na(time)))
-            time <- 1:NROW(block)
-    }
-    model$set_time(time)
-    model$set_block(data.matrix(block))
+    block <- setup_time_and_data_block(model, first_column_time, block)
     model$set_target_column(convert_to_column_indices(target_column, block))
     
     # setup norm and pred types
@@ -158,40 +135,10 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
     }
     
     # setup lib and pred ranges
-    if (is.vector(lib))
-        lib <- matrix(lib, ncol = 2, byrow = TRUE)
-    if (is.vector(pred))
-        pred <- matrix(pred, ncol = 2, byrow = TRUE)
+    setup_lib_and_pred(model, lib, pred)
     
-    if (!all(lib[, 2] >= lib[, 1]))
-        warning("Some library rows look incorrectly formatted, please check ", 
-                "the lib argument.")
-    if (!all(pred[, 2] >= pred[, 1]))
-        warning("Some library rows look incorrectly formatted, please check ", 
-                "the pred argument.")
-    
-    model$set_lib(lib)
-    model$set_pred(pred)
-    
-    # handle exclusion radius
-    if (is.null(exclusion_radius))
-    {
-        exclusion_radius <- -1
-    }
-    model$set_exclusion_radius(exclusion_radius)
-    
-    # handle epsilon
-    if (is.null(epsilon))
-    {
-        epsilon <- -1
-    }
-    model$set_epsilon(epsilon)
-    
-    # handle silent flag
-    if (silent)
-    {
-        model$suppress_warnings()
-    }
+    # handle remaining arguments and flags
+    setup_model_flags(model, exclusion_radius, epsilon, silent)
     
     # convert embeddings to column indices
     if (is.null(names(block)))

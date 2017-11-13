@@ -136,41 +136,11 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
     model$set_pred_type(2)
     
     # setup lib and pred ranges
-    if (is.vector(lib))
-        lib <- matrix(lib, ncol = 2, byrow = TRUE)
-    if (is.vector(pred))
-        pred <- matrix(pred, ncol = 2, byrow = TRUE)
-    
-    if(!all(lib[, 2] >= lib[, 1]))
-        warning("Some library rows look incorrectly formatted, please check ", 
-                "the lib argument.")
-    if(!all(pred[, 2] >= pred[, 1]))
-        warning("Some library rows look incorrectly formatted, please check ", 
-                "the pred argument.")
-    
-    model$set_lib(lib)
-    model$set_pred(pred)
-    
-    # handle exclusion radius
-    if (is.null(exclusion_radius))
-    {
-        exclusion_radius <- -1
-    }
-    model$set_exclusion_radius(exclusion_radius)
-    
-    # handle epsilon
-    if (is.null(epsilon))
-    {
-        epsilon <- -1
-    }
-    model$set_epsilon(epsilon)
-    
-    # handle silent flag
-    if (silent)
-    {
-        model$suppress_warnings()
-    }
-    
+    setup_lib_and_pred(model, lib, pred)
+
+    # handle remaining arguments and flags
+    setup_model_flags(model, exclusion_radius, epsilon, silent)
+
     # setup other params in data.frame
     params <- expand.grid(tp, num_neighbors, tau, E)
     names(params) <- c("tp", "nn", "tau", "E")
@@ -244,38 +214,10 @@ s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
     model$set_pred_type(1)
     
     # setup lib and pred ranges
-    if (is.vector(lib))
-        lib <- matrix(lib, ncol = 2, byrow = TRUE)
-    if (is.vector(pred))
-        pred <- matrix(pred, ncol = 2, byrow = TRUE)
-    
-    if (!all(lib[, 2] >= lib[, 1]))
-        warning("Some library rows look incorrectly formatted, please check ", 
-                "the lib argument.")
-    if (!all(pred[, 2] >= pred[, 1]))
-        warning("Some library rows look incorrectly formatted, please check ", 
-                "the pred argument.")
-    
-    model$set_lib(lib)
-    model$set_pred(pred)
-    
-    # handle exclusion radius
-    if (is.null(exclusion_radius))
-    {
-        exclusion_radius <- -1
-    }
-    model$set_exclusion_radius(exclusion_radius)
-    
-    # handle epsilon
-    if (is.null(epsilon))
-    {
-        epsilon <- -1
-    }
-    model$set_epsilon(epsilon)
-    
-    # handle silent flag
-    if (silent)
-        model$suppress_warnings()
+    setup_lib_and_pred(model, lib, pred)
+        
+    # handle remaining arguments and flags
+    setup_model_flags(model, exclusion_radius, epsilon, silent)
     
     # handle smap coefficients flag
     if (save_smap_coefficients)
