@@ -33,62 +33,58 @@
 #' \deqn{distance(a,b) := \sum_i{(a_i - b_i)^P}^{1/P}
 #' }{distance(a, b) := (\sum(a_i - b_i)^P)^(1/P)}
 #' 
-#' @param block either a vector to be used as the time series, or a 
-#'   data.frame or matrix where each column is a time series
-#' @param lib a 2-column matrix (or 2-element vector) where each row specifes 
-#'   the first and last *rows* of the time series to use for attractor 
-#'   reconstruction
-#' @param pred (same format as lib), but specifying the sections of the time 
-#'   series to forecast.
+#' @param block either a vector to be used as the time series, or a
+#'     data.frame or matrix where each column is a time series
+#' @param lib a 2-column matrix (or 2-element vector) where each row
+#'     specifes the first and last *rows* of the time series to use
+#'     for attractor reconstruction
+#' @param pred (same format as lib), but specifying the sections of
+#'     the time series to forecast.
 #' @param norm_type the distance function to use. see 'Details'
 #' @param P the exponent for the P norm
 #' @param E the embedding dimensions to use for time delay embedding
 #' @param tau the lag to use for time delay embedding
 #' @param tp the prediction horizon (how far ahead to forecast)
-#' @param max_lag the maximum number of lags to use for variable combinations
-#' @param num_neighbors the number of nearest neighbors to use for the 
-#'   in-sample prediction (any of "e+1", "E+1", "e + 1", "E + 1" will peg this 
-#'   parameter to E+1 for each run, any value < 1 will use all possible 
-#'   neighbors.)
-#' @param k the number of embeddings to use (any of "sqrt", "SQRT" will use 
-#'   k = floor(sqrt(m)))
-#' @param na.rm logical. Should missing values (including \code{NaN} be omitted 
-#'   from the calculations?)
+#' @param max_lag the maximum number of lags to use for variable
+#'     combinations. So if max_lag == 3, a variable X will appear with
+#'     lags X(t), X(t - tp), X(t - 2tp).
+#' @param num_neighbors the number of nearest neighbors to use for the
+#'     in-sample prediction (any of "e+1", "E+1", "e + 1", "E + 1"
+#'     will peg this parameter to E+1 for each run, any value < 1 will
+#'     use all possible neighbors.)
+#' @param k the number of embeddings to use (any of "sqrt", "SQRT"
+#'     will use k = floor(sqrt(m)))
+#' @param na.rm logical. Should missing values (including \code{NaN}
+#'     be omitted from the calculations?)
 #' @param target_column the index (or name) of the column to forecast
-#' @param stats_only specify whether to output just the forecast statistics or 
-#'   the raw predictions for each run
-#' @param first_column_time indicates whether the first column of the given 
-#'   block is a time column (and therefore excluded when indexing)
-#' @param exclusion_radius excludes vectors from the search space of nearest 
-#'   neighbors if their *time index* is within exclusion_radius (NULL turns 
-#'   this option off)
-#' @param silent prevents warning messages from being printed to the R console
-#' @return A data.frame with components for the parameters and forecast 
-#'   statistics:
-#' \tabular{ll}{
-#'   E \tab embedding dimension\cr
-#'   tau \tab time lag\cr
-#'   tp \tab prediction horizon\cr
-#'   nn \tab number of neighbors\cr
-#'   k \tab number of embeddings used\cr
-#'   num_pred \tab number of predictions\cr
-#'   rho \tab correlation coefficient between observations and predictions\cr
-#'   mae \tab mean absolute error\cr
-#'   rmse \tab root mean square error\cr
-#'   perc \tab percent correct sign\cr
-#'   p_val \tab p-value that rho is significantly greater than 0 using Fisher's 
-#'   z-transformation\cr
-#'   const_rho \tab same as rho, but for the constant predictor\cr
-#'   const_mae \tab same as mae, but for the constant predictor\cr
-#'   const_rmse \tab same as rmse, but for the constant predictor\cr
-#'   const_perc \tab same as perc, but for the constant predictor\cr
-#'   const_p_val \tab same as p_val, but for the constant predictor
-#' }
-#' If \code{stats_only == FALSE}, then additionally a list column:
-#' \tabular{ll}{
-#'   model_output \tab data.frame with columns for the time index, 
-#'   observations, and predictions\cr
-#' }
+#' @param stats_only specify whether to output just the forecast
+#'     statistics or the raw predictions for each run
+#' @param first_column_time indicates whether the first column of the
+#'     given block is a time column (and therefore excluded when
+#'     indexing)
+#' @param exclusion_radius excludes vectors from the search space of
+#'     nearest neighbors if their *time index* is within
+#'     exclusion_radius (NULL turns this option off)
+#' @param silent prevents warning messages from being printed to the R
+#'     console
+#' @return A data.frame with components for the parameters and
+#'     forecast statistics: \tabular{ll}{ E \tab embedding
+#'     dimension\cr tau \tab time lag\cr tp \tab prediction horizon\cr
+#'     nn \tab number of neighbors\cr k \tab number of embeddings
+#'     used\cr num_pred \tab number of predictions\cr rho \tab
+#'     correlation coefficient between observations and predictions\cr
+#'     mae \tab mean absolute error\cr rmse \tab root mean square
+#'     error\cr perc \tab percent correct sign\cr p_val \tab p-value
+#'     that rho is significantly greater than 0 using Fisher's
+#'     z-transformation\cr const_rho \tab same as rho, but for the
+#'     constant predictor\cr const_mae \tab same as mae, but for the
+#'     constant predictor\cr const_rmse \tab same as rmse, but for the
+#'     constant predictor\cr const_perc \tab same as perc, but for the
+#'     constant predictor\cr const_p_val \tab same as p_val, but for
+#'     the constant predictor } If \code{stats_only == FALSE}, then
+#'     additionally a list column: \tabular{ll}{ model_output \tab
+#'     data.frame with columns for the time index, observations, and
+#'     predictions\cr }
 #' @examples 
 #' data("block_3sp")
 #' block <- block_3sp[, c(2, 5, 8)]
@@ -103,7 +99,7 @@ multiview <- function(block, lib = c(1, floor(NROW(block) / 2)),
                       stats_only = TRUE, first_column_time = FALSE, 
                       exclusion_radius = NULL, silent = FALSE)
 {
-    # setup params
+    ## setup params
     if (is.vector(lib))
         lib <- matrix(lib, ncol = 2, byrow = TRUE)
     if (is.vector(pred))
@@ -113,8 +109,12 @@ multiview <- function(block, lib = c(1, floor(NROW(block) / 2)),
         num_neighbors <- E + 1
     
     # generate lagged block and list of embeddings
-    if (max_lag < 0)
-        warning("Maximum lag must be non-negative - setting to 0.")
+    if (max_lag < 1)
+    {
+        warning("Maximum lag must be positive - setting to 1.")
+        max_lag <- 1
+    }
+
     num_vars <- NCOL(block)
     if (first_column_time)
     {
@@ -132,7 +132,13 @@ multiview <- function(block, lib = c(1, floor(NROW(block) / 2)),
     embeddings_list <- embeddings_list[valid_embeddings_idx, ]
     my_embeddings <- lapply(1:NROW(embeddings_list),
                             function(i) {embeddings_list[i, ]})
+
+    ## Make sure that if target_column is given as a column index, it
+    ## is aligned with the lagged data frame.
+    if( is.numeric(target_column) )
+        target_column <- max_lag*(target_column-1) +1
     
+
     # make in-sample forecasts
     in_results <- block_lnlp(lagged_block, lib = lib, pred = lib, 
                              norm_type = norm_type, P = P, method = "simplex", 
@@ -205,50 +211,109 @@ multiview <- function(block, lib = c(1, floor(NROW(block) / 2)),
 #' tau, while respecting lib (by inserting NANs, when trying to lag past lib 
 #' regions)
 #' 
-#' @param block a data.frame or matrix where each column is a time series
-#' @param max_lag the total number of lags to include for each variable
+#' @param block a data.frame or matrix where each column is a time
+#'     series
+#' @param max_lag the maximum number of lags to use for variable
+#'     combinations. So if max_lag == 3, a variable X will appear with
+#'     lags X(t), X(t - tp), X(t - 2tp).
 #' @param t the time index for the block
-#' @param lib a 2-column matrix (or 2-element vector) where each row specifes 
-#'   the first and last *rows* of the time series to use for attractor 
-#'   reconstruction
+#' @param lib a 2-column matrix (or 2-element vector) where each row
+#'     specifes the first and last *rows* of the time series to use
+#'     for attractor reconstruction
 #' @param tau the lag to use for time delay embedding
-#' @return A data.frame with the lagged columns and a time column
-#' 
+#' @return A data.frame with the lagged columns and a time column. E.g
+#'     if the original block had columns X, Y, Z and max_lag = 3, then
+#'     the returned data frame will have columns TIME, X, X_1, X_2, Y, Y_1,
+#'     Y_2, Z, Z_1, Z_2.
 make_block <- function(block, max_lag = 3, t = NULL, lib = NULL, tau = 1)
 {
-    num_vars <- NCOL(block)
     num_rows <- NROW(block)
-    output <- matrix(NA, nrow = num_rows, ncol = 1 + num_vars * max_lag)
+
+    ## Create the TIME column
     if (is.null(t))
-        output[, 1] <- 1:num_rows
+        TIME <- 1:num_rows
     else
-        output[, 1] <- t
+        TIME <- t
+
+    ## output is the returned data frame. Ideally, we'd preallocate
+    ## memory here.
+    output <- data.frame( TIME = TIME )
     
-    # add max_lag lags for each column in block
-    col_index <- 2
-    for (j in 1:num_vars)
+    ## add max_lag lags for each column in block
+    for (curr_var in names(block))
     {
-        ts <- block[, j]
-        output[, col_index] <- ts
-        col_index <- col_index + 1
-        
+        ## Extract TS for curr_var
+        ts <- block[, curr_var]
+
+        ## Add TS of curr_var to output
+        output[, curr_var] <- ts
+
+        ## Add lags if required
         if (max_lag > 1)
         {
-            for (i in 1:(max_lag - 1))
+            ## Add lags 1,2,...,max_lag-1
+            for (curr_lag in 1:(max_lag - 1))
             {
+                ## Lagged TS, tau steps
                 ts <- c(rep_len(NA, tau), ts[1:(num_rows - tau)])
+
+                ## Ensure we respect lib 
                 if (!is.null(lib))
                 {
                     for (k in 1:NROW(lib))
                     {
-                        ts[lib[k, 1]] <- NA
+                        ts[lib[k, 1] - 1 + (1:tau)] <- NA
                     }
                 }
-                output[, col_index] <- ts
-                col_index <- col_index + 1
+
+                ## Append lagged TS to output
+                output[, paste0( curr_var, "_", curr_lag) ] <- ts
             }
         }
     }
     
     return(output)
 }
+
+comparator <- function( df1, df2 )
+{
+    df1[ is.na(df1) ] <- -1
+    df2[ is.na(df2) ] <- -1
+    return( all.equal(df1, df2) )
+}
+## Tests for make_block
+df <- data.frame(x = c(1,4,5,8,7,8,4,2,5,2,5,7 ),
+                 y = c(5,7,3,9,3,2,5,1,0,8,4,6 ))
+lib <- matrix(c(5,7),  ncol = 2, byrow = TRUE)
+
+lag_one_test <- data.frame(
+    TIME   = c( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11,12),
+    x      = c( 1, 4, 5, 8, 7, 8, 4, 2, 5, 2, 5, 7 ),
+    x_1    = c(NA, 1, 4, 5,NA, 7, 8, 4, 2, 5, 2, 5 ),
+    y      = c(5,  7, 3, 9, 3, 2, 5, 1, 0, 8, 4, 6 ),
+    y_1    = c(NA, 5, 7, 3,NA, 3, 2, 5, 1, 0, 8, 4 )
+)
+
+lag_one <- make_block(df, max_lag = 2, t = NULL, lib = lib, tau = 1)
+stopifnot( comparator(lag_one,lag_one_test) )
+
+lag_two_test <- data.frame(
+    TIME   = c( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11,12),
+    x      = c( 1, 4, 5, 8, 7, 8, 4, 2, 5, 2, 5, 7 ),
+    x_1    = c(NA,NA, 1, 4, NA,NA,7, 8, 4, 2, 5, 2 ),
+    y      = c( 5, 7, 3, 9, 3, 2, 5, 1, 0, 8, 4, 6 ),
+    y_1    = c(NA,NA, 5, 7, NA,NA,3, 2, 5, 1, 0, 8 )
+)
+lag_two <- make_block(df, max_lag = 2, t = NULL, lib = lib, tau = 2)
+stopifnot( comparator( lag_two, lag_two_test ) )
+
+
+lag_three_test <- data.frame(
+    TIME   = c( 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12 ),
+    x      = c( 1, 4, 5, 8, 7, 8, 4, 2, 5, 2, 5, 7 ),
+    x_1    = c(NA,NA,NA, 1,NA,NA,NA, 7, 8, 4, 2, 5 ),
+    y      = c( 5, 7, 3, 9, 3, 2, 5, 1, 0, 8, 4, 6 ),
+    y_1    = c(NA,NA,NA, 5,NA,NA,NA, 3, 2, 5, 1, 0 )
+)
+lag_three <- make_block(df, max_lag = 2, t = NULL, lib = lib, tau = 3)
+stopifnot( comparator( lag_three, lag_three_test ) )

@@ -10,7 +10,7 @@ time(vec()), data_vectors(std::vector<vec>()), smap_coefficients(std::vector<vec
 targets(vec()), predicted(vec()), predicted_var(vec()),
 const_targets(vec()), const_predicted(vec()),
 num_vectors(0), distances(std::vector<vec>()),
-CROSS_VALIDATION(false), SUPPRESS_WARNINGS(false), SAVE_SMAP_COEFFICIENTS(false),
+CROSS_VALIDATION(false), SUPPRESS_WARNINGS(false), SAVE_SMAP_COEFFICIENTS(false), GLM(false),
 pred_mode(SIMPLEX), norm_mode(L2_NORM),
 nn(0), exclusion_radius(-1), epsilon(-1), p(0.5),
 lib_ranges(std::vector<time_range>()), pred_ranges(std::vector<time_range>())
@@ -18,34 +18,139 @@ lib_ranges(std::vector<time_range>()), pred_ranges(std::vector<time_range>())
     //num_threads = std::thread::hardware_concurrency();
 }
 
-/*
-void ForecastMachine::debug_print_vectors()
+// Other covariances may be better
+double ForecastMachine::cov_func( double dist, double charDist, double param )
 {
-    size_t i = 0;
-    for(auto& v: data_vectors)
-    {
-        std::cerr << i << ": <";
-        for(auto& i: v)
-        {
-            std::cerr << i << " ";
-        }
-        std::cerr << "> --> " << targets[i] << "\n";
-        ++i;
-    }
-    return;
+  double d = dist / charDist;
+  return exp( -param * d );
 }
 
-void ForecastMachine::debug_print_lib_and_pred()
+
+// Other covariances may be better
+double ForecastMachine::weight_func( double dist, double charDist, double param )
 {
-    size_t i = 0;
-    for(auto l: lib_indices)
-    {
-        std::cerr << i << ": " << "lib = " << l << ", pred = " << pred_indices[i] << "\n";
-        ++i;
-    }
-    return;
+  double d = dist / charDist;
+  return  exp( -param * d );
 }
-*/
+
+MatrixXd ForecastMachine::least_squares_solver( MatrixXd A, MatrixXd B )
+// Solve a Least squares problem 
+{
+  //return A.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(B);
+
+  // May also use:
+  // return A.colPivHouseholderQr().solve(B);
+  
+  // perform SVD 
+  Eigen::JacobiSVD<MatrixXd> svd( A, Eigen::ComputeThinU | Eigen::ComputeThinV);
+  
+  // remove singular values close to 0
+  VectorXd S = svd.singularValues();
+  MatrixXd S_inv = MatrixXd::Zero(A.cols(), A.cols());
+  double max_s = S(0) * 1e-5;
+  for(size_t j = 0; j < A.cols(); ++j)
+    {
+      if(S(j) >= max_s)
+  	S_inv(j, j) = 1/S(j);
+      else
+  	LOG_WARNING( "Approximate zero singular value found" );
+    }
+  
+  // perform back-substitution to solve
+  return svd.matrixV() * S_inv * svd.matrixU().transpose() * B;
+}
+
+MatrixXd ForecastMachine::stable_cholesky_solver( MatrixXd A,
+						  Eigen::LDLT<MatrixXd> ldltSigma )
+// This method applies the inverse square root of a real positive
+// definite matrix Sigma to the matrix/vector A via Eigen's stable
+// Cholesky decomposition LDLT (see ref below). The decomposition held
+// in the input variable ldltDecomp is
+//
+// Sigma = P^t L D L^t P
+//
+// and this methods returns x such that
+//
+// P^t L D^{1/2} x = A <==> x = D^{-1/2} L^{-1} P A.
+//
+// If we denote M := P^t L D^{1/2}, then Sigma = MM^t and
+// this method returns x = M^{-1}A.
+//
+// https://eigen.tuxfamily.org/dox/classEigen_1_1LDLT.html
+{
+  // Preparations. Get components P,D^{-1/2} and L.
+  
+  // L:
+  // For some reason if I sub it below I get error
+  MatrixXd L = ldltSigma.matrixL();
+
+  // D^{-1/2}:
+  // Manually inverting D. This procedure has the advantage that
+  // D^{-1/2} can also be applied to matrices.
+  VectorXd diag;
+  diag.resize( A.rows() );
+  double t;
+  for( int i = 0 ; i < A.rows() ; ++i ) {
+    t =  ldltSigma.vectorD()(i);
+    if( t <= 0 ) {
+      std::stringstream warn;
+      warn << "Invalid value " << t << " in matrix D at " << i << " entry of " << A.rows() << ". Covariance matrix  not positive definite.";
+      LOG_WARNING( warn.str().c_str() );
+      diag(i) = 0;
+    } else {
+      diag(i) = 1. / sqrt(t) ; // Manual inversion
+    }
+  }
+  Eigen::DiagonalMatrix<double, Eigen::Dynamic> sqrtInvD = diag.asDiagonal();
+  
+  // P:
+  Eigen::Transpositions<Eigen::Dynamic> P = ldltSigma.transpositionsP(); 
+
+  // The returned value. Will hold all the computations
+  MatrixXd x;
+  
+  // Now to the actual computation
+
+  // x = PA
+  x = P * A;
+  
+  // x = L^{-1}PA
+  x = L.triangularView<Eigen::Lower>().solve(x);
+  
+  // x = D^{-1/2}L^{-1}PA
+  x = sqrtInvD * x;
+  
+  return x;
+  
+}
+
+// void ForecastMachine::debug_print_vectors()
+// {
+//     size_t i = 0;
+//     for(auto& v: data_vectors)
+//     {
+//         std::cerr << i << ": <";
+//         for(auto& i: v)
+//         {
+//             std::cerr << i << " ";
+//         }
+//         std::cerr << "> --> " << targets[i] << "\n";
+//         ++i;
+//     }
+//     return;
+// }
+
+// void ForecastMachine::debug_print_lib_and_pred()
+// {
+//     size_t i = 0;
+//     for(auto l: lib_indices)
+//     {
+//         std::cerr << i << ": " << "lib = " << l << ", pred = " << pred_indices[i] << "\n";
+//         ++i;
+//     }
+//     return;
+// }
+
 
 void ForecastMachine::init_distances()
 {
@@ -132,6 +237,7 @@ void ForecastMachine::compute_distances()
             }
         }
     }
+    
     /*
                                 }));
 
@@ -515,6 +621,8 @@ void ForecastMachine::simplex_prediction(const size_t start, const size_t end)
         for(size_t k = 0; k < effective_nn; ++k)
             predicted_var[curr_pred] += weights[k] * pow(targets[nearest_neighbors[k]] - predicted[curr_pred], 2);
         predicted_var[curr_pred] = predicted_var[curr_pred] / total_weight;
+	if( predicted_var[curr_pred] == 0 )
+	  LOG_WARNING( "Zero prediction uncertainty." );
     }
     return;
 }
@@ -525,15 +633,15 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
     double avg_distance;
     //    vec weights;
     std::vector<size_t> nearest_neighbors;
-    MatrixXd A, S_inv;
-    VectorXd B, S, x, weights;
-    double max_s, pred;
+    MatrixXd A;
+    VectorXd B, x, weights;
+    double pred;
     std::vector<size_t> temp_lib;
-    
+
     for(size_t k = start; k < end; ++k)
     {
         curr_pred = which_pred[k];
-        
+      
         // find nearest neighbors
         if(CROSS_VALIDATION)
         {
@@ -554,7 +662,7 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
             LOG_WARNING("no nearest neighbors found; using NA for forecast");
             continue;
         }
-        weights = Eigen::VectorXd::Constant(effective_nn, 1.0);
+        weights = VectorXd::Constant(effective_nn, 1.0);
         //        weights.assign(effective_nn, 1.0); // default is for theta = 0
         if(theta > 0.0)
         {
@@ -565,12 +673,17 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
                 avg_distance += distances[curr_pred][neighbor];
             }
             avg_distance /= effective_nn;
-            
-            // compute weights
+	    
+            // compute weights. In the case GLM == false, cov amounts
+	    // to the exponential weighting used in standard
+	    // s-maps. If GLM == true, a different weighting scheme is used,
+	    // see the cov method for its implementation.
             for(size_t i = 0; i < effective_nn; ++i)
-                weights(i) = exp(-theta * distances[curr_pred][nearest_neighbors[i]] / avg_distance);
-        }
-        
+	      weights(i) = weight_func( distances[curr_pred][nearest_neighbors[i]],
+					avg_distance,
+					theta );
+	}
+	
         // setup matrices for SVD
         A.resize(effective_nn, E+1);
         B.resize(effective_nn);
@@ -583,24 +696,50 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
                 A(i, j) = weights(i) * data_vectors[nearest_neighbors[i]][j];
             A(i, E) = weights(i);
         }
-        
-        // perform SVD
-        Eigen::JacobiSVD<MatrixXd> svd(A, Eigen::ComputeThinU | Eigen::ComputeThinV);
-        
-        // remove singular values close to 0
-        S = svd.singularValues();
-        S_inv = MatrixXd::Zero(E+1, E+1);
-        max_s = S(0) * 1e-5;
-        for(size_t j = 0; j <= E; ++j)
-        {
-            if(S(j) >= max_s)
-                S_inv(j, j) = 1/S(j);
-        }
-        
-        // perform back-substitution to solve
-        x = svd.matrixV() * S_inv * svd.matrixU().transpose() * B;
-        
-        pred = 0;
+
+	// If we discount weights of close by measurements. Setting GLM
+	// to false gives the "Standard Smap algorithm
+	if( GLM ) {
+	  // Code for covariance matrix by Yair. It might be possible
+	  // to do this calculation only once but then memory access
+	  // for the effective nearest neighbours may be expensive. Also
+	  // the software engineering is not too interesting so it just
+	  // left here.
+	  MatrixXd covMat = MatrixXd::Zero(effective_nn, effective_nn);
+	  
+	  //The covariance matrix
+	  double dist;
+	  for(size_t i = 0; i < effective_nn; ++i) {
+	    for(size_t j = 0; j < effective_nn; ++j) {
+	      // Note we use the distance function and covaraince
+	      // used by weights. This can be changed.
+	      dist = dist_func(
+			       data_vectors[nearest_neighbors[i]],
+			       data_vectors[nearest_neighbors[j]]
+			       );
+
+	      if ( i == j )
+		covMat(i,j) = cov_func( dist, avg_distance, theta) + 0.001;
+	      else
+		covMat(i,j) = cov_func( dist, avg_distance, theta);
+	    }
+	  }
+	  
+	  // Find the LDLT stable Cholesky factor of covMat, see
+	  // doc for ForecastMachine::stable_cholesky_factorization
+	  // For more details on what the object L actually holds.
+	  Eigen::LDLT<MatrixXd> covMatLDLT = covMat.ldlt();
+
+	  // Solve the least squares problem Ax = B
+	  x = least_squares_solver( stable_cholesky_solver(A, covMatLDLT), stable_cholesky_solver(B, covMatLDLT) );
+
+	} else {
+	  // The "standard" smap algorithm now solves Ax = b (in least
+	  // squares sense) without the reweighting covariance matrix.
+	  x = least_squares_solver( A, B );
+	}
+	
+	pred = 0;
         for(size_t j = 0; j < E; ++j)
             pred += x(j) * data_vectors[curr_pred][j];
         pred += x(E);
@@ -631,6 +770,8 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
             predicted_var[curr_pred] += weights(k) * pow(targets[nearest_neighbors[k]] - predicted[curr_pred], 2);
         }
         predicted_var[curr_pred] = predicted_var[curr_pred] / total_weight;
+	if( predicted_var[curr_pred] == 0 )
+	  LOG_WARNING( "Zero prediction uncertainty." );
     }
     return;
 }
@@ -740,3 +881,4 @@ DataFrame compute_stats(std::vector<double> observed, std::vector<double> predic
                               Named("perc") = output.perc,
                               Named("p_val") = output.p_val);
 }
+

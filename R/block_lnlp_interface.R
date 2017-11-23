@@ -110,6 +110,7 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
                        first_column_time = FALSE, 
                        exclusion_radius = NULL, epsilon = NULL, theta = NULL, 
                        silent = FALSE, save_smap_coefficients = FALSE)
+
 {
     # make new model object
     model <- new(BlockLNLP)
@@ -137,6 +138,28 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
     # setup lib and pred ranges
     setup_lib_and_pred(model, lib, pred)
     
+    if(!all(lib[,2] >= lib[,1]))
+        warning("Some library rows look incorrectly formatted, please check the lib argument.")
+    if(!all(pred[,2] >= pred[,1]))
+        warning("Some library rows look incorrectly formatted, please check the pred argument.")
+    
+    model$set_lib(lib)
+    model$set_pred(pred)
+    
+    # handle exclusion radius
+    if (is.null(exclusion_radius))
+        exclusion_radius = -1;
+    model$set_exclusion_radius(exclusion_radius)
+    
+    # handle epsilon
+    if (is.null(epsilon))
+        epsilon = -1;
+    model$set_epsilon(epsilon)
+    
+    # handle silent flag
+    if (silent)
+        model$suppress_warnings()
+
     # handle remaining arguments and flags
     setup_model_flags(model, exclusion_radius, epsilon, silent)
     
@@ -170,6 +193,11 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
                                 c("e+1", "E+1", "e + 1", "E + 1"))
         if (any(e_plus_1_index, na.rm = TRUE))
             params$nn <- 1 + sapply(columns, length)
+        
+        ## handle glm flag
+        if (glm)
+            model$glm()
+    
         # apply model prediction function to params
         output <- lapply(1:NROW(params), function(i) {
             model$set_embedding(columns[[params$embedding[i]]])
@@ -214,7 +242,6 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
             return(df)
         })
     }
-    
     # create embedding column in params
     params$embedding <- sapply(params$embedding, function(i) {
         paste(columns[[i]], sep = "", collapse = ", ")})

@@ -16,3 +16,4 @@ import(methods)
 importFrom("stats", "aggregate", "fft", "predict", "runif", "sd",
               "smooth.spline", "var", "dist")
 importFrom("utils", "combn")
+

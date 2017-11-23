@@ -1,0 +1,254 @@
+\documentclass{article}
+\usepackage[margin=0.25in]{geometry}
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+\usepackage[english]{babel} % English language/hyphenation
+\usepackage{amsmath, amsfonts, amsthm} % Math packages
+\usepackage{cite}
+%\usepackage[sort&compress,square,comma,authoryear]{natbib}
+
+% makes color citations
+%% \usepackage[
+%%   %dvips,dvipdfm,
+%%   colorlinks=true,urlcolor=blue,citecolor=red,linkcolor=red,bookmarks=true]{hyperref}
+
+\usepackage{color}
+\usepackage{pgfplots}
+\usepackage{tikz}
+%\pgfplotsset{compat=1.9} 
+%\usepackage{hyperref}
+
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+
+\usepackage{graphicx}
+%\usepackage{wrapfig}
+\usepackage{paralist}
+\usepackage{graphics} %% add this and next lines if pictures should be in esp format
+\usepackage{epsfig} %For pictures: screened artwork should be set up with an 85 or 100 line screen
+
+\usepackage{epstopdf} 
+\usepackage[colorlinks=true]{hyperref}
+\hypersetup{urlcolor=blue, citecolor=red}
+%\usepackage{showkeys}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}
+\newtheorem*{main}{Main Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{conjecture}{Conjecture}
+\newtheorem*{problem}{Problem}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}{Remark}
+\newtheorem*{notation}{Notation}
+\newcommand{\ep}{\varepsilon}
+\newcommand{\eps}[1]{{#1}_{\varepsilon}}
+\newcommand{\bs}{\boldsymbol}
+\allowdisplaybreaks[3]
+
+
+% new commands %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\diag}{\text{diag}}
+\newcommand{\tp}[1]{^{(#1)}}
+\newcommand{\vecline}{\rule[.5ex]{3.5em}{0.4pt}}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+\makeatletter
+\def\BState{\State\hskip-\ALG@thistlm}
+\makeatother
+
+%\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
+\begin{document}
+\title{Model Selection}
+
+\author{Yair Daon}
+
+\maketitle
+
+{\footnotesize 
+ \centerline{Courant Institute, New York University}
+   \centerline{New York, NY 10012, USA}
+}
+
+\bigskip
+ 
+\begin{abstract}
+  A Bayesian approach to the model selection problem is described.
+\end{abstract}
+
+
+\section{Introduction}
+Consider a set of $n$ variables that describe a time-series. Some are
+lags of the others, but eventually all of these are \emph{generic
+  functions} of the state and this is the view taken here. Denote the
+corresponding time-series $X_t = (1, x_t\tp1,...,x_t\tp{n} )$. $X_t$
+can also be thought of as an over-specified state vector. Consider
+another variable whose time-series is denoted $y_t$, the target of
+prediction. It might be some unlagged coordinate from time-series
+$X_t$, e.g. $x_t\tp{1}$ and then $y_t = x_{t+1} \tp{1}$. Both $X_t$
+and $y_t$ are assumed known and well defined for $t=1,...,T$. The goal
+of this note is to find a method to choose a parsimonous set of
+variables to replace the time-series $X_t$, so that accurate
+predictions can be made for $y$. In turn, this will facilitate the
+understanding of which of the variables are important to the behaviour
+of the system, shedding light on the true dynamics.
+
+\section{Prior}
+A priori, it is not known which variables are actually governing the
+dynamics of the target $y$ and so all will be treated equally when
+specifying the prior. Consider $b_i, i=1,...,n$ and let $b_i \sim
+\text{Bernoulli}( \frac{E}{n} )$, i.e. $b_i \in \{0,1\}$ and $\Pr( b_i
+= 1 ) = \frac{E}{n}$. This way, on average, only $E$ of these are
+``on''. Assuming $b_i$'s are independent, specification of the prior
+$p(b) = \prod p(b_i)$ for the variables $b_i,i=1,...,n$ is complete.
+If we denote the $B = \sum b_i$, then
+\begin{align*}
+  p(b) &= \left ( \frac{E}{n} \right )^{B} \left ( 1 - \frac{E}{n} \right )^{n-B}
+\end{align*}
+
+\section{Likelihood}
+
+\subsection{Likelihood for One Time Step}
+Fix $1 \leq t_0 \leq T$. The idea for expressing the likelihood $p(
+y_{t_0} | b )$ is as follows: $X_t$ is viewed as a set of design
+variables, where $X_{t_0}$ is ignored, $y_{t_0}$ is assumed unknown,
+and $b$ are assumed given. Then, the observation $y_{t_0}$ is assumed
+to be generated via the local linear predictor of the S-map, with some
+additive Gaussian noise. 
+%% The time-series amount to $T$ measurements of $T$ different
+%% linear models, each given via S-map. Practically, each model's mean
+%% and variance are found S-map with the rest of the data. The result is
+%% a prediction mean $\mu_t$ and prediction variance $\sigma^2_t$ for
+%% $t=1,...,T$.
+Assuming the prediction noise is Gaussian is natural --- a Gaussian has
+maximal entropy for given mean and variance. The result is a Gaussian
+likelihood for the $t_0$ measurement. This likelihood enters the
+Bayesian machinery and gives a posterior distribution for which
+variables are active for time $t_0$.
+
+Some definitions are now in order. First of all, recalling $b$ is
+assumed known, let $B = \sum b_i$. Without loss of generality, assume
+$b_i = 1$ for $i=1,...,B$. This motivates truncating $X_t$, as done in the
+first equation below.
+\begin{align*}
+  X_t &= \left (1, x_t\tp1,...,x_t\tp{B} \right )
+  \text{ the truncated time series }\\
+  %
+  %
+  %
+  d_t :&= \sqrt{ \sum_{i=1}^B (x_{t_0}\tp{i} - x_t\tp{i} )^2 }
+  \text{ distance with respect to the active variables }\\
+  %
+  %
+  %
+  \bar{d} :&= \frac{1}{T-1}\sum_{t \neq t_0}^T d_t
+  \text{ average distance } \\
+  %
+  %
+  %
+  w_t :& = \exp ( -\theta d_t / \bar{d} )
+  \text{ weights }\\
+  %
+  %
+  %
+  A_{-t_0} :&=
+  \begin{bmatrix}
+    \vecline  & w_1X_1       & \vecline \\
+              & \vdots       &          \\
+    \vecline  & w_{t_0-1}X_{t_0-1} & \vecline \\
+    \vecline  & w_{t_0+1}X_{t_0+1} & \vecline \\
+              & \vdots       &          \\
+    \vecline  & w_TX_T       & \vecline 
+  \end{bmatrix}
+  \text{ weighted design matrix, skipping $t_0$ } \\
+  %
+  %
+  %
+  Y_{-t_0} :&=
+  \begin{bmatrix}
+    w_1y_1 \\
+    \vdots \\
+    w_{t_0-1}y_{t_0-1} \\
+    w_{t_0+1}y_{t_0+1} \\
+    \vdots \\
+    w_Ty_T 
+  \end{bmatrix}\\
+  %
+  %
+  %
+  \beta_{t_0} :&= \argmin_\beta \| A_{-t_0} \beta - Y_{-t_0}\|_2^2 \text{ the linear model for predicting $y_{t_0}$ }
+\end{align*}
+The definition of $\beta_{t_0}$ corresponds to the local linear model
+defined by an S-map. This model predicts a mean and a variance, so the
+predictive distribution is $y_{t_0} \sim \mathcal{N}(\mu_{t_0},\sigma^2_{t_0})$,
+and we find its parameters next. The predicted mean is given from the
+S-map's local linear model:
+\begin{align*}
+  \mu_{t_0} :&= \langle X_{t_0}, \beta_{t_0} \rangle
+\end{align*}
+The expression for $\sigma^2_{t_0}$ is not given by the S-map, since
+S-maps do not give a predictive \emph{distribution} but, rather, a
+predicted \emph{value} (namely, $\mu_{t_0}$). There are two ways of
+recovering the variance. Both define it via a weighted sum of squared
+deviations from $\mu_{t_0}$. The first uses the data $y_{t_0}$. The second
+uses the S-map local linear model.
+\begin{align*}
+  \sigma^2_{t_0} :&= \sum_{t \neq t_0} w_t ( y_t - \mu_{t_0})^2 / \sum_{t \neq t_0} w_t \\
+  %
+  %
+  \text{ or }\\
+  %
+  %
+  \sigma^2_{t_0} :&= \sum_{t \neq t_0} w_t ( \langle X_t, \beta_{t_0} \rangle - \mu_{t_0})^2 / \sum_{t \neq t_0} w_t.
+\end{align*}
+%
+This results in the following likelihood:
+\begin{align*}
+  p( y_{t_0} | b ) &= (2\pi \sigma^2_{t_0})^{-\frac12} \exp \left (
+  -\frac{1}{2\sigma^2_{t_0}} (y_{t_0} - \mu_{t_0} )^2 \right ).
+\end{align*}
+Combined with the prior, this gives a posterior distribution for
+$b$. Albeit interesting in its own, this posterior gives only local
+(for time $t_0$) information. It is natural to seek an analogy
+that considers all times $t=1,...,T$ at the same time. 
+%
+%
+\subsection{Likelihood for All Time Steps}
+Now drop the subscript for $t_0$ and consider instead $t=1,...,T$.
+Slightly bending the rules of Bayesian analysis gives a global
+description. It is reasonable to assume the noise realizations are
+indepndent (even though the parameters $\mu_t,\sigma^2_t$ are not) and
+the resulting likelihood is a product of Gaussian likelihoods:
+\begin{align*}
+  p( Y | b ) &= \prod_{t=1}^T p(y_t | b ) \\
+  %
+  %
+  %
+  &= \prod_{t=1}^T (2\pi \sigma^2_t)^{-\frac12} \exp \left ( -\frac{1}{2\sigma^2_t} (y_t - \mu_t )^2 \right )
+\end{align*}
+This likelihood is used in the next section for deriving a \emph{global} posterior.
+
+\section{Posterior}
+The posterior is found via Bayes rule. We ignore the normalization.
+%
+\begin{align*}
+  p( b | Y ) & \propto p( Y | b ) p(b) \\
+  %
+  %
+  %
+  &= \left ( \frac{E}{n} \right )^{B} \left ( 1 - \frac{E}{n} \right )^{n-B}
+  \prod_{t=1}^T (2\pi \sigma^2_t)^{-\frac12} \exp \left ( -\frac{1}{2\sigma^2_t} (y_t - \mu_t )^2 \right ).
+\end{align*}
+%
+The log posterior is more numerically stable. Up to an additive constant, it is:
+%
+\begin{align*}
+  \log p( b | Y ) &= B \log \frac{E}{n} + (n-B) \log \left ( 1 - \frac{E}{n} \right )
+  -\sum_{t=1}^T \log \sigma_t  - \sum_{t=1}^T \frac{1}{2\sigma^2_t}  (y_t - \mu_t)^2,
+\end{align*}
+%% \bibliographystyle{unsrt}
+%% \bibliography{refs}
+
+\end{document}

@@ -108,6 +108,10 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
         exclusion_radius <- -1
     }
     model$set_exclusion_radius(exclusion_radius)
+
+    # handle glm flag
+    if (glm)
+        model$glm()
     
     # TODO: handle epsilon
     
@@ -166,6 +170,6 @@ ccm_means <- function(ccm_df, FUN = mean, ...)
     col_idx <- which(names(ccm_means) == "lib_size")
     ccm_means <- cbind(ccm_means[, 1:(col_idx - 1)], 
                        lib_column = lib, target_column = target, 
-                       ccm_means[, col_idx:NCOL(ccm_means)])
-    return(ccm_means[, -1]) # drop Group.1 column
+                       ccm_means[,col_idx:NCOL(ccm_means)])
+    return(ccm_means[,-1]) # drop Group.1 column
 }

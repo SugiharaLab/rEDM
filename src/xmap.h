@@ -31,6 +31,7 @@ public:
                     const size_t new_num_samples, const bool new_replace);
     void set_seed(const size_t new_seed);
     void suppress_warnings();
+    void glm();
     void run();
     DataFrame get_output();
     

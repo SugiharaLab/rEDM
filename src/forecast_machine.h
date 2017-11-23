@@ -1,7 +1,6 @@
 #ifndef FORECAST_MACHINE_H
 #define FORECAST_MACHINE_H
 
-#include <iostream>
 #include <vector>
 #include <numeric>
 #include <thread>
@@ -10,10 +9,11 @@
 #include <math.h>
 #include <Rcpp.h>
 #include "data_types.h"
-//#include <Eigen/Dense>
+//#include <Eigen/Dense> 
 #include <RcppEigen.h>
+#include <string.h>
 
-//using namespace Eigen;
+//using namespace Eigen; 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 using namespace Rcpp;
@@ -27,6 +27,10 @@ protected:
     // *** computational methods *** //
     void init_distances();
     void compute_distances();
+    double weight_func( double distance, double charDist, double param ); // YAIR
+    double cov_func( double distance, double charDist, double param ); // YAIR
+    MatrixXd least_squares_solver( MatrixXd A, MatrixXd B ); // YAIR
+    MatrixXd stable_cholesky_solver( MatrixXd A, Eigen::LDLT<MatrixXd> ldltSigma ); // YAIR 
     //void sort_neighbors();
     std::vector<size_t> find_nearest_neighbors(const vec& dist);
 
@@ -59,10 +63,12 @@ protected:
     std::function<double (const vec&, const vec&)> dist_func;
     std::vector<vec > distances;
     
+    
     // *** parameters *** //
     bool CROSS_VALIDATION;
     bool SUPPRESS_WARNINGS;
     bool SAVE_SMAP_COEFFICIENTS;
+    bool GLM; 
     PredEnum pred_mode;
     NormEnum norm_mode;
     size_t nn;

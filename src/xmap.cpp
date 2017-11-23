@@ -150,6 +150,12 @@ void Xmap::suppress_warnings()
     return;
 }
 
+void Xmap::glm()
+{
+    GLM = true;
+    return;
+}
+
 void Xmap::run()
 {
     prepare_forecast(); // check parameters
@@ -376,6 +382,7 @@ RCPP_MODULE(xmap_module)
     .method("set_params", &Xmap::set_params)
     .method("set_seed", &Xmap::set_seed)
     .method("suppress_warnings", &Xmap::suppress_warnings)
+    .method("glm", &Xmap::glm)
     .method("run", &Xmap::run)
     .method("get_output", &Xmap::get_output)
     ;

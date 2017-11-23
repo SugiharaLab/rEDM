@@ -26,6 +26,7 @@ public:
     void set_p(const double new_p);
     void suppress_warnings();
     void save_smap_coefficients();
+    void glm();
     void run();
     DataFrame get_output();
     DataFrame get_smap_coefficients();
