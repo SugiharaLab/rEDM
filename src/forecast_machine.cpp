@@ -361,12 +361,35 @@ void ForecastMachine::set_indices_from_range(std::vector<bool>& indices, const s
             start_shift = 0;
         }
         start_of_range = range_iter.first + start_shift;
+        if(start_of_range >= num_vectors) // check start of range
+        {
+            std::ostringstream temp;
+            temp << "start_of_range = ";
+            temp << start_of_range + 1;
+            temp << ", but num_vectors = ";
+            temp << num_vectors;
+            std::string temp_str = temp.str();
+            LOG_WARNING(temp_str.c_str());
+            LOG_WARNING("start of time_range was greater than the number of vectors; skipping");
+            continue;
+        }
+
         end_of_range = range_iter.second + end_shift;
+        if(end_shift < 0 && range_iter.second < abs(end_shift))
+        {
+            std::ostringstream temp;
+            temp << "end_of_range = ";
+            temp << int(range_iter.second) + end_shift + 1;
+            temp << ", which is not positive; skipping";
+            std::string temp_str = temp.str();
+            LOG_WARNING(temp_str.c_str());
+            continue;
+        }
         if(end_of_range >= num_vectors) // check end of range
         {
             std::ostringstream temp;
             temp << "end_of_range = ";
-            temp << end_of_range;
+            temp << end_of_range + 1;
             temp << ", but num_vectors = ";
             temp << num_vectors;
             std::string temp_str = temp.str();
@@ -503,7 +526,7 @@ void ForecastMachine::smap_forecast()
     */
     if(SAVE_SMAP_COEFFICIENTS)
     {
-        smap_coefficients.assign(num_vectors, vec(data_vectors[0].size()+1, qnan));
+        smap_coefficients.assign(data_vectors[0].size()+1, vec(num_vectors, qnan));
     }
     smap_prediction(0, which_pred.size());
     const_prediction(0, which_pred.size());
@@ -721,12 +744,13 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
         if(SAVE_SMAP_COEFFICIENTS)
         {
             for(size_t j = 0; j <= E; ++j)
-                smap_coefficients[curr_pred][j] = x(j);
+                smap_coefficients[j][curr_pred] = x(j);
         }
         // save prediction
         predicted[curr_pred] = pred;
         
-        // compute variance of prediction
+        // compute variance of prediction through residuals of fitted s-map model
+        /*
         VectorXd w_resid = B - A * x;
         double total_w = 0;
         for(size_t i = 0; i < effective_nn; ++i)
@@ -734,6 +758,16 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
             total_w += weights(i) * weights(i);
         }
         predicted_var[curr_pred] = w_resid.dot(w_resid) / total_w;
+        */
+        // compute variance of prediction (using same approach as simplex)
+        predicted_var[curr_pred] = 0;
+        double total_weight = 0;
+        for(size_t k = 0; k < effective_nn; ++k)
+        {
+            total_weight += weights(k);
+            predicted_var[curr_pred] += weights(k) * pow(targets[nearest_neighbors[k]] - predicted[curr_pred], 2);
+        }
+        predicted_var[curr_pred] = predicted_var[curr_pred] / total_weight;
     }
     return;
 }

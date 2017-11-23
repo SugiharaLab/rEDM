@@ -13,8 +13,9 @@ make_block(block, max_lag = 3, t = NULL, lib = NULL, tau = 1)
 
 \item{t}{the time index for the block}
 
-\item{lib}{a 2-column matrix (or 2-element vector) where each row specifes the 
-first and last *rows* of the time series to use for attractor reconstruction}
+\item{lib}{a 2-column matrix (or 2-element vector) where each row specifes 
+the first and last *rows* of the time series to use for attractor 
+reconstruction}
 
 \item{tau}{the lag to use for time delay embedding}
 }

@@ -1,3 +1,5 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^vignettes/rEDM_tutorial_cache$
+^README.md
+^.zenodo.json

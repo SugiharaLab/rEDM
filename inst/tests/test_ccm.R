@@ -7,4 +7,5 @@ anchovy_xmap_sst <- ccm(sardine_anchovy_sst, E = 3,
                         RNGseed = 42)
 
 a_xmap_t_means <- ccm_means(anchovy_xmap_sst)
-plot(a_xmap_t_means$lib_size, a_xmap_t_means$rho, type = "l", xlab = "Library Size", ylab = "Cross Map rho")
+plot(a_xmap_t_means$lib_size, a_xmap_t_means$rho, type = "l", 
+     xlab = "Library Size", ylab = "Cross Map rho")

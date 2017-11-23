@@ -7,19 +7,21 @@
 ccm_means(ccm_df, FUN = mean, ...)
 }
 \arguments{
-\item{ccm_df}{a data.frame, usually output from the \code{\link{ccm}} function}
+\item{ccm_df}{a data.frame, usually output from the \code{\link{ccm}} 
+function}
 
-\item{FUN}{a function that aggregates the numerical statistics (by default, uses the mean)}
+\item{FUN}{a function that aggregates the numerical statistics (by default, 
+uses the mean)}
 
 \item{...}{optional arguments to FUN}
 }
 \value{
-A data.frame with forecast statistics aggregated at each unique library
-  size
+A data.frame with forecast statistics aggregated at each unique 
+  library size
 }
 \description{
-\code{ccm_means} is a utility function to summarize output from the \code{\link{ccm}} 
-function
+\code{ccm_means} is a utility function to summarize output from the 
+  \code{\link{ccm}} function
 }
 \examples{
 data("sardine_anchovy_sst")

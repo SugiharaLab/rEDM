@@ -14,7 +14,8 @@ test_nonlinearity(ts, method = "ebisuzaki", num_surr = 200, T_period = 1,
 
 \item{num_surr}{the number of null surrogates to generate}
 
-\item{T_period}{the period of seasonality for seasonal surrogates (ignored for other methods)}
+\item{T_period}{the period of seasonality for seasonal surrogates 
+(ignored for other methods)}
 
 \item{E}{the embedding dimension for s_map}
 
