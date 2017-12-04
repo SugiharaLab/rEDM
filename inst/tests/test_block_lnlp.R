@@ -6,7 +6,8 @@ block <- two_species_model[1:200, ]
 
 # multivariate simplex projection using x and y to predict x
 output <- block_lnlp(block, columns = c("x", "y"), 
-                     first_column_time = TRUE, stats_only = FALSE)
+                     first_column_time = TRUE, stats_only = FALSE, 
+                     silent = TRUE)
 
 output <- output$model_output[[1]]
 output$pred_err <- sqrt(output$pred_var)
@@ -20,4 +21,5 @@ for (i in t)
 }
 
 # cross mapping using x to predict y
-block_lnlp(block, target_column = 2, columns = c("x"), first_column_time = TRUE)
+block_lnlp(block, target_column = 2, columns = c("x"), first_column_time = TRUE, 
+           silent = TRUE)

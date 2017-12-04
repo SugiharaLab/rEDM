@@ -6,7 +6,8 @@ ts <- two_species_model$x[1:200]
 
 # univariate forecasting with Gaussian processes and E = 1:10, using maximum 
 #　likelihood to estimate params over library points
-out <- tde_gp(ts)
+out <- tde_gp(ts, 
+              silent = TRUE)
 
 # univariate forecasting with Gaussian processes and E = 5, and first half to 
 # predict second half

@@ -185,12 +185,18 @@ std::vector<size_t> ForecastMachine::find_nearest_neighbors(const vec& dist)
     else
     {
         size_t i;
-        nearest_neighbors.push_back(which_lib[0]);
         for(auto curr_lib: which_lib)
         {
+            // distance to current neighbor under examination
             curr_distance = dist[curr_lib];
-            if(curr_distance <= dist[nearest_neighbors.back()])
+            
+            // We want to include the current neighbor:
+            //   if haven't populated neighbors vector, or
+            //   if current neighbor is nearer than farthest away neighbor
+            if(nearest_neighbors.size() < nn || 
+               curr_distance <= dist[nearest_neighbors.back()])
             {
+                // find the correct place to insert the current neighbor
                 i = nearest_neighbors.size();
                 while((i > 0) && (curr_distance < dist[nearest_neighbors[i-1]]))
                 {
@@ -198,6 +204,8 @@ std::vector<size_t> ForecastMachine::find_nearest_neighbors(const vec& dist)
                 }
                 nearest_neighbors.insert(nearest_neighbors.begin()+i, curr_lib);
 
+                // if we've added too many neighbors and there isn't a tie, then
+                // pop off the farthest neighbor
                 if((nearest_neighbors.size() > nn) &&
                    (dist[nearest_neighbors[nn-1]] < dist[nearest_neighbors.back()]))
                 {
@@ -454,7 +462,6 @@ void ForecastMachine::simplex_prediction(const size_t start, const size_t end)
             nearest_neighbors = find_nearest_neighbors(distances[curr_pred]);
         }
         effective_nn = nearest_neighbors.size();
-        
         if(effective_nn == 0)
         {
             predicted[curr_pred] = qnan;
@@ -483,7 +490,7 @@ void ForecastMachine::simplex_prediction(const size_t start, const size_t end)
                                   min_weight);
             }
         }
-        
+
         // identify ties and adjust weights
         if(effective_nn > nn) // ties exist
         {

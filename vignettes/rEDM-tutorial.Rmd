@@ -72,7 +72,9 @@ There are many applications for using this approach to recover system dynamics f
 
 ## Nearest Neighbor Forecasting using Simplex Projection
 
-As mentioned previously, the reconstruction will map one-to-one to the original attractor manifold if enough lags are used (i.e. if the reconstruction has a sufficiently large embedding dimension). If the embedding dimension is too small, then reconstructed states will overlap and appear to be the same even though they actually correspond to different states. These "singularities" will result in poor forecast performance, because the system behavior cannot be uniquely determined in the reconstruction. Thus, we can use prediction skill as an indicator for identifying the optimal embedding dimension. In the following example, we demonstrate how this can be accomplished using a nearest neighbor forecastaing method, Simplex Projection [@Sugihara_1990], implemented in **rEDM** as the function `simplex`.
+As mentioned previously, the reconstruction will map one-to-one to the original attractor manifold if enough lags are used (i.e. if the reconstruction has a sufficiently large embedding dimension). If the embedding dimension is too small, then reconstructed states may overlap and appear to be the same even though they actually correspond to different *true* states of the system. These "singularities" will result in poor forecast performance, because the system behavior cannot be uniquely determined everywhere. Thus, we can use prediction skill as an indicator for the optimal embedding dimension.
+
+In the following example, we demonstrate how this can be accomplished using a nearest neighbor forecasting method, Simplex Projection [@Sugihara_1990], to produce forecasts, and using the correlation between observed and predicted values as the measure of prediction skill.
 
 ### Example
 
@@ -101,11 +103,11 @@ lib <- c(1, 100)
 pred <- c(201, 500)
 ```
 
-We begin by initializing the `lib` and `pred` variables. These determine which portions of the data will be used to create the reconstruction, and which portions of the data the reconstruction will be used to make forecasts on. In other words, defining the "training" and "test" subsets of the data. Here, the first 100 points (rows 1 to 100) in the time series constitute the "library", and 300 points (rows 201 to 500) are the "prediction set" for which the model will produce forecasts.
+We begin by initializing the `lib` and `pred` variables. These determine which portions of the data will be used to create the reconstruction, and which portions will be used to make forecasts on. In other words, defining the "training" and "test" subsets of the data. Here, the first 100 points (rows 1 to 100) in the time series constitute the "library", and 300 points (rows 201 to 500) are the "prediction set" over which the model will produce forecasts.
 
 The remaining parameters will be left at their default values (see section \ref{sec_general_parameters} for details). For the `simplex` function, this means that the embedding dimension, $E$, will range from $1$ to $10$.
 
-*Note that if the code detects any overlap in the lib and pred, it will enable leave-one-out cross-validation and return a warning message.*
+*Note that if the code detects any overlap in the lib and pred, it will enable leave-one-out cross-validation and produce a warning message.*
 
 ```{r simplex on tentmap}
 simplex_output <- simplex(ts, lib, pred)

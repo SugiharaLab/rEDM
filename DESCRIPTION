@@ -1,8 +1,8 @@
 Package: rEDM
 Type: Package
 Title: Applications of Empirical Dynamic Modeling from Time Series
-Version: 0.6.8
-Date: 2017-11-13
+Version: 0.6.9
+Date: 2017-12-04
 Maintainer: Hao Ye <hao.ye@weecology.org>
 Author: Hao Ye [aut, cre], 
     Adam Clark [aut], 
@@ -14,6 +14,7 @@ Author: Hao Ye [aut, cre],
     Jane Cowles [ctb], 
     James Stagge [ctb], 
     Yair Daon [ctb], 
+    Andrew Edwards [ctb], 
     George Sugihara [ctb, ccp]
 Description: A new implementation of EDM algorithms based on research software previously developed for internal use in the Sugihara Lab (UCSD/SIO). Contains C++ compiled objects that use time delay embedding to perform state-space reconstruction and nonlinear forecasting and an R interface to those objects using 'Rcpp'. It supports both the simplex projection method from Sugihara & May (1990) <DOI:10.1038/344734a0> and the S-map algorithm in Sugihara (1994) <DOI:10.1098/rsta.1994.0106>. In addition, this package implements convergent cross mapping as described in Sugihara et al. (2012) <DOI:10.1126/science.1227079> and multiview embedding as described in Ye & Sugihara (2016) <DOI:10.1126/science.aag0863>.
 License: file LICENSE
@@ -23,6 +24,6 @@ Imports:
     methods
 LinkingTo: Rcpp, RcppEigen
 RcppModules: lnlp_module, block_lnlp_module, ccm_module
-Suggests: knitr, rmarkdown, R.rsp, ggplot2
+Suggests: knitr, rmarkdown, R.rsp, ggplot2, testthat
 VignetteBuilder: knitr, R.rsp
 RoxygenNote: 6.0.1
