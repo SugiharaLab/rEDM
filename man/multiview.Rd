@@ -15,7 +15,7 @@ multiview(block, lib = c(1, floor(NROW(block)/2)),
 \item{block}{either a vector to be used as the time series, or a 
 data.frame or matrix where each column is a time series}
 
-\item{lib}{a 2-column matrix (or 2-element vector) where each row specifes 
+\item{lib}{a 2-column matrix (or 2-element vector) where each row specifies 
 the first and last *rows* of the time series to use for attractor 
 reconstruction}
 
@@ -32,7 +32,9 @@ series to forecast.}
 
 \item{tp}{the prediction horizon (how far ahead to forecast)}
 
-\item{max_lag}{the maximum number of lags to use for variable combinations}
+\item{max_lag}{the maximum number of lags to use for variable combinations. 
+So if max_lag == 3, a variable X will appear with lags X[t], X[t - tau], 
+X[t - 2*tau]}
 
 \item{num_neighbors}{the number of nearest neighbors to use for the 
 in-sample prediction (any of "e+1", "E+1", "e + 1", "E + 1" will peg this 

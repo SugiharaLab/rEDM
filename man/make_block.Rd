@@ -9,18 +9,22 @@ make_block(block, max_lag = 3, t = NULL, lib = NULL, tau = 1)
 \arguments{
 \item{block}{a data.frame or matrix where each column is a time series}
 
-\item{max_lag}{the total number of lags to include for each variable}
+\item{max_lag}{the total number of lags to include for each variable. So if 
+max_lag == 3, a variable X will appear with lags X[t], X[t - tau], 
+X[t - 2*tau]}
 
 \item{t}{the time index for the block}
 
-\item{lib}{a 2-column matrix (or 2-element vector) where each row specifes 
+\item{lib}{a 2-column matrix (or 2-element vector) where each row specifies 
 the first and last *rows* of the time series to use for attractor 
 reconstruction}
 
 \item{tau}{the lag to use for time delay embedding}
 }
 \value{
-A data.frame with the lagged columns and a time column
+A data.frame with the lagged columns and a time column. If the 
+  original block had columns X, Y, Z and max_lag = 3, then the returned 
+  data.frame will have columns TIME, X, X_1, X_2, Y, Y_1, Y_2, Z, Z_1, Z_2.
 }
 \description{
 \code{make_block} generates a lagged block with the appropriate max_lag and 
