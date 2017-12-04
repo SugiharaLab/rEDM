@@ -35,7 +35,7 @@
 #' 
 #' @param block either a vector to be used as the time series, or a 
 #'   data.frame or matrix where each column is a time series
-#' @param lib a 2-column matrix (or 2-element vector) where each row specifes 
+#' @param lib a 2-column matrix (or 2-element vector) where each row specifies 
 #'   the first and last *rows* of the time series to use for attractor 
 #'   reconstruction
 #' @param pred (same format as lib), but specifying the sections of the time 
@@ -45,7 +45,9 @@
 #' @param E the embedding dimensions to use for time delay embedding
 #' @param tau the lag to use for time delay embedding
 #' @param tp the prediction horizon (how far ahead to forecast)
-#' @param max_lag the maximum number of lags to use for variable combinations
+#' @param max_lag the maximum number of lags to use for variable combinations. 
+#'   So if max_lag == 3, a variable X will appear with lags X[t], X[t - tau], 
+#'   X[t - 2*tau]
 #' @param num_neighbors the number of nearest neighbors to use for the 
 #'   in-sample prediction (any of "e+1", "E+1", "e + 1", "E + 1" will peg this 
 #'   parameter to E+1 for each run, any value < 1 will use all possible 
@@ -113,8 +115,8 @@ multiview <- function(block, lib = c(1, floor(NROW(block) / 2)),
         num_neighbors <- E + 1
     
     # generate lagged block and list of embeddings
-    if (max_lag < 0)
-        warning("Maximum lag must be non-negative - setting to 0.")
+    if (max_lag < 1)
+        warning("Maximum lag must be positive - setting to 1.")
     num_vars <- NCOL(block)
     if (first_column_time)
     {
@@ -132,6 +134,11 @@ multiview <- function(block, lib = c(1, floor(NROW(block) / 2)),
     embeddings_list <- embeddings_list[valid_embeddings_idx, ]
     my_embeddings <- lapply(1:NROW(embeddings_list),
                             function(i) {embeddings_list[i, ]})
+    
+    ## make sure that if target_column is given as a column index, it
+    ## is aligned with the lagged data frame.
+    if (is.numeric(target_column))
+        target_column <- 1 + max_lag * (target_column - 1)
     
     # make in-sample forecasts
     in_results <- block_lnlp(lagged_block, lib = lib, pred = lib, 
@@ -206,49 +213,68 @@ multiview <- function(block, lib = c(1, floor(NROW(block) / 2)),
 #' regions)
 #' 
 #' @param block a data.frame or matrix where each column is a time series
-#' @param max_lag the total number of lags to include for each variable
+#' @param max_lag the total number of lags to include for each variable. So if 
+#'   max_lag == 3, a variable X will appear with lags X[t], X[t - tau], 
+#'   X[t - 2*tau]
 #' @param t the time index for the block
-#' @param lib a 2-column matrix (or 2-element vector) where each row specifes 
+#' @param lib a 2-column matrix (or 2-element vector) where each row specifies 
 #'   the first and last *rows* of the time series to use for attractor 
 #'   reconstruction
 #' @param tau the lag to use for time delay embedding
-#' @return A data.frame with the lagged columns and a time column
+#' @return A data.frame with the lagged columns and a time column. If the 
+#'   original block had columns X, Y, Z and max_lag = 3, then the returned 
+#'   data.frame will have columns TIME, X, X_1, X_2, Y, Y_1, Y_2, Z, Z_1, Z_2.
 #' 
 make_block <- function(block, max_lag = 3, t = NULL, lib = NULL, tau = 1)
 {
     num_vars <- NCOL(block)
     num_rows <- NROW(block)
+    
+    # output is the returned data frame
     output <- matrix(NA, nrow = num_rows, ncol = 1 + num_vars * max_lag)
+    col_names <- character(1 + num_vars * max_lag)
+
+    # create the time column
     if (is.null(t))
         output[, 1] <- 1:num_rows
     else
         output[, 1] <- t
-    
+    col_names[1] <- "time"
+
     # add max_lag lags for each column in block
     col_index <- 2
+    if (is.null(colnames(block)))
+        colnames(block) <- paste0("col", num_vars)
     for (j in 1:num_vars)
     {
         ts <- block[, j]
         output[, col_index] <- ts
+        col_names[col_index] <- colnames(block)[j]
         col_index <- col_index + 1
         
+        ## add lags if required
         if (max_lag > 1)
         {
             for (i in 1:(max_lag - 1))
             {
                 ts <- c(rep_len(NA, tau), ts[1:(num_rows - tau)])
+                
+                # make sure we pad beginning of lib segments with tau x NAs
                 if (!is.null(lib))
                 {
                     for (k in 1:NROW(lib))
                     {
-                        ts[lib[k, 1]] <- NA
+                        ts[lib[k, 1] - 1 + (1:tau)] <- NA
                     }
                 }
                 output[, col_index] <- ts
+                col_names[col_index] <- paste0(colnames(block)[j], "_", i * tau)
                 col_index <- col_index + 1
             }
         }
     }
     
+    output <- data.frame(output)
+    names(output) <- col_names
     return(output)
 }
