@@ -127,6 +127,8 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
     e_plus_1_index <- match(num_neighbors, c("e+1", "E+1", "e + 1", "E + 1"))
     if (any(e_plus_1_index, na.rm = TRUE))
         params$num_neighbors <- params$E+1
+    params$num_neighbors <- as.numeric(params$num_neighbors)
+    
 
     model$set_params(params$E, params$tau, params$tp, params$num_neighbors, 
                      random_libs, num_samples, replace)

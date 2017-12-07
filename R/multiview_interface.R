@@ -113,6 +113,7 @@ multiview <- function(block, lib = c(1, floor(NROW(block) / 2)),
     if (any(match(num_neighbors, c("e+1", "E+1", "e + 1", "E + 1")), 
            na.rm = TRUE))
         num_neighbors <- E + 1
+    num_neighbors <- as.numeric(num_neighbors)
     
     # generate lagged block and list of embeddings
     if (max_lag < 1)

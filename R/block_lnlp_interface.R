@@ -170,6 +170,8 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
                                 c("e+1", "E+1", "e + 1", "E + 1"))
         if (any(e_plus_1_index, na.rm = TRUE))
             params$nn <- 1 + sapply(columns, length)
+        params$nn <- as.numeric(params$nn)
+        
         # apply model prediction function to params
         output <- lapply(1:NROW(params), function(i) {
             model$set_embedding(columns[[params$embedding[i]]])
@@ -199,6 +201,8 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
                                 c("e+1", "E+1", "e + 1", "E + 1"))
         if (any(e_plus_1_index, na.rm = TRUE))
             params$nn <- 1 + sapply(columns, length)
+        params$nn <- as.numeric(params$nn)
+        
         # apply model prediction function to params
         output <- lapply(1:NROW(params), function(i) {
             model$set_embedding(columns[[params$embedding[i]]])

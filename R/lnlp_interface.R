@@ -148,6 +148,7 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
     e_plus_1_index <- match(num_neighbors, c("e+1", "E+1", "e + 1", "E + 1"))
     if (any(e_plus_1_index, na.rm = TRUE))
         params$nn <- params$E + 1
+    params$nn <- as.numeric(params$nn)
         
     # apply model prediction function to params
     output <- lapply(1:NROW(params), function(i) {
@@ -232,6 +233,7 @@ s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
     e_plus_1_index <- match(num_neighbors, c("e+1", "E+1", "e + 1", "E + 1"))
     if (any(e_plus_1_index, na.rm = TRUE))
         params$nn <- params$E + 1
+    params$nn <- as.numeric(params$nn)
     
     # apply model prediction function to params
     output <- lapply(1:NROW(params), function(i) {
