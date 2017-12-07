@@ -245,7 +245,7 @@ make_block <- function(block, max_lag = 3, t = NULL, lib = NULL, tau = 1)
     # add max_lag lags for each column in block
     col_index <- 2
     if (is.null(colnames(block)))
-        colnames(block) <- paste0("col", num_vars)
+        colnames(block) <- paste0("col", seq_len(num_vars))
     for (j in 1:num_vars)
     {
         ts <- block[, j]

@@ -522,8 +522,8 @@ void ForecastMachine::simplex_prediction(const size_t start, const size_t end)
         for(size_t k = 0; k < effective_nn; ++k)
             predicted_var[curr_pred] += weights[k] * pow(targets[nearest_neighbors[k]] - predicted[curr_pred], 2);
         predicted_var[curr_pred] = predicted_var[curr_pred] / total_weight;
-        if(predicted_var[curr_pred] == 0)
-            LOG_WARNING("Zero prediction uncertainty.");
+//        if(predicted_var[curr_pred] == 0)
+//            LOG_WARNING("Zero prediction uncertainty.");
     }
     return;
 }
@@ -640,8 +640,8 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
             predicted_var[curr_pred] += weights(k) * pow(targets[nearest_neighbors[k]] - predicted[curr_pred], 2);
         }
         predicted_var[curr_pred] = predicted_var[curr_pred] / total_weight;
-        if(predicted_var[curr_pred] == 0)
-            LOG_WARNING("Zero prediction uncertainty.");
+//        if(predicted_var[curr_pred] == 0)
+//            LOG_WARNING("Zero prediction uncertainty.");
     }
     return;
 }
