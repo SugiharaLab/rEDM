@@ -19,10 +19,10 @@ make_surrogate_data(ts, method = c("random_shuffle", "ebisuzaki", "seasonal"),
 }
 \value{
 A matrix where each column is a separate surrogate with the same 
-  length as \code{ts}.
+  length as `ts`.
 }
 \description{
-\code{make_surrogate_data} generates surrogate data under several different 
+\code{\link{make_surrogate_data}} generates surrogate data under several different 
 null models.
 }
 \details{
@@ -35,7 +35,7 @@ transform, preserving the power spectra of the null surrogates.
 Method "seasonal" creates surrogates by computing a mean seasonal trend of 
 the specified period and shuffling the residuals.
 
-See \code{test_nonlinearity} for context.
+See \code{\link{test_nonlinearity}} for context.
 }
 \examples{
 data("two_species_model")

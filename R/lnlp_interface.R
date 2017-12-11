@@ -3,14 +3,14 @@
 #' 
 #' @title Perform univariate forecasting
 
-#' @details \code{simplex} is typically applied, and the embedding dimension 
+#' @details \code{\link{simplex}} is typically applied, and the embedding dimension 
 #' varied, to find an optimal embedding dimension for the data. Thus, the 
 #' default parameters are set so that passing a time series as the only 
 #' argument will run over E = 1:10 (embedding dimension), using leave-one-out 
 #' cross-validation over the whole time series, and returning just the forecast 
 #' statistics.
 #' 
-#' \code{s_map} is typically applied, with fixed embedding dimension, and theta 
+#' \code{\link{s_map}} is typically applied, with fixed embedding dimension, and theta 
 #' varied, to test for nonlinear dynamics in the data. Thus, the default 
 #' parameters are set so that passing a time series as the only  argument will 
 #' run over a default list of thetas (0, 0.0001, 0.0003, 0.001, 0.003, 0.01, 
@@ -63,11 +63,11 @@
 
 #' @rdname simplex
 #' 
-#' @description \code{simplex} uses time delay embedding on a single time 
+#' @description \code{\link{simplex}} uses time delay embedding on a single time 
 #'   series to generate an attractor reconstruction, and then applies the 
 #'   simplex projection algorithm to make forecasts.
 #' 
-#' @return For \code{simplex}, a data.frame with components for the parameters 
+#' @return For \code{\link{simplex}}, a data.frame with components for the parameters 
 #'   and forecast statistics:
 #' \tabular{ll}{
 #'   E \tab embedding dimension\cr
@@ -169,9 +169,9 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
 
 #' @rdname simplex
 #' 
-#' @description \code{s_map} is similar to \code{simplex}, but uses the S-map 
+#' @description \code{\link{s_map}} is similar to \code{\link{simplex}}, but uses the S-map 
 #'   algorithm to make forecasts.
-#' @return For \code{s_map}, the same as for \code{simplex}, but with an 
+#' @return For \code{\link{s_map}}, the same as for \code{\link{simplex}}, but with an 
 #'   additional column for the value of theta. If 
 #'   \code{save_smap_coefficients == TRUE}, then an additional list-column for 
 #'   the S-map coefficients.

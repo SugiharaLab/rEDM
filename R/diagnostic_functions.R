@@ -1,6 +1,6 @@
 #' Randomization test for nonlinearity using S-maps and surrogate data
 #' 
-#' \code{test_nonlinearity} tests for nonlinearity using S-maps by 
+#' \code{\link{test_nonlinearity}} tests for nonlinearity using S-maps by 
 #' comparing improvements in forecast skill (delta rho and delta mae) between 
 #' linear and nonlinear models with a null distribution from surrogate data.
 #' 
@@ -55,7 +55,7 @@ test_nonlinearity <- function(ts, method = "ebisuzaki", num_surr = 200,
 
 #' Generate surrogate data for permutation/randomization tests
 #'
-#' \code{make_surrogate_data} generates surrogate data under several different 
+#' \code{\link{make_surrogate_data}} generates surrogate data under several different 
 #' null models.
 #' 
 #' Method "random_shuffle" creates surrogates by randomly permuting the values 
@@ -67,7 +67,7 @@ test_nonlinearity <- function(ts, method = "ebisuzaki", num_surr = 200,
 #' Method "seasonal" creates surrogates by computing a mean seasonal trend of 
 #' the specified period and shuffling the residuals.
 #' 
-#' See \code{test_nonlinearity} for context.
+#' See \code{\link{test_nonlinearity}} for context.
 #' 
 #' @param ts the original time series
 #' @param method which algorithm to use to generate surrogate data
@@ -75,7 +75,7 @@ test_nonlinearity <- function(ts, method = "ebisuzaki", num_surr = 200,
 #' @param T_period the period of seasonality for seasonal surrogates 
 #'   (ignored for other methods)
 #' @return A matrix where each column is a separate surrogate with the same 
-#'   length as \code{ts}.
+#'   length as `ts`.
 #' @examples
 #' data("two_species_model")
 #' ts <- two_species_model$x[1:200]

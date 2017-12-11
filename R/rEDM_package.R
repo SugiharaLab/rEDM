@@ -1,10 +1,44 @@
 #' @name rEDM
 #' @docType package
 #' @title Applications of empirical dynamic modeling from time series.
-#' @author Hao Ye
-#' @description The rEDM package provides an interface from R to C++ compiled 
-#'   objects that use time delay embedding to perform state-space 
-#'   reconstruction and nonlinear forecasting.
+#' @author \strong{Maintainer}: Hao Ye
+#' 
+#'   \strong{Authors}: Adam Clark, Ethan Deyle, Steve Munch
+#'   
+#'   \strong{Contributors}: Oliver Keyes, Jun Cai, Ethan White, Jane Cowles, 
+#'     James Stagge, Yair Daon, Andrew Edwards, George Sugihara
+#' @description The \pkg{rEDM} package is a new implementation of EDM algorithms 
+#'   based on research software previously developed for internal use in the 
+#'   Sugihara Lab (UCSD/SIO). Contains C++ compiled objects that use time delay 
+#'   embedding to perform state-space reconstruction and nonlinear forecasting 
+#'   and an R interface to those objects using \pkg{Rcpp}. It supports both the 
+#'   simplex projection method from Sugihara & May (1990) 
+#'   <DOI:10.1038/344734a0> and the S-map algorithm in Sugihara (1994) 
+#'   <DOI:10.1098/rsta.1994.0106>. In addition, this package implements 
+#'   convergent cross mapping as described in Sugihara et al. (2012) 
+#'   <DOI:10.1126/science.1227079> and multiview embedding as described in Ye & 
+#'   Sugihara (2016) <DOI:10.1126/science.aag0863>.
+#' @details This package is divided into a set of main functions to perform 
+#'   various analyses, as well as helper functions that perform minor tasks, 
+#'   such as generate data, processing output, and wrapper functions.
+#' 
+#' \strong{Main Functions}: 
+#'   \itemize{
+#'     \item \code{\link{simplex}}
+#'     \item \code{\link{s_map}}
+#'     \item \code{\link{block_lnlp}}
+#'     \item \code{\link{ccm}}
+#'     \item \code{\link{multiview}}
+#'     \item \code{\link{tde_gp}}
+#'     \item \code{\link{block_gp}}
+#'   }
+#' \strong{Helper Functions}: 
+#'   \itemize{
+#'     \item \code{\link{compute_stats}}
+#'     \item \code{\link{ccm_means}}
+#'     \item \code{\link{make_surrogate_data}}
+#'     \item \code{\link{test_nonlinearity}}
+#'   }
 #' @keywords package
 NULL
 

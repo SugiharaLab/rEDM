@@ -1,6 +1,6 @@
 #' Perform convergent cross mapping using simplex projection
 #'
-#' \code{ccm} uses time delay embedding on one time series to generate an 
+#' \code{\link{ccm}} uses time delay embedding on one time series to generate an 
 #' attractor reconstruction, and then applies the simplex projection algorithm 
 #' to estimate concurrent values of another time series. This method is 
 #' typically applied, varying the library sizes, to determine if one time series
@@ -141,7 +141,7 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
 
 #' Take output from ccm and compute means as a function of library size.
 #'
-#' \code{ccm_means} is a utility function to summarize output from the 
+#' \code{\link{ccm_means}} is a utility function to summarize output from the 
 #'   \code{\link{ccm}} function
 #' 
 #' @param ccm_df a data.frame, usually output from the \code{\link{ccm}} 

@@ -77,7 +77,7 @@ A data.frame with forecast statistics for the different parameter
 }
 }
 \description{
-\code{ccm} uses time delay embedding on one time series to generate an 
+\code{\link{ccm}} uses time delay embedding on one time series to generate an 
 attractor reconstruction, and then applies the simplex projection algorithm 
 to estimate concurrent values of another time series. This method is 
 typically applied, varying the library sizes, to determine if one time series

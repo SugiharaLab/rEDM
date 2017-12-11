@@ -44,7 +44,7 @@ neighbors.)}
 \item{k}{the number of embeddings to use (any of "sqrt", "SQRT" will use 
 k = floor(sqrt(m)))}
 
-\item{na.rm}{logical. Should missing values (including \code{NaN} be omitted 
+\item{na.rm}{logical. Should missing values (including `NaN`` be omitted 
 from the calculations?)}
 
 \item{target_column}{the index (or name) of the column to forecast}
@@ -90,7 +90,7 @@ If \code{stats_only == FALSE}, then additionally a list column:
 }
 }
 \description{
-\code{multiview} applies the method described in Ye & Sugihara (2016) for 
+\code{\link{multiview}} applies the method described in Ye & Sugihara (2016) for 
   forecasting, wherein multiple attractor reconstructions are tested, and a 
   single nearest neighbor is selected from each of the top "k" 
   reconstructions to produce final forecasts.
@@ -98,8 +98,8 @@ If \code{stats_only == FALSE}, then additionally a list column:
 \details{
 uses multiple time series given as input to generate an attractor 
   reconstruction, and then applies the simplex projection or s-map algorithm 
-  to make forecasts. This method generalizes the \code{simplex} and 
-  \code{s-map} routines, and allows for "mixed" embeddings, where multiple 
+  to make forecasts. This method generalizes the \code{\link{simplex}} and 
+  \code{\link{s-map}} routines, and allows for "mixed" embeddings, where multiple 
   time series can be used as different dimensions of an attractor 
   reconstruction.
 

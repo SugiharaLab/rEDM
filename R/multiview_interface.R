@@ -1,14 +1,14 @@
 #' Perform forecasting using multiview embedding
 #'
-#' \code{multiview} applies the method described in Ye & Sugihara (2016) for 
+#' \code{\link{multiview}} applies the method described in Ye & Sugihara (2016) for 
 #'   forecasting, wherein multiple attractor reconstructions are tested, and a 
 #'   single nearest neighbor is selected from each of the top "k" 
 #'   reconstructions to produce final forecasts.
 #' 
 #'   uses multiple time series given as input to generate an attractor 
 #'   reconstruction, and then applies the simplex projection or s-map algorithm 
-#'   to make forecasts. This method generalizes the \code{simplex} and 
-#'   \code{s-map} routines, and allows for "mixed" embeddings, where multiple 
+#'   to make forecasts. This method generalizes the \code{\link{simplex}} and 
+#'   \code{\link{s-map}} routines, and allows for "mixed" embeddings, where multiple 
 #'   time series can be used as different dimensions of an attractor 
 #'   reconstruction.
 #' 
@@ -54,7 +54,7 @@
 #'   neighbors.)
 #' @param k the number of embeddings to use (any of "sqrt", "SQRT" will use 
 #'   k = floor(sqrt(m)))
-#' @param na.rm logical. Should missing values (including \code{NaN} be omitted 
+#' @param na.rm logical. Should missing values (including `NaN`` be omitted 
 #'   from the calculations?)
 #' @param target_column the index (or name) of the column to forecast
 #' @param stats_only specify whether to output just the forecast statistics or 
@@ -209,7 +209,7 @@ multiview <- function(block, lib = c(1, floor(NROW(block) / 2)),
 
 #' Make a lagged block for multiview
 #'
-#' \code{make_block} generates a lagged block with the appropriate max_lag and 
+#' \code{\link{make_block}} generates a lagged block with the appropriate max_lag and 
 #' tau, while respecting lib (by inserting NANs, when trying to lag past lib 
 #' regions)
 #' 

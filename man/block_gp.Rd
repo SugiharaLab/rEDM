@@ -80,10 +80,10 @@ If save_covariance_matrix is TRUE, then there is an additional list-column
 }
 }
 \description{
-\code{block_gp} uses multiple time series given as input to generate an 
+\code{\link{block_gp}} uses multiple time series given as input to generate an 
 attractor reconstruction, and then applies Gaussian process regression to 
 approximate the dynamics and make forecasts. This method is the 
-generalized version of \code{tde_gp}, which constructs the block from 
+generalized version of \code{\link{tde_gp}}, which constructs the block from 
 lags of a time series to pass into this function.
 }
 \details{

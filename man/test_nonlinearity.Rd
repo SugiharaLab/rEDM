@@ -32,7 +32,7 @@ A data.frame containing the following components:
 }
 }
 \description{
-\code{test_nonlinearity} tests for nonlinearity using S-maps by 
+\code{\link{test_nonlinearity}} tests for nonlinearity using S-maps by 
 comparing improvements in forecast skill (delta rho and delta mae) between 
 linear and nonlinear models with a null distribution from surrogate data.
 }

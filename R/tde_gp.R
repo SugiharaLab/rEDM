@@ -1,12 +1,12 @@
 #' Perform univariate forecasting using Gaussian processes
 #' 
-#' \code{tde_gp} is used in the same vein as \code{simplex} or \code{s-map} to 
+#' \code{\link{tde_gp}} is used in the same vein as \code{\link{simplex}} or \code{\link{s_map}} to 
 #' do time series forecasting using Gaussian processes. Here, the default 
 #' parameters are set so that passing a time series as the only argument will 
 #' run over E = 1:10 (embedding dimension) to created a lagged block, and 
-#' passing in that block and all remaining arguments into \code{block_gp}.
+#' passing in that block and all remaining arguments into \code{\link{block_gp}}.
 #' 
-#' See \code{block_gp} for implementation details of the Gaussian process 
+#' See \code{\link{block_gp}} for implementation details of the Gaussian process 
 #' regression.
 #' 
 #' @param time_series either a vector to be used as the time series, or a 

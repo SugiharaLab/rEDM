@@ -20,7 +20,7 @@ A data.frame with forecast statistics aggregated at each unique
   library size
 }
 \description{
-\code{ccm_means} is a utility function to summarize output from the 
+\code{\link{ccm_means}} is a utility function to summarize output from the 
   \code{\link{ccm}} function
 }
 \examples{

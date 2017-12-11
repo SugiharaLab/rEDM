@@ -1,9 +1,9 @@
 #' Perform generalized forecasting using simplex projection or s-map
 #'
-#' \code{block_lnlp} uses multiple time series given as input to generate an 
+#' \code{\link{block_lnlp}} uses multiple time series given as input to generate an 
 #'   attractor reconstruction, and then applies the simplex projection or s-map 
-#'   algorithm to make forecasts. This method generalizes the \code{simplex} 
-#'   and \code{s-map} routines, and allows for "mixed" embeddings, where 
+#'   algorithm to make forecasts. This method generalizes the \code{\link{simplex}} 
+#'   and \code{\link{s_map}} routines, and allows for "mixed" embeddings, where 
 #'   multiple time series can be used as different dimensions of an attractor 
 #'   reconstruction.
 #' 

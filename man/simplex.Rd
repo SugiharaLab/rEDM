@@ -66,7 +66,7 @@ coefficients with the output (and forces the full output as if stats_only
 were set to FALSE)}
 }
 \value{
-For \code{simplex}, a data.frame with components for the parameters 
+For \code{\link{simplex}}, a data.frame with components for the parameters 
   and forecast statistics:
 \tabular{ll}{
   E \tab embedding dimension\cr
@@ -92,28 +92,28 @@ For \code{simplex}, a data.frame with components for the parameters
     observations, predictions, and estimated prediction variance\cr
 }
 
-For \code{s_map}, the same as for \code{simplex}, but with an 
+For \code{\link{s_map}}, the same as for \code{\link{simplex}}, but with an 
   additional column for the value of theta. If 
   \code{save_smap_coefficients == TRUE}, then an additional list-column for 
   the S-map coefficients.
 }
 \description{
-\code{simplex} uses time delay embedding on a single time 
+\code{\link{simplex}} uses time delay embedding on a single time 
   series to generate an attractor reconstruction, and then applies the 
   simplex projection algorithm to make forecasts.
 
-\code{s_map} is similar to \code{simplex}, but uses the S-map 
+\code{\link{s_map}} is similar to \code{\link{simplex}}, but uses the S-map 
   algorithm to make forecasts.
 }
 \details{
-\code{simplex} is typically applied, and the embedding dimension 
+\code{\link{simplex}} is typically applied, and the embedding dimension 
 varied, to find an optimal embedding dimension for the data. Thus, the 
 default parameters are set so that passing a time series as the only 
 argument will run over E = 1:10 (embedding dimension), using leave-one-out 
 cross-validation over the whole time series, and returning just the forecast 
 statistics.
 
-\code{s_map} is typically applied, with fixed embedding dimension, and theta 
+\code{\link{s_map}} is typically applied, with fixed embedding dimension, and theta 
 varied, to test for nonlinear dynamics in the data. Thus, the default 
 parameters are set so that passing a time series as the only  argument will 
 run over a default list of thetas (0, 0.0001, 0.0003, 0.001, 0.003, 0.01, 

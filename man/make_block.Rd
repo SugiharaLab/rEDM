@@ -27,7 +27,7 @@ A data.frame with the lagged columns and a time column. If the
   data.frame will have columns TIME, X, X_1, X_2, Y, Y_1, Y_2, Z, Z_1, Z_2.
 }
 \description{
-\code{make_block} generates a lagged block with the appropriate max_lag and 
+\code{\link{make_block}} generates a lagged block with the appropriate max_lag and 
 tau, while respecting lib (by inserting NANs, when trying to lag past lib 
 regions)
 }
