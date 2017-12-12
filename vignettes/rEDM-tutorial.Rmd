@@ -17,7 +17,7 @@ bibliography: refs.bib
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, 
-                      tidy = TRUE, #cache = TRUE, 
+                      tidy = TRUE, cache = TRUE, 
                       fig.width = 5, fig.height = 3.5)
 knitr::opts_knit$set(global.par = TRUE, progress = TRUE)
 par(mar = c(4, 4, 1, 1), oma = c(0, 0, 0, 0), mgp = c(2.5, 1, 0))
@@ -54,7 +54,7 @@ The essential concept is that time series can be viewed as projections of the be
 Consequently, it is possible to project the system state onto one of the coordinate axes and obtain the value of the corresponding state variable. Sequential projections over time will thus produce a time series for that variable. For example, in Figure \ref{fig_time_series_projection}, the states of the canonical Lorenz Attractor [@Lorenz_1963] are projected to the $x$-axis, creating a time series of variable $x$.
 
 ```{r fig_time_series_projection, echo = FALSE, fig.cap = "Time Series Projection from the Lorenz Attractor"}
-knitr::include_graphics("figure_1.svg")
+knitr::include_graphics(here::here("vignettes", "vignette_figs", "figure_1.svg"))
 ```
 
 In simple cases, different time series will represent different state variables. However, more generally, each time series is an *observation function* of the system state, and may, for example, be a function of several different state variables.
@@ -114,7 +114,7 @@ pred <- c(201, 500)
 
 We begin by initializing the `lib` and `pred` variables. These variables define the portions of the data that will be used to create the reconstruction. `lib` corresponds to the "training" portion of the data, on which nearest neighbors can be identified; and `pred` corresponds to the "test" portion of the data, on which 1-step ahead forecasts will be made. Here, the first 100 points (rows 1 to 100) in the time series constitute the "library set", and 300 points (rows 201 to 500) constitute the "prediction set".
 
-The remaining parameters will be left at their default values (see section \ref{sec_general_parameters} for details). For the `simplex` function, this means that the embedding dimension, $E$, will range from $1$ to $10$.
+The remaining arguments will be left at their default values (see section \ref{sec_general_parameters} for details). For the `simplex` function, this means that the embedding dimension, $E$, will range from $1$ to $10$.
 
 *Note that if the code detects any overlap in the lib and pred, it will prevent a vector from becoming its own neighbor by enabling leave-one-out cross-validation and outputting a warning message.*
 
@@ -137,11 +137,11 @@ Here, we observe that forecast skill peaks at $E = 2$, indicating that the dynam
 
 ## Prediction Decay
 
-An important property of many natural systems is that nearby trajectories eventually diverge over time (i.e. "deterministic chaos" -- the "butterfly effect"). In essence, this means that while short-term prediction is often possible, long-term prediction may be impossible because information about the state of the system decays over time. We can demonstrate this effect by examining how prediction skill changes as the `tp` parameter is increased (`tp` is the parameter that describes the "time to prediction", the number of time steps into the future that forecasts are made).
+An important property of many natural systems is that nearby trajectories eventually diverge over time (i.e. "deterministic chaos" -- the "butterfly effect"). In essence, this means that while short-term prediction is often possible, long-term prediction may be impossible because information about the state of the system decays over time. We can demonstrate this effect by examining how prediction skill changes as the `tp` argument is increased (`tp` is the "time to prediction", the number of time steps into the future that forecasts are made).
 
 ### Example
 
-Using the same data and the `simplex` function, we supply a range for the `tp` parameter and fix the embedding dimension to the value determined previously ($E = 2$):
+Using the same data and the `simplex` function, we supply a range for the `tp` argument and fix the embedding dimension to the value determined previously ($E = 2$):
 
 ```{r simplex varying tp for tentmap}
 simplex_output <- simplex(ts, lib, pred, E = 2, tp = 1:10)
@@ -158,21 +158,19 @@ Because the parameters for the tent map fall in the region for chaotic behavior,
 
 ## Identifying Nonlinearity
 
-One concern is that many time series may show predictability even if they are purely stochastic, because they behave similarly to autocorrelated red noise. Fortunately, we can distinguish between red noise and nonlinear deterministic behavior by using S-maps as described in [@Sugihara_1994].
+One concern is that time series may show predictability even if they are purely stochastic, because they have temporal autocorrelation (i.e. similar to autocorrelated red noise). We can distinguish between red noise and nonlinear deterministic behavior by using S-maps as described in [@Sugihara_1994].
 
-In contrast to the nearest-neighbor interpolation of simplex projection, the S-map forecasting method [@Sugihara_1994] fits local linear maps to describe the dynamics. In addition to the standard set of parameters for a lagged-coordinate reconstruction (as in `simplex`), S-maps also contain a nonlinear tuning parameter, $\theta$, that determines the degree to which points are weighted when fitting the local linear map. For example, when $\theta = 0$, all points are equally weighted, such that the local linear map is identical for different points in the reconstructed state-space. As such, the S-map will be identical to a global linear map (i.e. an autoregressive model). When values of $\theta$ are greater than $0$, nearby points in the state space receive larger weights, and the local linear map can vary in state-space to accommodate nonlinear behavior. 
+In contrast to the nearest-neighbor interpolation of simplex projection, the S-map forecasting method [@Sugihara_1994] fits local linear maps to forecast from the reconstructed state space. Here, "local" means that the map is different at different locations in the reconstructed state space.
 
-Consequently, if the time series are sampled from autoregressive red noise, then the linear model ($\theta = 0$) should produce better forecasts, because the global linear map (which will, in effect, be fitted to more data points) will reduce the effects of observation error compared to local linear maps. In contrast, if forecast skill increases for $\theta > 0$, then the results are suggestive of nonlinear dynamics, because better forecasts are achieved when the local linear map can change depending on the location in state-space: it is a better description of state-dependent behavior.
+With S-maps, there is an additional nonlinear tuning parameter, $\theta$, that determines the strength of the weighting when fitting the lcoal linear map. For example, when $\theta = 0$, all points always receive equal weighting -- thus the local linear map does not change, and will be identical to a global linear map, equivalent to fitting an autoregressive model to the data. When $\theta > 0$, nearby points receive larger weights, allowing the local linear map to vary in state-space and accommodate nonlinear behavior (see the vignette "rEDM-algorithms" for more details).
+
+Consequently, if the time series are sampled from autoregressive red noise, then the linear model ($\theta = 0$) will produce better forecasts by including all the points to reduce the effects of observational noise. In contrast, increases in forecast skill when $\theta > 0$ is indicative of nonlinear dynamics, because allowing the local linear map to vary better describes state-dependent behavior.
 
 ### Example
 
-The S-map method is implemented as the function `s_map` in the **rEDM** package. Much like in the previous use of `simplex`, we can leave many of the parameters at default settings (see section \ref{sec_general_parameters} for details). Here, by default the $\theta$ parameter (`theta`) will range from $0$ to $8$, enabling us to test for nonlinearity. Here again, we will use the tent map time series, and set $E = 2$ based on the results from simplex projection.
+The S-map method is implemented as the function `s_map` in the **rEDM** package. Following from the previous example, we again use the tent map time series, and set `E = 2` based on the results from simplex projection. Note that we allow many of the arguments to take on default values (e.g., `\tau = 1`, `tp = 1`). If we had changed these for simplex projection, we would want to propagate them here. The default values for the nonlinear tuning parameter, `theta`, range from `0` to `8`, and are suitable for our purposes.
 
-Note that the default value for `num_neighbors` is `0`. Typically, when using `s_map` to test for nonlinear behavior, we want to use all points in the reconstruction when constructing the local linear map, and allow the `theta` parameter to control the weighting assigned to individual points. This is in contrast to simplex projection, where only the nearest neighbors are used. Here the function recognizes that all values < 1 are nonsensical and all the points will be used instead.
-
-Following from the previous example, we set `E = 2` based on the results from simplex projection. Again, note that we allow many of the parameters to take on default values (e.g., $\tau = 1$, $\text{tp} = 1$). If we had changed these for simplex projection, we would want to propagate them here. The default values for the nonlinear tuning parameter, $\theta$, range from $0$ to $8$, and are suitable for our purposes.
-
-Note also, that the default value for `num_neighbors` is `0`. Typically, when using `s_map` to test for nonlinear behavior, we allow all points in the reconstruction to be used, subject only to the weighting based on distance. By using `0` for this parameter (an otherwise nonsensical value), the program will use all nearest neighbors.
+Note also, that the default value for `num_neighbors` is `0`. When using `s_map` to test for nonlinear behavior, we want to use all points in the reconstruction, and allow `theta` to control the weighting assigned to individual points. By using `0` for this argument (an otherwise nonsensical value), the program will use all nearest neighbors.
 
 ```{r smap for tentmap}
 smap_output <- s_map(ts, lib, pred, E = 2)
@@ -185,65 +183,85 @@ plot(smap_output$theta, smap_output$rho, type = "l",
      xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)")
 ```
 
-Here, we can see that forecast skill substantially improves as `theta` increases, indicating the presence of nonlinear dynamics. Typically, we would expect forecast skill to decrease at high values of `theta`, because as `theta`, the local linear map can become overfitted to the nearest points. However, because the example data are observed without any error, even a very localized linear map can continue to produce good forecasts. By simulating the addition of a small amount of observational error, a more typical `rho` vs. `theta` plot can be achieved:
+Here, we can see that forecast skill substantially improves as `theta` increases, indicating the presence of nonlinear dynamics. Typically, we would expect forecast skill to decrease at high values of `theta`, because the local linear map will overfit to the nearest points. However, because the example data are observed without any noise, we continue to get a better approximation to the true function with higher `theta`.
+
+By simulating the addition of a small amount of observational noise, a more typical `rho` vs. `theta` plot can be achieved:
 
 ```{r rho vs. theta with noise}
-ts <- ts + rnorm(length(ts), sd = sd(ts) * 0.2)
-smap_output <- s_map(ts, lib, pred, E = 2)
-par(mar = c(4, 4, 1, 1), mgp = c(2.5, 1, 0))
-plot(smap_output$theta, smap_output$rho, type = "l", 
+ts_err <- ts + rnorm(length(ts), sd = sd(ts) * 0.2)
+smap_output_err <- s_map(ts_err, lib, pred, E = 2)
+plot(smap_output_err$theta, smap_output_err$rho, type = "l", 
      xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)")
 ```
 
-## Generalized Takens' Theorem
+## Generalized Takens's Theorem
 
-Instead of creating an attractor by taking lags of a single time series, it is possible to combine lags from different time series, if they are all observed from the same system [@Sauer_1991; @Deyle_2011]. The practical reality of applying EDM to systems with finite data, noisy observations, and stochastic influences means that such "multivariate" reconstructions can often be a better description of the true dynamics than "univariate" reconstructions
+Instead of creating an attractor using lags of one time series, it is possible to combine different time series, if they are all observed from the same system [@Sauer_1991; @Deyle_2011]. The practical reality of dealing with complex dynamics, finite data, noisy data, and stochastic drivers means that "multivariate" reconstructions can often be a better description than "univariate" reconstructions.
 
-In **rEDM**, the `block_lnlp` function generalizes the `simplex` and `s_map` functions, allowing generic reconstructions to be used with either the simplex projection or S-map methods The main data input for `block_lnlp` is a matrix or data.frame of the time series observations, where each column is a separate time series with rows representing "simultaneous" observations. In addition to the standard parameters for `simplex` or `s_map`, `block_lnlp` contains parameters to specify which column is to be forecast (`target_column`) as well as which columns to use to construct the attractor (`columns`). For both parameters, either a numerical index or the column name can be given. Note that if lagged coordinates are intended to be used, they need to be manually created as separate columns in the matrix or data.frame.
+In **rEDM**, the `block_lnlp` function generalizes the `simplex` and `s_map` functions, allowing reconstructions to have any set of coordinates, and with forecasting via either of the two methods.
+
+The input format for `block_lnlp` is a matrix or data.frame of the time series observations, where each column is a separate time series with rows representing "simultaneous" observations. A reconstruction is defined by specifying which columns to use as coordinates (the `columns` argument) and which column is to be forecast (the `target_column` argument). Here, if lagged copies of a time series are desired as coordinates, they need to be separate columns in the input.
 
 ### Example
 
-We begin by loading an example dataset of time series and lags from a coupled 3-species model system. Here, the `block_3sp` variable is a 10-column data.frame with 1 column for time, and 3 columns for each of the variables (unlagged, $t-1$, and $t-2$ lags). Note that the lagged columns begin with `NA` values because there are no observations of the variables for times $t < 1$. In **rEDM**, vectors that include `NA` values are excluded if they would be used for computation, but predictions will still be made if only the observed values are missing (see section \ref{sec_data_input} for more details).
+We begin by loading an example dataset from a coupled 3-species model system.
 
 ```{r load block_3sp data}
 data(block_3sp)
 str(block_3sp)
 ```
 
-In order to correctly index into columns, `block_lnlp` has an option to indicate that the first column is actually a time index. When `first_column_time` is set to `TRUE`, a value of `1` for `target_column` now points to the first *data* column in the data.frame, as opposed to the time column (`columns` is similarly indexed).
+Here, the `block_3sp` variable is a 10-column data.frame with 1 column for time, and 3 columns for each of the variables (unlagged: $t$, lag-1: $t-1$, and lag-2: $t-2$). Note that the lagged columns begin with `NA` values because there are no observations of the variables for times $t < 1$. In **rEDM**, vectors that include `NA` values are excluded if they would be used for computation, but predictions will still be made if only the observed values are missing (see section \ref{sec_data_input} for more details).
 
-In order to correctly index into columns, `block_lnlp` has an option to indicate that the first column is actually a time index. When `first_column_time` is set to `TRUE`}, a value of `1` for `target_column` will refer to the first *data* column in the data.frame, and skip the "time" column (the parameter `columns` is similarly indexed). If column names are used, then the `first_column_time` parameter is ignored, except to label the output.
+In order to correctly index into columns, `block_lnlp` has an option to indicate that the first column is actually a time index. When `first_column_time` is set to `TRUE`, a value of `1` for `target_column` will point to the first *data* column in the data.frame.
 
 ```{r block_lnlp for block_3sp, warning = FALSE}
 lib <- c(1, NROW(block_3sp))
 pred <- c(1, NROW(block_3sp))
 
-cols <- c(1, 2, 4) # c("x_t", "x_t-1", "y_t")
-target <- 1 # "x_t"
+cols <- c(1, 2, 4)
+target <- 1
 
 block_lnlp_output <- block_lnlp(block_3sp, lib = lib, pred = pred, 
                                 columns = cols, target_column = target, 
                                 stats_only = FALSE, first_column_time = TRUE)
 ```
 
-Note that the default value for the `tp` parameter is `1`, indicating that predictions will be made for 1 time step into the future (i.e. the subsequent row of the input data). In some cases, the data may already be processed such that the predictions are already aligned in the same row, but a different column, in which case the `tp` parameter should be set to `0`.
+We can also refer to columns by the column names, which ignores the `first_column_time` argument:
+
+```{r}
+block_lnlp_output_2 <- block_lnlp(block_3sp, lib = lib, pred = pred, 
+                                columns = c("x_t", "x_t-1", "y_t"), target_column = "x_t", 
+                                stats_only = FALSE, first_column_time = TRUE)
+
+# test for equality
+stopifnot(identical(block_lnlp_output, block_lnlp_output_2))
+```
+
+Note that the default value for the `tp` argument is `1`, indicating that predictions are 1-step ahead (i.e. using each row of the `columns` variables to predict the subsequent row of the `target_column` variable). In some cases, the data may be formatted to have the predicted variable aligned in the same row (but a different column), and `tp` should be set to `0`.
 
 ```{r}
 str(block_lnlp_output)
 ```
 
-By setting `stats_only` to `FALSE`, the output includes a list column with the full model output. Note that unlike other columns, which are vectors of simple types (e.g. numeric, character), `model_output` is a vector of lists. Here, because only 1 model (1 combination of input parameters) was run, the column has 1 element, which is a list that contains a single element, the data.frame of the full set of observed and predicted values.
+By setting `stats_only` to `FALSE`, the output also includes the observed and predicted values in a list column (`model_output`). Unlike other columns, which are vectors of simple types (e.g. numeric, character), the `model_output` column is a list of length 1, whose single element is a data.frame of the observed and predicted values. If we had run multiple models, the `model_output` column would be a list of multiple data.frames (one data.frame of observed and predicted values for each model).
 
-To compare the observed and predicted values, we must therefore index correctly into the output. We can then plot the observed and predicted values and see how well the model did relative to the expected 1:1 line.
+To compare the observed and predicted values, we want to pull out the appropriate columns of the data.frame for the 1 model that we ran:
+```{r}
+list_of_model_predictions <- block_lnlp_output$model_output
+first_data_frame_of_predictions <- list_of_model_predictions[[1]]
+
+observed <- first_data_frame_of_predictions$obs
+predicted <- first_data_frame_of_predictions$pred
+```
 
 ```{r, echo = FALSE}
 par(pty = "s")
 ```
 
-```{r observed vs predicted for block_lnlp, fig.width = 4, fig.height = 4}
-observed <- block_lnlp_output$model_output[[1]]$obs
-predicted <- block_lnlp_output$model_output[[1]]$pred
+We can compare predicted vs. observed in a square plot with a 1:1 line.
 
+```{r observed vs predicted for block_lnlp, fig.width = 4, fig.height = 4}
 plot_range <- range(c(observed, predicted), na.rm = TRUE)
 plot(observed, predicted, xlim = plot_range, ylim = plot_range, 
      xlab = "Observed", ylab = "Predicted", asp = 1)
@@ -257,21 +275,23 @@ par(pty = "m")
 
 ## Causality Inference and Cross Mapping
 
-One of the corollaries to the Generalized Takens' Theorem is that it should be possible to cross predict or cross map between variables that are observed from the same system. Consider two variables, $x$ and $y$ that interact in a dynamic system. Then the univariate reconstructions based on $x$ or $y$ alone should uniquely identify the system state and and thus the corresponding value of the other variable.
+One of the corollaries to Takens' Theorem is that multiple reconstructions should not only map to the original system, but also to each other. Consider two variables, $x$ and $y$ that interact in a dynamic system. Then the respective univariate reconstructions based on lags of $x$ ($\mathbf{M}_x$) or $y$ ($\mathbf{M}_y$) should uniquely identify system states. Moreover, the reconstructed states of $\mathbf{M}_x$ should map to reconstructed states of $\mathbf{M}_y$.
 
-![Cross Mapping Between Univariate Reconstructions of the Lorenz Attractor](figure_3.png)
+```{r fig_cross_mapping, echo = FALSE, fig.cap = "Cross Mapping Between Reconstructions of the Lorenz Attractor"}
+knitr::include_graphics(here::here("vignettes", "vignette_figs", "figure_3.svg"))
+```
 
-In the case of unidirectional causality, e.g. $x$ causes $y$, the causal variable ($x$) leaves a signature on the affected variable ($y$). Consequently, the reconstructed states based on $y$ can be used to cross predict the values of $x$ (because the reconstruction based on $y$ must be complete, it must include information about the value of $x$). Note that this cross prediction is in the *opposite* direction of the causal effect. At the same time, cross prediction from $x$ to $y$ will fail, because the time series of $x$ behaves independently of $y$, so a univariate reconstruction using only lags of $x$ is necessarily incomplete.
+This suggests a way to test whether $x$ and $y$ interact in the same system, by testing for a mapping between $\mathbf{M}_x$ and $\mathbf{M}_y$. Furthermore, in the case of unidirectional causality, e.g. $x$ causes $y$, we would only expect cross mapping to be successful in one direction. Somewhat counterintuitively, if a causal variable ($x$) leaves a signature on the affected variable ($y$), then it is possible to map from $\mathbf{M}_y$ to $x$, but not vice-versa.
 
-Although $x$ has incomplete information for predicting $y$, it does affect the values of $y$, and therefore will likely to have nonzero predictive skill. However, this cross mapping will be limited to the statistical association between $x$ and $y$ and will generally not improve as longer time series are used for reconstruction. In contrast, the cross prediction of $x$ from $y$ will generally improve. This convergence is therefore a crucial property for inferring causality. For practical reasons, the sensitivity of detecting causality this way is improved if, instead of predicting the future value of another variable, we estimate the concurrent value of another variable. We refer to this modified method as cross mapping, because we are projecting from one state to another without necessarily "predicting" the future.
+In essence, because $\mathbf{M}_y$ must have complete information about $y$, it must include information about all its causes, which includes $x$. In contrast, because $x$ behaves independently of $y$, its reconstruction, $\mathbf{M}_x$, is missing information about $y$, and cross mapping will be incomplete. 
 
-For a more detailed description of using cross mapping to infer causation, see [@Sugihara_2012].
+Although $x$ has incomplete information about $y$, it does affect the values of $y$, and will likely have some predictive skill. However, this cross mapping will be limited to the statistical association between $x$ and $y$ and will generally not improve with more data. In contrast, $\mathbf{M}_y$ is expected to become complete with more data, and the mapping to $x$ will improve. This convergence is a critical property for inferring causality, and can be tested by measuring the cross mapping skill when using different amounts of data to reconstruct $\mathbf{M}_y$. For a more detailed description of using cross mapping to infer causation, see [@Sugihara_2012, @Ye_2015].
 
 ## Convergent Cross Mapping (CCM)
 
-In **rEDM**, convergent cross mapping is implemented as the `ccm` function, which provides an easy way to compute cross map skill for different subsamples of the time series. In the following example, we reproduce the analysis from [@Sugihara_2012], identifying causality between anchovy landings in California and Newport Pier sea-surface temperature. For this example, a previously identified value of `3` for the embedding dimension will be used.
+In **rEDM**, convergent cross mapping is implemented as the `ccm` function, which provides a convenient wrapper to compute cross map skill for different subsamples of the data. In the following example, we reproduce the analysis from [@Sugihara_2012] to identify causality between anchovy landings in California and Newport Pier sea-surface temperature. For this example, we use the previously identified embedding dimension of `E = 3`.
 
-To quantify convergence, we compute the cross map skill over many random subsamples of the time series. The `lib_sizes` parameter specifies the "library" size of the subsamples that we use, and the `num_samples` parameter specifies the number of subsamples to be generated at each library size. The `random_libs` and `replace` parameters specify how the subsamples will be generated. Here, setting both to `TRUE` means that random sampling with replacement will be used.
+To identify convergence, we compute cross map skill over many random subsamples of the time series. The `lib_sizes` argument specifies the size of the library set, and `num_samples` specifies the number of subsamples generated at each library size. `random_libs` and `replace` specify how the subsamples will be generated. Here, setting both to `TRUE` enables random sampling with replacement.
 
 ```{r sardine anchovy ccm, warning = FALSE}
 data(sardine_anchovy_sst)
@@ -286,7 +306,7 @@ sst_xmap_anchovy <- ccm(sardine_anchovy_sst, E = 3,
 str(anchovy_xmap_sst)
 ```
 
-The output from CCM is a data.frame with statistics for each model run (in this case, 100 models at each of 8 library sizes). To interpret the results, we aggregate the cross map performance at each library size using the `ccm_means` function, which computes a mean value for the forecast statistics. Because average cross map skill less than 0 means there is no prediction skill, (predictions should not be anticorrelated with observations), we filter out negative values when plotting.
+The output from CCM is a data.frame with statistics for each model run (in this case, 100 models at each of 8 library sizes). To interpret the results, we aggregate the cross map performance at each library size using the `ccm_means` function, which computes a mean value at each unique `lib_size`. Because average cross map skill less than 0 means there is no prediction skill, (predictions should not be anticorrelated with observations), we set negative values to 0 when plotting.
 
 ```{r sardine anchovy ccm plot}
 a_xmap_t_means <- ccm_means(anchovy_xmap_sst)
@@ -303,19 +323,22 @@ legend(x = "topleft", legend = c("anchovy xmap SST", "SST xmap anchovy"),
 
 ## Community Productivity and Invasibility
 
-The data presented here are part of Experiment 120, the “Big Biodiversity” experiment at Cedar Creek LTER [@Tilman_1997], and the full data and metadata relating to the experiments that we discuss are available at https://www.cedarcreek.umn.edu/research/data. This experiment is the longest running randomized test for the effects of plant diversity on ecosystem functions. Plots were established in 1994 and planted with 1, 2, 4, 8, or 16 species, and have since then been sampled annually for above-ground plant biomass. The most well-known result from the experiment is that the number of planted species has strong positive influences on above-ground biomass production. However, because the diversity treatments are fixed (i.e. not allowed to vary dynamically), they do not lend themselves to EDM.
+The data presented here are part of Experiment 120, the "Big Biodiversity"" experiment at Cedar Creek LTER [@Tilman_1997], and the full data and metadata are available at https://www.cedarcreek.umn.edu/research/data. This experiment is the longest running randomized test for the effects of plant diversity on ecosystem functions. Plots were established in 1994 and planted with 1, 2, 4, 8, or 16 species, and are sampled annually for above-ground plant biomass. The most well-known result from the experiment is that the number of planted species has strong positive influences on above-ground biomass production. However, because the diversity treatments are fixed (i.e. not allowed to vary dynamically), they do not lend themselves to EDM.
 
-Instead, we focus on a different set of published results from the experiment: interactions between primary productivity, soil nitrate, and invasion rates. These show that increased biomass is associated with decreases in soil nitrate levels and decreases in invasion success [@Fargione_2005]. A posited mechanism for this is soil nitrate: increased primary productivity leads to decreased soil nitrate, which in turn reduces resources available to invaders. In order to increase sample size for these analyses, we combine data from the treatments with 4-8 planted species, which follow similar dynamics, and analyze the different plots together as spatial replicates [@Hsieh_2008].
+Instead, we focus on a different set of published results from the experiment: interactions between primary productivity, soil nitrate, and invasion rates. These show that increased biomass is associated with decreases in soil nitrate levels and decreases in invasion success [@Fargione_2005]. A posited mechanism is that increased primary productivity leads to decreased soil nitrate, which in turn reduces resources available to invaders. In order to increase sample size for these analyses, we combine data from the treatments with 4-8 planted species, which follow similar dynamics, and analyze the different plots together as spatial replicates [@Hsieh_2008].
 
-The columns in the dataset `e120_biodiversity` are as follows: `Exp` indicates the experiment code, `Year` and `Month` are the sampling time, while `Plot`, `Field`, and `FieldPlot` describe plot identity. `NumSp` and `SpNum` show the planted and realized species diversity, respectively. `AbvBioAnnProd` shows annual aboveground productivity of planted species, in g/m$^2$. `noh020tot` shows soil nitrate levels in the top 20 cm of soil, measured in $\mu$g/kg soil. `invrichness` shows species richness of unplanted species in the plot. `SummerPrecip.mm.` shows precipitation annual from May to August measured in mm.
+```{r load e120 data}
+data(e120_biodiversity)
+str(e120_biodiversity)
+```
+
+The columns in the dataset `e120_biodiversity` are as follows: `Exp` indicates the experiment code, `Year` and `Month` are the sampling time, while `Plot`, `Field`, and `FieldPlot` describe plot identity. `NumSp` and `SpNum` show the planted and realized species diversity, respectively. `AbvBioAnnProd` shows annual above-ground productivity of planted species, in g/m$^2$. `noh020tot` shows soil nitrate levels in the top 20 cm of soil, measured in $\mu$g/kg soil. `invrichness` shows species richness of unplanted species in the plot. `SummerPrecip.mm.` shows precipitation annual from May to August measured in mm.
 
 ### Preparing the Data
 
 E120 includes data from multiple plots, meaning that we first need to collapse it into a single composite time series. We begin by normalizing each time series to mean zero and standard deviation one. This facilitates mixing multiple spatial replicates in a single analyses in EDM.
 
-```{r load e120 data}
-data(e120_biodiversity)
-
+```{r setup e120 data}
 normalize <- function(x, ...) {(x - mean(x, ...))/sd(x, ...)}
 
 # separate time column from data
@@ -355,19 +378,21 @@ precip_ts <- precip_ts[order(precip_ts$Year), ]
 We can then use the **rEDM** functions as normal for each of our time series. First, we apply simplex projection:
 
 ```{r simplex on e120, warning = FALSE, fig.width = 6}
-simplex_out <- lapply(names(composite_ts)[2:4], function(var) {
-    simplex(composite_ts[, c("Year", var)], E = 2:4, 
-            lib = composite_lib, pred = composite_pred)
-})
-simplex_out[[length(simplex_out) + 1]] <- simplex(precip_ts, E = 2:5)
+simplex_out <- lapply(c("AbvBioAnnProd", "noh020tot", "invrichness"), 
+                      function(var) {
+                          simplex(composite_ts[, c("Year", var)], E = 2:4, 
+                                  lib = composite_lib, pred = composite_pred)
+                      })
+simplex_out[[4]] <- simplex(precip_ts, E = 2:5)
 names(simplex_out) <- names(composite_ts)[-1]
 
 par(mfrow = c(2, 2))
-out <- lapply(names(simplex_out), function(var) {
+for(var in names(simplex_out))
+{
     plot(simplex_out[[var]]$E, simplex_out[[var]]$rho, type = "l", 
          xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)", 
          main = var)
-})
+}
 ```
 
 These results give us the best embedding dimension for each of our projections:
@@ -377,83 +402,58 @@ best_E <- sapply(simplex_out, function(df) {df$E[which.max(df$rho)]})
 best_E
 ```
 
-Note that for two variables (nitrogen and invasive richness), the best embedding dimension is also the maximum that we test. These results suggest that the dynamics might be high-dimensional, and that collecting longer time series might enable better predictions.
+Note that for two variables (nitrogen and species richness), the best embedding dimension is also the maximum that we test. These results suggest that the dynamics might be high-dimensional, and that collecting longer time series might enable better predictions.
 
 Using these embedding dimensions, we can now apply S-maps to identify nonlinearity:
 
 ```{r smap on e120, warning = FALSE, fig.width = 6, results = "hide"}
-smap_out <- lapply(names(composite_ts)[2:4], function(var) {
-    s_map(composite_ts[, c("Year", var)], E = best_E[var], 
-            lib = composite_lib, pred = composite_pred)
-})
-smap_out[[length(smap_out)+1]] <- s_map(precip_ts, E = best_E[length(smap_out)+1])
+smap_out <- lapply(c("AbvBioAnnProd", "noh020tot", "invrichness"), 
+                   function(var) {
+                       s_map(composite_ts[, c("Year", var)], E = best_E[var], 
+                             lib = composite_lib, pred = composite_pred)
+                   })
+smap_out[[4]] <- s_map(precip_ts, E = best_E[4])
 names(smap_out) <- names(simplex_out)
 
 par(mfrow = c(2, 2))
-lapply(names(smap_out), function(var) {
-    plot(smap_out[[var]]$theta, smap_out[[var]]$rho, type = "l", 
-         xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)", 
-         main = var)
-})
+for(var in names(simplex_out))
+{    plot(smap_out[[var]]$theta, smap_out[[var]]$rho, type = "l", 
+          xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)", 
+          main = var)
+}
 ```
 
-Note that species richness, and precipitation time series suggest nonlinear dynamics in the data (because of the initial increase in forecast skill for non-zero `theta`, followed by a sharp drop-off). However, the strict fall-off in `rho` for non-zero `theta` in the case of `noh020tot` and `AbvBioAnnProd` suggest that soil nitrate levels and total biomass may have only linear dynamics,
+Note that species richness and precipitation suggest nonlinear dynamics in the data (because of the initial increase in forecast skill for `theta > 0`, followed by a sharp drop-off). However, the monotonic decrease in `rho` for `theta > 0` in the case of `noh020tot` and `AbvBioAnnProd` suggest that soil nitrate levels and total biomass may have only linear dynamics.
 
 ### Multivariate Models
 
-Our next step is to use information from several different variables to make better forecasts. We can do this using `block_lnlp`, but first need to manually constructed lagged vectors for each variable. This requires a bit of care in coding, as we need to ensure that lagged components come only from observations within a single field and transect.
+Our next step is to produce forecast models that combine several different variables. In order to use `block_lnlp`, we first need to construct lags for each variable. This requires a bit of care in coding, as we need to ensure that lagged components come only from observations within a single field and transect.
 
 ```{r make block for e120}
-data_by_plot <- split(composite_ts, e120_biodiversity$Plot)
-block_data <- do.call(rbind, lapply(data_by_plot, function(df) {
-    n <- NROW(df)
-    temp <- data.frame(Year = df$Year)
-    temp$AB_tm <- df$AbvBioAnnProd
-    temp$AB_tm1 <- c(NA, temp$AB_tm[-n])
-    temp$AB_tm2 <- c(NA, temp$AB_tm1[-n])
-    temp$AB_tm3 <- c(NA, temp$AB_tm2[-n])
-    
-    temp$NO_tm <- df$noh020tot
-    temp$NO_tm1 <- c(NA, temp$NO_tm[-n])
-    temp$NO_tm2 <- c(NA, temp$NO_tm1[-n])
-    temp$NO_tm3 <- c(NA, temp$NO_tm2[-n])
-    
-    temp$IV_tm <- df$invrichness
-    temp$IV_tm1 <- c(NA, temp$IV_tm[-n])
-    temp$IV_tm2 <- c(NA, temp$IV_tm1[-n])
-    temp$IV_tm3 <- c(NA, temp$IV_tm2[-n])
-    
-    temp$PR_tm <- df$SummerPrecip.mm
-    temp$PR_tm1 <- c(NA, temp$PR_tm[-n])
-    temp$PR_tm2 <- c(NA, temp$PR_tm1[-n])
-    temp$PR_tm3 <- c(NA, temp$PR_tm2[-n])
-    
-    return(temp)
-}))
-head(block_data[, 1:5], 20)
+block_data <- make_block(composite_ts[, 2:5], t = composite_ts$Year, 
+                         max_lag = 4, lib = segments)
+str(block_data)
 ```
 
-Now, we can run the `block_lnlp` on the composite, multivariate time series. First, we run the algorithm to predict primary productivity dynamics, based on its own lagged dynamics. Next, we add additional information about precipitation:
+Next, we run `block_lnlp` to compare predictions for primary productivity using either its own lagged dynamics, or when including information about precipitation:
 
 ```{r block_lnlp for e120, warning = FALSE}
-AB_columns <- c("AB_tm", "AB_tm1", "AB_tm2")
+AB_columns <- c("AbvBioAnnProd", "AbvBioAnnProd_1", "AbvBioAnnProd_2")
 AB_output <- block_lnlp(block_data, lib = composite_lib, pred = composite_pred, 
-                        columns = AB_columns, target_column = 1, 
+                        columns = AB_columns, target_column = "AbvBioAnnProd", 
                         stats_only = FALSE, first_column_time = TRUE)
 
-ABNO_columns <- c("AB_tm", "AB_tm1", "AB_tm2", "NO_tm", "NO_tm1", "NO_tm2")
+ABNO_columns <- c(AB_columns, "noh020tot", "noh020tot_1", "noh020tot_2")
 ABNO_output <- block_lnlp(block_data, lib = composite_lib, pred = composite_pred, 
-                          columns = ABNO_columns, target_column = 1, 
+                          columns = ABNO_columns, target_column = "AbvBioAnnProd", 
                           stats_only = FALSE, first_column_time = TRUE)
-
 ```
-
-Note that each additional variable adds slightly to the predictive power of the model.
 
 ```{r, echo = FALSE}
 par(mfrow = c(1, 1), pty = "s")
 ```
 
+We examine the model performance by comparing predicted vs. observed values:
 ```{r block_lnlp on e120, warning = FALSE, fig.width = 4, fig.height = 4}
 observed_AB <- AB_output$model_output[[1]]$obs
 predicted_AB <- AB_output$model_output[[1]]$pred
@@ -475,12 +475,17 @@ legend("topleft", legend = c(paste("rho =", round(AB_output$rho, 2)),
        lty = 3, lwd = 2, col = c("black", "red"), bty = "n")
 ```
 
+There is a slight improvement in forecast skill, and the data are more closesly associated on the 1:1 line. However, there is still a great deal of variability in biomass that is unexplained.
 
 ```{r, echo = FALSE}
 par(mfrow = c(1, 1), pty = "m")
 ```
 
 ### Convergent Cross Mapping
+
+```{r, eval = FALSE}
+stop("STOPPED HERE")
+```
 
 Finally, we can apply CCM to our data to test for pairwise causal links among variables. For each individual test, we use the embedding dimension corresponding to the "best"" embedding dimension for the variable that we are cross mapping from (i.e. the putative affected process).
 
