@@ -99,8 +99,8 @@
 #' 
 #' data("two_species_model")
 #' ts <- two_species_model$x[1:200]
-#' #' simplex(ts, stats_only = FALSE)
-#' @export 
+#' simplex(ts, stats_only = FALSE)
+#'  
 simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = lib, 
                     norm_type = c("L2 norm", "L1 norm", "P norm"), P = 0.5, 
                     E = 1:10, tau = 1, tp = 1, num_neighbors = "e+1", 
@@ -183,7 +183,7 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
 #' data("two_species_model")
 #' ts <- two_species_model$x[1:200]
 #' s_map(ts, E = 2, theta = 1, save_smap_coefficients = TRUE)
-#' @export
+#' 
 s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = lib, 
                   norm_type = c("L2 norm", "L1 norm", "P norm"), P = 0.5, 
                   E = 1, tau = 1, tp = 1, num_neighbors = 0, 

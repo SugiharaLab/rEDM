@@ -64,7 +64,7 @@
 #' data("two_species_model")
 #' ts <- two_species_model$x[1:200]
 #' tde_gp(ts, lib = c(1, 100), pred = c(101, 200), E = 5)
-#' @export
+#' 
 tde_gp <- function(time_series, lib = c(1, NROW(time_series)), pred = lib, 
                    E = 1:10, tau = 1, tp = 1, 
                    phi = 0, v_e = 0, eta = 0, fit_params = TRUE, 

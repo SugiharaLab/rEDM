@@ -91,4 +91,5 @@ regression.
 data("two_species_model")
 ts <- two_species_model$x[1:200]
 tde_gp(ts, lib = c(1, 100), pred = c(101, 200), E = 5)
+
 }

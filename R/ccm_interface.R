@@ -71,7 +71,7 @@
 #' anchovy_xmap_sst <- ccm(sardine_anchovy_sst, E = 3, 
 #'   lib_column = "anchovy", target_column = "np_sst", 
 #'   lib_sizes = seq(10, 80, by = 10), num_samples = 100)
-#' @export 
+#'  
 ccm <- function(block, lib = c(1, NROW(block)), pred = lib, 
                 norm_type = c("L2 norm", "L1 norm", "LP norm"), P = 0.5, E = 1, 
                 tau = 1, tp = 0, num_neighbors = "e+1", 
@@ -157,7 +157,7 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
 #'   lib_column = "anchovy", target_column = "np_sst", 
 #'   lib_sizes = seq(10, 80, by = 10), num_samples = 100)
 #' a_xmap_t_means <- ccm_means(anchovy_xmap_sst)
-#' @export 
+#'  
 ccm_means <- function(ccm_df, FUN = mean, ...)
 {
     lib <- ccm_df$lib_column[!duplicated(ccm_df$lib_size)]

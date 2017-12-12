@@ -41,4 +41,5 @@ See \code{\link{test_nonlinearity}} for context.
 data("two_species_model")
 ts <- two_species_model$x[1:200]
 make_surrogate_data(ts, method = "ebisuzaki")
+
 }

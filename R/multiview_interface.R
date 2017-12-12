@@ -95,7 +95,7 @@
 #' data("block_3sp")
 #' block <- block_3sp[, c(2, 5, 8)]
 #' multiview(block, k = c(1, 3, "sqrt"))
-#' @export
+#' 
 multiview <- function(block, lib = c(1, floor(NROW(block) / 2)), 
                       pred = c(floor(NROW(block) / 2) + 1, NROW(block)), 
                       norm_type = c("L2 norm", "L1 norm", "P norm"), P = 0.5, 
@@ -214,23 +214,31 @@ multiview <- function(block, lib = c(1, floor(NROW(block) / 2)),
 #' regions)
 #' 
 #' @param block a data.frame or matrix where each column is a time series
+#' @param t the time index for the block
 #' @param max_lag the total number of lags to include for each variable. So if 
 #'   max_lag == 3, a variable X will appear with lags X[t], X[t - tau], 
 #'   X[t - 2*tau]
-#' @param t the time index for the block
+#' @param tau the lag to use for time delay embedding
 #' @param lib a 2-column matrix (or 2-element vector) where each row specifies 
 #'   the first and last *rows* of the time series to use for attractor 
 #'   reconstruction
-#' @param tau the lag to use for time delay embedding
 #' @return A data.frame with the lagged columns and a time column. If the 
 #'   original block had columns X, Y, Z and max_lag = 3, then the returned 
 #'   data.frame will have columns TIME, X, X_1, X_2, Y, Y_1, Y_2, Z, Z_1, Z_2.
-#' 
-make_block <- function(block, max_lag = 3, t = NULL, lib = NULL, tau = 1)
+#' @examples 
+#' data("block_3sp")
+#' make_block(block_3sp[, c(2, 5, 8)])
+make_block <- function(block, t = NULL, max_lag = 3, tau = 1, lib = NULL)
 {
     num_vars <- NCOL(block)
     num_rows <- NROW(block)
     
+    # coerce lib into matrix if necessary
+    if (!is.null(lib))
+    {
+        if (is.vector(lib))
+            lib <- matrix(lib, ncol = 2, byrow = TRUE)
+    }
     # output is the returned data frame
     output <- matrix(NA, nrow = num_rows, ncol = 1 + num_vars * max_lag)
     col_names <- character(1 + num_vars * max_lag)
@@ -275,6 +283,15 @@ make_block <- function(block, max_lag = 3, t = NULL, lib = NULL, tau = 1)
         }
     }
     
+    # only take rows of lib if appropriate
+    if (!is.null(lib))
+    {
+        row_idx <- sort(unique(
+            do.call(c, mapply(seq, lib[, 1], lib[, 2], SIMPLIFY = FALSE))
+        ))
+        output <- output[row_idx, ]
+    }
+
     output <- data.frame(output)
     names(output) <- col_names
     return(output)

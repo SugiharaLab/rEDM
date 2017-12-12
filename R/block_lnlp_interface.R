@@ -98,7 +98,7 @@
 #' data("two_species_model")
 #' block <- two_species_model[1:200,]
 #' block_lnlp(block, columns = c("x", "y"), first_column_time = TRUE)
-#' @export
+#' 
 block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib, 
                        norm_type = c("L2 norm", "L1 norm", "P norm"), P = 0.5, 
                        method = c("simplex", "s-map"), 

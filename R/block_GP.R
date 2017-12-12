@@ -131,7 +131,7 @@
 #' data("two_species_model")
 #' block <- two_species_model[1:200,]
 #' block_gp(block, columns = c("x", "y"), first_column_time = TRUE)
-#' @export
+#' 
 block_gp <- function(block, lib = c(1, NROW(block)), pred = lib, 
                      tp = 1, phi = 0, v_e = 0, eta = 0, 
                      fit_params = TRUE, 

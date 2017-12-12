@@ -19,9 +19,7 @@
 #'   delta_rho_p_value \tab the p-value for delta rho\cr
 #'   delta_mae_p_value \tab the p-value for delta mae\cr
 #' }
-#' @export 
 #' 
-
 test_nonlinearity <- function(ts, method = "ebisuzaki", num_surr = 200, 
                               T_period = 1, E = 1, ...)
 {
@@ -80,7 +78,6 @@ test_nonlinearity <- function(ts, method = "ebisuzaki", num_surr = 200,
 #' data("two_species_model")
 #' ts <- two_species_model$x[1:200]
 #' make_surrogate_data(ts, method = "ebisuzaki")
-#' @export 
 #' 
 make_surrogate_data <- function(ts, method = c("random_shuffle", "ebisuzaki", 
                                                "seasonal"), 

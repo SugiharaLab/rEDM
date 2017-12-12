@@ -160,4 +160,5 @@ of the observed inputs while holding eta, phi, and v_e at the MAP estimates.
 data("two_species_model")
 block <- two_species_model[1:200,]
 block_gp(block, columns = c("x", "y"), first_column_time = TRUE)
+
 }

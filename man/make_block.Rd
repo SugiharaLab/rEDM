@@ -4,22 +4,22 @@
 \alias{make_block}
 \title{Make a lagged block for multiview}
 \usage{
-make_block(block, max_lag = 3, t = NULL, lib = NULL, tau = 1)
+make_block(block, t = NULL, max_lag = 3, tau = 1, lib = NULL)
 }
 \arguments{
 \item{block}{a data.frame or matrix where each column is a time series}
+
+\item{t}{the time index for the block}
 
 \item{max_lag}{the total number of lags to include for each variable. So if 
 max_lag == 3, a variable X will appear with lags X[t], X[t - tau], 
 X[t - 2*tau]}
 
-\item{t}{the time index for the block}
+\item{tau}{the lag to use for time delay embedding}
 
 \item{lib}{a 2-column matrix (or 2-element vector) where each row specifies 
 the first and last *rows* of the time series to use for attractor 
 reconstruction}
-
-\item{tau}{the lag to use for time delay embedding}
 }
 \value{
 A data.frame with the lagged columns and a time column. If the 
@@ -30,4 +30,8 @@ A data.frame with the lagged columns and a time column. If the
 \code{\link{make_block}} generates a lagged block with the appropriate max_lag and 
 tau, while respecting lib (by inserting NANs, when trying to lag past lib 
 regions)
+}
+\examples{
+data("block_3sp")
+make_block(block_3sp[, c(2, 5, 8)])
 }

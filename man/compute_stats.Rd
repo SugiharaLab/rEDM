@@ -25,4 +25,5 @@ Computes the rho, MAE, RMSE, perc, and p-val performance
 }
 \examples{
 compute_stats(rnorm(100), rnorm(100))
+
 }
