@@ -24,20 +24,20 @@
 #' 
 #' \strong{Main Functions}: 
 #'   \itemize{
-#'     \item \code{\link{simplex}}
-#'     \item \code{\link{s_map}}
-#'     \item \code{\link{block_lnlp}}
-#'     \item \code{\link{ccm}}
-#'     \item \code{\link{multiview}}
-#'     \item \code{\link{tde_gp}}
-#'     \item \code{\link{block_gp}}
+#'     \item \code{\link{simplex}} - simplex projection for univariate forecasting
+#'     \item \code{\link{s_map}} - S-maps for univariate forecasting
+#'     \item \code{\link{block_lnlp}} - simplex or S-map forecasting with a generic reconstructed state-space
+#'     \item \code{\link{ccm}} - convergent cross mapping (causal inference)
+#'     \item \code{\link{multiview}} - multi-model approach to forecasting
+#'     \item \code{\link{tde_gp}} - Gaussian Processes for univariate forecasting
+#'     \item \code{\link{block_gp}} - Gaussian Processes with a generic reconstructed state-space
 #'   }
 #' \strong{Helper Functions}: 
 #'   \itemize{
-#'     \item \code{\link{compute_stats}}
-#'     \item \code{\link{ccm_means}}
-#'     \item \code{\link{make_surrogate_data}}
-#'     \item \code{\link{test_nonlinearity}}
+#'     \item \code{\link{compute_stats}} - compute forecast skill metrics
+#'     \item \code{\link{ccm_means}} - aggregate output of \code{\link{ccm}} by library size (`lib_size`)
+#'     \item \code{\link{make_surrogate_data}} - generate surrogate time series
+#'     \item \code{\link{test_nonlinearity}} - test for nonlinearity using surrogate time series
 #'   }
 #' @keywords package
 NULL
