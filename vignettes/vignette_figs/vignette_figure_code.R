@@ -53,6 +53,25 @@ rescale <- function(x, buffer = 0.15, ...)
     return((x - min(x, ...)) / (max(x, ...) - min(x, ...)) * (1 - 2 * buffer) + buffer)
 }
 
+# Plot lagged reconstruction of time series `v`
+draw_lagged_attractor <- function(v, FUN = lines3d, t = 1220, 
+                                  idx = seq(from = 1, to = t), tau = 8, 
+                                  spacing = c(0, 0, 0),  ...)
+{
+    FUN <- match.fun(FUN)
+    xx <- v[idx + 2 * tau]
+    yy <- v[idx + tau]
+    zz <- v[idx]
+    
+    FUN(xx + spacing[1], 
+        yy + spacing[2], 
+        zz + spacing[3], ...)
+    
+    return(c(tail(xx, 1) + spacing[1], 
+             tail(yy, 1) + spacing[2], 
+             tail(zz, 1) + spacing[3]))
+}
+
 # Plot Lorenz attractor with projected time series
 make_figure_1 <- function(dat, t = 1120, future_len = 40, 
                           rescale_buffer = 0.05, 
@@ -119,6 +138,93 @@ make_figure_1 <- function(dat, t = 1120, future_len = 40,
     return()
 }
 
+# Plot lags of time series x and associated lagged attractor
+make_figure_2 <- function(dat, t = 1130, tau = 8, 
+                          rescale_buffer = 0.05,
+                          userMatrix = matrix(c(0.7570, 0.6533, 0.0131, 0,
+                                                -0.1319, 0.1332, 0.9823, 0,
+                                                0.6399, -0.7453, 0.1870, 0,
+                                                0, 0, 0, 1), nrow = 4, byrow = TRUE), 
+                          FOV = 10, zoom = 1, cex = 1.5, scale = c(1, 1, 1), 
+                          windowRect = c(50, 50, 700, 500), 
+                          plot_file = NULL)
+{
+    # set up plot
+    par3d(windowRect = windowRect)
+    #mfrow3d(1, 2)
+    layout3d(matrix(1:2, nrow = 1), widths = c(4, 3))
+    next3d()
+    
+    # plot left-side panel
+    x <- rescale(dat[, 1], buffer = rescale_buffer)
+    draw_lagged_ts <- function(v, t = t, point_t = t, 
+                               spacing = 0, 
+                               len_before = 420, 
+                               len_after = 280, 
+                               col = "#EE0000", 
+                               pt_col = "#EE00EE", 
+                               line_col = "#000088", 
+                               lab = "x")
+    {
+        idx_before <- seq(to = t, from = t - len_before + 1)
+        idx_after <- seq(from = t, to = t + len_after)
+        
+        # time series
+        lines3d((idx_before - (t - len_before)) / (len_before + len_after), 
+                v[idx_before] / 4 + spacing, 0, lwd = 2, col = col)
+
+        lines3d((idx_after - (t - len_before)) / (len_before + len_after), 
+                   v[idx_after] / 4 + spacing, 0, col = col, lwd = 0.5)
+        
+        # point and line to axis
+        points3d((point_t - (t - len_before)) / (len_before + len_after), v[point_t] / 4 + spacing, 0, 
+                 col = pt_col, size = 5)
+        lines3d((c(t, point_t) - (t - len_before)) / (len_before + len_after), 
+                rep.int(v[point_t] / 4 + spacing, 2), c(0, 0), lwd = 1.5, col = line_col)
+        text3d(((t + point_t) / 2 - (t - len_before)) / (len_before + len_after), 
+               v[point_t] / 4 * 0.85 + spacing, 0, "tau", cex = 1)
+        
+        # box and labels
+        lines3d(c(0, 0, 1, 1, 0), c(1, 0, 0, 1, 1) / 4 + spacing, c(0, 0, 0, 0, 0))
+        text3d(-0.2, 0.5 / 4 + spacing, 0, lab, adj = 0, col = col)
+    }
+    draw_lagged_ts(x, t + 2 * tau, t + 2 * tau, 0.3, lab = "x_t")
+    draw_lagged_ts(x, t - 10 * tau, t + 2 * tau, 0, lab = "x_t-tau", col = "#BB0000")
+    draw_lagged_ts(x, t - 22 * tau, t + 2 * tau, -0.3, lab = "x_t-2tau", col = "#880000")
+    lines3d(c(0.6, 0.6), c(-0.3, 0.55), c(0, 0), lwd = 2)
+    text3d(0.6, -0.34, 0, "t", cex = 1)
+    par3d(userMatrix = matrix(c(1, 0, 0, 0,
+                                0, 1, 0, 0,
+                                0, 0, 1, 0,
+                                0, 0, 0, 1), nrow = 4, byrow = TRUE), 
+          FOV = 10, zoom = 0.9)
+    
+    # plot right-side panel
+    next3d()
+    par3d(userMatrix = userMatrix, 
+          zoom = zoom, FOV = FOV, cex = cex)
+    
+    x <- rescale(dat[, 1], buffer = rescale_buffer)
+    m_x_t <- draw_lagged_attractor(x, idx = seq(from = 1, to = t), lwd = 2)
+    points3d(m_x_t[1], m_x_t[2], m_x_t[3], color = "black", size = 8)
+    draw_lagged_attractor(x, idx = seq(from = t + 1, length.out = 40), lwd = 0.5)
+    lines3d(c(0, 1), 0, 0, lwd = 2, col = "#EE0000")
+    text3d(0.5, 0, -0.05, "x_t", col = "#EE0000", 
+           family = "serif", font = 3, usePlotmath = FALSE)
+    lines3d(1, c(0, 1), 0, lwd = 2, col = "#BB0000")
+    text3d(1, 0.75, -0.1, "x_t-tau", col = "#BB0000", 
+           family = "serif", font = 3, usePlotmath = FALSE)
+    lines3d(0, 0, c(0, 1), lwd = 2, col = "#880000")
+    text3d(0.1, 0.1, 1.0, "x_t-2tau", col = "#880000", 
+           family = "serif", font = 3, usePlotmath = FALSE)
+    text3d(0.2, 0.5, 0.9, "M_x", cex = 1.75)
+    
+    if (!is.null(plot_file))
+        rgl.postscript(plot_file, fmt = "pdf")
+    
+    return()
+}
+
 # Plot reconstructed attractors using lags of x and y
 make_figure_3 <- function(dat, t = 1220, 
                           shift = 0.55, 
@@ -131,27 +237,8 @@ make_figure_3 <- function(dat, t = 1220,
                           windowRect = c(50, 50, 700, 500),
                           plot_file = NULL)
 {
-    
-    draw_lagged_attractor <- function(v, FUN = lines3d,
-                                      idx = seq(from = 1, to = t), tau = 8, 
-                                      spacing = c(0, 0, 0),  ...)
-    {
-        FUN <- match.fun(FUN)
-        xx <- v[idx + 2 * tau]
-        yy <- v[idx + tau]
-        zz <- v[idx]
-        
-        FUN(xx + spacing[1], 
-            yy + spacing[2], 
-            zz + spacing[3], ...)
-        
-        return(c(tail(xx, 1) + spacing[1], 
-                 tail(yy, 1) + spacing[2], 
-                 tail(zz, 1) + spacing[3]))
-    }
-    
     par3d(windowRect = windowRect, scale = scale, 
-          #  userMatrix = userMatrix, 
+          userMatrix = userMatrix, 
           zoom = zoom, FOV = FOV, cex = cex)
     
     x <- rescale(dat[, 1], buffer = rescale_buffer)
@@ -164,16 +251,14 @@ make_figure_3 <- function(dat, t = 1220,
     m_x_t <- draw_lagged_attractor(x, spacing = spacing_x, lwd = 2)
     points3d(m_x_t[1], m_x_t[2], m_x_t[3], color = "black", size = 8)
     draw_lagged_attractor(x, idx = seq(from = t + 1, length.out = 80), 
-                          spacing = spacing_x, 
-                          FUN = segments3d, lwd = 1)
+                          spacing = spacing_x, lwd = 0.5)
     text3d(0.2 + spacing_x[1], 0.5 + spacing_x[2], 1 + spacing_x[3], "M_x", cex = 2)
     
     spacing_y <- c(shift, 0, 0)
     m_y_t <- draw_lagged_attractor(y, spacing = spacing_y, lwd = 2)
     points3d(m_y_t[1], m_y_t[2], m_y_t[3], color = "black", size = 8)
     draw_lagged_attractor(y, idx = seq(from = t + 1, length.out = 80), 
-                          spacing = spacing_y, 
-                          FUN = segments3d, lwd = 1)
+                          spacing = spacing_y, lwd = 0.5)
     text3d(1 + spacing_y[1], 0.5 + spacing_y[2], 1 + spacing_y[3], "M_y", cex = 2)
     
     lines3d(rbind(m_x_t, m_y_t), color = color_blue)
@@ -184,21 +269,24 @@ make_figure_3 <- function(dat, t = 1220,
     return()
 }
 
-
-dat <- generate_lorenz_attractor()
-
 if(FALSE)
 {
+    dat <- generate_lorenz_attractor()
+    
+
     fig_1_file <- here("vignettes", "vignette_figs", "figure_1.pdf")
     make_figure_1(dat, plot_file = fig_1_file)
-}
+    
+    open3d()
 
-fig_2_file <- here("vignettes", "vignette_figs", "figure_2.pdf")
-
-if(TRUE)
-{
+    fig_2_file <- here("vignettes", "vignette_figs", "figure_2.pdf")
+    make_figure_2(dat, plot_file = fig_2_file)
+    
+    open3d()
+    
     fig_3_file <- here("vignettes", "vignette_figs", "figure_3.pdf")
     make_figure_3(dat, plot_file = fig_3_file)
 }
 
+# 
 

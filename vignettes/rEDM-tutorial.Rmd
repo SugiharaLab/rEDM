@@ -66,7 +66,7 @@ The goal of EDM is to reconstruct the system dynamics from time series data. Bec
 $$ \mathbf{x}_t = \left( x_t, x_{t-\tau}, \dots, x_{t-(E-1)\tau} \right) $$
 
 ```{r fig_attractor_reconstruction, echo = FALSE, fig.cap = "Attractor Reconstruction from Lagged Coordinates"}
-knitr::include_graphics("figure_2.svg")
+knitr::include_graphics(here::here("vignettes", "vignette_figs", "figure_2.svg"))
 ```
 
 By Takens' Theorem [@Takens_1981], if sufficient lags are used, the reconstruction is a diffeomorphism of the original system. In other words, reconstructed states will map one-to-one to actual system states, and nearby points in the reconstruction will correspond to similar system states. Figure \ref{fig_attractor_reconstruction} shows a reconstruction of the Lorenz attractor where the reconstructed system state is comprised of 3 lags of variable $x$. There is a clear visual correspondence between the reconstruction and the original Lorenz attractor.
