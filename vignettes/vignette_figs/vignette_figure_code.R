@@ -269,7 +269,7 @@ make_figure_3 <- function(dat, t = 1220,
     return()
 }
 
-if(FALSE)
+if(TRUE)
 {
     dat <- generate_lorenz_attractor()
     

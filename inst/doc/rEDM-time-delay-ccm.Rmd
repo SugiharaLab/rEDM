@@ -8,6 +8,7 @@ vignette: >
   %\VignetteIndexEntry{"Using rEDM to quantify time delays in causation"}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteDepends{ggplot2}
 ---
     
 # Introduction

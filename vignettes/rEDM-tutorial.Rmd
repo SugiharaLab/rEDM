@@ -11,6 +11,7 @@ vignette: >
   %\VignetteIndexEntry{"rEDM: an R package for Empirical Dynamic Modeling and Convergent Cross Mapping"}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteDepends{ggplot2}
 csl: ecology.csl
 bibliography: refs.bib
 ---
@@ -32,7 +33,7 @@ Many scientific fields use models as approximations of reality and for various p
 
 The basic goal underlying EDM is to reconstruct the behavior of dynamic systems using time series data. This approach is based on mathematical theory developed initially by [@Takens_1981], and expanded on by others [@Sauer_1991; @Casdagli_1991; @Deyle_2011]. Because these methods operate with minimal assumptions, they are particularly suitable for studying systems that exhibit non-equilibrium dynamics and nonlinear state-dependent behavior (i.e. where interactions change over time and as a function of the system state).
 
-## Installation Instructions
+## Installation
 
 The **rEDM** package can be obtained in two main ways. The standard version of the package can be obtained through CRAN (the Comprehensive R Archive Network): https://cran.r-project.org/package=rEDM:
 
@@ -319,6 +320,82 @@ lines(t_xmap_a_means$lib_size, pmax(0, t_xmap_a_means$rho), col = "blue")
 legend(x = "topleft", legend = c("anchovy xmap SST", "SST xmap anchovy"), 
        col = c("red", "blue"), lwd = 1, bty = "n", inset = 0.02, cex = 0.8)
 ```
+
+## Time Delays with CCM
+
+By default, the `ccm` function identifies a causal effect of $x$ on $y$ by computing a mapping between lagged-coordinate vectors of the affected variable, $y$, and the simultaneous value of the causal variable, $y$:
+$$ x_{t+tp} = F\left(\mathbf{y}_t\right) = F\left(y_t, y_{t-\tau}, \dots, y_{t-(E-1)\tau} \right) $$
+where $tp = 0$.
+
+However, `tp` is an argument to `ccm`, and will accept both positive and negative values. This allows us to determine the value of `tp` that produces the best mapping for $F$. This is, to a first approximation, the time delay by which information about $y$ is encoded in the time series of $x$ [see @Ye_2015a for more information].
+
+Note that negative values of `tp` ($tp < 0$) indicate that *past* values of $x$ are mapped to from the reconstructed states of $\mathbf{y}$. This suggests that the dynamical signal that is detected appears first in $x$ and later in $y$, and is consistent with $x$ causing $y$.
+
+If there is no causation in the reverse direction (i.e. $y$ does not cause $x$), then the reconstructed states of $\mathbf{x}$ should best predict future values of $y$ and we would expect CCM skill in the opposite direction:
+$$ y_{t+tp} = G\left(\mathbf{x}_t\right) = G\left(x_t, x_{t-\tau}, \dots, x_{t-(E-1)\tau} \right) $$
+would be best at a positive value of `tp` ($tp > 0$).
+
+In general, this presumes that the time series are sampled frequently enough such that the causal effect occurs over more than one observation in time. If causation is synchronous, or nearly so given the data, then the optimal value of `tp` may be $0$ in both directions.
+
+### Example
+
+First, we use time series of Paramecium and Didinium from the classical predator-prey experient:
+```{r}
+data(paramecium_didinium)
+str(paramecium_didinium)
+```
+
+We next setup the cross mapping runs we want to do:
+```{r}
+vars <- names(paramecium_didinium)[2:3] # c("paramecium", "didinium")
+
+# generate all combinations of lib_column, target_column, tp
+params <- expand.grid(lib_column = vars, 
+                      target_column = vars, 
+                      tp = -10:10)
+
+# throw out cases where lib == target
+params <- params[params$lib_column != params$target_column, ]
+```
+
+For the embedding dimension, we use `E = 3`, which is optimal or very close to optimal for both variables. In other cases, the `E` would be set to the best univariate embedding dimension for each `lib_column` variable:
+```{r}
+params$E <- 3
+```
+
+We can determine the optimal values of `tp` by testing different values with the `ccm` function. We do this by using as much data as possible, in order to obtain the cleanest signal:
+
+```{r, warning = FALSE}
+output <- do.call(rbind, lapply(seq_len(NROW(params)), function(i) {
+    ccm(paramecium_didinium, E = params$E[i], 
+        lib_sizes = NROW(paramecium_didinium), random_libs = FALSE, 
+        lib_column = params$lib_column[i], 
+        target_column = params$target_column[i], 
+        tp = params$tp[i])
+}))
+```
+
+Add an additional column to the output for the direction of the cross mapping, and then plot the results:
+```{r}
+output$direction <- paste(output$lib_column, "xmap to\n", output$target_column)
+
+library(ggplot2)
+time_delay_ccm_fig <- ggplot(output, aes(x = tp, y = rho, color = direction)) + 
+    geom_line() + theme_bw()
+```
+
+```{r}
+print(time_delay_ccm_fig)
+```
+
+### Causal Direction
+As expected for this simple predator-prey system, we see evidence for causation in both directions (cross map skill, `rho`, peaks for negative `tp`).
+
+### Strength of Causation
+The strength of the interaction looks approximately equal (as inferred from cross map skill) -- though this inference has a weak assumption that all else is equal, including observational error; these assumptions are reasonable for this laboratory experiment.
+
+### Time Delays
+We further note that the estimated time delay for the effect of predators (didinium) on prey (paramecium) is fast ($tp$ is close to 0 for "paramecium xmap to didinium") compared to the effect of prey on predators ($tp$ is more negative for "didinium xmap to paramecium"). This is consistent with the ecological interpretation that changes in predator abundance affect prey abundance quickly, while there is a slower response of predator abundance to changes in prey abundance.
 
 # Real Data Examples
 
