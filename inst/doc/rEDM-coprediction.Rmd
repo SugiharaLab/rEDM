@@ -8,15 +8,18 @@ vignette: >
   %\VignetteIndexEntry{"co-prediction: using rEDM to quantify dynamic similarity"}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteDepends{ggplot2}
 ---
 
 # Introduction
 
 The goal of co-prediction is to quantify dynamic similarity between two time series. Given two time series, $x$ and $y$, we assume that the dynamics can be represented as:
-$$ x_{t+tp} = F\left(\vec{x}_t\right) = F\left(\langle x_t, x_{t-\tau}, \dots, x_{t-(E-1)\tau} \rangle \right)$$
+$$ x_{t+tp} = F\left(\mathbf{x}_t\right) = F\left( x_t, x_{t-\tau}, \dots, x_{t-(E-1)\tau} \right)$$
 and
-$$ y_{t+tp} = G\left(\vec{y}_t\right) = G\left(\langle y_t, y_{t-\tau}, \dots, y_{t-(E-1)\tau} \rangle \right)$$
-. Then co-prediction is a way to quantify how closely $F$ and $G$ resemble each other. 
+$$ y_{t+tp} = G\left(\mathbf{y}_t\right) = G\left( y_t, y_{t-\tau}, \dots, y_{t-(E-1)\tau} \right)$$
+.
+
+Then co-prediction is a way to quantify how closely $F$ and $G$ resemble each other. 
 
 # Method
 
@@ -27,8 +30,8 @@ First, we grab some demo time series from the `block_3sp` data.frame:
 library(rEDM)
 data(block_3sp)
 
-x <- block_3sp$x_t
-y <- block_3sp$y_t
+x <- block_3sp$x_t[1:100]
+y <- block_3sp$y_t[1:100]
 ```
 
 Concatenate the time series and record which portions correspond to `x` and `y`:
@@ -39,7 +42,7 @@ lib_y <- length(x) + c(1, length(y))
 ```
 
 Use simplex to identify the optimal embedding dimension for `x` and use it to co-predict from `x` to `y`:
-```{r}
+```{r, warning = FALSE}
 simplex_out_x <- simplex(concatenated_xy, lib = lib_x, pred = lib_x)
 best_E_x <- simplex_out_x$E[which.max(simplex_out_x$rho)]
 
@@ -47,7 +50,7 @@ copred_x_to_y <- simplex(concatenated_xy, lib = lib_x, pred = lib_y, E = best_E_
 ```
 
 and in the reverse direction:
-```{r}
+```{r, warning = FALSE}
 simplex_out_y <- simplex(concatenated_xy, lib = lib_y, pred = lib_y)
 best_E_y <- simplex_out_y$E[which.max(simplex_out_y$rho)]
 
@@ -60,15 +63,16 @@ We can interpret the strength of dynamic similarity in comparison to the univari
 
 First, merge the output into a single data.frame:
 ```{r}
-to_plot <- data.frame(label = c("prediction of x (from x)", 
-                                "coprediction of x (from y)", 
-                                "prediction of y (from y)", 
-                                "coprediction of y (from x)"), 
+groups <- c("prediction of x (from x)", 
+            "coprediction of x (from y)", 
+            "prediction of y (from y)", 
+            "coprediction of y (from x)")
+to_plot <- data.frame(label = factor(groups, levels = groups), 
                       rbind(simplex_out_x[which.max(simplex_out_x$rho), ], 
                             copred_y_to_x, 
                             simplex_out_y[which.max(simplex_out_y$rho), ], 
                             copred_x_to_y)
-                      )
+)
 ```
 
 Plot the output
@@ -79,10 +83,8 @@ ggplot(to_plot, aes(x = label, y = rho)) +
     theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
+Here, we see that the predictions of $x$ are worse when we try to use the inferred dynamics from $y$ (i.e. $G$) to make forecasts. In contrast, the predictions of $y$ have roughly the same forecast skill. Since the time series come from a model simulation where $x$ and $y$ have different coefficients, we can infer their dynamical maps are *actually* different.
 
+Thus, our results seem to show that the reconstructed map of $G$ (inferred from the 100-point time-series of $y$) is a subset of $F$ (inferred from the 100-point time series of $x$). One possibility is that the dynamics of $y$ are complex, such that more data is needed to recover the true dynamics (i.e. the true $G$ is more complex than our inferred $\hat{G}$ from the data) -- thus, with only 100 data points the inferred $\hat{F}$ is equally good at predicting $y$.
 
-
-
-
-
-
+Alternatively, the dynamics of $y$ are the same as $x$, but the time series is observed with more noise, such that forecast skill is lower. (This also explains why we get roughly the same forecast skill when trying to predict $x$ using $\hat{G}$.) Using longer samples of the time series could potentially answer this question.

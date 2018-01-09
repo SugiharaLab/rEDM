@@ -17,8 +17,9 @@ bibliography: refs.bib
 ---
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, 
-                      tidy = TRUE, cache = TRUE, 
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE,
+                      tidy = TRUE, cache = TRUE,
+                      cache.rebuild = TRUE, 
                       fig.width = 5, fig.height = 3.5)
 knitr::opts_knit$set(global.par = TRUE, progress = TRUE)
 options(digits = 2)
@@ -152,7 +153,7 @@ simplex_output <- simplex(ts, lib, pred, E = 2, tp = 1:10)
 As above, the returned object is a data.frame, so we can examine prediction decay by plotting forecast skill (`rho`) against the time to prediction (`tp`).
 
 ```{r rho vs. tp for tentmap}
-plot(simplex_output$tp, simplex_output$rho, type = "l", 
+plot(simplex_output$tp, simplex_output$rho, type = "l",
      xlab = "Time to Prediction (tp)", ylab = "Forecast Skill (rho)")
 ```
 
@@ -181,7 +182,7 @@ smap_output <- s_map(ts, lib, pred, E = 2)
 Again, the results are a data.frame with columns for each of the model parameters and forecast statistics, with rows for each run of the model. In this case, there is one run for each value of `theta`, so we can simply plot `theta` against `rho`:
 
 ```{r rho vs. theta for tentmap}
-plot(smap_output$theta, smap_output$rho, type = "l", 
+plot(smap_output$theta, smap_output$rho, type = "l",
      xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)")
 ```
 
@@ -192,7 +193,7 @@ By simulating the addition of a small amount of observational noise, a more typi
 ```{r rho vs. theta with noise}
 ts_err <- ts + rnorm(length(ts), sd = sd(ts) * 0.2)
 smap_output_err <- s_map(ts_err, lib, pred, E = 2)
-plot(smap_output_err$theta, smap_output_err$rho, type = "l", 
+plot(smap_output_err$theta, smap_output_err$rho, type = "l",
      xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)")
 ```
 
@@ -224,17 +225,17 @@ pred <- c(1, NROW(block_3sp))
 cols <- c(1, 2, 4)
 target <- 1
 
-block_lnlp_output <- block_lnlp(block_3sp, lib = lib, pred = pred, 
-                                columns = cols, target_column = target, 
+block_lnlp_output <- block_lnlp(block_3sp, lib = lib, pred = pred,
+                                columns = cols, target_column = target,
                                 stats_only = FALSE, first_column_time = TRUE)
 ```
 
 We can also refer to columns by the column names, which ignores the `first_column_time` argument:
 
 ```{r}
-block_lnlp_output_2 <- block_lnlp(block_3sp, lib = lib, pred = pred, 
-                                columns = c("x_t", "x_t-1", "y_t"), target_column = "x_t", 
-                                stats_only = FALSE, first_column_time = TRUE)
+block_lnlp_output_2 <- block_lnlp(block_3sp, lib = lib, pred = pred,
+                                  columns = c("x_t", "x_t-1", "y_t"), target_column = "x_t",
+                                  stats_only = FALSE, first_column_time = TRUE)
 
 # test for equality
 stopifnot(identical(block_lnlp_output, block_lnlp_output_2))
@@ -265,7 +266,7 @@ We can compare predicted vs. observed in a square plot with a 1:1 line.
 
 ```{r observed vs predicted for block_lnlp, fig.width = 4, fig.height = 4}
 plot_range <- range(c(observed, predicted), na.rm = TRUE)
-plot(observed, predicted, xlim = plot_range, ylim = plot_range, 
+plot(observed, predicted, xlim = plot_range, ylim = plot_range,
      xlab = "Observed", ylab = "Predicted", asp = 1)
 abline(a = 0, b = 1, lty = 2, col = "blue")
 ```
@@ -285,7 +286,7 @@ knitr::include_graphics(here::here("vignettes", "vignette_figs", "figure_3.svg")
 
 This suggests a way to test whether $x$ and $y$ interact in the same system, by testing for a mapping between $\mathbf{M}_x$ and $\mathbf{M}_y$. Furthermore, in the case of unidirectional causality, e.g. $x$ causes $y$, we would only expect cross mapping to be successful in one direction. Somewhat counterintuitively, if a causal variable ($x$) leaves a signature on the affected variable ($y$), then it is possible to map from $\mathbf{M}_y$ to $x$, but not vice-versa.
 
-In essence, because $\mathbf{M}_y$ must have complete information about $y$, it must include information about all its causes, which includes $x$. In contrast, because $x$ behaves independently of $y$, its reconstruction, $\mathbf{M}_x$, is missing information about $y$, and cross mapping will be incomplete. 
+In essence, because $\mathbf{M}_y$ must have complete information about $y$, it must include information about all its causes, which includes $x$. In contrast, because $x$ behaves independently of $y$, its reconstruction, $\mathbf{M}_x$, is missing information about $y$, and cross mapping will be incomplete.
 
 Although $x$ has incomplete information about $y$, it does affect the values of $y$, and will likely have some predictive skill. However, this cross mapping will be limited to the statistical association between $x$ and $y$ and will generally not improve with more data. In contrast, $\mathbf{M}_y$ is expected to become complete with more data, and the mapping to $x$ will improve. This convergence is a critical property for inferring causality, and can be tested by measuring the cross mapping skill when using different amounts of data to reconstruct $\mathbf{M}_y$. For a more detailed description of using cross mapping to infer causation, see [@Sugihara_2012, @Ye_2015a].
 
@@ -297,13 +298,13 @@ To identify convergence, we compute cross map skill (Pearson's correlation, $\rh
 
 ```{r sardine anchovy ccm, warning = FALSE}
 data(sardine_anchovy_sst)
-anchovy_xmap_sst <- ccm(sardine_anchovy_sst, E = 3, 
-                        lib_column = "anchovy", target_column = "np_sst", 
-                        lib_sizes = seq(10, 80, by = 10), num_samples = 100, 
+anchovy_xmap_sst <- ccm(sardine_anchovy_sst, E = 3,
+                        lib_column = "anchovy", target_column = "np_sst",
+                        lib_sizes = seq(10, 80, by = 10), num_samples = 100,
                         random_libs = TRUE, replace = TRUE)
-sst_xmap_anchovy <- ccm(sardine_anchovy_sst, E = 3, 
-                        lib_column = "np_sst", target_column = "anchovy", 
-                        lib_sizes = seq(10, 80, by = 10), num_samples = 100, 
+sst_xmap_anchovy <- ccm(sardine_anchovy_sst, E = 3,
+                        lib_column = "np_sst", target_column = "anchovy",
+                        lib_sizes = seq(10, 80, by = 10), num_samples = 100,
                         random_libs = TRUE, replace = TRUE)
 str(anchovy_xmap_sst)
 ```
@@ -314,10 +315,10 @@ The output from CCM is a data.frame with statistics for each model run (in this 
 a_xmap_t_means <- ccm_means(anchovy_xmap_sst)
 t_xmap_a_means <- ccm_means(sst_xmap_anchovy)
 
-plot(a_xmap_t_means$lib_size, pmax(0, a_xmap_t_means$rho), type = "l", col = "red", 
+plot(a_xmap_t_means$lib_size, pmax(0, a_xmap_t_means$rho), type = "l", col = "red",
      xlab = "Library Size", ylab = "Cross Map Skill (rho)", ylim = c(0, 0.25))
 lines(t_xmap_a_means$lib_size, pmax(0, t_xmap_a_means$rho), col = "blue")
-legend(x = "topleft", legend = c("anchovy xmap SST", "SST xmap anchovy"), 
+legend(x = "topleft", legend = c("anchovy xmap SST", "SST xmap anchovy"),
        col = c("red", "blue"), lwd = 1, bty = "n", inset = 0.02, cex = 0.8)
 ```
 
@@ -339,7 +340,7 @@ In general, this presumes that the time series are sampled frequently enough suc
 
 ### Example
 
-First, we use time series of Paramecium and Didinium from the classical predator-prey experient:
+First, we use time series of *Paramecium* and *Didinium* from the classical predator-prey experient:
 ```{r}
 data(paramecium_didinium)
 str(paramecium_didinium)
@@ -350,8 +351,8 @@ We next setup the cross mapping runs we want to do:
 vars <- names(paramecium_didinium)[2:3] # c("paramecium", "didinium")
 
 # generate all combinations of lib_column, target_column, tp
-params <- expand.grid(lib_column = vars, 
-                      target_column = vars, 
+params <- expand.grid(lib_column = vars,
+                      target_column = vars,
                       tp = -10:10)
 
 # throw out cases where lib == target
@@ -367,10 +368,10 @@ We can determine the optimal values of `tp` by testing different values with the
 
 ```{r, warning = FALSE}
 output <- do.call(rbind, lapply(seq_len(NROW(params)), function(i) {
-    ccm(paramecium_didinium, E = params$E[i], 
-        lib_sizes = NROW(paramecium_didinium), random_libs = FALSE, 
-        lib_column = params$lib_column[i], 
-        target_column = params$target_column[i], 
+    ccm(paramecium_didinium, E = params$E[i],
+        lib_sizes = NROW(paramecium_didinium), random_libs = FALSE,
+        lib_column = params$lib_column[i],
+        target_column = params$target_column[i],
         tp = params$tp[i])
 }))
 ```
@@ -380,7 +381,7 @@ Add an additional column to the output for the direction of the cross mapping, a
 output$direction <- paste(output$lib_column, "xmap to\n", output$target_column)
 
 library(ggplot2)
-time_delay_ccm_fig <- ggplot(output, aes(x = tp, y = rho, color = direction)) + 
+time_delay_ccm_fig <- ggplot(output, aes(x = tp, y = rho, color = direction)) +
     geom_line() + theme_bw()
 ```
 
@@ -388,29 +389,22 @@ time_delay_ccm_fig <- ggplot(output, aes(x = tp, y = rho, color = direction)) +
 print(time_delay_ccm_fig)
 ```
 
-### Causal Direction
-As expected for this simple predator-prey system, we see evidence for causation in both directions (cross map skill, `rho`, peaks for negative `tp`).
-
-### Strength of Causation
-The strength of the interaction looks approximately equal (as inferred from cross map skill) -- though this inference has a weak assumption that all else is equal, including observational error; these assumptions are reasonable for this laboratory experiment.
-
-### Time Delays
-We further note that the estimated time delay for the effect of predators (didinium) on prey (paramecium) is fast ($tp$ is close to 0 for "paramecium xmap to didinium") compared to the effect of prey on predators ($tp$ is more negative for "didinium xmap to paramecium"). This is consistent with the ecological interpretation that changes in predator abundance affect prey abundance quickly, while there is a slower response of predator abundance to changes in prey abundance.
+As expected for this simple predator-prey system, we see evidence for causation in both directions (cross map skill, `rho`, peaks for negative `tp`). Using cross map skill as a proxy for interaction strength (under the assumption that all else is equal, which is reasonable for this laboratory experiment), it looks like the causal interaction is equally strong in both directions. We further note that the estimated time delay for the effect of predators (*Didinium*) on prey (*Paramecium*) is fast ($tp$ is close to 0 for "paramecium xmap to didinium") compared to the effect of prey on predators ($tp$ is more negative for "didinium xmap to paramecium"). This is consistent with the ecological interpretation that changes in predator abundance affect prey abundance quickly, while there is a lag in the response of predator abundance to changes in prey abundance.
 
 # Real Data Examples
 
 ## Community Productivity and Invasibility
 
-The data presented here are part of Experiment 120, the "Big Biodiversity"" experiment at Cedar Creek LTER [@Tilman_1997], and the full data and metadata are available at https://www.cedarcreek.umn.edu/research/data. This experiment is the longest running randomized test for the effects of plant diversity on ecosystem functions. Plots were established in 1994 and planted with 1, 2, 4, 8, or 16 species, and are sampled annually for above-ground plant biomass. The most well-known result from the experiment is that the number of planted species has strong positive influences on above-ground biomass production. However, because the diversity treatments are fixed (i.e. not allowed to vary dynamically), they do not lend themselves to EDM.
+The data presented here are part of Experiment 120, the "Big Biodiversity" experiment at Cedar Creek LTER [@Tilman_1997]. The full data and metadata are available at https://www.cedarcreek.umn.edu/research/data. This experiment is the longest running randomized test for the effects of plant diversity on ecosystem functions. Plots were established in 1994 and planted with 1, 2, 4, 8, or 16 species, and are sampled annually for above-ground plant biomass. The most well-known result from the experiment is that the number of planted species has strong positive effects on above-ground biomass production. However, because the diversity treatments are weeded annually to prevent non-planted species from establishing (i.e. species richness is not allowed to vary dynamically), this well-known result does not lend itself to EDM.
 
-Instead, we focus on a different set of published results from the experiment: interactions between primary productivity, soil nitrate, and invasion rates. These show that increased biomass is associated with decreases in soil nitrate levels and decreases in invasion success [@Fargione_2005]. A posited mechanism is that increased primary productivity leads to decreased soil nitrate, which in turn reduces resources available to invaders. In order to increase sample size for these analyses, we combine data from the treatments with 4-8 planted species, which follow similar dynamics, and analyze the different plots together as spatial replicates [@Hsieh_2008].
+Instead, we focus on a different set of published results from the experiment: interactions between primary productivity, soil nitrate, and invasion rates. These show that increased biomass is associated with decreases in soil nitrate levels and decreases in invasion success [@Fargione_2005]. A posited mechanism is that increased primary productivity leads to decreased soil nitrate, which in turn reduces resources available to invaders. In order to increase sample size, we combine data from the treatments with 16 planted species, which have almost identical planted compositions and follow similar dynamics. We then analyze these different plots together as spatial replicates, in a manner similar to [@Hsieh_2008].
 
 ```{r load e120 data}
-data(e120_biodiversity)
-str(e120_biodiversity)
+data(e120_invnit16)
+str(e120_invnit16)
 ```
 
-The columns in the dataset `e120_biodiversity` are as follows: `Exp` indicates the experiment code, `Year` and `Month` are the sampling time, while `Plot`, `Field`, and `FieldPlot` describe plot identity. `NumSp` and `SpNum` show the planted and realized species diversity, respectively. `AbvBioAnnProd` shows annual above-ground productivity of planted species, in g/m$^2$. `noh020tot` shows soil nitrate levels in the top 20 cm of soil, measured in $\mu$g/kg soil. `invrichness` shows species richness of unplanted species in the plot. `SummerPrecip.mm.` shows precipitation annual from May to August measured in mm.
+The columns in the dataset `e120_invnit16` are as follows: `Exp` indicates the experiment code (E120), `Year` shows the sampling time; `Plot` describes plot identity; `AbvBioAnnProd` shows annual above-ground productivity of planted species, in g/m$^2$; `noh020tot` shows soil nitrate levels in the top 20 cm of soil, measured in $\mu$g/kg soil; `invrichness` shows species richness of unplanted species in the plot (i.e. weeds); `SummerPrecip.mm.` shows precipitation annual from May to August measured in mm.
 
 ### Preparing the Data
 
@@ -421,16 +415,16 @@ normalize <- function(x, ...) {(x - mean(x, ...))/sd(x, ...)}
 
 # separate time column from data
 vars <- c("AbvBioAnnProd", "noh020tot", "invrichness", "SummerPrecip.mm.")
-composite_ts <- e120_biodiversity[, vars]
+composite_ts <- e120_invnit16[, vars]
 
 # normalize each time series within a plot
-data_by_plot <- split(composite_ts, e120_biodiversity$Plot)
+data_by_plot <- split(composite_ts, e120_invnit16$Plot)
 normalized_data <- lapply(data_by_plot, function(df) sapply(df, normalize))
-composite_ts <- cbind(Year = e120_biodiversity$Year, 
+composite_ts <- cbind(Year = e120_invnit16$Year,
                       data.frame(do.call(rbind, normalized_data)))
 ```
 
-To prevent lagged vectors from being constructed that span separate plots, we need to create an appropriate index variable that identifies different segments.
+To prevent lagged vectors from being constructed that span separate plots, we need to create an appropriate index variable that identifies different segments. The accuracy of EDM predictions can then be assessed through cross-validation by selecting a random subset of plots to use for the library and prediction sets.
 
 ```{r make composite library}
 segments_end <- cumsum(sapply(data_by_plot, NROW))
@@ -444,10 +438,10 @@ composite_lib <- segments[rndlib, ]
 composite_pred <- segments[-rndlib, ]
 ```
 
-Because the time series for precipitation does not vary among replicates, we also need to construct separate variables for analyzing precipitation dynamics:
+Note, to successfully apply EDM, we should include only **unique observations**. Because the time series for precipitation does not vary among replicates (i.e. it is the same annual time series for each plot), we also need to construct separate variables for analyzing precipitation dynamics, with only one observation per year:
 
 ```{r}
-precip_ts <- unique(e120_biodiversity[, c("Year", "SummerPrecip.mm.")])
+precip_ts <- unique(e120_invnit16[, c("Year", "SummerPrecip.mm.")])
 precip_ts <- precip_ts[order(precip_ts$Year), ]
 ```
 
@@ -480,7 +474,7 @@ best_E <- sapply(simplex_out, function(df) {df$E[which.max(df$rho)]})
 best_E
 ```
 
-Note that for two variables (nitrogen and species richness), the best embedding dimension is also the maximum that we test. These results suggest that the dynamics might be high-dimensional, and that collecting longer time series might enable better predictions.
+Note that for two variables (aboveground biomass and invader richness), the best embedding dimension is also the maximum that we test. These results suggest that the dynamics might be high-dimensional, and that collecting longer time series could enable better predictions and a cleaner signal to be detected by our analyses.
 
 Using these embedding dimensions, we can now apply S-maps to identify nonlinearity:
 
@@ -495,19 +489,20 @@ names(smap_out) <- names(simplex_out)
 
 par(mfrow = c(2, 2))
 for(var in names(simplex_out))
-{    plot(smap_out[[var]]$theta, smap_out[[var]]$rho, type = "l", 
-          xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)", 
-          main = var)
+{
+    plot(smap_out[[var]]$theta, smap_out[[var]]$rho, type = "l", 
+         xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)", 
+         main = var)
 }
 ```
 
-Note that species richness and precipitation suggest nonlinear dynamics in the data (because of the initial increase in forecast skill for `theta > 0`, followed by a sharp drop-off). However, the monotonic decrease in `rho` for `theta > 0` in the case of `noh020tot` and `AbvBioAnnProd` suggest that soil nitrate levels and total biomass may have only linear dynamics.
+Note that aboveground biomass, invader richness, and precipitation suggest nonlinear dynamics in the data (because of the initial increase in forecast skill for `theta > 0`, followed by a gradual drop-off). However, the monotonic decrease in `rho` for `theta > 0` in the case of `noh020tot` suggests that soil nitrate levels may have only linear dynamics.
 
 ### Multivariate Models
 
-Our next step is to produce forecast models, and specifically to compare models that predict total biomass using only biomass in the past with models that also include total nitrate. In the package, we can do this using `block_lnlp`, but first we need to construct lags for each variable. 
+Our next step is to produce forecast models. Recall that several variables were best predicted using the maximum number of available time lags. As such, it could be that adding additional information from other variables might improve predictions. Specifically, we will compare models that predict aboveground biomass using only time lagged observations of biomass with models that also include precipitation. In the package, we can do this using `block_lnlp`, but first we need to construct lags for each variable. 
 
-Here, we use the `make_block` function, which automatically adds lags of the variables. However, we also need to be careful, since the raw data combines observations from multiple fields and transects. By including the `lib` argument, we can specify where the time series segments are, so that missing data is properly recorded.
+Here, we use the `make_block` function, which automatically adds lags of the variables. However, we also need to be careful, since the raw data combines observations from multiple plots. By including the `lib` argument, we can specify where the time series segments are, so that missing data is properly recorded.
 
 ```{r make block for e120}
 block_data <- make_block(composite_ts[, 2:5], t = composite_ts$Year, 
@@ -515,18 +510,18 @@ block_data <- make_block(composite_ts[, 2:5], t = composite_ts$Year,
 str(block_data)
 ```
 
-Next, we run `block_lnlp`, being sure to setup the `columns` argument to include the variables that we want for each model, as well as the variable to be predicted (by default, predictions are always for one step ahead):
+Next, we run `block_lnlp`, being sure to set up the `columns` argument to include the variables that we want for each model, as well as the variable to be predicted (by default, predictions are always for one step ahead). Note, we include one run using only lagged observations of biomass, and one run that also includes precipitation:
 
 ```{r block_lnlp for e120, warning = FALSE}
-AB_columns <- c("AbvBioAnnProd", "AbvBioAnnProd_1", "AbvBioAnnProd_2")
+AB_columns <- c("AbvBioAnnProd", "AbvBioAnnProd_1", "AbvBioAnnProd_2", "AbvBioAnnProd_3")
 AB_output <- block_lnlp(block_data, lib = composite_lib, pred = composite_pred, 
                         columns = AB_columns, target_column = "AbvBioAnnProd", 
-                        stats_only = FALSE, first_column_time = TRUE)
+                        stats_only = FALSE)
 
-ABNO_columns <- c(AB_columns, "noh020tot", "noh020tot_1", "noh020tot_2")
-ABNO_output <- block_lnlp(block_data, lib = composite_lib, pred = composite_pred, 
-                          columns = ABNO_columns, target_column = "AbvBioAnnProd", 
-                          stats_only = FALSE, first_column_time = TRUE)
+Precip_columns <- c(AB_columns, "SummerPrecip.mm.")
+Precip_output <- block_lnlp(block_data, lib = composite_lib, pred = composite_pred, 
+                            columns = Precip_columns, target_column = "AbvBioAnnProd", 
+                            stats_only = FALSE)
 ```
 
 ```{r, echo = FALSE}
@@ -538,8 +533,8 @@ We can then examine model performance by comparing predicted vs. observed values
 observed_AB <- AB_output$model_output[[1]]$obs
 predicted_AB <- AB_output$model_output[[1]]$pred
 
-observed_ABNO <- ABNO_output$model_output[[1]]$obs
-predicted_ABNO <- ABNO_output$model_output[[1]]$pred
+observed_Precip <- Precip_output$model_output[[1]]$obs
+predicted_Precip <- Precip_output$model_output[[1]]$pred
 
 plot_range <- range(c(observed_AB, predicted_AB), na.rm = TRUE)
 plot(observed_AB, predicted_AB, xlim = plot_range, ylim = plot_range, 
@@ -547,15 +542,15 @@ plot(observed_AB, predicted_AB, xlim = plot_range, ylim = plot_range,
 abline(a = 0, b = 1, lty = 2, col = "darkgrey", lwd = 2)
 abline(lm(predicted_AB ~ observed_AB), col = "black", lty = 3, lwd = 2)
 
-points(observed_ABNO, predicted_ABNO, pch = 2, col = "red")
-abline(lm(predicted_ABNO ~ observed_ABNO), col = "red", lty = 3, lwd = 2)
+points(observed_Precip, predicted_Precip, pch = 2, col = "red")
+abline(lm(predicted_Precip ~ observed_Precip), col = "red", lty = 3, lwd = 2)
 
 legend("topleft", legend = c(paste("(biomass alone) rho =", round(AB_output$rho, 2)), 
-                             paste("(biomass and nitrate) rho =", round(ABNO_output$rho, 2))), 
-       lty = 3, lwd = 2, col = c("black", "red"), bty = "n")
+                             paste("(biomass and prec.) rho =", round(Precip_output$rho, 2))), 
+       lty = 3, lwd = 2, col = c("black", "red"), box.col = NA)
 ```
 
-There is a slight improvement in forecast skill when including nitrate as a predictor, and the data are more closesly associated on the 1:1 line. However, there is still a great deal of variability in biomass that is unexplained.
+There is a marked improvement in forecast skill when including precipitation as a predictor, and the data are more closely associated on the 1:1 line. However, there is still a great deal of variability in biomass that is unexplained ($R^2 = 0.48$).
 
 ```{r, echo = FALSE}
 par(mfrow = c(1, 1), pty = "m")
@@ -565,55 +560,63 @@ par(mfrow = c(1, 1), pty = "m")
 
 Finally, we can apply CCM to our data to test for pairwise causal links among variables. For each individual test, we use the embedding dimension corresponding to the "best" embedding dimension for the variable that we are cross mapping from (i.e. the putative affected process).
 
-```{r ccm on e120, warning = FALSE}
-# A. repens:
-lib_sizes <- c(seq(5, 55, by = 5), seq(55, 400, by = 50))
+Recall, we are primarily interested in testing whether the biomass of planted species or soil nitrogen concentration causally forces the dynamics of invading species.
 
-no_xmap_inv <- ccm(composite_ts, lib = segments, pred = segments, 
-                   lib_column = "noh020tot", target_column = "invrichness", 
-                   E = best_E["noh020tot"], lib_sizes = lib_sizes)
+```{r ccm on e120, warning = FALSE}
+lib_sizes <- c(seq(5, 55, by = 5), seq(55, 230, by = 20))
+
 inv_xmap_no <- ccm(composite_ts, lib = segments, pred = segments, 
                    lib_column = "invrichness", target_column = "noh020tot", 
                    E = best_E["invrichness"], lib_sizes = lib_sizes)
+no_xmap_inv <- ccm(composite_ts, lib = segments, pred = segments, 
+                   lib_column = "noh020tot", target_column = "invrichness", 
+                   E = best_E["noh020tot"], lib_sizes = lib_sizes)
 
-n_xmap_i_means <- ccm_means(no_xmap_inv)
-i_xmap_n_means <- ccm_means(inv_xmap_no)
+inv_xmap_no_means <- ccm_means(inv_xmap_no)
+no_xmap_inv_means <- ccm_means(no_xmap_inv)
 
-plot(n_xmap_i_means$lib_size, pmax(0, n_xmap_i_means$rho), type = "l", 
+plot(inv_xmap_no_means$lib_size, pmax(0, inv_xmap_no_means$rho), type = "l", 
      xlab = "Library Size", ylab = "Cross Map Skill (rho)", 
-     col = "red", ylim = c(0, 0.4), lwd = 2)
-lines(i_xmap_n_means$lib_size, pmax(0, i_xmap_n_means$rho), 
+     col = "red", ylim = c(0, 0.15), lwd = 2)
+lines(no_xmap_inv_means$lib_size, pmax(0, no_xmap_inv_means$rho), 
       col = "blue", lwd = 2)
 legend(x = "topleft", col = c("red", "blue"), lwd = 2, 
-       legend = c("Nitrate xmap Inv. Richness", "Inv. Richness xmap Nitrate"), 
+       legend = c("Inv. Richness xmap Nitrate", "Nitrate xmap Inv. Richness"), 
        inset = 0.02, bty = "n", cex = 0.8)
+abline(h = 0, lty = 3)
 ```
 
 ```{r ccm on e120 with biological productivity, warning = FALSE}
-ab_xmap_inv <- ccm(composite_ts, lib = segments, pred = segments,
-                   lib_column = "AbvBioAnnProd", target_column = "invrichness", 
-                   E = best_E["AbvBioAnnProd"], lib_sizes = lib_sizes, silent = TRUE)
-inv_xmap_ab <- ccm(composite_ts, lib = segments, pred = segments, 
-                   lib_column = "invrichness", target_column = "AbvBioAnnProd", 
-                   E = best_E["invrichness"], lib_sizes = lib_sizes, silent = TRUE)
+inv_xmap_abv <- ccm(composite_ts, lib = segments, pred = segments, 
+                    lib_column = "invrichness", target_column = "AbvBioAnnProd", 
+                    E = best_E["invrichness"], lib_sizes = lib_sizes)
+abv_xmap_inv <- ccm(composite_ts, lib = segments, pred = segments, 
+                    lib_column = "AbvBioAnnProd", target_column = "invrichness", 
+                    E = best_E["AbvBioAnnProd"], lib_sizes = lib_sizes)
 
-a_xmap_i_means <- ccm_means(ab_xmap_inv)
-i_xmap_a_means <- ccm_means(inv_xmap_ab)
+inv_xmap_abv_means <- ccm_means(inv_xmap_abv)
+abv_xmap_inv_means <- ccm_means(abv_xmap_inv)
 
-plot(a_xmap_i_means$lib_size, pmax(0, a_xmap_i_means$rho), type = "l", 
+plot(inv_xmap_abv_means$lib_size, pmax(0, inv_xmap_abv_means$rho), type = "l", 
      xlab = "Library Size", ylab = "Cross Map Skill (rho)", 
-     col = "orange", ylim = c(0, 0.4), lwd = 2)
-lines(i_xmap_a_means$lib_size, pmax(0, i_xmap_a_means$rho), 
+     col = "red", ylim = c(0, 0.4), lwd = 2)
+lines(abv_xmap_inv_means$lib_size, pmax(0, abv_xmap_inv_means$rho),
       col = "blue", lwd = 2)
-legend(x = "topleft", col = c("orange", "blue"), 
-       legend = c("Abv. Biomass xmap Inv. Richness", 
-                  "Inv. Richness xmap Abv. Biomass"), 
-       lwd = 2, inset = 0.02, bty = "n", cex = 0.8)
+legend(x = "topleft", col = c("red", "blue"), lwd = 2, 
+       legend = c("Inv. Richness xmap Total Biomass", 
+                  "Total Biomass xmap Inv. Richness"), 
+       inset = 0.02, bty = "n", cex = 0.8)
+
+abline(h = 0, lty = 3)
 ```
 
-In both cases, the results suggest that invasive richness is driven by other variables more strongly than it influences them in return. For soil nitrate, this makes sense, as invading species in these plots are quickly weeded out and should not have much time to influence local environmental conditions, whereas the establishment success of invading species should depend strongly on local nitrogen availability.
+These results suggest that invader richness is likely causally forced by the biomass of the planted community, but that nitrate dynamics may be more strongly forced by invader dynamics than vice-versa. In contrast to existing hypotheses, this result could potentially suggest that at least in plots planted with 16 species, planted community biomass itself directly inhibits invasion (e.g. through light limitation), rather than through indirect effects of planted biomass on soil nitrate. 
 
-Our analyses for biomass and invasion may indicate either bidirectional forcing, or synchrony. Though there is a stronger rise in $\rho$ with library length for "Inv. Richness xmap Abv. Biomass" (i.e., "Biomass affects Invasive Richness"), there also does not appear to be a significant difference between $\rho$ at short library lengths and $\rho$ at large library lengths. Nevertheless, bidirectional causal forcing, with stronger effects of planted biomass on invasion than vice versa, would make sense, as weeding treatments should insure that there should only be moderate effects of invading species on plot-level biomass (e.g. by decreasing biomass of planted species through light competition), while effects of plot-level planted biomass on invader success should be much stronger (e.g. through competition for space or soil resources).
+The first figure suggests that plot-level soil nitrate is causally forced by invader richness, while the reverse is not true. This is plausible, as the planted compositions are quite similar among experimental replicates, and variations in soil nitrate dynamics may be largely indicative of minor variations due to transient populations of invading species before they can be weeded out. However, recall from the S-mapping analyses that soil nitrate dynamics are likely largely linear. As such, it may be a good idea to apply other methods for testing causal forcing that are more suitable for linear systems, such as Granger Causality [.
+
+Our analyses for biomass and invasion may indicate either bidirectional forcing, or synchrony. However, there is a much stronger rise in $\rho$ with library length for "Inv. Richness xmap Total Biomass" (i.e., "Biomass affects Invasive Richness") than for the reverse direction, and $\rho$ is generally small, suggesting that synchrony is unlikely. Furthermore, there does not appear to be a much difference between $\rho$ at short library lengths and $\rho$ at large library lengths for "Total Biomass xmap Inv. Richness", suggesting that this result may be spurious. One other potential caveat is that for both tests of biomass vs. invasion, we find a slight decrease in $\rho$ at long library lengths. This could potentially indicate that the time series that we have stitched together are not sufficiently related to be considered part of a single dynamic process.
+
+Bidirectional causal forcing, with stronger effects of planted biomass on invasion than vice-versa, would make sense, as weeding treatments should insure that there should only be moderate effects of invading species on plot-level biomass (e.g. by decreasing biomass of planted species through light competition), while effects of plot-level planted biomass on invader success should be much stronger (e.g. through competition for space or light).
 
 ## Apple-Blossom Thrips
 
@@ -629,7 +632,7 @@ The first data column `Thrips_imaginis` contains counts of *Thrips imaginis* obt
 First, we plot the data.
 
 ```{r thrips plot, echo = FALSE, fig.width = 6, fig.height = 7}
-par(mfrow = c(4, 1), mar = c(2, 4, 1, 1), oma = c(2, 0, 0, 0), 
+par(mfrow = c(4, 1), mar = c(2, 4, 1, 1), oma = c(2, 0, 0, 0),
     mgp = c(2.5, 1, 0))
 
 time_dec <- thrips_block$Year + (thrips_block$Month) / 12
@@ -654,7 +657,7 @@ simplex_output <- simplex(ts, lib, pred)
 ```
 
 ```{r rho vs. e for thrips, echo = FALSE}
-plot(simplex_output$E, simplex_output$rho, type = "l", 
+plot(simplex_output$E, simplex_output$rho, type = "l",
      xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)")
 ```
 
@@ -663,7 +666,7 @@ While there is an initial peak in the simplex prediction at `E = 4`, the global 
 To test for nonlinearity, we again use S-maps, but test both `E = 4` and `E = 8` to verify that the result is robust to the choice of embedding dimension.
 
 ```{r smap for thrips, warning = FALSE}
-smap_output <- list(s_map(ts, lib, pred, E = 4), 
+smap_output <- list(s_map(ts, lib, pred, E = 4),
                     s_map(ts, lib, pred, E = 8))
 ```
 
@@ -672,9 +675,9 @@ par(mfrow = c(1, 2))
 ```
 
 ```{r rho vs. theta for thrips, echo = FALSE}
-plot(smap_output[[1]]$theta, smap_output[[1]]$rho, type = "l", xlim = c(0, 4), 
+plot(smap_output[[1]]$theta, smap_output[[1]]$rho, type = "l", xlim = c(0, 4),
      xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)")
-plot(smap_output[[2]]$theta, smap_output[[2]]$rho, type = "l", xlim = c(0, 4), 
+plot(smap_output[[2]]$theta, smap_output[[2]]$rho, type = "l", xlim = c(0, 4),
      xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)")
 ```
 
@@ -693,14 +696,14 @@ For an initial summary, we first compute the cross map skill for each variable p
 ```{r compute ccm matrix for thrips, results = "hold", warning = FALSE}
 vars <- colnames(thrips_block[3:6])
 n <- NROW(thrips_block)
-ccm_matrix <- matrix(NA, nrow = length(vars), ncol = length(vars), 
+ccm_matrix <- matrix(NA, nrow = length(vars), ncol = length(vars),
                      dimnames = list(vars, vars))
 
 for(ccm_from in vars)
 {
     for(ccm_to in vars[vars != ccm_from]) # ignore self-interactions
     {
-        out_temp <- ccm(thrips_block, E = 8, 
+        out_temp <- ccm(thrips_block, E = 8,
                         lib_column = ccm_from, target_column = ccm_to,
                         lib_sizes = n, replace = FALSE)
         ccm_matrix[ccm_from, ccm_to] <- out_temp$rho
@@ -711,14 +714,14 @@ for(ccm_from in vars)
 For comparison we also compute the lagged cross-correlation, allowing lags of up to $\pm 6$ months.
 
 ```{r compute corr matrix for thrips}
-corr_matrix <- array(NA, dim = c(length(vars), length(vars)), 
+corr_matrix <- array(NA, dim = c(length(vars), length(vars)),
                      dimnames = list(vars, vars))
 
 for(ccm_from in vars)
 {
     for(ccm_to in vars[vars != ccm_from])
     {
-        cf_temp <- ccf(thrips_block[, ccm_from], thrips_block[, ccm_to], 
+        cf_temp <- ccf(thrips_block[, ccm_from], thrips_block[, ccm_to],
                        type = "correlation", lag.max = 6, plot = FALSE)$acf
         corr_matrix[ccm_from, ccm_to] <- max(abs(cf_temp))
     }
@@ -736,11 +739,11 @@ Notice that the lagged correlation between temperature and the seasonal indicato
 With this in mind, we examine convergence in cross-map predictability, i.e. we compute `rho` as a function of library size `L`. We first look at *Thrips* and temperature.
 
 ```{r ccm on thrips, results = "hide", warning = FALSE}
-thrips_xmap_maxT <- ccm(thrips_block, E = 8, random_libs = TRUE, 
-                        lib_column = "Thrips_imaginis", target_column = "maxT_degC", 
+thrips_xmap_maxT <- ccm(thrips_block, E = 8, random_libs = TRUE,
+                        lib_column = "Thrips_imaginis", target_column = "maxT_degC",
                         lib_sizes = seq(10, 75, by = 5), num_samples = 300)
-maxT_xmap_thrips <- ccm(thrips_block, E = 8, random_libs = TRUE, 
-                        lib_column = "maxT_degC", target_column = "Thrips_imaginis", 
+maxT_xmap_thrips <- ccm(thrips_block, E = 8, random_libs = TRUE,
+                        lib_column = "maxT_degC", target_column = "Thrips_imaginis",
                         lib_sizes = seq(10, 75, by = 5), num_samples = 300)
 
 ccm_out <- list(ccm_means(thrips_xmap_maxT), ccm_means(maxT_xmap_thrips))
@@ -751,25 +754,25 @@ plot(ccm_out[[1]]$lib_size, pmax(0, ccm_out[[1]]$rho), type = "l", col = "red",
      xlab = "Library Size", ylab = "Cross Map Skill (rho)", ylim = c(0, 1))
 lines(ccm_out[[2]]$lib_size, pmax(0, ccm_out[[2]]$rho), col = "blue")
 abline(h = corr_matrix['Thrips_imaginis', 'maxT_degC'], col = "black", lty = 2)
-legend(x = "bottomright", legend = c("Thrips xmap maxT", "maxT xmap Thrips"), 
+legend(x = "bottomright", legend = c("Thrips xmap maxT", "maxT xmap Thrips"),
        col = c("red", "blue"), lwd = 1, inset = 0.02)
 ```
 
 The magnitude of the cross-correlation between *Thrips* and temperature is shown as a black dashed line for comparison. We repeat the analysis for rainfall.
 
 ```{r ccm on thrips and rainfall, results = "hide", warning = FALSE}
-thrips_xmap_Rain <- ccm(thrips_block, E = 8, random_libs = TRUE, 
-                        lib_column = "Thrips_imaginis", target_column = "Rain_mm", 
+thrips_xmap_Rain <- ccm(thrips_block, E = 8, random_libs = TRUE,
+                        lib_column = "Thrips_imaginis", target_column = "Rain_mm",
                         lib_sizes = seq(10, 75, by = 5), num_samples = 300)
-Rain_xmap_thrips <- ccm(thrips_block, E = 8, random_libs = TRUE, 
-                        lib_column = "Rain_mm", target_column = "Thrips_imaginis", 
+Rain_xmap_thrips <- ccm(thrips_block, E = 8, random_libs = TRUE,
+                        lib_column = "Rain_mm", target_column = "Thrips_imaginis",
                         lib_sizes = seq(10, 75, by = 5), num_samples = 300)
 
 ccm_out <- list(ccm_means(thrips_xmap_Rain), ccm_means(Rain_xmap_thrips))
 ```
 
 ```{r rainfall and thrips ccm plot, echo = FALSE}
-plot(ccm_out[[1]]$lib_size, pmax(0, ccm_out[[1]]$rho), type = "l", col = "red", 
+plot(ccm_out[[1]]$lib_size, pmax(0, ccm_out[[1]]$rho), type = "l", col = "red",
      xlab = "Library Size", ylab = "Cross Map Skill (rho)", ylim = c(0, 1))
 lines(ccm_out[[2]]$lib_size, pmax(0, ccm_out[[2]]$rho), col = "blue")
 abline(h = corr_matrix['Thrips_imaginis', 'Rain_mm'], col = 'black', lty = 2)
@@ -780,11 +783,11 @@ legend(x = "topleft", legend = c("Thrips xmap Rain", "Rain xmap Thrips"),
 And finally for the deterministic seasonal cycle.
 
 ```{r ccm on thrips and season, results = "hide", warning = FALSE}
-thrips_xmap_Season <- ccm(thrips_block, E = 8, random_libs = TRUE, 
-                          lib_column = "Thrips_imaginis", target_column = "Season", 
+thrips_xmap_Season <- ccm(thrips_block, E = 8, random_libs = TRUE,
+                          lib_column = "Thrips_imaginis", target_column = "Season",
                           lib_sizes = seq(10, 75, by = 5), num_samples = 300)
-Season_xmap_thrips <- ccm(thrips_block, E = 8, random_libs = TRUE, 
-                          lib_column = "Season", target_column = "Thrips_imaginis", 
+Season_xmap_thrips <- ccm(thrips_block, E = 8, random_libs = TRUE,
+                          lib_column = "Season", target_column = "Thrips_imaginis",
                           lib_sizes = seq(10, 75, by = 5), num_samples = 300)
 
 ccm_out <- list(ccm_means(thrips_xmap_Season), ccm_means(Season_xmap_thrips))
@@ -792,11 +795,11 @@ ccm_out <- list(ccm_means(thrips_xmap_Season), ccm_means(Season_xmap_thrips))
 
 ```{r season and thrips ccm plot, echo = FALSE}
 par(mar = c(4, 4, 1, 1), mgp = c(2.5, 1, 0)) # set up margins for plotting
-plot(ccm_out[[1]]$lib_size, pmax(0, ccm_out[[1]]$rho), type = "l", col = "red", 
+plot(ccm_out[[1]]$lib_size, pmax(0, ccm_out[[1]]$rho), type = "l", col = "red",
      xlab = "Library Size", ylab = "Cross Map Skill (rho)", ylim = c(0, 1))
 lines(ccm_out[[2]]$lib_size, pmax(0, ccm_out[[2]]$rho), col = "blue")
 abline(h = corr_matrix['Thrips_imaginis', 'Season'], col = 'black', lty = 2)
-legend(x = "bottomright", legend = c("Thrips xmap Season", "Season xmap Thrips"), 
+legend(x = "bottomright", legend = c("Thrips xmap Season", "Season xmap Thrips"),
        col = c("red", "blue"), lwd = 1, inset = 0.02)
 ```
 
@@ -812,30 +815,30 @@ We use the `make_surrogate_data` function to generate surrogate time series with
 
 ```{r seasonal surrogates for thrips, warning = FALSE}
 num_surr <- 1000
-surr_maxT <- make_surrogate_data(thrips_block$maxT_degC, method = "seasonal", 
+surr_maxT <- make_surrogate_data(thrips_block$maxT_degC, method = "seasonal",
                                  T_period = 12, num_surr = num_surr)
-surr_Rain <- make_surrogate_data(thrips_block$Rain_mm, method = "seasonal", 
+surr_Rain <- make_surrogate_data(thrips_block$Rain_mm, method = "seasonal",
                                  T_period = 12, num_surr = num_surr)
 
 rho_surr <- data.frame(maxT = numeric(num_surr), Rain = numeric(num_surr))
 
 for (i in 1:num_surr) {
-    rho_surr$maxT[i] <- ccm(cbind(thrips_block$Thrips_imaginis, surr_maxT[,i]), 
-                            E = 8, lib_column = 1, target_column = 2, 
+    rho_surr$maxT[i] <- ccm(cbind(thrips_block$Thrips_imaginis, surr_maxT[,i]),
+                            E = 8, lib_column = 1, target_column = 2,
                             lib_sizes = NROW(thrips_block), replace = FALSE)$rho
-
-    rho_surr$Rain[i] <- ccm(cbind(thrips_block$Thrips_imaginis, surr_Rain[,i]), 
-                            E = 8, lib_column = 1, target_column = 2, 
+    
+    rho_surr$Rain[i] <- ccm(cbind(thrips_block$Thrips_imaginis, surr_Rain[,i]),
+                            E = 8, lib_column = 1, target_column = 2,
                             lib_sizes = NROW(thrips_block), replace = FALSE)$rho
-    }
+}
 ```
 
 These cross map values form a null distribution, allowing us to estimate the $p$ value for rejecting the null hypothesis of mutual seasonality.
 
 ```{r significance of randomization test, tidy = FALSE}
-(sum(ccm_matrix['Thrips_imaginis', 'Rain_mm'] < rho_surr$Rain) + 1) / 
+(sum(ccm_matrix['Thrips_imaginis', 'Rain_mm'] < rho_surr$Rain) + 1) /
     (length(rho_surr$Rain) + 1)
-(sum(ccm_matrix['Thrips_imaginis', 'maxT_degC'] < rho_surr$maxT) + 1) / 
+(sum(ccm_matrix['Thrips_imaginis', 'maxT_degC'] < rho_surr$maxT) + 1) /
     (length(rho_surr$maxT) + 1)
 ```
 
@@ -856,50 +859,50 @@ Note that when there is no observed target value, it is still possible to predic
 Many of the functions in **rEDM** are designed around the same prediction engine, and so share many of the same parameters. Please see the documentation associated with individual functions to verify which parameters are applicable as well as the default values (which can change from function to function)
 
 * `lib`
-    + a 2-column matrix (or 2-element vector) where each row specifies the portions of the time series to use for attractor reconstruction (i.e., which reconstructed states can be selected as nearest neighbors)
-    + e.g., `(1, n)` specifies that the first n *rows* (from 1 to n) of data are a contiguous time series block, each point of which can be used to construct state vectors
-    + by default, `lib` uses the entire input as a single contiguous segment
++ a 2-column matrix (or 2-element vector) where each row specifies the portions of the time series to use for attractor reconstruction (i.e., which reconstructed states can be selected as nearest neighbors)
++ e.g., `(1, n)` specifies that the first n *rows* (from 1 to n) of data are a contiguous time series block, each point of which can be used to construct state vectors
++ by default, `lib` uses the entire input as a single contiguous segment
 * `pred`
-    + (same format as `lib`, but specifes the portions of the time series to make predictions for)
++ (same format as `lib`, but specifes the portions of the time series to make predictions for)
 * `norm_type`
-    + `"L2 norm"` (default) or `"L1 norm"`: specifies which distance metric to use when doing calculations
-    + `"L2 norm"` is the standard Euclidean distance, where the distance between a vector $\mathbf{x} = \left(x_1, x_2, \dots, x_n \right)$ and $\mathbf{y} = \left( y_1, y_2, \dots, y_n \right)$ is computed as $\sqrt{(x_1 - y_1)^2 + (x_2 - y_2)^2 + \dots + (x_n - y_n)^2}$.
-    + `"L1 norm"` is the Manhattan norm (also known as taxicab distance), where the distance between a vector $\mathbf{x} = \left( x_1, x_2, \dots, x_n \right)$ and $\mathbf{y} = \left( y_1, y_2, \dots, y_n \right)$ is computed as $|x_1 - y_1| + |x_2 - y_2| + \dots + |x_n - y_n|$.
-    + `"P norm"` is the generalization of the L1 and L2 norms which adds a parameter $P$ as the exponent: the distance between a vector $\mathbf{x} = \left( x_1, x_2, \dots, x_n \right)$ and $\mathbf{y} = \left(y_1, y_2, \dots, y_n \right)$ is computed as ${\left((x_1 - y_1)^P + (x_2 - y_2)^P + \dots + (x_n - y_n)^P\right)^{1/P}}$.
++ `"L2 norm"` (default) or `"L1 norm"`: specifies which distance metric to use when doing calculations
++ `"L2 norm"` is the standard Euclidean distance, where the distance between a vector $\mathbf{x} = \left(x_1, x_2, \dots, x_n \right)$ and $\mathbf{y} = \left( y_1, y_2, \dots, y_n \right)$ is computed as $\sqrt{(x_1 - y_1)^2 + (x_2 - y_2)^2 + \dots + (x_n - y_n)^2}$.
++ `"L1 norm"` is the Manhattan norm (also known as taxicab distance), where the distance between a vector $\mathbf{x} = \left( x_1, x_2, \dots, x_n \right)$ and $\mathbf{y} = \left( y_1, y_2, \dots, y_n \right)$ is computed as $|x_1 - y_1| + |x_2 - y_2| + \dots + |x_n - y_n|$.
++ `"P norm"` is the generalization of the L1 and L2 norms which adds a parameter $P$ as the exponent: the distance between a vector $\mathbf{x} = \left( x_1, x_2, \dots, x_n \right)$ and $\mathbf{y} = \left(y_1, y_2, \dots, y_n \right)$ is computed as ${\left((x_1 - y_1)^P + (x_2 - y_2)^P + \dots + (x_n - y_n)^P\right)^{1/P}}$.
 * `P`
-    + the exponent for the "P norm" (and otherwise ignored)
++ the exponent for the "P norm" (and otherwise ignored)
 * `E`
-    + the embedding dimension to use for time delay embedding
++ the embedding dimension to use for time delay embedding
 * `tau`
-    + the lag to use for time delay embedding
-    + by default, `tau` is set to `1`
++ the lag to use for time delay embedding
++ by default, `tau` is set to `1`
 * `tp`
-    + the prediction horizon (how many steps ahead to make forecasts)
-    + negative values will also work
-    + by default, `tp` is set to `1` for forecasting functions, and `0` for cross mapping
++ the prediction horizon (how many steps ahead to make forecasts)
++ negative values will also work
++ by default, `tp` is set to `1` for forecasting functions, and `0` for cross mapping
 * `num_neighbors`
-    + the number of neighbors to use
-    + `"e+1"`, `"E+1"`, `"e + 1"`, and `"E + 1"` will all peg this parameter to be `E+1` for each run
-    + values less than 1 will use all possible neighbors
++ the number of neighbors to use
++ `"e+1"`, `"E+1"`, `"e + 1"`, and `"E + 1"` will all peg this parameter to be `E+1` for each run
++ values less than 1 will use all possible neighbors
 * `theta`
-    + the nonlinear tuning parameter (for use with S-maps) that adjusts how distance is factored into computation of the local linear map (`0` corresponds to a globally linear map, while values greater than 0 correspond to nonlinear models where the local linear map changes as a function of state-space)
++ the nonlinear tuning parameter (for use with S-maps) that adjusts how distance is factored into computation of the local linear map (`0` corresponds to a globally linear map, while values greater than 0 correspond to nonlinear models where the local linear map changes as a function of state-space)
 * `stats_only`
-    + `TRUE` (default) or `FALSE`: specifies whether the output should just contain statistics of the predictions, or also contain all the predictions that were made
-    + the predictions are included as a list-column in the output if enabled
++ `TRUE` (default) or `FALSE`: specifies whether the output should just contain statistics of the predictions, or also contain all the predictions that were made
++ the predictions are included as a list-column in the output if enabled
 * `exclusion_radius`
-    + `exclusion_radius` sets the threshold whereby all vectors with time indices too close to the predictee will be excluded from being considered nearest neighbors
-    + e.g., `1` means that vectors must have an associated **time index** more than 1 away from potential nearest neighbors
-    + by default, `exclusion_radius` is set to `NULL` (turning this filtering off)
++ `exclusion_radius` sets the threshold whereby all vectors with time indices too close to the predictee will be excluded from being considered nearest neighbors
++ e.g., `1` means that vectors must have an associated **time index** more than 1 away from potential nearest neighbors
++ by default, `exclusion_radius` is set to `NULL` (turning this filtering off)
 * `epsilon`
-    + `epsilon` sets the threshold whereby all vectors with distance too far away from the predictee will be excluded from being considered nearest neighbors
-    + e.g., `2` means that vectors must have be within a **distance** of 2 from potential nearest neighbors
-    + by default, `epsilon` is set to `NULL` (turning this filtering off)
++ `epsilon` sets the threshold whereby all vectors with distance too far away from the predictee will be excluded from being considered nearest neighbors
++ e.g., `2` means that vectors must have be within a **distance** of 2 from potential nearest neighbors
++ by default, `epsilon` is set to `NULL` (turning this filtering off)
 * `silent`
-    + `TRUE` or `FALSE` (default): specifies whether to suppress warning messages from being printed to the R console
++ `TRUE` or `FALSE` (default): specifies whether to suppress warning messages from being printed to the R console
 * `save_smap_coefficients`
-    + `TRUE` or `FALSE` (default): specifies whether to include a table of S-map coefficients with the output
-    + (note that setting this to `TRUE` forces the full output as if `stats_only = FALSE`)
-    + the s-map coefficeints are included as a list-column in the output if enabled
++ `TRUE` or `FALSE` (default): specifies whether to include a table of S-map coefficients with the output
++ (note that setting this to `TRUE` forces the full output as if `stats_only = FALSE`)
++ the s-map coefficeints are included as a list-column in the output if enabled
 
 <!-- # Applications -->
 
