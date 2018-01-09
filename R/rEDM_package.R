@@ -115,6 +115,15 @@ NULL
 #' @description Seasonal outbreaks of Thrips imaginis.
 NULL
 
+#' @name e120_invnit16
+#' @docType data
+#' @title Biodiversity data at the Cedar Creek LTER
+#' @author ****
+#' @description Experiment 120, the "Big Biodiversity" experiment at Cedar 
+#'   Creek LTER. This experiment is the longest running randomized test for the 
+#'   effects of plant diversity on ecosystem functions.
+NULL
+
 #' @name compute_stats
 #' 
 #' @title Compute performance metrics for predictions
