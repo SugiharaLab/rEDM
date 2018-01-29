@@ -4,10 +4,15 @@
 \name{tentmap_del}
 \alias{tentmap_del}
 \title{Time series for a tent map with mu = 2.}
+\format{A numeric vector with 999 values}
+\usage{
+tentmap_del
+}
 \description{
-First-differenced time series generated from the tent map 
+First-differenced time series generated from the tent map
   recurrence relation with mu = 2.
 }
 \author{
 Hao Ye
 }
+\keyword{datasets}

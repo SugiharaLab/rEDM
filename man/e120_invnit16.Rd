@@ -4,11 +4,29 @@
 \name{e120_invnit16}
 \alias{e120_invnit16}
 \title{Biodiversity data at the Cedar Creek LTER}
+\format{A data frame with 238 rows and 7 variables: 
+\describe{
+  \item{\code{Exp}}{experiment code (E120)}
+  \item{\code{Year}}{year}
+  \item{\code{Plot}}{plot identity}
+  \item{\code{AbvBioAnnProd}}{annual above-ground productivity of planted 
+    species (g/m^2)}
+  \item{\code{noh020tot}}{soil nitrate levels in the top 20cm of soil (ug/kg 
+    soil)}
+  \item{\code{invrichness}}{species richness of unplanted species in the 
+    plot, i.e. weeds}
+  \item{\code{SummerPrecip.mm}}{annual precipitation from May to August (mm)}
+}}
+\usage{
+e120_invnit16
+}
 \description{
 Experiment 120, the "Big Biodiversity" experiment at Cedar 
   Creek LTER. This experiment is the longest running randomized test for the 
-  effects of plant diversity on ecosystem functions.
+  effects of plant diversity on ecosystem functions. This is a subset of the 
+  data from the treatments with 16 planted species.
 }
 \author{
 ****
 }
+\keyword{datasets}

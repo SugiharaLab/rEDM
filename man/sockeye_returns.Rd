@@ -4,10 +4,36 @@
 \name{sockeye_returns}
 \alias{sockeye_returns}
 \title{Time series for sockeye salmon returns.}
+\format{A data frame with 55 rows and 10 variables: 
+\describe{
+  \item{\code{year}}{year}
+  \item{\code{Early_Stuart}}{number of sockeye returns for the Early Stuart 
+    stock (millions of fish)}
+  \item{\code{Late_Stuart}}{number of sockeye returns for the Late Stuart 
+    stock (millions of fish)}
+  \item{\code{Stellako}}{number of sockeye returns for the Stellako 
+    stock (millions of fish)}
+  \item{\code{Quesnel}}{number of sockeye returns for the Quesnel 
+    stock (millions of fish)}
+  \item{\code{Chilko}}{number of sockeye returns for the Chilko
+    stock (millions of fish)}
+  \item{\code{Seymour}}{number of sockeye returns for the Seymour
+    stock (millions of fish)}
+  \item{\code{Late_Shuswap}}{number of sockeye returns for the Late Shuswap
+    stock (millions of fish)}
+  \item{\code{Birkenhead}}{number of sockeye returns for the Birkenhead
+    stock (millions of fish)}
+  \item{\code{Weaver}}{number of sockeye returns for the Weaver
+    stock (millions of fish)}
+}}
+\usage{
+sockeye_returns
+}
 \description{
 Time series of sockeye salmon returns from the Fraser River in 
-British Columbia, Canada.
+  British Columbia, Canada.
 }
 \author{
-****
+Fisheries and Oceans Canada
 }
+\keyword{datasets}
