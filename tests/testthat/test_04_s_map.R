@@ -1,23 +1,7 @@
-context("Check simplex and s-map functions")
+context("Check s-map function")
 
 data("two_species_model")
 ts <- two_species_model$x[1:200]
-
-test_that("simplex works", {
-    expect_error(simplex_out <- simplex(ts, lib = c(1, 100), pred = c(101, 200)), 
-                 NA)
-    expect_s3_class(simplex_out, "data.frame")
-    expect_true("E" %in% names(simplex_out))
-    expect_true("tau" %in% names(simplex_out))
-    expect_true("tp" %in% names(simplex_out))
-    expect_true("nn" %in% names(simplex_out))
-    expect_true("num_pred" %in% names(simplex_out))
-    expect_true("rho" %in% names(simplex_out))
-    expect_true("mae" %in% names(simplex_out))
-    expect_true("rmse" %in% names(simplex_out))
-    expect_equal(NROW(simplex_out), 10)
-})
-
 theta_list <- c(0, 1e-04, 3e-04, 0.001, 0.003, 0.01, 0.03, 
                 0.1, 0.3, 0.5, 0.75, 1, 1.5, 2, 3, 4, 6, 8)
 
@@ -65,4 +49,12 @@ test_that("s-map smap_coefficients works", {
     expect_true("c_2" %in% names(smap_coefficients))
     expect_true("c_0" %in% names(smap_coefficients))
     expect_equal(dim(smap_coefficients), c(198, 3))
+})
+
+test_that("s-map error checking works", {
+    expect_warning(s_map(1:10))
+    expect_error(suppressWarnings(s_map(1:5, E = 5, silent = TRUE)))
+    expect_error(suppressWarnings(s_map(1:5, E = 2, tau = 4, silent = TRUE)))
+    expect_error(suppressWarnings(s_map(1:5, E = 1, tp = 5, silent = TRUE)))
+    expect_error(suppressWarnings(s_map(1:5, E = 1, tp = -5, silent = TRUE)))
 })

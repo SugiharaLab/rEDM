@@ -94,8 +94,11 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
     model$set_p(P)
     
     # setup lib and pred ranges
-    setup_lib_and_pred(model, lib, pred)
-
+    lib <- coerce_lib(lib)
+    pred <- coerce_lib(pred)
+    model$set_lib(lib)
+    model$set_pred(pred)
+    
     prev_num_lib_sizes <- length(lib_sizes)
     lib_sizes <- unique(sort(lib_sizes))
     if (length(lib_sizes) < prev_num_lib_sizes)

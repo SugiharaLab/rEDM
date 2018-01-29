@@ -107,8 +107,6 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
                     stats_only = TRUE, exclusion_radius = NULL, epsilon = NULL, 
                     silent = FALSE)
 {
-    # check inputs?
-    
     # make new model object
     model <- new(LNLP)
     
@@ -136,7 +134,10 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
     model$set_pred_type(2)
     
     # setup lib and pred ranges
-    setup_lib_and_pred(model, lib, pred)
+    lib <- coerce_lib(lib)
+    pred <- coerce_lib(pred)
+    model$set_lib(lib)
+    model$set_pred(pred)
 
     # handle remaining arguments and flags
     setup_model_flags(model, exclusion_radius, epsilon, silent)
@@ -149,9 +150,18 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
     if (any(e_plus_1_index, na.rm = TRUE))
         params$nn <- params$E + 1
     params$nn <- as.numeric(params$nn)
-        
+    
+    # check params
+    idx <- sapply(seq(NROW(params)), function(i) {
+        check_params_against_lib(params$E[i], params$tau[i], params$tp[i], lib)})
+    if (!any(idx))
+    {
+        stop("No valid parameter combinations to run, stopping.")
+    }
+    params <- params[idx, ]
+    
     # apply model prediction function to params
-    output <- lapply(1:NROW(params), function(i) {
+    output <- lapply(seq(NROW(params)), function(i) {
         model$set_params(params$E[i], params$tau[i], params$tp[i], params$nn[i])
         model$run()
         if (stats_only)
@@ -215,7 +225,10 @@ s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
     model$set_pred_type(1)
     
     # setup lib and pred ranges
-    setup_lib_and_pred(model, lib, pred)
+    lib <- coerce_lib(lib)
+    pred <- coerce_lib(pred)
+    model$set_lib(lib)
+    model$set_pred(pred)
         
     # handle remaining arguments and flags
     setup_model_flags(model, exclusion_radius, epsilon, silent)
@@ -234,6 +247,15 @@ s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
     if (any(e_plus_1_index, na.rm = TRUE))
         params$nn <- params$E + 1
     params$nn <- as.numeric(params$nn)
+    
+    # check params
+    idx <- sapply(seq(NROW(params)), function(i) {
+        check_params_against_lib(params$E[i], params$tau[i], params$tp[i], lib)})
+    if (!any(idx))
+    {
+        stop("No valid parameter combinations to run, stopping.")
+    }
+    params <- params[idx, ]
     
     # apply model prediction function to params
     output <- lapply(1:NROW(params), function(i) {
