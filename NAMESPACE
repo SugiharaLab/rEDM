@@ -13,7 +13,7 @@ export(simplex)
 export(tde_gp)
 export(test_nonlinearity)
 import(Rcpp)
-import(methods)
+importFrom("methods", "new")
 importFrom("stats", "aggregate", "fft", "predict", "runif", "sd",
               "smooth.spline", "var", "dist")
 importFrom("utils", "combn")
