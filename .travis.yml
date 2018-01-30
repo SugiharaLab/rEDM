@@ -5,4 +5,4 @@ warnings_are_errors: false
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install texlive-science
-  - tlmgr install pgfplots algpseudocode
+  - tlmgr install pgfplots
