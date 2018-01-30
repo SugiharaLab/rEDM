@@ -10,3 +10,5 @@ before_install:
   - sudo apt-get update -qq
   - sudo apt-get install texlive-latex-base
   - tlmgr install pgfplots algorithmicx
+r_build_args: '--no-build-vignettes'
+r_check_args: '--ignore-vignettes --no-examples'

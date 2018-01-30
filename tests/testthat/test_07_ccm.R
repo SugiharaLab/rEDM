@@ -24,21 +24,25 @@ test_that("ccm works", {
 })
 
 test_that("ccm_means works", {
-    expect_error(ccm_means <- ccm_means(ccm_out), NA)
-    expect_s3_class(ccm_means, "data.frame")
-    expect_true("E" %in% names(ccm_means))
-    expect_true("tau" %in% names(ccm_means))
-    expect_true("tp" %in% names(ccm_means))
-    expect_true("nn" %in% names(ccm_means))
-    expect_true("lib_column" %in% names(ccm_means))
-    expect_true("target_column" %in% names(ccm_means))
-    expect_true("lib_size" %in% names(ccm_means))
-    expect_equal(anyDuplicated(ccm_means$lib_size), 0)
-    expect_true("num_pred" %in% names(ccm_means))
-    expect_true("rho" %in% names(ccm_means))
-    expect_true("mae" %in% names(ccm_means))
-    expect_true("rmse" %in% names(ccm_means))
-    expect_equal(NROW(ccm_means), 8)
+    ccm_out <- ccm(sardine_anchovy_sst, E = 3, 
+                   lib_sizes = seq(10, 80, by = 10), num_samples = 100, 
+                   lib_column = "anchovy", target_column = "np_sst",
+                   RNGseed = 42, silent = TRUE)
+    expect_error(ccm_results <- ccm_means(ccm_out), NA)
+    expect_s3_class(ccm_results, "data.frame")
+    expect_true("E" %in% names(ccm_results))
+    expect_true("tau" %in% names(ccm_results))
+    expect_true("tp" %in% names(ccm_results))
+    expect_true("nn" %in% names(ccm_results))
+    expect_true("lib_column" %in% names(ccm_results))
+    expect_true("target_column" %in% names(ccm_results))
+    expect_true("lib_size" %in% names(ccm_results))
+    expect_equal(anyDuplicated(ccm_results$lib_size), 0)
+    expect_true("num_pred" %in% names(ccm_results))
+    expect_true("rho" %in% names(ccm_results))
+    expect_true("mae" %in% names(ccm_results))
+    expect_true("rmse" %in% names(ccm_results))
+    expect_equal(NROW(ccm_results), 8)
 })
 
 test_that("ccm error checking works", {
