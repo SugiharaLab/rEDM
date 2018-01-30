@@ -120,13 +120,16 @@ setup_model_flags <- function(model, exclusion_radius, epsilon, silent)
 #' @param lib a 2-column matrix (or 2-element vector) where each row specifies 
 #'   the first and last *rows* of the time series to use for attractor 
 #'   reconstruction
+#' @param restrict_to_lib whether to restrict the final lagged block to 
+#'   just the rows specified in lib (if lib exists)
 #' @return A data.frame with the lagged columns and a time column. If the 
 #'   original block had columns X, Y, Z and max_lag = 3, then the returned 
 #'   data.frame will have columns TIME, X, X_1, X_2, Y, Y_1, Y_2, Z, Z_1, Z_2.
 #' @examples 
 #' data("block_3sp")
 #' make_block(block_3sp[, c(2, 5, 8)])
-make_block <- function(block, t = NULL, max_lag = 3, tau = 1, lib = NULL)
+make_block <- function(block, t = NULL, max_lag = 3, tau = 1, lib = NULL, 
+                       restrict_to_lib = TRUE)
 {
     num_vars <- NCOL(block)
     num_rows <- NROW(block)
@@ -181,7 +184,7 @@ make_block <- function(block, t = NULL, max_lag = 3, tau = 1, lib = NULL)
     }
     
     # only take rows of lib if appropriate
-    if (!is.null(lib))
+    if (!is.null(lib) && restrict_to_lib)
     {
         row_idx <- sort(unique(
             do.call(c, mapply(seq, lib[, 1], lib[, 2], SIMPLIFY = FALSE))

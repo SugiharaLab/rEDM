@@ -115,18 +115,21 @@ multiview <- function(block, lib = c(1, floor(NROW(block) / 2)),
     
     # generate lagged block and list of embeddings
     if (max_lag < 1)
-        warning("Maximum lag must be positive - setting to 1.", silent = silent)
+        rEDM_warning("Maximum lag must be positive - setting to 1.", 
+                     silent = silent)
     num_vars <- NCOL(block)
     if (first_column_time)
     {
         num_vars <- num_vars - 1
         lagged_block <- make_block(block[, 2:NCOL(block)], max_lag = max_lag, 
-                                   t = block[, 1], lib = lib, tau = tau)
+                                   t = block[, 1], lib = lib, tau = tau, 
+                                   restrict_to_lib = FALSE)
     } else {
         lagged_block <- make_block(block, max_lag = max_lag, 
-                                   lib = lib, tau = tau)
+                                   lib = lib, tau = tau, 
+                                   restrict_to_lib = FALSE)
     }
-    
+
     embeddings_list <- t(combn(num_vars * max_lag, E, simplify = TRUE))
     valid_embeddings_idx <- apply(embeddings_list %% max_lag, 1, 
                                   function(x) {1 %in% x})
@@ -170,37 +173,47 @@ multiview <- function(block, lib = c(1, floor(NROW(block) / 2)),
                               silent = silent)
     out_time <- out_results$model_output[[1]]$time
     out_obs <- out_results$model_output[[1]]$obs
-    out_forecasts <- do.call(cbind, 
-                             lapply(out_results$model_output, function(df) {
-                                 df$pred})
-    )
-    
+    out_pred <- do.call(cbind, lapply(out_results$model_output, 
+                                      function(df) {df$pred}))
+    out_pred_var <- do.call(cbind, lapply(out_results$model_output, 
+                                          function(df) {df$pred_var}))
     # compute mve forecasts
     mve_forecasts <- lapply(k_list, function(k) {
-        if (k > 1)
-        {
-            return(rowMeans(out_forecasts[, 1:k], na.rm = na.rm))
+        if (k > 1) {
+            return(data.frame(pred = rowMeans(out_pred[, 1:k], na.rm = na.rm), 
+                              pred_var = rowMeans(out_pred_var[, 1:k], na.rm = na.rm) + 
+                                  apply(out_pred_var[, 1:k], 1, var, na.rm = na.rm)))
         } else {
-            return(out_forecasts[, 1])
+            return(data.frame(pred = out_pred[, 1], 
+                              pred_var = out_pred_var[, 1]))
         }
     })
-    
-    params <- data.frame(E = E, tau = tau, tp = tp, 
-                         nn = num_neighbors, k = k_list)
-    
+
     # return output
-    output <- lapply(mve_forecasts, function(pred) {
+    output <- lapply(mve_forecasts, function(mve_output) {
         if (stats_only)
         {
-            df <- compute_stats(out_obs, pred)
+            df <- compute_stats(out_obs, mve_output$pred)
         } else {
-            df <- compute_stats(out_obs, pred)
+            df <- compute_stats(out_obs, mve_output$pred)
             df$model_output <- I(list(data.frame(
                 time = out_time,
                 obs = out_obs, 
-                pred = pred)))
+                pred = mve_output$pred, 
+                pred_var = mve_output$pred_var)))
         }
         return(df)
     })
-    return(cbind(params, do.call(rbind, output), row.names = NULL))
+    output <- do.call(rbind, output)
+    
+    if (!stats_only)
+    {
+        output$embeddings <- lapply(k_list, function(k) {
+            best_embeddings[seq(k)]})
+    }
+    
+    # setup params to append
+    params <- data.frame(E = E, tau = tau, tp = tp, 
+                         nn = num_neighbors, k = k_list)
+    return(cbind(params, output, row.names = NULL))
 }
