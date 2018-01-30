@@ -85,8 +85,14 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
     
     # setup data
     block <- setup_time_and_data_block(model, first_column_time, block)
-    model$set_lib_column(convert_to_column_indices(lib_column, block))
-    model$set_target_column(convert_to_column_indices(target_column, block))
+    my_lib_column <- convert_to_column_indices(lib_column, block)
+    if(length(my_lib_column) < 1)
+        stop("lib_column given was invalid, ", my_lib_column)
+    model$set_lib_column(my_lib_column)
+    my_target_column <- convert_to_column_indices(target_column, block)
+    if(length(my_target_column) < 1)
+        stop("lib_column given was invalid, ", my_target_column)
+    model$set_target_column(my_target_column)
     
     # setup norm type
     model$set_norm_type(switch(match.arg(norm_type), 
@@ -124,16 +130,18 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
                 "complex ecosystems' (Sugihara et al. 2012) for more details.")
     }
     
-    # check inputs?
-    
-    params <- data.frame(E, tau, tp, num_neighbors, lib_column, target_column)
+    params <- data.frame(E, tau, tp, nn = num_neighbors, lib_column, target_column)
     e_plus_1_index <- match(num_neighbors, c("e+1", "E+1", "e + 1", "E + 1"))
     if (any(e_plus_1_index, na.rm = TRUE))
-        params$num_neighbors <- params$E+1
-    params$num_neighbors <- as.numeric(params$num_neighbors)
+        params$nn <- params$E+1
+    params$num_neighbors <- as.numeric(params$nn)
     
-
-    model$set_params(params$E, params$tau, params$tp, params$num_neighbors, 
+    if (!check_params_against_lib(params$E, params$tau, params$tp, lib))
+    {
+        stop("Parameter combination was invalid, stopping.")
+    }
+    
+    model$set_params(params$E, params$tau, params$tp, params$nn, 
                      random_libs, num_samples, replace)
     if (!is.null(RNGseed))
         model$set_seed(RNGseed)
