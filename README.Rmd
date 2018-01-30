@@ -22,7 +22,13 @@ The `rEDM` package is a collection of methods for Empirical Dynamic Modeling (ED
 
 ## Installation
 
-You can install rEDM from github with:
+You can install rEDM from CRAN with:
+
+```{r cran-installation, eval = FALSE}
+install.packages("rEDM")
+```
+
+OR from github with:
 
 ```{r gh-installation, eval = FALSE}
 # install.packages("devtools")

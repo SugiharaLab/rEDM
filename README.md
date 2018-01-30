@@ -3,7 +3,8 @@
 
 # rEDM
 
-<https://travis-ci.org/ha0ye/rEDM.svg?branch=master>
+[![Build
+Status](https://travis-ci.org/ha0ye/rEDM.svg?branch=master)](https://travis-ci.org/ha0ye/rEDM)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.596502.svg)](https://doi.org/10.5281/zenodo.596502)
 
 ## Overview
@@ -17,7 +18,13 @@ California San Diego, Scripps Institution of Oceanography).
 
 ## Installation
 
-You can install rEDM from github with:
+You can install rEDM from CRAN with:
+
+``` r
+install.packages("rEDM")
+```
+
+OR from github with:
 
 ``` r
 # install.packages("devtools")
