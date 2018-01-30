@@ -4,7 +4,8 @@
 \alias{make_block}
 \title{Make a lagged block for multiview}
 \usage{
-make_block(block, t = NULL, max_lag = 3, tau = 1, lib = NULL)
+make_block(block, t = NULL, max_lag = 3, tau = 1, lib = NULL,
+  restrict_to_lib = TRUE)
 }
 \arguments{
 \item{block}{a data.frame or matrix where each column is a time series}
@@ -20,6 +21,9 @@ X[t - 2*tau]}
 \item{lib}{a 2-column matrix (or 2-element vector) where each row specifies 
 the first and last *rows* of the time series to use for attractor 
 reconstruction}
+
+\item{restrict_to_lib}{whether to restrict the final lagged block to 
+just the rows specified in lib (if lib exists)}
 }
 \value{
 A data.frame with the lagged columns and a time column. If the 
