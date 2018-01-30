@@ -4,3 +4,4 @@
 ^vignettes/vignette_figs/
 ^README.md
 ^.zenodo.json
+^.travis.yml
