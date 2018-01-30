@@ -15,7 +15,7 @@
     soil)}
   \item{\code{invrichness}}{species richness of unplanted species in the 
     plot, i.e. weeds}
-  \item{\code{SummerPrecip.mm}}{annual precipitation from May to August (mm)}
+  \item{\code{SummerPrecip.mm.}}{annual precipitation from May to August (mm)}
 }}
 \usage{
 e120_invnit16
