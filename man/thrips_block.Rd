@@ -4,9 +4,23 @@
 \name{thrips_block}
 \alias{thrips_block}
 \title{Apple-blossom Thrips time series}
+\format{A data frame with 81 rows and 6 variables: 
+\describe{
+  \item{\code{Year}}{year}
+  \item{\code{Month}}{month}
+  \item{\code{Thrips_imaginis}}{counts of Thrips imaginis}
+  \item{\code{maxT_degC}}{mean maximum dail temperature in each month 
+    (Celsius)}
+  \item{\code{Rain_mm}}{monthly rainfall (mm)}
+  \item{\code{Season}}{annual sinusoidal that peaks in December}
+}}
+\usage{
+thrips_block
+}
 \description{
 Seasonal outbreaks of Thrips imaginis.
 }
 \author{
 ****
 }
+\keyword{datasets}

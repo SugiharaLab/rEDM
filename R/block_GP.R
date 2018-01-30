@@ -185,17 +185,9 @@ block_gp <- function(block, lib = c(1, NROW(block)), pred = lib,
     target_column <- convert_to_column_indices(target_column, block)
     
     # setup lib and pred ranges
-    if (is.vector(lib))
-        lib <- matrix(lib, ncol = 2, byrow = TRUE)
-    if (is.vector(pred))
-        pred <- matrix(pred, ncol = 2, byrow = TRUE)
-    if (!all(lib[, 2] >= lib[, 1]))
-        warning("Some library rows look incorrectly formatted, please check ",
-                "the lib argument.")
-    if (!all(pred[, 2] >= pred[, 1]))
-        warning("Some library rows look incorrectly formatted, please check ", 
-                "the pred argument.")
-    
+    lib <- coerce_lib(lib)
+    pred <- coerce_lib(pred)
+
     params <- expand.grid(tp = tp, 
                           phi = phi, 
                           v_e = v_e, 

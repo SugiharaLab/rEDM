@@ -4,10 +4,19 @@
 \name{paramecium_didinium}
 \alias{paramecium_didinium}
 \title{Time series for the Paramecium-Didinium laboratory experiment}
+\format{\describe{
+  \item{\code{time}}{time of sampling (in days)}
+  \item{\code{paramecium}}{paramecium abundance (per mL)}
+  \item{\code{didinium}}{didinium abundance (per mL)}
+}}
+\usage{
+paramecium_didinium
+}
 \description{
 Time series of Paramecium and Didinium abundances (#/mL) from 
-an experiment by Veilleux (1979)
+  an experiment by Veilleux (1979)
 }
 \author{
 Veilleux
 }
+\keyword{datasets}

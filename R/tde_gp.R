@@ -71,12 +71,10 @@ tde_gp <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
                    stats_only = TRUE, save_covariance_matrix = FALSE, 
                    silent = FALSE, ...)
 {
-    # restructure lib and pred if necessary
-    if (is.vector(lib))
-        lib <- matrix(lib, ncol = 2, byrow = TRUE)
-    if (is.vector(pred))
-        pred <- matrix(pred, ncol = 2, byrow = TRUE)
-    
+    # setup lib and pred ranges
+    lib <- coerce_lib(lib)
+    pred <- coerce_lib(pred)
+
     # setup data
     if (is.vector(time_series)) {
         if (!is.null(names(time_series))) {

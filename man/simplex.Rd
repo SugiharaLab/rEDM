@@ -68,28 +68,28 @@ were set to FALSE)}
 \value{
 For \code{\link{simplex}}, a data.frame with components for the parameters 
   and forecast statistics:
-\tabular{ll}{
-  E \tab embedding dimension\cr
-  tau \tab time lag\cr
-  tp \tab prediction horizon\cr
-  nn \tab number of neighbors\cr
-  num_pred \tab number of predictions\cr
-  rho \tab correlation coefficient between observations and predictions\cr
-  mae \tab mean absolute error\cr
-  rmse \tab root mean square error\cr
-  perc \tab percent correct sign\cr
-  p_val \tab p-value that rho is significantly greater than 0 using Fisher's 
-  z-transformation\cr
-  const_rho \tab same as rho, but for the constant predictor\cr
-  const_mae \tab same as mae, but for the constant predictor\cr
-  const_rmse \tab same as rmse, but for the constant predictor\cr
-  const_perc \tab same as perc, but for the constant predictor\cr
-  const_p_val \tab same as p_val, but for the constant predictor
+\describe{
+  \item{\code{E}}{embedding dimension}
+  \item{\code{tau}}{time lag}
+  \item{\code{tp}}{prediction horizon}
+  \item{\code{nn}}{number of neighbors}
+  \item{\code{num_pred}}{number of predictions}
+  \item{\code{rho}}{correlation coefficient between observations and predictions}
+  \item{\code{mae}}{mean absolute error}
+  \item{\code{rmse}}{root mean square error}
+  \item{\code{perc}}{percent correct sign}
+  \item{\code{p_val}}{p-value that rho is significantly greater than 0 using Fisher's 
+  z-transformation}
+  \item{\code{const_rho}}{same as \code{rho}, but for the constant predictor}
+  \item{\code{const_mae}}{same as \code{mae}, but for the constant predictor}
+  \item{\code{const_rmse}}{same as \code{rmse}, but for the constant predictor}
+  \item{\code{const_perc}}{same as \code{perc}, but for the constant predictor}
+  \item{\code{const_p_val}}{same as \code{p_val}, but for the constant predictor}
 }
   If \code{stats_only == FALSE}, then additionally a list column:
-\tabular{ll}{
-  model_output \tab data.frame with columns for the time index, 
-    observations, predictions, and estimated prediction variance\cr
+\describe{
+  \item{\code{model_output}}{data.frame with columns for the time index, 
+    observations, predictions, and estimated prediction variance}
 }
 
 For \code{\link{s_map}}, the same as for \code{\link{simplex}}, but with an 
