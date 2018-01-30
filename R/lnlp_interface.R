@@ -134,8 +134,8 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
     model$set_pred_type(2)
     
     # setup lib and pred ranges
-    lib <- coerce_lib(lib)
-    pred <- coerce_lib(pred)
+    lib <- coerce_lib(lib, silent = silent)
+    pred <- coerce_lib(pred, silent = silent)
     model$set_lib(lib)
     model$set_pred(pred)
 
@@ -153,7 +153,8 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
     
     # check params
     idx <- sapply(seq(NROW(params)), function(i) {
-        check_params_against_lib(params$E[i], params$tau[i], params$tp[i], lib)})
+        check_params_against_lib(params$E[i], params$tau[i], params$tp[i], lib, 
+                                 silent = silent)})
     if (!any(idx))
     {
         stop("No valid parameter combinations to run, stopping.")
@@ -225,8 +226,8 @@ s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
     model$set_pred_type(1)
     
     # setup lib and pred ranges
-    lib <- coerce_lib(lib)
-    pred <- coerce_lib(pred)
+    lib <- coerce_lib(lib, silent = silent)
+    pred <- coerce_lib(pred, silent = silent)
     model$set_lib(lib)
     model$set_pred(pred)
         
@@ -250,7 +251,8 @@ s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
     
     # check params
     idx <- sapply(seq(NROW(params)), function(i) {
-        check_params_against_lib(params$E[i], params$tau[i], params$tp[i], lib)})
+        check_params_against_lib(params$E[i], params$tau[i], params$tp[i], lib, 
+                                 silent = silent)})
     if (!any(idx))
     {
         stop("No valid parameter combinations to run, stopping.")

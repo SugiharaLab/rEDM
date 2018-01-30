@@ -1,4 +1,11 @@
-check_params_against_lib <- function(E, tau, tp, lib)
+rEDM_warning <- function(..., silent = FALSE)
+{
+    if(!silent)
+        warning(..., call. = FALSE)
+    return()
+}
+
+check_params_against_lib <- function(E, tau, tp, lib, silent = FALSE)
 {
     vector_start <- max(-(E - 1) * tau, 0, tp)
     vector_end <- min(-(E - 1) * tau, 0, tp)
@@ -7,34 +14,41 @@ check_params_against_lib <- function(E, tau, tp, lib)
     max_lib_segment <- max(lib[, 2] - lib[, 1] + 1)
     if(vector_length > max_lib_segment)
     {
-        warning("Invalid parameter combination: E = ", E, ", tau = ", tau, 
-                ", tp = ", tp)
+        rEDM_warning("Invalid parameter combination: E = ", E, ", tau = ", tau, 
+                     ", tp = ", tp, silent = silent)
         return(FALSE)
     }
     return(TRUE)
 }
 
-convert_to_column_indices <- function(columns, block)
+convert_to_column_indices <- function(columns, block, silent = FALSE)
 {
     if (is.numeric(columns))
     {
-        if (any(columns > NCOL(block)))
-            warning("Some column indices exceed the number of columns ", 
-                    "and were ignored.")
-        return(columns[columns <= NCOL(block)])
+        if (any(columns > NCOL(block) | columns < 1))
+            rEDM_warning("Some column indices exceeded the possible range ", 
+                         "and were ignored.", silent = silent)
+        out <- columns[columns <= NCOL(block) & columns >= 1]
+    } else {
+        indices <- match(columns, colnames(block))
+        if (any(is.na(indices)))
+            rEDM_warning("Some column names could not be matched and were ignored.", 
+                         silent = silent)
+        out <- indices[is.finite(indices)]
     }
-    # else
-    indices <- match(columns, colnames(block))
-    if (any(is.na(indices)))
-        warning("Some column names could not be matched and were ignored.")
-    return(indices[is.finite(indices)])
+    if(length(out) < 1)
+    {
+        stop("Columns requested were invalid, please check the ", 
+             match.call()$columns, " argument.")
+    }
+    return(out)
 }
 
-coerce_lib <- function(lib) {
+coerce_lib <- function(lib, silent = FALSE) {
     if (is.vector(lib)) lib <- matrix(lib, ncol = 2, byrow = TRUE)
     if (!all(lib[, 2] >= lib[, 1]))
-        warning("Some library rows look incorrectly formatted, please check ", 
-                "the ", match.call()$lib, " argument.")
+        rEDM_warning("Some library rows look incorrectly formatted, please ", 
+                "check the ", match.call()$lib, " argument.", silent = silent)
     return(lib)
 }
 

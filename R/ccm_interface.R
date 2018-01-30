@@ -85,13 +85,11 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
     
     # setup data
     block <- setup_time_and_data_block(model, first_column_time, block)
-    my_lib_column <- convert_to_column_indices(lib_column, block)
-    if(length(my_lib_column) < 1)
-        stop("lib_column given was invalid, ", my_lib_column)
+    my_lib_column <- convert_to_column_indices(lib_column, block, 
+                                               silent = silent)
     model$set_lib_column(my_lib_column)
-    my_target_column <- convert_to_column_indices(target_column, block)
-    if(length(my_target_column) < 1)
-        stop("lib_column given was invalid, ", my_target_column)
+    my_target_column <- convert_to_column_indices(target_column, block, 
+                                                  silent = silent)
     model$set_target_column(my_target_column)
     
     # setup norm type
@@ -100,15 +98,20 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
     model$set_p(P)
     
     # setup lib and pred ranges
-    lib <- coerce_lib(lib)
-    pred <- coerce_lib(pred)
+    lib <- coerce_lib(lib, silent = silent)
+    pred <- coerce_lib(pred, silent = silent)
     model$set_lib(lib)
     model$set_pred(pred)
     
+    # check lib_sizes
     prev_num_lib_sizes <- length(lib_sizes)
+    lib_sizes <- lib_sizes[lib_sizes >= 0]
     lib_sizes <- unique(sort(lib_sizes))
+    if(length(lib_sizes) < 1)
+        stop("No valid lib sizes found among input", lib_sizes)
     if (length(lib_sizes) < prev_num_lib_sizes)
-        warning("Some requested lib sizes were redundant and ignored.")
+        rEDM_warning("Some requested lib sizes were redundant or bad and ignored.", 
+                     silent = silent)
     model$set_lib_sizes(lib_sizes)
     
     # handle exclusion radius
@@ -124,11 +127,11 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
     if (silent)
     {
         model$suppress_warnings()
-    } else {
-        warning("Note: CCM results are typically interpreted in the opposite ", 
-                "direction of causation. Please see 'Detecting causality in ", 
-                "complex ecosystems' (Sugihara et al. 2012) for more details.")
     }
+    rEDM_warning("Note: CCM results are typically interpreted in the opposite ", 
+                 "direction of causation. Please see 'Detecting causality in ", 
+                 "complex ecosystems' (Sugihara et al. 2012) for more details.", 
+                 silent = silent)
     
     params <- data.frame(E, tau, tp, nn = num_neighbors, lib_column, target_column)
     e_plus_1_index <- match(num_neighbors, c("e+1", "E+1", "e + 1", "E + 1"))
@@ -136,7 +139,8 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
         params$nn <- params$E+1
     params$num_neighbors <- as.numeric(params$nn)
     
-    if (!check_params_against_lib(params$E, params$tau, params$tp, lib))
+    if (!check_params_against_lib(params$E, params$tau, params$tp, lib, 
+                                  silent = silent))
     {
         stop("Parameter combination was invalid, stopping.")
     }

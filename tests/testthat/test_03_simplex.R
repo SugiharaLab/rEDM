@@ -35,8 +35,8 @@ test_that("simplex model_output works", {
 
 test_that("simplex error checking works", {
     expect_warning(simplex(1:10))
-    expect_error(suppressWarnings(simplex(1:5, E = 5, silent = TRUE)))
-    expect_error(suppressWarnings(simplex(1:5, E = 2, tau = 4, silent = TRUE)))
-    expect_error(suppressWarnings(simplex(1:5, E = 1, tp = 5, silent = TRUE)))
-    expect_error(suppressWarnings(simplex(1:5, E = 1, tp = -5, silent = TRUE)))
+    expect_error(simplex(1:5, E = 5, silent = TRUE))
+    expect_error(simplex(1:5, E = 2, tau = 4, silent = TRUE))
+    expect_error(simplex(1:5, E = 1, tp = 5, silent = TRUE))
+    expect_error(simplex(1:5, E = 1, tp = -5, silent = TRUE))
 })

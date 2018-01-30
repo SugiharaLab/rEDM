@@ -135,8 +135,8 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
     }
     
     # setup lib and pred ranges
-    lib <- coerce_lib(lib)
-    pred <- coerce_lib(pred)
+    lib <- coerce_lib(lib, silent = silent)
+    pred <- coerce_lib(pred, silent = silent)
     model$set_lib(lib)
     model$set_pred(pred)
     

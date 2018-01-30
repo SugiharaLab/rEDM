@@ -106,8 +106,8 @@ multiview <- function(block, lib = c(1, floor(NROW(block) / 2)),
                       exclusion_radius = NULL, silent = FALSE)
 {
     # setup params
-    lib <- coerce_lib(lib)
-    pred <- coerce_lib(pred)
+    lib <- coerce_lib(lib, silent = silent)
+    pred <- coerce_lib(pred, silent = silent)
     if (any(match(num_neighbors, c("e+1", "E+1", "e + 1", "E + 1")), 
            na.rm = TRUE))
         num_neighbors <- E + 1
@@ -115,7 +115,7 @@ multiview <- function(block, lib = c(1, floor(NROW(block) / 2)),
     
     # generate lagged block and list of embeddings
     if (max_lag < 1)
-        warning("Maximum lag must be positive - setting to 1.")
+        warning("Maximum lag must be positive - setting to 1.", silent = silent)
     num_vars <- NCOL(block)
     if (first_column_time)
     {

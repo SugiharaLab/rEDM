@@ -72,8 +72,8 @@ tde_gp <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
                    silent = FALSE, ...)
 {
     # setup lib and pred ranges
-    lib <- coerce_lib(lib)
-    pred <- coerce_lib(pred)
+    lib <- coerce_lib(lib, silent = silent)
+    pred <- coerce_lib(pred, silent = silent)
 
     # setup data
     if (is.vector(time_series)) {

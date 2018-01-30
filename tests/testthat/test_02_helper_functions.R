@@ -1,5 +1,53 @@
 context("Check helper functions")
 
+test_that("rEDM_warning filters warnings", {
+    expect_warning(rEDM_warning("test ABC123"))
+    expect_warning(rEDM_warning("test ABC123"), "^test ABC123$")
+    expect_warning(rEDM_warning("test ABC123", silent = TRUE), NA)
+})
+
+test_that("check_params_against_lib produces desired output", {
+    lib <- matrix(c(1, 5), ncol = 2)
+    expect_true(check_params_against_lib(3, 1, 1, lib))
+    expect_warning(value <- check_params_against_lib(5, 1, 1, lib))
+    expect_false(value)
+    expect_true(check_params_against_lib(3, 2, 0, lib))
+    expect_warning(value <- check_params_against_lib(3, 2, 1, lib))
+    expect_false(value)
+    expect_true(check_params_against_lib(1, 1, 4, lib))
+    expect_true(check_params_against_lib(1, 1, -4, lib))
+    expect_warning(value <- check_params_against_lib(1, 1, 5, lib))
+    expect_false(value)
+    expect_warning(value <- check_params_against_lib(1, 1, -5, lib))
+    expect_false(value)
+})
+
+test_that("convert_to_column_indices produces desired output", {
+    df <- data.frame(a = 1:10, b = 2:11, c = rep(0, 10))
+    expect_equal(convert_to_column_indices(1, df), 1)
+    expect_equal(convert_to_column_indices(1:3, df), 1:3)
+    expect_warning(cols <- convert_to_column_indices(c(1, 2, 4), df))
+    expect_equal(cols, 1:2)
+    expect_warning(convert_to_column_indices(1:5, df, silent = TRUE), NA)
+    expect_error(convert_to_column_indices(6:7, df, silent = TRUE))
+    
+    expect_equal(convert_to_column_indices("a", df), 1)
+    expect_equal(convert_to_column_indices(c("a", "b", "c"), df), 1:3)
+    expect_warning(cols <- convert_to_column_indices(c("a", "b", "d"), df))
+    expect_equal(cols, 1:2)
+    expect_warning(convert_to_column_indices(letters[1:5], df, silent = TRUE), 
+                   NA)
+    expect_error(convert_to_column_indices(letters[6:7], df, silent = TRUE))
+})
+
+test_that("coerce_lib produces desired output", {
+    expect_equal(coerce_lib(c(1, 20)), matrix(c(1, 20), ncol = 2))
+    lib <- c(20, 10)
+    expect_warning(coerce_lib(lib), "the lib argument")
+    pred <- c(50, 5)
+    expect_warning(coerce_lib(pred), "the pred argument")
+})
+
 test_that("make_block produces desired output", {
     df <- data.frame(x = c(1, 4, 5, 8, 7, 8, 4, 2, 5, 2, 5, 7 ),
                      y = c(5, 7, 3, 9, 3, 2, 5, 1, 0, 8, 4, 6 ))
@@ -35,29 +83,3 @@ test_that("make_block produces desired output", {
     lag_three <- make_block(df, max_lag = 2, t = NULL, lib = lib, tau = 3)
     expect_equal(lag_three, lag_three_test)
 })
-
-test_that("coerce_lib produces desired output", {
-    expect_equal(coerce_lib(c(1, 20)), matrix(c(1, 20), ncol = 2))
-    lib <- c(20, 10)
-    expect_warning(coerce_lib(lib), "the lib argument")
-    pred <- c(50, 5)
-    expect_warning(coerce_lib(pred), "the pred argument")
-})
-
-test_that("check_params_against_lib produces desired output", {
-    lib <- matrix(c(1, 5), ncol = 2)
-    expect_true(check_params_against_lib(3, 1, 1, lib))
-    expect_warning(value <- check_params_against_lib(5, 1, 1, lib))
-    expect_false(value)
-    expect_true(check_params_against_lib(3, 2, 0, lib))
-    expect_warning(value <- check_params_against_lib(3, 2, 1, lib))
-    expect_false(value)
-    expect_true(check_params_against_lib(1, 1, 4, lib))
-    expect_true(check_params_against_lib(1, 1, -4, lib))
-    expect_warning(value <- check_params_against_lib(1, 1, 5, lib))
-    expect_false(value)
-    expect_warning(value <- check_params_against_lib(1, 1, -5, lib))
-    expect_false(value)
-})
-
-

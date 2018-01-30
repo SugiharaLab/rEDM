@@ -53,8 +53,8 @@ test_that("s-map smap_coefficients works", {
 
 test_that("s-map error checking works", {
     expect_warning(s_map(1:10))
-    expect_error(suppressWarnings(s_map(1:5, E = 5, silent = TRUE)))
-    expect_error(suppressWarnings(s_map(1:5, E = 2, tau = 4, silent = TRUE)))
-    expect_error(suppressWarnings(s_map(1:5, E = 1, tp = 5, silent = TRUE)))
-    expect_error(suppressWarnings(s_map(1:5, E = 1, tp = -5, silent = TRUE)))
+    expect_error(s_map(1:5, E = 5, silent = TRUE))
+    expect_error(s_map(1:5, E = 2, tau = 4, silent = TRUE))
+    expect_error(s_map(1:5, E = 1, tp = 5, silent = TRUE))
+    expect_error(s_map(1:5, E = 1, tp = -5, silent = TRUE))
 })

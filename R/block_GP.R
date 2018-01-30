@@ -185,8 +185,8 @@ block_gp <- function(block, lib = c(1, NROW(block)), pred = lib,
     target_column <- convert_to_column_indices(target_column, block)
     
     # setup lib and pred ranges
-    lib <- coerce_lib(lib)
-    pred <- coerce_lib(pred)
+    lib <- coerce_lib(lib, silent = silent)
+    pred <- coerce_lib(pred, silent = silent)
 
     params <- expand.grid(tp = tp, 
                           phi = phi, 
@@ -233,13 +233,13 @@ block_gp <- function(block, lib = c(1, NROW(block)), pred = lib,
         x_pred <- as.matrix(block[pred_idx, embedding, drop = FALSE])
         y_pred <- block[pred_idx + tp, target_column]
         time_pred <- time[pred_idx + tp]
-
+        
         # filter x_lib and y_lib to finite values
         valid_lib_idx <- apply(is.finite(x_lib), 1, all) & is.finite(y_lib)
         if (sum(valid_lib_idx) < length(valid_lib_idx))
         {
-            warning("Trimmed ", length(valid_lib_idx), " lib points down to ", 
-                    sum(valid_lib_idx), " valid ones.")
+            rEDM_warning("Trimmed ", length(valid_lib_idx), " lib points down to ", 
+                         sum(valid_lib_idx), " valid ones.", silent = silent)
             x_lib <- x_lib[valid_lib_idx, , drop = FALSE]
             y_lib <- y_lib[valid_lib_idx]
         }
@@ -250,8 +250,8 @@ block_gp <- function(block, lib = c(1, NROW(block)), pred = lib,
         valid_pred_idx <- apply(is.finite(x_pred), 1, all)
         if (sum(valid_pred_idx) < length(valid_pred_idx))
         {
-            warning("Trimmed ", length(valid_pred_idx), " pred points down to ",
-                    sum(valid_pred_idx), " valid ones.")
+            rEDM_warning("Trimmed ", length(valid_pred_idx), " pred points down to ",
+                    sum(valid_pred_idx), " valid ones.", silent = silent)
             x_pred <- x_pred[valid_pred_idx, , drop = FALSE]
             y_pred <- y_pred[valid_pred_idx]
         }
