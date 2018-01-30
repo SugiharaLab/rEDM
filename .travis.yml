@@ -1,6 +1,6 @@
 language: R
 cache: packages
-sudo: false
+sudo: required
 warnings_are_errors: false
 before_install:
-    - tlmgr install pgfplots
+    - sudo apt-get install -y --no-install-recommends texlive-full

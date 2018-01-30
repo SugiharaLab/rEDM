@@ -705,7 +705,7 @@ ccm_matrix <- matrix(NA, nrow = length(vars), ncol = length(vars),
 
 for(ccm_from in vars)
 {
-    for(ccm_to in vars[vars != ccm_from]) # ignore self-interactions
+    for(ccm_to in vars[vars != ccm_from])
     {
         out_temp <- ccm(thrips_block, E = 8,
                         lib_column = ccm_from, target_column = ccm_to,
