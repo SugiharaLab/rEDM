@@ -36,8 +36,8 @@ test_that("s-map model_output works", {
     expect_true("pred" %in% names(model_output))
     expect_true("pred_var" %in% names(model_output))
     expect_equal(dim(model_output), c(198, 4))
-    # expect_equal(digest::digest(model_output), 
-    #              "90fac45901b053d6654bfb4e57c20855")
+    expect_equal(digest::digest(round(model_output, 4)), 
+                 "d3c2be79572e15cc54b0aafcb679f45f")
 })
 
 test_that("s-map smap_coefficients works", {
@@ -53,8 +53,8 @@ test_that("s-map smap_coefficients works", {
     expect_true("c_2" %in% names(smap_coefficients))
     expect_true("c_0" %in% names(smap_coefficients))
     expect_equal(dim(smap_coefficients), c(198, 3))
-    # expect_equal(digest::digest(smap_coefficients), 
-    #              "f96b9683aeef5d0f6679aea49f068dcc")
+    expect_equal(digest::digest(round(smap_coefficients, 4)), 
+                 "9f178104af7bdb9a184926eacbfb0cb4")
 })
 
 test_that("s-map error checking works", {

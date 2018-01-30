@@ -21,8 +21,8 @@ test_that("ccm works", {
     expect_true("mae" %in% names(ccm_out))
     expect_true("rmse" %in% names(ccm_out))
     expect_equal(NROW(ccm_out), 533)
-    # expect_equal(digest::digest(ccm_out), 
-    #              "073bf00bd80663a7ba54861f5c934fa9")
+    expect_equal(digest::digest(ccm_out$rho), 
+                 "072e0544e8765687ba7c56608e651357")
 })
 
 test_that("ccm_means works", {
