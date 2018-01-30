@@ -455,7 +455,7 @@ simplex_out <- lapply(c("AbvBioAnnProd", "noh020tot", "invrichness"),
                           simplex(composite_ts[, c("Year", var)], E = 2:4, 
                                   lib = composite_lib, pred = composite_pred)
                       })
-simplex_out[[4]] <- simplex(precip_ts, E = 2:5)
+simplex_out[[4]] <- simplex(precip_ts, E = 2:5, silent = TRUE)
 names(simplex_out) <- names(composite_ts)[-1]
 
 par(mfrow = c(2, 2))
@@ -563,7 +563,7 @@ Finally, we can apply CCM to our data to test for pairwise causal links among va
 Recall, we are primarily interested in testing whether the biomass of planted species or soil nitrogen concentration causally forces the dynamics of invading species.
 
 ```{r ccm on e120, warning = FALSE}
-lib_sizes <- c(seq(5, 55, by = 5), seq(55, 230, by = 20))
+lib_sizes <- c(seq(5, 50, by = 5), seq(55, 230, by = 20))
 
 inv_xmap_no <- ccm(composite_ts, lib = segments, pred = segments, 
                    lib_column = "invrichness", target_column = "noh020tot", 
@@ -657,7 +657,7 @@ Note that all the time-series variables, particularly the mean maximum daily Tem
 ts <- thrips_block$Thrips_imaginis
 lib <- c(1, length(ts))
 pred <- c(1, length(ts))
-simplex_output <- simplex(ts, lib, pred)
+simplex_output <- simplex(ts, lib, pred, silent = TRUE)
 ```
 
 ```{r rho vs. e for thrips, echo = FALSE}
