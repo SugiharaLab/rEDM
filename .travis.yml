@@ -8,5 +8,5 @@ sudo: required
 warnings_are_errors: false
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install texlive-basic
+  - sudo apt-get install texlive-latex-base
   - tlmgr install pgfplots algorithmicx
