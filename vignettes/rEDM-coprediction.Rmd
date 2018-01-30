@@ -43,7 +43,7 @@ lib_y <- length(x) + c(1, length(y))
 
 Use simplex to identify the optimal embedding dimension for `x` and use it to co-predict from `x` to `y`:
 ```{r, warning = FALSE}
-simplex_out_x <- simplex(concatenated_xy, lib = lib_x, pred = lib_x)
+simplex_out_x <- simplex(concatenated_xy, lib = lib_x, pred = lib_x, silent = TRUE)
 best_E_x <- simplex_out_x$E[which.max(simplex_out_x$rho)]
 
 copred_x_to_y <- simplex(concatenated_xy, lib = lib_x, pred = lib_y, E = best_E_x)
@@ -51,7 +51,7 @@ copred_x_to_y <- simplex(concatenated_xy, lib = lib_x, pred = lib_y, E = best_E_
 
 and in the reverse direction:
 ```{r, warning = FALSE}
-simplex_out_y <- simplex(concatenated_xy, lib = lib_y, pred = lib_y)
+simplex_out_y <- simplex(concatenated_xy, lib = lib_y, pred = lib_y, silent = TRUE)
 best_E_y <- simplex_out_y$E[which.max(simplex_out_y$rho)]
 
 copred_y_to_x <- simplex(concatenated_xy, lib = lib_y, pred = lib_x, E = best_E_y)

@@ -21,7 +21,7 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE,
                       tidy = TRUE, cache = TRUE,
                       cache.rebuild = TRUE, 
                       fig.width = 5, fig.height = 3.5)
-knitr::opts_knit$set(global.par = TRUE, progress = TRUE)
+knitr::opts_knit$set(global.par = TRUE, progress = FALSE)
 options(digits = 2)
 par(mar = c(4, 4, 1, 1), oma = c(0, 0, 0, 0), mgp = c(2.5, 1, 0))
 ```
