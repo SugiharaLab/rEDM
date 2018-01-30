@@ -116,7 +116,8 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
     
     # setup data
     block <- setup_time_and_data_block(model, first_column_time, block)
-    model$set_target_column(convert_to_column_indices(target_column, block))
+    model$set_target_column(convert_to_column_indices(target_column, block, 
+                                                      silent = silent))
     
     # setup norm and pred types
     model$set_norm_type(switch(match.arg(norm_type), 
@@ -153,13 +154,13 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
         columns <- list(1:NCOL(block))
     } else if (is.list(columns)) {
         columns <- lapply(columns, function(embedding) {
-            convert_to_column_indices(embedding, block)
+            convert_to_column_indices(embedding, block, silent = silent)
         })
     } else if (is.vector(columns)) {
-        columns <- list(convert_to_column_indices(columns, block))
+        columns <- list(convert_to_column_indices(columns, block, silent = silent))
     } else if (is.matrix(columns)) {
         columns <- lapply(1:NROW(columns), function(i) {
-            convert_to_column_indices(columns[i,], block)})
+            convert_to_column_indices(columns[i,], block, silent = silent)})
     }
     embedding_index <- seq_along(columns)
     
@@ -174,6 +175,15 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
         if (any(e_plus_1_index, na.rm = TRUE))
             params$nn <- 1 + sapply(columns, length)
         params$nn <- as.numeric(params$nn)
+        
+        # check params
+        idx <- sapply(seq(NROW(params)), function(i) {
+            check_params_against_lib(1, 0, params$tp[i], lib, silent = silent)})
+        if (!any(idx))
+        {
+            stop("No valid parameter combinations to run, stopping.")
+        }
+        params <- params[idx, ]
         
         # apply model prediction function to params
         output <- lapply(1:NROW(params), function(i) {
@@ -205,6 +215,15 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
         if (any(e_plus_1_index, na.rm = TRUE))
             params$nn <- 1 + sapply(columns, length)
         params$nn <- as.numeric(params$nn)
+        
+        # check params
+        idx <- sapply(seq(NROW(params)), function(i) {
+            check_params_against_lib(1, 0, params$tp[i], lib, silent = silent)})
+        if (!any(idx))
+        {
+            stop("No valid parameter combinations to run, stopping.")
+        }
+        params <- params[idx, ]
         
         # apply model prediction function to params
         output <- lapply(1:NROW(params), function(i) {

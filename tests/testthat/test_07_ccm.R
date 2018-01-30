@@ -6,7 +6,7 @@ test_that("ccm works", {
     expect_error(ccm_out <- ccm(sardine_anchovy_sst, E = 3, 
                                 lib_sizes = seq(10, 80, by = 10), num_samples = 100, 
                                 lib_column = "anchovy", target_column = "np_sst",
-                                RNGseed = 42, silent = TRUE),
+                                random_libs = FALSE, silent = TRUE),
                  NA)
     expect_s3_class(ccm_out, "data.frame")
     expect_true("E" %in% names(ccm_out))
@@ -20,16 +20,16 @@ test_that("ccm works", {
     expect_true("rho" %in% names(ccm_out))
     expect_true("mae" %in% names(ccm_out))
     expect_true("rmse" %in% names(ccm_out))
-    expect_equal(NROW(ccm_out), 800)
+    expect_equal(NROW(ccm_out), 533)
     expect_equal(digest::digest(ccm_out), 
-                 "198df542244816c9c96ab03cab62ad8a")
+                 "073bf00bd80663a7ba54861f5c934fa9")
 })
 
 test_that("ccm_means works", {
     ccm_out <- ccm(sardine_anchovy_sst, E = 3, 
                    lib_sizes = seq(10, 80, by = 10), num_samples = 100, 
                    lib_column = "anchovy", target_column = "np_sst",
-                   RNGseed = 42, silent = TRUE)
+                   random_libs = FALSE, silent = TRUE)
     expect_error(ccm_results <- ccm_means(ccm_out), NA)
     expect_s3_class(ccm_results, "data.frame")
     expect_true("E" %in% names(ccm_results))
@@ -46,7 +46,7 @@ test_that("ccm_means works", {
     expect_true("rmse" %in% names(ccm_results))
     expect_equal(NROW(ccm_results), 8)
     expect_equal(digest::digest(ccm_results), 
-                 "0c8d1b22019a4262e04737297cc67c59")
+                 "483eca2eef8b8baef8cc181d56a83ce8")
 })
 
 test_that("ccm error checking works", {
