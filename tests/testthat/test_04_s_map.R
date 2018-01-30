@@ -18,8 +18,8 @@ test_that("s-map works", {
     expect_true("mae" %in% names(smap_out))
     expect_true("rmse" %in% names(smap_out))
     expect_equal(NROW(smap_out), length(theta_list))
-    expect_equal(digest::digest(smap_out$rho), 
-                 "16bf3c1eae22c0310a61ad7a4c333cb0")
+    expect_equal(digest::digest(round(smap_out$rho, 4)), 
+                 "51c159a4ab5d37fe1b0cf3b1c07bc509")
 })
 
 test_that("s-map model_output works", {
