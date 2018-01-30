@@ -17,6 +17,8 @@ test_that("simplex works", {
     expect_true("mae" %in% names(simplex_out))
     expect_true("rmse" %in% names(simplex_out))
     expect_equal(NROW(simplex_out), 10)
+    expect_equal(digest::digest(simplex_out), 
+                 "4f9c7b079435ef273fbb46926adfc5c5")
 })
 
 test_that("simplex model_output works", {
@@ -31,6 +33,8 @@ test_that("simplex model_output works", {
     expect_true("pred" %in% names(model_output))
     expect_true("pred_var" %in% names(model_output))
     expect_equal(dim(model_output), c(197, 4))
+    expect_equal(digest::digest(simplex_out), 
+                 "e385eeb8b7c8c15647de7dd0e00bc1e6")
 })
 
 test_that("simplex error checking works", {

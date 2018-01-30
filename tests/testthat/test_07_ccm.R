@@ -21,6 +21,8 @@ test_that("ccm works", {
     expect_true("mae" %in% names(ccm_out))
     expect_true("rmse" %in% names(ccm_out))
     expect_equal(NROW(ccm_out), 800)
+    expect_equal(digest::digest(ccm_out), 
+                 "198df542244816c9c96ab03cab62ad8a")
 })
 
 test_that("ccm_means works", {
@@ -43,6 +45,8 @@ test_that("ccm_means works", {
     expect_true("mae" %in% names(ccm_results))
     expect_true("rmse" %in% names(ccm_results))
     expect_equal(NROW(ccm_results), 8)
+    expect_equal(digest::digest(ccm_results), 
+                 "0c8d1b22019a4262e04737297cc67c59")
 })
 
 test_that("ccm error checking works", {
@@ -60,5 +64,4 @@ test_that("ccm error checking works", {
     expect_error(ccm(df, target_column = 0, silent = TRUE))
     expect_error(ccm(df, target_column = 3, silent = TRUE))
     expect_error(ccm(df, lib_sizes = -1, silent = TRUE))
-    
 })
