@@ -5,3 +5,5 @@
 ^README.md
 ^.zenodo.json
 ^.travis.yml
+^README\.Rmd$
+^README-.*\.png$
