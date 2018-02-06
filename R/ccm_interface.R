@@ -137,7 +137,7 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
     e_plus_1_index <- match(num_neighbors, c("e+1", "E+1", "e + 1", "E + 1"))
     if (any(e_plus_1_index, na.rm = TRUE))
         params$nn <- params$E+1
-    params$num_neighbors <- as.numeric(params$nn)
+    params$nn <- as.numeric(params$nn)
     
     if (!check_params_against_lib(params$E, params$tau, params$tp, lib, 
                                   silent = silent))
