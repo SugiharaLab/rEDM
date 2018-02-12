@@ -120,7 +120,8 @@
 #' additional list-column variable:
 #' \tabular{ll}{
 #'   model_output \tab data.frame with columns for the time index, 
-#'     observations, and mean-value for predictions\cr
+#'     observations, mean-value for predictions, and independent variance for 
+#'     predictions\cr
 #' }
 #' If save_covariance_matrix is TRUE, then there is an additional list-column 
 #'   variable:
@@ -147,7 +148,7 @@ block_gp <- function(block, lib = c(1, NROW(block)), pred = lib,
         else
         {
             time <- block[, 1]
-            block <- block[, -1]
+            block <- block[, -1, drop = FALSE]
         }
     }
     else
@@ -290,7 +291,8 @@ block_gp <- function(block, lib = c(1, NROW(block)), pred = lib,
         {
             out_df$model_output <- list(data.frame(time = time_pred[valid_pred_idx], 
                                                    obs = y_pred, 
-                                                   pred = out_gp$mean_pred))
+                                                   pred = out_gp$mean_pred, 
+                                                   pred_var = out_gp$pred_var))
             if (save_covariance_matrix)
             {
                 out_df$covariance_matrix <- list(out_gp$covariance_pred)
@@ -429,7 +431,7 @@ compute_gp <- function(x_lib, y_lib,
     #   process noise,
     #     e ~ N(0, v_e)
     # such that the covariance of observations y_i and y_j is
-    #     K_ij =C_ij + v_e I_ij
+    #     K_ij = C_ij + v_e I_ij
     # with I the identity matrix or a kronecker delta
     
     ### Usage
@@ -547,12 +549,14 @@ compute_gp <- function(x_lib, y_lib,
     ### Compute mean and variance for x_pred if given
     if (!is.null(x_pred))
     {
+        covariance_matrix <- K_pred_pred - 
+            K_pred_lib %*% Sigma_inv %*% t(K_pred_lib) + 
+            v_e_scaled
         out$mean_pred <- mean_y + K_pred_lib %*% alpha
+        out$pred_var <- diag(covariance_matrix)
         if (cov_matrix)
         {
-            out$covariance_pred <- K_pred_pred - 
-                K_pred_lib %*% Sigma_inv %*% t(K_pred_lib) + 
-                v_e_scaled
+            out$covariance_pred <- covariance_matrix
         }
     }
     

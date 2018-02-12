@@ -89,36 +89,25 @@ tde_gp <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
         time <- time_series[, 1]
         time_series <- time_series[, 2]
     }
-    n <- length(time_series)
-    
+
     params <- expand.grid(E = E, tau = tau)
     output <- do.call(rbind, lapply(1:NROW(params), function(i) {
         E <- params$E[i]
         tau <- params$tau[i]
         
         # make block
-        block <- matrix(NA, nrow = n, ncol = E + 1)
-        block[, 1] <- time
-        block[, 2] <- time_series
-        if (E > 1)
-        {
-            for (lag in 2:E)
-            {
-                # add lag of previous lag
-                block[, lag + 1] <- c(rep.int(NA, tau), block[1:(n - tau), lag])
-                
-                # set NAs for beginning of lib sections
-                block[as.vector(outer(lib[, 1], 1:tau, "+")) - 1, lag + 1] <- NA
-            }
-        }
+        block <- make_block(block = data.frame(ts = time_series),
+                            t = time, max_lag = E, tau = tau,
+                            lib = lib, restrict_to_lib = FALSE)
 
         # pass along args to block_gp
         out_df <- block_gp(block, lib, pred, tp = tp, 
                            phi = phi, v_e = v_e, eta = eta, 
                            fit_params = fit_params, 
-                           columns = 1 + (1:E), target_column = 2, 
+                           columns = 1:E, target_column = 1, 
                            stats_only = stats_only, 
                            save_covariance_matrix = save_covariance_matrix, 
+                           first_column_time = TRUE, 
                            silent = TRUE, ...)
         
     }))
