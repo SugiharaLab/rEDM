@@ -49,6 +49,15 @@ test_that("coerce_lib produces desired output", {
 })
 
 test_that("make_block produces desired output", {
+    out_actual <- data.frame(
+        time = 1:100, 
+        col1 = 1:100, 
+        col1_1 = c(NA, 1:99), 
+        col1_2 = c(NA, NA, 1:98)
+    )
+    expect_error(out <- make_block(1:100), NA)
+    expect_equal(out, out_actual)
+    
     df <- data.frame(x = c(1, 4, 5, 8, 7, 8, 4, 2, 5, 2, 5, 7 ),
                      y = c(5, 7, 3, 9, 3, 2, 5, 1, 0, 8, 4, 6 ))
     lib <- matrix(c(1, 4, 5, 12), ncol = 2, byrow = TRUE)

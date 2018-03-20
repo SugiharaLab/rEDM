@@ -131,6 +131,9 @@ setup_model_flags <- function(model, exclusion_radius, epsilon, silent)
 make_block <- function(block, t = NULL, max_lag = 3, tau = 1, lib = NULL, 
                        restrict_to_lib = TRUE)
 {
+    # be sure to convert block if input is a vector
+    if(is.vector(block))
+        block <- matrix(block, ncol = 1)
     num_vars <- NCOL(block)
     num_rows <- NROW(block)
     

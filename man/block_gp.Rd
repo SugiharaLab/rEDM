@@ -71,7 +71,8 @@ If stats_only is FALSE or save_covariance_matrix is TRUE, then there is an
 additional list-column variable:
 \tabular{ll}{
   model_output \tab data.frame with columns for the time index, 
-    observations, and mean-value for predictions\cr
+    observations, mean-value for predictions, and independent variance for 
+    predictions\cr
 }
 If save_covariance_matrix is TRUE, then there is an additional list-column 
   variable:
