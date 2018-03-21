@@ -37,6 +37,12 @@ test_that("multiview model_output works", {
     expect_true("pred" %in% names(model_output))
     expect_true("pred_var" %in% names(model_output))
     expect_equal(dim(model_output), c(100, 4))
-    expect_equal(digest::digest(round(model_output, 4)),
-                 "ab30b9bd5f3c69d2a867f7aceb92b203")
+    expect_equal(digest::digest(round(model_output[,1], 4)),
+                 "e5a987eb611ec1b250e616cb63e705e5")
+    expect_equal(digest::digest(round(model_output[,2], 4)),
+                 "3c35c2777121f5288749a397093b315f")
+    expect_equal(digest::digest(round(model_output[,3], 4)),
+                 "c00dbb731be86df5991ec0b46a1a5aee")
+    expect_equal(digest::digest(round(model_output[,4], 4)),
+                 "578263efd38623799642c66ccc344010")
 })
