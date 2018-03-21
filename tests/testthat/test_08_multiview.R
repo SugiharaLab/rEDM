@@ -43,6 +43,5 @@ test_that("multiview model_output works", {
                  "3c35c2777121f5288749a397093b315f")
     expect_equal(digest::digest(round(model_output[,3], 4)),
                  "c00dbb731be86df5991ec0b46a1a5aee")
-    expect_equal(digest::digest(round(model_output[,4], 4)),
-                 "578263efd38623799642c66ccc344010")
+    expect_equal(model_output[,4], c(rep(0, 99), NA))
 })
