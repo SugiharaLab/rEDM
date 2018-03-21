@@ -32,7 +32,9 @@ protected:
 
     void forecast();
     void set_indices_from_range(std::vector<bool>& indices, const std::vector<time_range>& range, 
-                                  int start_shift, int end_shift, bool check_target);
+                                int start_shift, int end_shift, bool check_target);
+    void set_pred_requested_indices_from_range(std::vector<bool>& indices, 
+                                               const std::vector<time_range>);
     void check_cross_validation();
     bool is_vec_valid(const size_t vec_index);
     bool is_target_valid(const size_t vec_index);
@@ -43,6 +45,7 @@ protected:
     // *** variables *** //
     std::vector<bool> lib_indices;
     std::vector<bool> pred_indices;
+    std::vector<bool> pred_requested_indices;
     std::vector<size_t> which_lib;
     std::vector<size_t> which_pred;
     

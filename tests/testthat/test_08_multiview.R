@@ -36,7 +36,7 @@ test_that("multiview model_output works", {
     expect_true("obs" %in% names(model_output))
     expect_true("pred" %in% names(model_output))
     expect_true("pred_var" %in% names(model_output))
-    expect_equal(dim(model_output), c(99, 4))
+    expect_equal(dim(model_output), c(100, 4))
     expect_equal(digest::digest(round(model_output, 4)),
-                 "52765031788900838bc0de54a3734373")
+                 "ab30b9bd5f3c69d2a867f7aceb92b203")
 })

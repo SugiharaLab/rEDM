@@ -32,9 +32,9 @@ test_that("simplex model_output works", {
     expect_true("obs" %in% names(model_output))
     expect_true("pred" %in% names(model_output))
     expect_true("pred_var" %in% names(model_output))
-    expect_equal(dim(model_output), c(197, 4))
+    expect_equal(dim(model_output), c(200, 4))
     expect_equal(digest::digest(simplex_out), 
-                 "e385eeb8b7c8c15647de7dd0e00bc1e6")
+                 "14fa3eba63d6203de1eb169f4a21f1cf")
 })
 
 test_that("simplex error checking works", {

@@ -5,6 +5,7 @@ const double ForecastMachine::qnan = std::numeric_limits<double>::quiet_NaN();
 
 ForecastMachine::ForecastMachine():
 lib_indices(std::vector<bool>()), pred_indices(std::vector<bool>()),
+pred_requested_indices(std::vector<bool>()), 
 which_lib(std::vector<size_t>()), which_pred(std::vector<size_t>()),
 time(vec()), data_vectors(std::vector<vec>()), smap_coefficients(std::vector<vec>()),
 targets(vec()), predicted(vec()), predicted_var(vec()),
@@ -309,6 +310,47 @@ void ForecastMachine::set_indices_from_range(std::vector<bool>& indices, const s
 	return;
 }
 
+void ForecastMachine::set_pred_requested_indices_from_range(std::vector<bool>& indices, 
+                                             const std::vector<time_range> range)
+{
+    size_t start_of_range, end_of_range;
+    indices.assign(num_vectors, false); // initialize indices
+    for(auto& range_iter: range)
+    {
+        start_of_range = range_iter.first;
+        if(start_of_range >= num_vectors) // check start of range
+        {
+            std::ostringstream temp;
+            temp << "start_of_range = ";
+            temp << start_of_range + 1;
+            temp << ", but num_vectors = ";
+            temp << num_vectors;
+            std::string temp_str = temp.str();
+            LOG_WARNING(temp_str.c_str());
+            LOG_WARNING("start of time_range was greater than the number of vectors; skipping");
+            continue;
+        }
+        
+        end_of_range = range_iter.second;
+        if(end_of_range >= num_vectors) // check end of range
+        {
+            std::ostringstream temp;
+            temp << "end_of_range = ";
+            temp << end_of_range + 1;
+            temp << ", but num_vectors = ";
+            temp << num_vectors;
+            std::string temp_str = temp.str();
+            LOG_WARNING(temp_str.c_str());
+            LOG_WARNING("end of time_range was greater than the number of vectors; corrected");
+            end_of_range = num_vectors-1;
+        }
+        for(size_t j = start_of_range; j <= end_of_range; ++j)
+        {
+            indices[j] = true;
+        }
+    }
+    return;
+}
 void ForecastMachine::check_cross_validation()
 {
     if (exclusion_radius >= 0) // if exclusion_radius is set, always do cross_validation

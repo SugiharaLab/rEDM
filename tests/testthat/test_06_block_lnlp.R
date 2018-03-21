@@ -34,9 +34,9 @@ test_that("block_lnlp model_output works", {
     expect_true("obs" %in% names(model_output))
     expect_true("pred" %in% names(model_output))
     expect_true("pred_var" %in% names(model_output))
-    expect_equal(dim(model_output), c(199, 4))
+    expect_equal(dim(model_output), c(200, 4))
     expect_equal(digest::digest(output), 
-                 "1dc9e215ad9c665f0606e1079242b939")
+                 "53cc3eb5c616ef4d9a59b904157e9dba")
 })
 
 test_that("block_lnlp smap_coefficients works", {
@@ -52,9 +52,9 @@ test_that("block_lnlp smap_coefficients works", {
     expect_true("c_1" %in% names(smap_coefficients))
     expect_true("c_2" %in% names(smap_coefficients))
     expect_true("c_0" %in% names(smap_coefficients))
-    expect_equal(dim(smap_coefficients), c(199, 3))
+    expect_equal(dim(smap_coefficients), c(200, 3))
     expect_equal(digest::digest(round(smap_coefficients, 4)), 
-                 "c43976939b9f941763a7f3accc86cd30")
+                 "82a3b6164cfcfe8d69d98689b95d04c7")
 })
 
 test_that("block_lnlp error checking works", {
