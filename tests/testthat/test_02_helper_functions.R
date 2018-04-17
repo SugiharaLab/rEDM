@@ -99,3 +99,38 @@ test_that("make_block produces desired output", {
     lag_three <- make_block(df, max_lag = 2, t = NULL, lib = lib, tau = 3)
     expect_equal(lag_three, lag_three_actual)
 })
+
+test_that("make_surrogate_shuffle works", {
+    set.seed(42)
+    expect_error(dat <- make_surrogate_shuffle(1:100, 15), NA)
+    expect_equal(nrow(dat), 100)
+    expect_equal(ncol(dat), 15)
+    expect_equal(colSums(dat), rep.int(5050, 15))
+    set.seed(42)
+    expect_error(dat2 <- make_surrogate_data(1:100, "random_shuffle", 15), NA)
+    expect_equal(dat, dat2)
+})
+
+test_that("make_surrogate_ebisuzaki works", {
+    set.seed(42)
+    expect_error(dat <- make_surrogate_ebisuzaki(1:100, 15), NA)
+    expect_equal(nrow(dat), 100)
+    expect_equal(ncol(dat), 15)
+    set.seed(42)
+    expect_error(dat2 <- make_surrogate_data(1:100, "ebisuzaki", 15), NA)
+    expect_equal(dat, dat2)
+})
+
+test_that("make_surrogate_seasonal works", {
+    set.seed(42)
+    expect_error(dat <- make_surrogate_seasonal(1:100, 15, T_period = 4), NA)
+    expect_equal(nrow(dat), 100)
+    expect_equal(ncol(dat), 15)
+    set.seed(42)
+    expect_error(dat2 <- make_surrogate_data(1:100, "seasonal", 15, T_period = 4), NA)
+    expect_equal(dat, dat2)
+    set.seed(42)
+    expect_error(dat3 <- make_surrogate_data(1:100, "seasonal", 15, T_period = 5), NA)
+    expect_true(identical(dat, dat2))
+    expect_false(identical(dat, dat3))
+})
