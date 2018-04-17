@@ -8,16 +8,20 @@
 \alias{make_surrogate_shuffle}
 \alias{make_surrogate_ebisuzaki}
 \alias{make_surrogate_seasonal}
+\alias{make_surrogate_twin}
 \title{Generate surrogate data for permutation/randomization tests}
 \usage{
-make_surrogate_data(ts, method = c("random_shuffle", "ebisuzaki", "seasonal"),
-  num_surr = 100, ...)
+make_surrogate_data(ts, method = c("random_shuffle", "ebisuzaki", "seasonal",
+  "twin"), num_surr = 100, ...)
 
 make_surrogate_shuffle(ts, num_surr = 100)
 
 make_surrogate_ebisuzaki(ts, num_surr = 100)
 
 make_surrogate_seasonal(ts, num_surr = 100, T_period = 12)
+
+make_surrogate_twin(ts, num_surr = 1, dim = 1, tau = 1,
+  phase_lock = TRUE, T_period = 24, initial_point = "same_season", ...)
 }
 \arguments{
 \item{ts}{the original time series}
@@ -31,6 +35,22 @@ make surrogate time series of that type}
 
 \item{T_period}{the period of seasonality for seasonal surrogates 
 (ignored for other methods)}
+
+\item{dim}{the embedding dimension for the state-space reconstruction, in 
+which twins are identified}
+
+\item{tau}{the lag for the state-space reconstruction}
+
+\item{phase_lock}{whether twins have to occur at the same phase}
+
+\item{initial_point}{how to sample the initial point. If `"same_season"`, 
+then the initial point is chosen from the same phase in a different cycle, 
+and the surrogate is not allowed to line up in both phase and cycle with 
+the original time series.}
+
+\item{T_period}{the period of seasonality (ignored if `phase_lock = FALSE`)}
+
+\item{...}{all other arguments are passed to \code{\link{identify_twins}}}
 }
 \value{
 A matrix where each column is a separate surrogate with the same 
@@ -53,6 +73,10 @@ function.
 \code{make_surrogate_seasonal()} creates surrogates by 
   computing a mean seasonal trend of the specified period and shuffling the 
   residuals.
+
+\code{make_surrogate_twin()} creates surrogates using the twin-
+  surrogate method, with the option to preserve the phase for seasonal/
+  periodic data
 }
 \examples{
 data("two_species_model")
@@ -64,5 +88,7 @@ make_surrogate_shuffle(rnorm(100), 10)
 make_surrogate_ebisuzaki(rnorm(100), 10)
 
 make_surrogate_seasonal(rnorm(100) + sin(1:100 * pi / 6), 10)
+
+make_surrogate_twin(rnorm(100) + sin(1:100 * pi / 6), 10)
 
 }

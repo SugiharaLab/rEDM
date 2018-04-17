@@ -134,3 +134,17 @@ test_that("make_surrogate_seasonal works", {
     expect_true(identical(dat, dat2))
     expect_false(identical(dat, dat3))
 })
+
+test_that("make_surrogate_twin works", {
+    ts <- rnorm(100) + sin(1:100 * pi / 6)
+    set.seed(42)
+    expect_error(dat <- make_surrogate_twin(ts, 15, T_period = 12), NA)
+    expect_equal(nrow(dat), 100)
+    expect_equal(ncol(dat), 15)
+    set.seed(42)
+    expect_error(dat2 <- make_surrogate_data(ts, "twin", 15, T_period = 12), NA)
+    expect_equal(dat, dat2)
+    set.seed(42)
+    expect_error(dat3 <- make_surrogate_data(ts, "twin", 15, T_period = 13))
+})
+

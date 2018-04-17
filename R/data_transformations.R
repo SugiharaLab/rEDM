@@ -23,7 +23,7 @@
 #' make_surrogate_data(ts, method = "ebisuzaki")
 #' 
 make_surrogate_data <- function(ts, method = c("random_shuffle", "ebisuzaki", 
-                                               "seasonal"), 
+                                               "seasonal", "twin"), 
                                 num_surr = 100, ...)
 {  
     stopifnot(num_surr > 0)
@@ -32,7 +32,8 @@ make_surrogate_data <- function(ts, method = c("random_shuffle", "ebisuzaki",
     switch(method, 
            random_shuffle = make_surrogate_shuffle(ts, num_surr, ...), 
            ebisuzaki = make_surrogate_ebisuzaki(ts, num_surr, ...), 
-           seasonal = make_surrogate_seasonal(ts, num_surr, ...))
+           seasonal = make_surrogate_seasonal(ts, num_surr, ...), 
+           twin = make_surrogate_twin(ts, num_surr, ...))
 }
 
 #' @rdname make_surrogate_data
@@ -102,7 +103,6 @@ make_surrogate_ebisuzaki <- function(ts, num_surr = 100)
     ), ncol = num_surr)
 }
 
-
 #' @rdname make_surrogate_data
 #'
 #' @description \code{make_surrogate_seasonal()} creates surrogates by 
@@ -137,6 +137,224 @@ make_surrogate_seasonal <- function(ts, num_surr = 100, T_period = 12)
             seasonal_cyc + sample(seasonal_resid, n)
         })
     ), ncol = num_surr)
+}
+
+#' @title Generate a time index for a twin surrogate
+#' @description Use the `twins` recurrence structure to construct a surrogate 
+#'   time series. Note that we don't use the values of the actual time series, 
+#'   but instead use the time series index (the surrogate is a reordered set of 
+#'   points, with possible duplicates). This is easier for the code, as the 
+#'   method is agnostic to the actual time series anyway, since it only cares 
+#'   about the twins.
+#' @details Suppose that the original time series is x, and the surrogate is s. 
+#'   The algorithm supposes that the j-th value in s is the m-th value of x. 
+#'   For the initial point (j = 1), we sample from either the twins of x, or 
+#'   the same phase point in other cycles (depending on the `initial_point` 
+#'   argument).
+#'   Then, at each next value of j, we sample from the possible twins of x(m), 
+#'   with the following conditions:
+#'     (i) the selected twin of m cannot be the last point in the time series
+#'     (ii) if `initial_point = "same_season"`, then the selected twin of m 
+#'          cannot be j
+#'   If these are met, then s(j+1) = x(m+1), and we continue.
+#' @param twins a list of the twins. The list has length equal to the time 
+#'   series, and each element is a vector of the candidate twins. See 
+#'   \code{\link{identify_twins}}.
+#' @inheritParams make_surrogate_twin
+#' @return A vector of the same length as the original time series (here, 
+#'   `length(twins)`) and containing the reordered time indices.
+#'   
+make_twin_idx <- function(twins, 
+                          phase_lock = TRUE, 
+                          T_period = 24, 
+                          initial_point = "same_season")
+{
+    # sample from twins data structure to get next point
+    get_next_idx <- function(idx, pos)
+    {
+        if (idx == 0) return(0) # stop if out of next points already
+        candidates <- twins[[idx]]
+        
+        # make sure we don't choose the end of the time series
+        candidates <- candidates[candidates < ts_length]
+        
+        # make sure we don't resync to the original time series
+        if (phase_lock && 
+            (initial_point == "same_season"))
+        {
+            candidates <- candidates[candidates != pos]
+        }
+        
+        # return 0 if no valid candidates
+        if (length(candidates) < 1) return(0)
+        
+        # otherwise, sample from one of the valid candidates
+        return(candidates[sample.int(length(candidates), 1)] + 1)
+    }
+    
+    ts_length <- length(twins)
+    surr <- rep.int(0, ts_length)
+    stopifnot(ts_length > 1)
+    
+    # select the initial point of the surrogate
+    #   either from points occurring in the same season, 
+    #   or twins of the first point
+    if (phase_lock)
+    {
+        if (initial_point == "same_season")
+        {
+            candidates <- seq(1 + T_period, ts_length - 1, by = T_period)
+        } else {
+            candidates <- twins[[1]]
+        }
+    } else {
+        candidates <- seq(1, ts_length - 1)
+    }
+    surr[1] <- candidates[sample.int(length(candidates), 1)]
+    
+    # build surrogate by sampling for the next point
+    for (j in 1:(ts_length - 1))
+    {
+        surr[j + 1] <- get_next_idx(surr[j], j)
+    }
+    return(surr)
+}
+
+#' @title Construct twins based on the recurrence structure
+#' @description Identify similar points in the `original_e` data structure. 
+#'   Use quantiles to identify close enough points. Then 
+#' @details The algorithm is as follows:
+#'   (1) create recurrence matrix: values are 1 if their distance (using the 
+#'      "maximum" measure) is lower than a specific quantile threshold
+#'   (2) create twins if the columns of the recurrence matrix are identical 
+#'       (and if the points are in the same phase, if `phase_lock = TRUE`)
+#'   (3) check if the number of twins is satisfactor. If not, repeat and use 
+#'       the next value of the quantile threshold
+#' @param block the multivariate time series block. Each row is a data point, 
+#'   and each column is a coordinate. We expect this to be either a lagged 
+#'   block from a single time series or multiple time series.
+#' @inheritParams make_surrogate_twin
+#' @param quantile_vec the quantiles used to filter candidate twins.
+#' @param min_num_twins how many twins are necessary to stop adjusting the 
+#'   threshold for twins
+#' @return A list of the twins. The list has length equal to the time 
+#'   series, and each element is a vector of the candidate twins. 
+#'   
+identify_twins <- function(block, 
+                           phase_lock = TRUE, 
+                           T_period = 24, 
+                           quantile_vec = c(0.125, 0.12, 0.11, 0.10, 0.09, 0.08, 
+                                            0.07, 0.06, 0.05, 0.15, 0.16, 0.17, 
+                                            0.18, 0.19, 0.20, 0.04), 
+                           min_num_twins = 10)
+{
+    dist_mat <- as.matrix(dist(block, method = "maximum"))
+    
+    for (s in quantile_vec)
+    {
+        # make recurrence matrix
+        threshold <- quantile(dist_mat, s)
+        recurrence_matrix <- 0 + (dist_mat > threshold)
+        
+        # generate twins
+        twins <- which(as.matrix(dist(t(recurrence_matrix), "maximum")) == 0,  
+                       arr.ind = TRUE)
+        if (phase_lock)
+        {
+            twins <- twins[(twins[, 1] - twins[, 2]) %% T_period == 0, ]
+        }
+        twins <- twins[order(twins[, 1]), ]
+        num_twins <- NROW(twins) - NROW(recurrence_matrix)
+        
+        # check for enough twins and structure of output
+        if (num_twins >= min_num_twins)
+        {
+            twins <- split(twins[, 2], twins[, 1])
+            if (!isTRUE(all.equal(as.numeric(names(twins)), seq(length(twins)))))
+            {
+                stop("`twins` did not have the correct structure:\n", 
+                     "length(twins) = ", length(twins), "\n", 
+                     "names(twins) = ", names(twins))
+            }
+            break()
+        }
+    }
+    
+    if (num_twins < min_num_twins)
+    {
+        stop("Did not find enough twins after exhausting all quantile thresholds.\n", 
+             "Wanted at least ", min_num_twins, " twins.")
+    }
+    return(twins)
+}
+
+#' @rdname make_surrogate_data
+#'
+#' @description \code{make_surrogate_twin()} creates surrogates using the twin-
+#'   surrogate method, with the option to preserve the phase for seasonal/
+#'   periodic data
+#'
+#' @inheritParams make_surrogate_data
+#' @param dim the embedding dimension for the state-space reconstruction, in 
+#'   which twins are identified
+#' @param tau the lag for the state-space reconstruction
+#' @param phase_lock whether twins have to occur at the same phase
+#' @param T_period the period of seasonality (ignored if `phase_lock = FALSE`)
+#' @param initial_point how to sample the initial point. If `"same_season"`, 
+#'   then the initial point is chosen from the same phase in a different cycle, 
+#'   and the surrogate is not allowed to line up in both phase and cycle with 
+#'   the original time series.
+#' @param ... all other arguments are passed to \code{\link{identify_twins}}
+#'
+#' @examples
+#' make_surrogate_twin(rnorm(100) + sin(1:100 * pi / 6), 10)
+#' 
+make_surrogate_twin <- function(ts,
+                                 num_surr = 1,
+                                 dim = 1, tau = 1, 
+                                 phase_lock = TRUE, 
+                                 T_period = 24, 
+                                 initial_point = "same_season", 
+                                 ...)
+{
+    # generate time-lag embedding matrix
+    if (dim > 1) {
+        block <- rEDM::make_block(ts, max_lag = dim, tau = tau)
+        block <- block[-seq((dim - 1) * tau), -1]
+        block <- block[, rev(seq(NCOL(block)))]
+        block <- as.matrix(block)
+    } else if (dim == 1) {
+        block <- as.matrix(ts)
+    } else {
+        warning("Embedding dimension should be >= 1, given ", dim)
+    }
+    
+    # find plausible twins for the surrogate method
+    twins <- identify_twins(block, phase_lock = phase_lock, 
+                            T_period = T_period, ...)
+    
+    # generate twin surrogates
+    surrogates <- list()
+    num_iter <- 0
+    while ((length(surrogates) < num_surr) && # stop loop when we have enough 
+           num_iter < (30 * num_surr))        # surrogates or reached max num iter
+    {
+        num_iter <- num_iter + 1
+        surr <- make_twin_idx(twins, phase_lock = phase_lock, 
+                              T_period = T_period, 
+                              initial_point = initial_point)
+        
+        # if the surrogate is valid, not too short, then append it
+        if (tail(surr, 1) != 0) {
+            ts <- block[surr, dim]
+            if (dim >= 2)
+                ts <- c(block[surr[1], 1:(dim - 1)], ts)
+            surrogates <- c(surrogates, list(ts))
+        }
+    }
+    surrogates <- do.call(cbind, surrogates)
+    rownames(surrogates) <- NULL
+    return(surrogates)
 }
 
 #' Make a lagged block for multiview
