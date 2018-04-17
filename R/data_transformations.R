@@ -1,24 +1,20 @@
-#' Generate surrogate data for permutation/randomization tests
+#' @name make_surrogate_data
+#' @aliases make_surrogate_shuffle make_surrogate_ebisuzaki 
+#'   make_surrogate_seasonal
+#' 
+#' @title Generate surrogate data for permutation/randomization tests
 #'
-#' \code{\link{make_surrogate_data}} generates surrogate data under several different 
-#' null models.
+#' @description This is a wrapper function for generating surrogate time series 
+#'   using several different null models.
 #' 
-#' Method "random_shuffle" creates surrogates by randomly permuting the values 
-#' of the original time series.
-#' 
-#' Method "Ebisuzaki" creates surrogates by randomizing the phases of a Fourier 
-#' transform, preserving the power spectra of the null surrogates.
-#' 
-#' Method "seasonal" creates surrogates by computing a mean seasonal trend of 
-#' the specified period and shuffling the residuals.
-#' 
-#' See \code{\link{test_nonlinearity}} for context.
+#' See \code{\link{test_nonlinearity}} for an example context for usage of this 
+#' function.
 #' 
 #' @param ts the original time series
 #' @param method which algorithm to use to generate surrogate data
 #' @param num_surr the number of null surrogates to generate
-#' @param T_period the period of seasonality for seasonal surrogates 
-#'   (ignored for other methods)
+#' @param ... remaining arguments are passed on to the specific function to 
+#'   make surrogate time series of that type
 #' @return A matrix where each column is a separate surrogate with the same 
 #'   length as `ts`.
 #' @examples
@@ -28,68 +24,119 @@
 #' 
 make_surrogate_data <- function(ts, method = c("random_shuffle", "ebisuzaki", 
                                                "seasonal"), 
-                                num_surr = 100, T_period = 1)
+                                num_surr = 100, ...)
 {  
+    stopifnot(num_surr > 0)
+    
     method <- match.arg(method)
-    if (method == "random_shuffle")
-    {
-        return(sapply(1:num_surr, function(i) {
+    switch(method, 
+           random_shuffle = make_surrogate_shuffle(ts, num_surr, ...), 
+           ebisuzaki = make_surrogate_ebisuzaki(ts, num_surr, ...), 
+           seasonal = make_surrogate_seasonal(ts, num_surr, ...))
+}
+
+#' @rdname make_surrogate_data
+#'
+#' @description \code{make_surrogate_shuffle()} creates surrogates by randomly 
+#'   permuting the values of the original time series. 
+#'
+#' @inheritParams make_surrogate_data
+#'
+#' @examples
+#' make_surrogate_shuffle(rnorm(100), 10)
+#' 
+make_surrogate_shuffle <- function(ts, num_surr = 100)
+{
+    matrix(unlist(
+        lapply(seq(num_surr), function(i) {
             sample(ts, size = length(ts))
-        }))
-    }
-    else if (method == "ebisuzaki")
-    {
-        if (any(!is.finite(ts)))
-            stop("input time series contained invalid values")
+        })
+    ), ncol = num_surr)
+}
+
+#' @rdname make_surrogate_data
+#'
+#' @description \code{make_surrogate_ebisuzaki()} creates surrogates by 
+#'   randomizing the phases of a Fourier transform, preserving the power 
+#'   spectra of the null surrogates
+#'
+#' @inheritParams make_surrogate_data
+#'
+#' @examples
+#' make_surrogate_ebisuzaki(rnorm(100), 10)
+#' 
+make_surrogate_ebisuzaki <- function(ts, num_surr = 100)
+{
+    if (any(!is.finite(ts)))
+        stop("input time series contained invalid values")
+    
+    n <- length(ts)
+    n2 <- floor(n / 2)
+    
+    sigma <- sd(ts)
+    a <- fft(ts)
+    amplitudes <- abs(a)
+    amplitudes[1] <- 0
+    
+    matrix(unlist(
+        lapply(seq(num_surr), function(i) {
+        if (n %% 2 == 0) # even length
+        {
+            thetas <- 2 * pi * runif(n2 - 1)
+            angles <- c(0, thetas, 0, -rev(thetas))
+            recf <- amplitudes * exp(complex(imaginary = angles))
+            recf[n2] <- complex(real = sqrt(2) * amplitudes[n2] * 
+                                    cos(runif(1) * 2 * pi))
+        }
+        else # odd length
+        {
+            thetas <- 2 * pi * runif(n2)
+            angles <- c(0, thetas, -rev(thetas))
+            recf <- amplitudes * exp(complex(imaginary = angles))
+        }
+        temp <- Re(fft(recf, inverse = TRUE) / n)
         
-        n <- length(ts)
-        n2 <- floor(n / 2)
-        
-        sigma <- sd(ts)
-        a <- fft(ts)
-        amplitudes <- abs(a)
-        amplitudes[1] <- 0
-        
-        return(sapply(1:num_surr, function(i) {
-            if (n %% 2 == 0) # even length
-            {
-                thetas <- 2 * pi * runif(n2 - 1)
-                angles <- c(0, thetas, 0, -rev(thetas))
-                recf <- amplitudes * exp(complex(imaginary = angles))
-                recf[n2] <- complex(real = sqrt(2) * amplitudes[n2] * 
-                                        cos(runif(1) * 2 * pi))
-            }
-            else # odd length
-            {
-                thetas <- 2 * pi * runif(n2)
-                angles <- c(0, thetas, -rev(thetas))
-                recf <- amplitudes * exp(complex(imaginary = angles))
-            }
-            temp <- Re(fft(recf, inverse = T) / n)
-            
-            # adjust variance of the surrogate time series to match original
-            return(temp / sd(temp) * sigma)
-        }))
-    }
-    else # method = "seasonal"
-    {
-        if (any(!is.finite(ts)))
-            stop("input time series contained invalid values")
-                
-        n <- length(ts)
-        I_season <- suppressWarnings(matrix(1:T_period, nrow = n, ncol = 1))
-        
-        # Calculate seasonal cycle using smooth.spline
-        seasonal_F <- smooth.spline(c(I_season - T_period, I_season, 
-                                      I_season + T_period), 
-                                    c(ts, ts, ts))
-        seasonal_cyc <- predict(seasonal_F, I_season)$y
-        seasonal_resid <- ts - seasonal_cyc
-        
-        return(sapply(1:num_surr, function(i) {
+        # adjust variance of the surrogate time series to match original
+        return(temp / sd(temp) * sigma)
+        })
+    ), ncol = num_surr)
+}
+
+
+#' @rdname make_surrogate_data
+#'
+#' @description \code{make_surrogate_seasonal()} creates surrogates by 
+#'   computing a mean seasonal trend of the specified period and shuffling the 
+#'   residuals.
+#'
+#' @inheritParams make_surrogate_data
+#' @param T_period the period of seasonality for seasonal surrogates 
+#'   (ignored for other methods)
+#'
+#' @examples
+#' make_surrogate_seasonal(rnorm(100) + sin(1:100 * pi / 6), 10)
+#' 
+make_surrogate_seasonal <- function(ts, num_surr = 100, T_period = 12)
+{
+    
+    if (any(!is.finite(ts)))
+        stop("input time series contained invalid values")
+    
+    n <- length(ts)
+    I_season <- suppressWarnings(matrix(1:T_period, nrow = n, ncol = 1))
+    
+    # Calculate seasonal cycle using smooth.spline
+    seasonal_F <- smooth.spline(c(I_season - T_period, I_season, 
+                                  I_season + T_period), 
+                                c(ts, ts, ts))
+    seasonal_cyc <- predict(seasonal_F, I_season)$y
+    seasonal_resid <- ts - seasonal_cyc
+    
+    matrix(unlist(
+        lapply(seq(num_surr), function(i) {
             seasonal_cyc + sample(seasonal_resid, n)
-        }))
-    }
+        })
+    ), ncol = num_surr)
 }
 
 #' Make a lagged block for multiview
