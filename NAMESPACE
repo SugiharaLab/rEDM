@@ -19,5 +19,5 @@ export(test_nonlinearity)
 import(Rcpp)
 importFrom("methods", "new")
 importFrom("stats", "aggregate", "fft", "predict", "runif", "sd",
-              "smooth.spline", "var", "dist")
-importFrom("utils", "combn")
+              "smooth.spline", "var", "dist", "quantile")
+importFrom("utils", "combn", "tail")

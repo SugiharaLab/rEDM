@@ -17,8 +17,9 @@ test_that("block_lnlp works", {
     expect_true("mae" %in% names(output))
     expect_true("rmse" %in% names(output))
     expect_equal(NROW(output), 1)
-    expect_equal(digest::digest(output), 
-                 "b37f7bbfa0551ffff92b1c1e6fda3e28")
+    output <- data.frame(lapply(output, function(y) 
+        if (is.numeric(y)) round(y, 4) else y))
+    expect_equal(digest::digest(output), "40c1646b0cdab3102efb33bced69f33c")
 })
 
 test_that("block_lnlp model_output works", {
@@ -35,8 +36,8 @@ test_that("block_lnlp model_output works", {
     expect_true("pred" %in% names(model_output))
     expect_true("pred_var" %in% names(model_output))
     expect_equal(dim(model_output), c(200, 4))
-    expect_equal(digest::digest(output), 
-                 "53cc3eb5c616ef4d9a59b904157e9dba")
+    expect_equal(digest::digest(round(model_output, 4)), 
+                 "56a6aac91d858ff5a81c619ef0bf92f6")
 })
 
 test_that("block_lnlp smap_coefficients works", {

@@ -17,8 +17,10 @@ test_that("simplex works", {
     expect_true("mae" %in% names(simplex_out))
     expect_true("rmse" %in% names(simplex_out))
     expect_equal(NROW(simplex_out), 10)
+    simplex_out <- data.frame(lapply(simplex_out, function(y) 
+        if (is.numeric(y)) round(y, 4) else y))
     expect_equal(digest::digest(simplex_out), 
-                 "4f9c7b079435ef273fbb46926adfc5c5")
+                 "a45df3aa34f12ef514021bb9ca9d4c5c")
 })
 
 test_that("simplex model_output works", {
@@ -33,8 +35,8 @@ test_that("simplex model_output works", {
     expect_true("pred" %in% names(model_output))
     expect_true("pred_var" %in% names(model_output))
     expect_equal(dim(model_output), c(200, 4))
-    expect_equal(digest::digest(simplex_out), 
-                 "14fa3eba63d6203de1eb169f4a21f1cf")
+    expect_equal(digest::digest(round(model_output, 4)), 
+                 "3ca91650810e31a0f84eccc8d35a513c")
 })
 
 test_that("simplex error checking works", {

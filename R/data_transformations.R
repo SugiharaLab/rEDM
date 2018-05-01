@@ -294,12 +294,11 @@ identify_twins <- function(block,
 #'   surrogate method, with the option to preserve the phase for seasonal/
 #'   periodic data
 #'
-#' @inheritParams make_surrogate_data
+#' @inheritParams make_surrogate_seasonal
 #' @param dim the embedding dimension for the state-space reconstruction, in 
 #'   which twins are identified
 #' @param tau the lag for the state-space reconstruction
 #' @param phase_lock whether twins have to occur at the same phase
-#' @param T_period the period of seasonality (ignored if `phase_lock = FALSE`)
 #' @param initial_point how to sample the initial point. If `"same_season"`, 
 #'   then the initial point is chosen from the same phase in a different cycle, 
 #'   and the surrogate is not allowed to line up in both phase and cycle with 
