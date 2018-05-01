@@ -47,8 +47,6 @@ which twins are identified}
 then the initial point is chosen from the same phase in a different cycle, 
 and the surrogate is not allowed to line up in both phase and cycle with 
 the original time series.}
-
-\item{...}{all other arguments are passed to \code{\link{identify_twins}}}
 }
 \value{
 A matrix where each column is a separate surrogate with the same 

@@ -19,7 +19,8 @@ test_that("block_lnlp works", {
     expect_equal(NROW(output), 1)
     output <- data.frame(lapply(output, function(y) 
         if (is.numeric(y)) round(y, 4) else y))
-    expect_equal(digest::digest(output), "40c1646b0cdab3102efb33bced69f33c")
+    attributes(output) <- attributes(output)[sort(names(attributes(output)))]
+    expect_equal(digest::digest(output), "3f457044ffc65c1b7a6e54f47ebbcc97")
 })
 
 test_that("block_lnlp model_output works", {

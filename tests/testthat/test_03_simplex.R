@@ -19,8 +19,9 @@ test_that("simplex works", {
     expect_equal(NROW(simplex_out), 10)
     simplex_out <- data.frame(lapply(simplex_out, function(y) 
         if (is.numeric(y)) round(y, 4) else y))
+    attributes(simplex_out) <- attributes(simplex_out)[sort(names(attributes(simplex_out)))]
     expect_equal(digest::digest(simplex_out), 
-                 "a45df3aa34f12ef514021bb9ca9d4c5c")
+                 "19b7ca9c40138adf04ba91e6be68fa82")
 })
 
 test_that("simplex model_output works", {

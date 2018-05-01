@@ -303,7 +303,7 @@ identify_twins <- function(block,
 #'   then the initial point is chosen from the same phase in a different cycle, 
 #'   and the surrogate is not allowed to line up in both phase and cycle with 
 #'   the original time series.
-#' @param ... all other arguments are passed to \code{\link{identify_twins}}
+#' @inheritParams identify_twins
 #'
 #' @examples
 #' make_surrogate_twin(rnorm(100) + sin(1:100 * pi / 6), 10)
