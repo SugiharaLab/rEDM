@@ -98,6 +98,13 @@ test_that("make_block produces desired output", {
     )
     lag_three <- make_block(df, max_lag = 2, t = NULL, lib = lib, tau = 3)
     expect_equal(lag_three, lag_three_actual)
+    
+    block <- as.tibble(iris[1:10, 1, drop = FALSE])
+    expect_error(out <- make_block(block, max_lag = 1), NA)
+    expect_equal(dim(out), c(10, 2))
+    expect_equal(colnames(out), c("time", "Sepal.Length"))
+    expect_equal(out[, 1], 1:10)
+    expect_equal(out[, 2], iris[1:10, 1])
 })
 
 test_that("make_surrogate_shuffle works", {

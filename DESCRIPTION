@@ -1,8 +1,8 @@
 Package: rEDM
 Type: Package
 Title: Applications of Empirical Dynamic Modeling from Time Series
-Version: 0.6.17
-Date: 2018-04-17
+Version: 0.6.18
+Date: 2018-05-01
 Maintainer: Hao Ye <hao.ye@weecology.org>
 Author: Hao Ye [aut, cre],
     Adam Clark [aut],

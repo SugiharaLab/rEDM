@@ -412,6 +412,10 @@ make_block <- function(block, t = NULL, max_lag = 3, tau = 1, lib = NULL,
     for (j in 1:num_vars)
     {
         ts <- block[, j]
+        if(is.list(ts))
+        {
+            ts <- unlist(ts)
+        }
         output[, col_index] <- ts
         col_names[col_index] <- colnames(block)[j]
         col_index <- col_index + 1
