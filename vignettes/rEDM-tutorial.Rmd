@@ -227,7 +227,8 @@ target <- 1
 
 block_lnlp_output <- block_lnlp(block_3sp, lib = lib, pred = pred,
                                 columns = cols, target_column = target,
-                                stats_only = FALSE, first_column_time = TRUE)
+                                stats_only = FALSE, first_column_time = TRUE, 
+                                silent = TRUE)
 ```
 
 We can also refer to columns by the column names. This ignores the `first_column_time` argument when referring to columns, but does use the time column to label predictions:
@@ -235,7 +236,8 @@ We can also refer to columns by the column names. This ignores the `first_column
 ```{r}
 block_lnlp_output_2 <- block_lnlp(block_3sp, lib = lib, pred = pred,
                                   columns = c("x_t", "x_t-1", "y_t"), target_column = "x_t",
-                                  stats_only = FALSE, first_column_time = TRUE)
+                                  stats_only = FALSE, first_column_time = TRUE, 
+                                  silent = TRUE)
 
 # test for equality
 stopifnot(identical(block_lnlp_output, block_lnlp_output_2))
@@ -440,7 +442,7 @@ composite_lib <- segments[rndlib, ]
 composite_pred <- segments[-rndlib, ]
 ```
 
-Because precipitation is measured for the site and is identical across all the plots, we want to avoid duplication of the data. However, this leaves us with just 7 points for the precipitation time series, which is generally too short to analyze by itself.
+Because precipitation is measured for the site and is identical across all the plots, we want to avoid duplication of the data. However, this means that the time series for precipitation is just 7 points, which is too short to characterize any dynamics. Thus, we exclude it from the following simplex and S-map analysis.
 
 ```{r}
 precip_ts <- unique(e120_invnit16[, c("Year", "SummerPrecip.mm.")])
@@ -448,9 +450,9 @@ precip_ts <- precip_ts[order(precip_ts$Year), ]
 NROW(precip_ts)
 ```
 
-### Applying Simplex and S-map Algorithms
+### Quantifying predictability and nonlinearity
 
-We can then use the **rEDM** functions as normal for each of our time series. First, we apply simplex projection:
+We first use the **rEDM** function, `simplex()` to identify the best embedding dimension for biomass, nitrate, and invader richness.
 
 ```{r simplex on e120, warning = FALSE, fig.width = 6}
 vars <- c("AbvBioAnnProd", "noh020tot", "invrichness")
@@ -468,18 +470,14 @@ for (var in names(simplex_out))
          xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)", 
          main = var)
 }
-```
 
-These results give us the best embedding dimension for each of our projections:
-
-```{r best E for e120}
 best_E <- sapply(simplex_out, function(df) {df$E[which.max(df$rho)]})
 best_E
 ```
 
-Note that for two variables (aboveground biomass and invader richness), the best embedding dimension is also the maximum that we test. These results suggest that the dynamics could be high-dimensional, or biased because of the limited time series length for each segment. Collecting longer time series would be beneficial to both enable better predictions and more clearly distinguish between these possibilities.
+Note that for two variables (aboveground biomass and invader richness), the best embedding dimension is also the maximum that we test. These results suggest that the dynamics could be high-dimensional, or that our results might be biased because of the limited time series length for each segment. Collecting longer time series would be beneficial to enable better predictions and more clearly distinguish between these possibilities.
 
-Using these embedding dimensions, we can now apply S-maps to identify nonlinearity:
+Using these values for the embedding dimension, we can identify nonlinearity using the `s_map()` function:
 
 ```{r smap on e120, warning = FALSE, fig.width = 6, results = "hide"}
 smap_out <- lapply(vars, 
@@ -498,13 +496,13 @@ for (var in names(smap_out))
 }
 ```
 
-Note that aboveground biomass and invader richness suggest nonlinear dynamics in the data (because of the initial increase in forecast skill for `theta > 0`, followed by a gradual drop-off). However, the monotonic decrease in `rho` for `theta > 0` in the case of `noh020tot` suggests that soil nitrate levels may have only linear dynamics.
+Note that aboveground biomass and invader richness suggest nonlinear dynamics in the data (because of the initial increase in forecast skill for `theta > 0`, followed by a gradual drop-off). However, the monotonic decrease in `rho` for `theta > 0` for `noh020tot` suggests that soil nitrate levels may have only linear dynamics.
 
 ### Multivariate Models
 
-Our next step is to produce forecast models. Recall that several variables were best predicted using the maximum number of available time lags. As such, it could be that adding additional information from other variables will improve predictions. Specifically, we compare models that predict aboveground biomass using lags of biomass with models that also include precipitation. In the package, we can do this using `block_lnlp`, but first we need to construct lags for each variable. 
+Our next step is to produce forecast models. Recall that biomass was best predicted using the maximum number of available time lags. As such, it could be that adding additional information from other variables will improve predictions. Specifically, we compare models that predict aboveground biomass using lags of itself vs. models that also include precipitation as a predictor.
 
-Here, we use the `make_block` function, which automatically adds lags of the variables. However, we also need to be careful, since the raw data combines observations from multiple plots. By including the `lib` argument, we can specify where the time series segments are, so that missing data is properly recorded.
+We can do this using the `block_lnlp()` function, but first we need to construct lags for each variable. Here, we use the `make_block()` function, which automatically adds lags of the variables. However, we also need to be careful, since the raw data combines observations from multiple plots. By including the `lib` argument, we can indicate which parts of the time series correspond to different segments, so that lags indicate unknown values correctly.
 
 ```{r make block for e120}
 block_data <- make_block(composite_ts[, 2:5], t = composite_ts$Year, 
@@ -512,7 +510,7 @@ block_data <- make_block(composite_ts[, 2:5], t = composite_ts$Year,
 str(block_data)
 ```
 
-Next, we run `block_lnlp`, being sure to set up the `columns` argument to include the variables that we want for each model, as well as the variable to be predicted (by default, predictions are always for one step ahead). Note that one model includes only lagged observations of biomass, and the other model also includes precipitation:
+Next, we run the models, being sure to set up predictor variables (the `columns` argument) and the variable to be predicted (the `target_column` argument). By default, predictions are always for one step ahead. Note that one model includes only lagged observations of biomass, and the other model also includes precipitation:
 
 ```{r block_lnlp for e120, warning = FALSE}
 AB_columns <- c("AbvBioAnnProd", "AbvBioAnnProd_1", "AbvBioAnnProd_2", "AbvBioAnnProd_3")
@@ -530,7 +528,7 @@ Precip_output <- block_lnlp(block_data, lib = composite_lib, pred = composite_pr
 par(mfrow = c(1, 1), pty = "s")
 ```
 
-We can then examine model performance by comparing predicted vs. observed values:
+We examine model performance by comparing predicted vs. observed values:
 ```{r block_lnlp on e120, warning = FALSE, fig.width = 4, fig.height = 4}
 observed_AB <- AB_output$model_output[[1]]$obs
 predicted_AB <- AB_output$model_output[[1]]$pred
@@ -552,7 +550,7 @@ legend("bottom", legend = c(paste("(biomass alone) rho =", round(AB_output$rho, 
        lty = 3, lwd = 2, col = c("black", "red"), box.col = NA, xpd = TRUE)
 ```
 
-There is a marked improvement in forecast skill when including precipitation as a predictor, with the relationship between predicted and observed values falling closer to the 1:1 line. However, there is still a great deal of variability in biomass that is unexplained ($R^2 = `r round(Precip_output$rho^2, 2)`$).
+There is a marked improvement in forecast skill when including precipitation as a predictor, and the relationship between predicted and observed values falls closer to the 1:1 line (compare the red dashed line to the black dashed line). However, there is still a great deal of variability in biomass that is unexplained ($R^2 = `r round(Precip_output$rho^2, 2)`$).
 
 ```{r, echo = FALSE}
 par(mfrow = c(1, 1), pty = "m")
@@ -560,11 +558,10 @@ par(mfrow = c(1, 1), pty = "m")
 
 ### Convergent Cross Mapping
 
-Finally, we can apply CCM to our data to test for pairwise causal links among variables. For each individual test, we use the embedding dimension corresponding to the "best" embedding dimension of the variable used for reconstruction (i.e. the putative affected process).
+Finally, we can apply CCM to test for pairwise causal links among variables. For each individual test, we use the embedding dimension corresponding to the best embedding dimension of the variable used for reconstruction (i.e. the putative affected process). Recall we are primarily interested in testing whether the biomass of planted species or soil nitrogen concentration affects the dynamics of invading species.
 
-Recall we are primarily interested in testing whether the biomass of planted species or soil nitrogen concentration affects the dynamics of invading species.
-
-```{r ccm on e120, warning = FALSE}
+First, we examine the relationship between invader richness and soil nitrate level:
+```{r richness <-> nitrate, warning = FALSE}
 lib_sizes <- c(seq(5, 50, by = 5), seq(55, 230, by = 20))
 
 inv_xmap_no <- ccm(composite_ts, lib = segments, pred = segments, 
@@ -590,7 +587,8 @@ legend(x = "topleft", col = c("red", "blue"), lwd = 2,
 abline(h = 0, lty = 3)
 ```
 
-```{r ccm on e120 with biological productivity, warning = FALSE}
+And then repeat for the relationship between invader richness and biological productivity:
+```{r richness <-> biomass, warning = FALSE}
 inv_xmap_abv <- ccm(composite_ts, lib = segments, pred = segments, 
                     lib_column = "invrichness", target_column = "AbvBioAnnProd", 
                     E = best_E["invrichness"], lib_sizes = lib_sizes, 
@@ -616,28 +614,26 @@ legend(x = "topleft", col = c("red", "blue"), lwd = 2,
 abline(h = 0, lty = 3)
 ```
 
-These results suggest that invader richness is likely influenced by the biomass of the planted community, but that nitrate dynamics is more strongly influenced by invader dynamics than vice-versa. In contrast to existing hypotheses, this result indicates that in plots planted with 16 species, the planted community biomass itself directly inhibits invasion (e.g. through light limitation), rather than through indirect effects of planted biomass on soil nitrate. 
+The first figure suggests that plot-level soil nitrate is causally forced by invader richness, while the reverse is not true. This is plausible, as the planted compositions are quite similar among experimental replicates, and fluctuations in soil nitrate may be largely indicative of minor variations due to transient populations of invading species before they can be weeded out. Thus, the effect of nitrate on invader richness may be minimal, if at all. However, recall from the S-map analysis that soil nitrate dynamics also appear linear. As such, a more detailed look into the relationship between nitrate and invader richness may be warranted, that also considers methods more appropriate for linear systems, such as Granger Causality [@Granger_1969].
 
-The first figure suggests that plot-level soil nitrate is causally forced by invader richness, while the reverse is not true. This is plausible, as the planted compositions are quite similar among experimental replicates, and variations in soil nitrate dynamics may be largely indicative of minor variations due to transient populations of invading species before they can be weeded out. However, recall from the S-mapping analyses that soil nitrate dynamics are likely largely linear. As such, it may be a good idea to apply other methods for testing causal forcing that are more suitable for linear systems, such as Granger Causality [@Granger_1969].
+The second figure indicates bidirectional forcing between inavder richness and total biomass. Although we would normally expect $\rho$ to continue to increase with library length, the decrease here is not necessarily problematic. For the CCM analysis, we use a composite time series constructed from multiple plots with no more than 7 time points each. Consequently, the larger library sizes represent samples that contain multiple plots. The small decrease in $\rho$ at larger library sizes may therefore indicate heterogeneity in the causal effects among plots.
 
-Our analyses for biomass and invasion may indicate either bidirectional forcing, or synchrony. However, there is a much stronger rise in $\rho$ with library length for "Inv. Richness xmap Total Biomass" (i.e., "Biomass affects Invasive Richness") than for the reverse direction, and $\rho$ is generally small, suggesting that synchrony is unlikely. Furthermore, there does not appear to be a much difference between $\rho$ at short library lengths and $\rho$ at large library lengths for "Total Biomass xmap Inv. Richness", suggesting that this result may be spurious. One other potential caveat is that for both tests of biomass vs. invasion, we find a slight decrease in $\rho$ at long library lengths. This could potentially indicate that the time series that we have stitched together are not sufficiently related to be considered part of a single dynamic process.
-
-Bidirectional causal forcing, with stronger effects of planted biomass on invasion than vice-versa, would make sense, as weeding treatments should insure that there should only be moderate effects of invading species on plot-level biomass (e.g. by decreasing biomass of planted species through light competition), while effects of plot-level planted biomass on invader success should be much stronger (e.g. through competition for space or light).
+Overall, these results suggest that invader richness is influenced by the biomass of the planted community, with a somewhat weaker effect in the opposite direction, but that nitrate is influenced by invader dynamics without feedbacks. In contrast to existing hypotheses, this result indicates that in plots planted with 16 species, the planted community biomass itself directly inhibits invasion (e.g. through light limitation), rather than through an indirect effects on soil nitrate, as nitrate does not appear to affect invader richness.
 
 ## Apple-Blossom Thrips
 
-Next, we re-examine the classic apple-blossom thrips (*Thrips imaginis*) time series from the Wait Institute in Australia [@Davidson_1948; @Davidson_1948a]. Seasonal outbreaks of thrips were observed to vary greatly in magnitude from year to year, with large outbreaks coinciding across large spatial domains. This led to the hypothesis that regional-scale climatic factors were responsible for controlling the size of the seasonal outbreaks (what might now be called the Moran effect [@Moran_1953]).
+Next, we re-examine the classic apple-blossom thrips (*Thrips imaginis*) time series from the Waite Institute in Australia [@Davidson_1948; @Davidson_1948a]. Seasonal outbreaks of thrips were observed to vary greatly in magnitude from year to year, with large outbreaks occurring simultaneously across space. This led to the hypothesis that regional-scale climatic factors were responsible for controlling the size of the seasonal outbreaks (what might now be called the Moran effect [@Moran_1953]).
 
 ```{r thrips data}
 data(thrips_block)
 str(thrips_block)
 ```
 
-The first data column `Thrips_imaginis` contains counts of *Thrips imaginis* obtained from the Global Population Dynamics Database (GPDD) [@NERC-Centre-for-Population-Biology_2010]. `maxT_degC` is the mean maximum daily temperature ($^\circ$C) taken over each month and `Rain_mm` is the monthly rainfall (mm), both from the Waite Institute. The final column `Season` is a simple annual sinusoid that peaks in December (the Austral summer) and acts as an indicator of season.
+The first data column, `Thrips_imaginis`, contains counts of *Thrips imaginis* obtained from the Global Population Dynamics Database (GPDD) [@NERC-Centre-for-Population-Biology_2010]. `maxT_degC` is the mean maximum daily temperature ($^\circ$C) taken over each month and `Rain_mm` is the monthly rainfall (mm), both from the Waite Institute. The final column, `Season`, is a simple annual sinusoid that peaks in December (the Austral summer) and acts as an indicator of season.
 
 First, we plot the data.
 
-```{r thrips plot, echo = FALSE, fig.width = 6, fig.height = 7}
+```{r thrips plot, fig.width = 6, fig.height = 7}
 par(mfrow = c(4, 1), mar = c(2, 4, 1, 1), oma = c(2, 0, 0, 0),
     mgp = c(2.5, 1, 0))
 
@@ -651,7 +647,7 @@ mtext("Year", side = 1, outer = TRUE, line = 1)
 par(mfrow = c(1, 1))
 ```
 
-Note that all the time-series variables, particularly the mean maximum daily Temperature, show marked seasonality.
+Note that all the time-series variables show marked seasonality.
 
 ### Univariate Analysis
 
@@ -660,72 +656,64 @@ ts <- thrips_block$Thrips_imaginis
 lib <- c(1, length(ts))
 pred <- c(1, length(ts))
 simplex_output <- simplex(ts, lib, pred, silent = TRUE)
-```
 
-```{r rho vs. e for thrips, echo = FALSE}
 plot(simplex_output$E, simplex_output$rho, type = "l",
      xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)")
 ```
 
-While there is an initial peak in the simplex prediction at `E = 4`, the global maximum is at `E = 8`. This suggests that both `E = 4` and `E = 8` are practical embedding dimensions.
+While there is an initial peak in forecast skill at `E = 4`, the maximum $\rho$ is at `E = 8`. This suggests that 4 and 8 are both practical embedding dimensions.
 
-To test for nonlinearity, we again use S-maps, but test both `E = 4` and `E = 8` to verify that the result is robust to the choice of embedding dimension.
-
-```{r smap for thrips, warning = FALSE}
-smap_output <- list(s_map(ts, lib, pred, E = 4),
-                    s_map(ts, lib, pred, E = 8))
-```
+To test for nonlinearity, we again use S-maps, and test both `E = 4` and `E = 8` to verify that the result is robust to the choice of embedding dimension.
 
 ```{r, echo = FALSE}
 par(mfrow = c(1, 2))
 ```
 
-```{r rho vs. theta for thrips, echo = FALSE}
+```{r smap for thrips, warning = FALSE}
+smap_output <- list(s_map(ts, lib, pred, E = 4, silent = TRUE),
+                    s_map(ts, lib, pred, E = 8, silent = TRUE))
+
 plot(smap_output[[1]]$theta, smap_output[[1]]$rho, type = "l", xlim = c(0, 4),
      xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)")
 plot(smap_output[[2]]$theta, smap_output[[2]]$rho, type = "l", xlim = c(0, 4),
      xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)")
 ```
 
-```{r, echo = FALSE}
-par(mfrow = c(1, 1))
-```
-
-The S-map results indicate nonlinearity in *Thrips* abundance, as nonlinear models `theta > 0` give substantially better predictions than the linear model `theta = 0`. This suggests that, despite the strong seasonal dynamics, the *Thrips* population does not simply track the environment. To look more closely at the issue of seasonal drivers, we turn to convergent cross-mapping (CCM).
+The S-map results indicate nonlinearity in *Thrips* abundance, as the nonlinear models (`theta > 0`) give substantially better predictions than the linear model (`theta = 0`). This suggests that, despite the strong seasonal dynamics, the *Thrips* population might not simply track the environment. To look more closely at the issue of seasonal drivers, we turn to convergent cross-mapping (CCM).
 
 ### Seasonal Drivers
 
-Recall that there is a two-part criterion for CCM to be a rigorous test of causality. (1) The cross map prediction skill is statistically significant when using the full time series as the library. (2) Cross map prediction skill demonstrates convergence, i.e. prediction skill increases as more of the time series is used for the library and the reconstructed attractor becomes more dense.
+Recall that there is a two-part criterion for CCM to be a rigorous test of causality: (1) cross map prediction skill is statistically significant when using the full time series as the library. (2) cross map prediction skill demonstrates convergence -- prediction skill increases as more of the time series is used to reconstruct the attractor.
 
-For an initial summary, we first compute the cross map skill for each variable pair, using the full time series as the library. We use `E = 8` as it is the larger of the two values identified for *Thrips* abundance, and setting a fixed value reduces the chance of overfitting `E` when cross mapping between all variable pairs.
+We first compute the cross map skill for each variable pair, using the full time series as the library. We use `E = 8` as it is the larger of the two values identified for *Thrips* abundance, and setting a fixed value reduces the chance of overfitting when cross mapping between all variable pairs.
 
 ```{r compute ccm matrix for thrips, results = "hold", warning = FALSE}
 vars <- colnames(thrips_block[3:6])
 n <- NROW(thrips_block)
-ccm_matrix <- matrix(NA, nrow = length(vars), ncol = length(vars),
+ccm_rho_matrix <- matrix(NA, nrow = length(vars), ncol = length(vars),
                      dimnames = list(vars, vars))
 
-for(ccm_from in vars)
+for (ccm_from in vars)
 {
-    for(ccm_to in vars[vars != ccm_from])
+    for (ccm_to in vars[vars != ccm_from])
     {
         out_temp <- ccm(thrips_block, E = 8,
                         lib_column = ccm_from, target_column = ccm_to,
                         lib_sizes = n, replace = FALSE, silent = TRUE)
-        ccm_matrix[ccm_from, ccm_to] <- out_temp$rho
+        ccm_rho_matrix[ccm_from, ccm_to] <- out_temp$rho
     }
 }
 ```
 
-For comparison we also compute the lagged cross-correlation, allowing lags of up to $\pm 6$ months.
+For comparison we compute the lagged cross-correlation, allowing lags of up to $\pm 6$ months.
 
 ```{r compute corr matrix for thrips}
 corr_matrix <- array(NA, dim = c(length(vars), length(vars)),
                      dimnames = list(vars, vars))
 
-for(ccm_from in vars)
+for (ccm_from in vars)
 {
-    for(ccm_to in vars[vars != ccm_from])
+    for (ccm_to in vars[vars != ccm_from])
     {
         cf_temp <- ccf(thrips_block[, ccm_from], thrips_block[, ccm_to],
                        type = "correlation", lag.max = 6, plot = FALSE)$acf
@@ -735,14 +723,14 @@ for(ccm_from in vars)
 ```
 
 ```{r xmap vs. corr matrix for thrips}
-head(ccm_matrix)
+head(ccm_rho_matrix)
 head(corr_matrix)
 ```
 
-Notice that the lagged correlation between temperature and the seasonal indicator is extremely high. Thus, it is not surprising that the cross map results indicate that the seasonal variable can almost perfectly recover the temperature, $\rho = `r format(corr_matrix["Season", "maxT_degC"], 2)`$. This makes interpretation more complicated, because we have to consider the possibility that cross mapping high because of the shared seasonality between two time series. In other words, we may find significant levels of cross map skill between temperature and any variable with a seasonal cycle, even if there is no actual causal mechanism.
+Notice that the correlation between temperature and the seasonal indicator is extremely high. Thus, it is not surprising that the cross map results are also strong for the relationship between the seasonal variable and temperature, $\rho = `r round(ccm_rho_matrix["Season", "maxT_degC"], 2)`$. This makes interpretation more complicated, because we have to consider the possibility that cross mapping between temperature and Thrips abundance occurs because of the shared seasonality. In other words, we may observe high cross mapping $\rho$ between two variables with a seasonal cycle, even if there is no underlying causal mechanism.
 
 #### Convergent Cross-Mapping
-With this in mind, we examine convergence in cross-map predictability, i.e. we compute `rho` as a function of library size `L`. We first look at *Thrips* and temperature.
+With this in mind, we examine convergence in cross-map predictability, i.e. we compute `rho` as a function of library size `L`. We first look at Thrips and temperature.
 
 ```{r ccm on thrips, results = "hide", warning = FALSE}
 thrips_xmap_maxT <- ccm(thrips_block, E = 8, random_libs = TRUE,
@@ -756,6 +744,11 @@ maxT_xmap_thrips <- ccm(thrips_block, E = 8, random_libs = TRUE,
 
 ccm_out <- list(ccm_means(thrips_xmap_maxT), ccm_means(maxT_xmap_thrips))
 ```
+
+```{r, echo = FALSE}
+par(mfrow = c(1, 1))
+```
+
 
 ```{r ccm plot, echo = FALSE}
 plot(ccm_out[[1]]$lib_size, pmax(0, ccm_out[[1]]$rho), type = "l", col = "red",  
@@ -815,15 +808,17 @@ legend(x = "bottomright", legend = c("Thrips xmap Season", "Season xmap Thrips")
        col = c("red", "blue"), lwd = 1, inset = 0.02)
 ```
 
-The results show clear evidence of convergence for *Thrips* cross mapping the climactic variables, with the `rho` at maximum `L` greatly exceeding the simple linear correlation.
+The results show clear evidence of convergence for *Thrips* cross mapping the climactic variables, with the cross map $\rho$ at the maximum library size exceeding cross-correlation between the variables.
 
-However, we are still left with the conundrum that temperature and to a lesser extent, rainfall, are easily predicted from the seasonal cycle. In other words, the cross map results could be an artifact of shared seasonal forcing.
+However, we are still left with the conundrum that temperature and to a lesser extent, rainfall, are easily predicted from the seasonal cycle. In other words, the cross map results could be an artifact of shared seasonal forcing. Indeed, note that the pattern of results is similar for cross mapping between Thrips and an artificial indicator of the season in the figure above.
 
-We can distinguish between shared seasonal forcing and a true causal effect if the level of cross mapping obtained for `maxT_degC` and `Rain_mm` is significantly beyond what would be explained by shared seasonality. This hypothesis is readily tested using randomization tests based on surrogate data. The idea here is to generate surrogate time series with the same level of shared seasonality. Cross mapping between the real time series and these surrogates thus generates a null distribution for $\rho$, against which the actual cross map $\rho$ value can be compared.
+We can distinguish a true causal effect from shared seasonal forcing and a true causal effect by using a reasonable null model and testing if cross map skill obtained for `maxT_degC` and `Rain_mm` is significantly beyond what would be explained by the null model that has the same degree of shared seasonality. This hypothesis is readily tested using randomization tests based on surrogate data. The idea here is to generate surrogate time series with the same degree of shared seasonality. Cross mapping between the time series of actual Thrips abundance and the surrogates for climatic time series thus generates a null distribution for $\rho$, against which the actual cross map $\rho$ value can be compared.
 
 #### Seasonal Surrogate Test
 
-We use the `make_surrogate_data` function to generate surrogate time series with the same seasonal pattern, but with the anomalies shuffled. Here `T_period` indicates that we want the surrogated to keep the same mean annual signal, corresponding to 12 time steps (since the data are monthly). Next we compute cross mapping between the true abundance and these surrogate environmental variables.
+We use the `make_surrogate_data()` function to generate surrogate time series. Note that we select `method = "seasonal"` to produce surrogate time series with the same seasonal pattern, but with the anomalies shuffled. The `T_period` argument specifies the period for the seasonal signal; we use the `12` as the data are monthly and the seasonality is annual.
+
+Next we compute cross mapping between the true abundance and these surrogate environmental variables.
 
 ```{r seasonal surrogates for thrips, warning = FALSE}
 num_surr <- 1000
@@ -832,31 +827,31 @@ surr_maxT <- make_surrogate_data(thrips_block$maxT_degC, method = "seasonal",
 surr_Rain <- make_surrogate_data(thrips_block$Rain_mm, method = "seasonal",
                                  T_period = 12, num_surr = num_surr)
 
-rho_surr <- data.frame(maxT = numeric(num_surr), Rain = numeric(num_surr))
+ccm_rho_surr <- data.frame(maxT = numeric(num_surr), Rain = numeric(num_surr))
 
 for (i in 1:num_surr) {
-    rho_surr$maxT[i] <- ccm(cbind(thrips_block$Thrips_imaginis, surr_maxT[,i]),
+    ccm_rho_surr$maxT[i] <- ccm(cbind(thrips_block$Thrips_imaginis, surr_maxT[,i]),
                             E = 8, lib_column = 1, target_column = 2,
                             lib_sizes = NROW(thrips_block), replace = FALSE, 
                             silent = TRUE)$rho
     
-    rho_surr$Rain[i] <- ccm(cbind(thrips_block$Thrips_imaginis, surr_Rain[,i]),
+    ccm_rho_surr$Rain[i] <- ccm(cbind(thrips_block$Thrips_imaginis, surr_Rain[,i]),
                             E = 8, lib_column = 1, target_column = 2,
                             lib_sizes = NROW(thrips_block), replace = FALSE, 
                             silent = TRUE)$rho
 }
 ```
 
-These cross map values form a null distribution, allowing us to estimate the $p$ value for rejecting the null hypothesis of mutual seasonality.
+These cross map values form a null distribution. We can then estimate a $p$ value for rejecting the null hypothesis that cross map $\rho$ is driven by the mutual seasonality.
 
 ```{r significance of randomization test, tidy = FALSE}
-(sum(ccm_matrix['Thrips_imaginis', 'Rain_mm'] < rho_surr$Rain) + 1) /
-    (length(rho_surr$Rain) + 1)
-(sum(ccm_matrix['Thrips_imaginis', 'maxT_degC'] < rho_surr$maxT) + 1) /
-    (length(rho_surr$maxT) + 1)
+(sum(ccm_rho_matrix['Thrips_imaginis', 'Rain_mm'] < ccm_rho_surr$Rain) + 1) /
+    (length(ccm_rho_surr$Rain) + 1)
+(sum(ccm_rho_matrix['Thrips_imaginis', 'maxT_degC'] < ccm_rho_surr$maxT) + 1) /
+    (length(ccm_rho_surr$maxT) + 1)
 ```
 
-In both cases, the cross map skill that we measure for the real time series is better than the median expectation under the null hypothesis. For rainfall, the effect is significant based on the common threshold of $p < 0.05$. Howover, the high correlation between the maximum daily temperature (at a monthly time scale) and the seasonal cycle makes it harder to establish significance for the effect of `maxT_degC`. We note that the original *Thrips* data collections were at a much higher frequency than those available through the GPDD, and that `maxT_degC` shows much larger departures from the seasonal cycle on shorter time-scales. With more highly resolved data, it may well be possible to establish significance for the effect of temperature.
+In both cases, the cross map skill that we measure for the real time series is better than the median expectation under the null hypothesis. For rainfall, the effect is significant based on the common threshold of $p < 0.05$. Howover, cross mapping between Thrips abundance and temperature is non-significant, which could be due to the high correlation between maximum daily temperature and the seasonal cycle. In other words, the actual time series for `maxT_degC` is already strongly periodic, and it is difficult to detect a causal signal on top of the seasonal cycle. Using higher frequency data or spatially resolved replicates (e.g. local temperature and local population counts) could help to enhance detectability under such circumstances.
 
 # Technical Details
 

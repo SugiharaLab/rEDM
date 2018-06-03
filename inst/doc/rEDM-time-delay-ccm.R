@@ -23,7 +23,7 @@ output <- do.call(rbind, lapply(seq_len(NROW(params)), function(i) {
         lib_sizes = NROW(paramecium_didinium), random_libs = FALSE, 
         lib_column = params$lib_column[i], 
         target_column = params$target_column[i], 
-        tp = params$tp[i])
+        tp = params$tp[i], silent = TRUE)
 }))
 
 ## ------------------------------------------------------------------------

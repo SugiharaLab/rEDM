@@ -3,7 +3,7 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE,
                       tidy = TRUE, cache = TRUE,
                       cache.rebuild = TRUE, 
                       fig.width = 5, fig.height = 3.5)
-knitr::opts_knit$set(global.par = TRUE, progress = TRUE)
+knitr::opts_knit$set(global.par = TRUE, progress = FALSE)
 options(digits = 2)
 par(mar = c(4, 4, 1, 1), oma = c(0, 0, 0, 0), mgp = c(2.5, 1, 0))
 
@@ -16,7 +16,7 @@ par(mar = c(4, 4, 1, 1), oma = c(0, 0, 0, 0), mgp = c(2.5, 1, 0))
 ## ----fig_time_series_projection, echo = FALSE, fig.cap = "Time Series Projection from the Lorenz Attractor"----
 knitr::include_graphics(here::here("vignettes", "vignette_figs", "figure_1.svg"))
 
-## ----fig_attractor_reconstruction, echo = FALSE, fig.cap = "Attractor Reconstruction from Lagged Coordinates"----
+## ----fig_attractor_reconstruction, echo = FALSE, fig.cap = "Attractor Reconstruction from 3 Lagged Coordinates"----
 knitr::include_graphics(here::here("vignettes", "vignette_figs", "figure_2.svg"))
 
 ## ----load package--------------------------------------------------------
@@ -73,12 +73,14 @@ target <- 1
 
 block_lnlp_output <- block_lnlp(block_3sp, lib = lib, pred = pred,
                                 columns = cols, target_column = target,
-                                stats_only = FALSE, first_column_time = TRUE)
+                                stats_only = FALSE, first_column_time = TRUE, 
+                                silent = TRUE)
 
 ## ------------------------------------------------------------------------
 block_lnlp_output_2 <- block_lnlp(block_3sp, lib = lib, pred = pred,
                                   columns = c("x_t", "x_t-1", "y_t"), target_column = "x_t",
-                                  stats_only = FALSE, first_column_time = TRUE)
+                                  stats_only = FALSE, first_column_time = TRUE, 
+                                  silent = TRUE)
 
 # test for equality
 stopifnot(identical(block_lnlp_output, block_lnlp_output_2))
@@ -113,11 +115,11 @@ data(sardine_anchovy_sst)
 anchovy_xmap_sst <- ccm(sardine_anchovy_sst, E = 3,
                         lib_column = "anchovy", target_column = "np_sst",
                         lib_sizes = seq(10, 80, by = 10), num_samples = 100,
-                        random_libs = TRUE, replace = TRUE)
+                        random_libs = TRUE, replace = TRUE, silent = TRUE)
 sst_xmap_anchovy <- ccm(sardine_anchovy_sst, E = 3,
                         lib_column = "np_sst", target_column = "anchovy",
                         lib_sizes = seq(10, 80, by = 10), num_samples = 100,
-                        random_libs = TRUE, replace = TRUE)
+                        random_libs = TRUE, replace = TRUE, silent = TRUE)
 str(anchovy_xmap_sst)
 
 ## ----sardine anchovy ccm plot--------------------------------------------
@@ -154,7 +156,7 @@ output <- do.call(rbind, lapply(seq_len(NROW(params)), function(i) {
         lib_sizes = NROW(paramecium_didinium), random_libs = FALSE,
         lib_column = params$lib_column[i],
         target_column = params$target_column[i],
-        tp = params$tp[i])
+        tp = params$tp[i], silent = TRUE)
 }))
 
 ## ------------------------------------------------------------------------
@@ -198,39 +200,38 @@ composite_pred <- segments[-rndlib, ]
 ## ------------------------------------------------------------------------
 precip_ts <- unique(e120_invnit16[, c("Year", "SummerPrecip.mm.")])
 precip_ts <- precip_ts[order(precip_ts$Year), ]
+NROW(precip_ts)
 
 ## ----simplex on e120, warning = FALSE, fig.width = 6---------------------
-simplex_out <- lapply(c("AbvBioAnnProd", "noh020tot", "invrichness"), 
+vars <- c("AbvBioAnnProd", "noh020tot", "invrichness")
+simplex_out <- lapply(vars, 
                       function(var) {
                           simplex(composite_ts[, c("Year", var)], E = 2:4, 
                                   lib = composite_lib, pred = composite_pred)
                       })
-simplex_out[[4]] <- simplex(precip_ts, E = 2:5)
-names(simplex_out) <- names(composite_ts)[-1]
+names(simplex_out) <- vars
 
 par(mfrow = c(2, 2))
-for(var in names(simplex_out))
+for (var in names(simplex_out))
 {
     plot(simplex_out[[var]]$E, simplex_out[[var]]$rho, type = "l", 
          xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)", 
          main = var)
 }
 
-## ----best E for e120-----------------------------------------------------
 best_E <- sapply(simplex_out, function(df) {df$E[which.max(df$rho)]})
 best_E
 
 ## ----smap on e120, warning = FALSE, fig.width = 6, results = "hide"------
-smap_out <- lapply(c("AbvBioAnnProd", "noh020tot", "invrichness"), 
+smap_out <- lapply(vars, 
                    function(var) {
                        s_map(composite_ts[, c("Year", var)], E = best_E[var], 
                              lib = composite_lib, pred = composite_pred)
                    })
-smap_out[[4]] <- s_map(precip_ts, E = best_E[4])
 names(smap_out) <- names(simplex_out)
 
 par(mfrow = c(2, 2))
-for(var in names(simplex_out))
+for (var in names(smap_out))
 {
     plot(smap_out[[var]]$theta, smap_out[[var]]$rho, type = "l", 
          xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)", 
@@ -272,22 +273,24 @@ abline(lm(predicted_AB ~ observed_AB), col = "black", lty = 3, lwd = 2)
 points(observed_Precip, predicted_Precip, pch = 2, col = "red")
 abline(lm(predicted_Precip ~ observed_Precip), col = "red", lty = 3, lwd = 2)
 
-legend("topleft", legend = c(paste("(biomass alone) rho =", round(AB_output$rho, 2)), 
+legend("bottom", legend = c(paste("(biomass alone) rho =", round(AB_output$rho, 2)), 
                              paste("(biomass and prec.) rho =", round(Precip_output$rho, 2))), 
-       lty = 3, lwd = 2, col = c("black", "red"), box.col = NA)
+       lty = 3, lwd = 2, col = c("black", "red"), box.col = NA, xpd = TRUE)
 
 ## ---- echo = FALSE-------------------------------------------------------
 par(mfrow = c(1, 1), pty = "m")
 
-## ----ccm on e120, warning = FALSE----------------------------------------
-lib_sizes <- c(seq(5, 55, by = 5), seq(55, 230, by = 20))
+## ----richness <-> nitrate, warning = FALSE-------------------------------
+lib_sizes <- c(seq(5, 50, by = 5), seq(55, 230, by = 20))
 
 inv_xmap_no <- ccm(composite_ts, lib = segments, pred = segments, 
                    lib_column = "invrichness", target_column = "noh020tot", 
-                   E = best_E["invrichness"], lib_sizes = lib_sizes)
+                   E = best_E["invrichness"], lib_sizes = lib_sizes, 
+                   silent = TRUE)
 no_xmap_inv <- ccm(composite_ts, lib = segments, pred = segments, 
                    lib_column = "noh020tot", target_column = "invrichness", 
-                   E = best_E["noh020tot"], lib_sizes = lib_sizes)
+                   E = best_E["noh020tot"], lib_sizes = lib_sizes, 
+                   silent = TRUE)
 
 inv_xmap_no_means <- ccm_means(inv_xmap_no)
 no_xmap_inv_means <- ccm_means(no_xmap_inv)
@@ -302,13 +305,15 @@ legend(x = "topleft", col = c("red", "blue"), lwd = 2,
        inset = 0.02, bty = "n", cex = 0.8)
 abline(h = 0, lty = 3)
 
-## ----ccm on e120 with biological productivity, warning = FALSE-----------
+## ----richness <-> biomass, warning = FALSE-------------------------------
 inv_xmap_abv <- ccm(composite_ts, lib = segments, pred = segments, 
                     lib_column = "invrichness", target_column = "AbvBioAnnProd", 
-                    E = best_E["invrichness"], lib_sizes = lib_sizes)
+                    E = best_E["invrichness"], lib_sizes = lib_sizes, 
+                    silent = TRUE)
 abv_xmap_inv <- ccm(composite_ts, lib = segments, pred = segments, 
                     lib_column = "AbvBioAnnProd", target_column = "invrichness", 
-                    E = best_E["AbvBioAnnProd"], lib_sizes = lib_sizes)
+                    E = best_E["AbvBioAnnProd"], lib_sizes = lib_sizes, 
+                    silent = TRUE)
 
 inv_xmap_abv_means <- ccm_means(inv_xmap_abv)
 abv_xmap_inv_means <- ccm_means(abv_xmap_inv)
@@ -329,7 +334,7 @@ abline(h = 0, lty = 3)
 data(thrips_block)
 str(thrips_block)
 
-## ----thrips plot, echo = FALSE, fig.width = 6, fig.height = 7------------
+## ----thrips plot, fig.width = 6, fig.height = 7--------------------------
 par(mfrow = c(4, 1), mar = c(2, 4, 1, 1), oma = c(2, 0, 0, 0),
     mgp = c(2.5, 1, 0))
 
@@ -346,42 +351,37 @@ par(mfrow = c(1, 1))
 ts <- thrips_block$Thrips_imaginis
 lib <- c(1, length(ts))
 pred <- c(1, length(ts))
-simplex_output <- simplex(ts, lib, pred)
+simplex_output <- simplex(ts, lib, pred, silent = TRUE)
 
-## ----rho vs. e for thrips, echo = FALSE----------------------------------
 plot(simplex_output$E, simplex_output$rho, type = "l",
      xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)")
-
-## ----smap for thrips, warning = FALSE------------------------------------
-smap_output <- list(s_map(ts, lib, pred, E = 4),
-                    s_map(ts, lib, pred, E = 8))
 
 ## ---- echo = FALSE-------------------------------------------------------
 par(mfrow = c(1, 2))
 
-## ----rho vs. theta for thrips, echo = FALSE------------------------------
+## ----smap for thrips, warning = FALSE------------------------------------
+smap_output <- list(s_map(ts, lib, pred, E = 4, silent = TRUE),
+                    s_map(ts, lib, pred, E = 8, silent = TRUE))
+
 plot(smap_output[[1]]$theta, smap_output[[1]]$rho, type = "l", xlim = c(0, 4),
      xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)")
 plot(smap_output[[2]]$theta, smap_output[[2]]$rho, type = "l", xlim = c(0, 4),
      xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)")
 
-## ---- echo = FALSE-------------------------------------------------------
-par(mfrow = c(1, 1))
-
 ## ----compute ccm matrix for thrips, results = "hold", warning = FALSE----
 vars <- colnames(thrips_block[3:6])
 n <- NROW(thrips_block)
-ccm_matrix <- matrix(NA, nrow = length(vars), ncol = length(vars),
+ccm_rho_matrix <- matrix(NA, nrow = length(vars), ncol = length(vars),
                      dimnames = list(vars, vars))
 
-for(ccm_from in vars)
+for (ccm_from in vars)
 {
-    for(ccm_to in vars[vars != ccm_from]) # ignore self-interactions
+    for (ccm_to in vars[vars != ccm_from])
     {
         out_temp <- ccm(thrips_block, E = 8,
                         lib_column = ccm_from, target_column = ccm_to,
-                        lib_sizes = n, replace = FALSE)
-        ccm_matrix[ccm_from, ccm_to] <- out_temp$rho
+                        lib_sizes = n, replace = FALSE, silent = TRUE)
+        ccm_rho_matrix[ccm_from, ccm_to] <- out_temp$rho
     }
 }
 
@@ -389,9 +389,9 @@ for(ccm_from in vars)
 corr_matrix <- array(NA, dim = c(length(vars), length(vars)),
                      dimnames = list(vars, vars))
 
-for(ccm_from in vars)
+for (ccm_from in vars)
 {
-    for(ccm_to in vars[vars != ccm_from])
+    for (ccm_to in vars[vars != ccm_from])
     {
         cf_temp <- ccf(thrips_block[, ccm_from], thrips_block[, ccm_to],
                        type = "correlation", lag.max = 6, plot = FALSE)$acf
@@ -400,18 +400,23 @@ for(ccm_from in vars)
 }
 
 ## ----xmap vs. corr matrix for thrips-------------------------------------
-head(ccm_matrix)
+head(ccm_rho_matrix)
 head(corr_matrix)
 
 ## ----ccm on thrips, results = "hide", warning = FALSE--------------------
 thrips_xmap_maxT <- ccm(thrips_block, E = 8, random_libs = TRUE,
                         lib_column = "Thrips_imaginis", target_column = "maxT_degC",
-                        lib_sizes = seq(10, 75, by = 5), num_samples = 300)
+                        lib_sizes = seq(10, 75, by = 5), num_samples = 300, 
+                        silent = TRUE)
 maxT_xmap_thrips <- ccm(thrips_block, E = 8, random_libs = TRUE,
                         lib_column = "maxT_degC", target_column = "Thrips_imaginis",
-                        lib_sizes = seq(10, 75, by = 5), num_samples = 300)
+                        lib_sizes = seq(10, 75, by = 5), num_samples = 300, 
+                        silent = TRUE)
 
 ccm_out <- list(ccm_means(thrips_xmap_maxT), ccm_means(maxT_xmap_thrips))
+
+## ---- echo = FALSE-------------------------------------------------------
+par(mfrow = c(1, 1))
 
 ## ----ccm plot, echo = FALSE----------------------------------------------
 plot(ccm_out[[1]]$lib_size, pmax(0, ccm_out[[1]]$rho), type = "l", col = "red",  
@@ -424,10 +429,12 @@ legend(x = "bottomright", legend = c("Thrips xmap maxT", "maxT xmap Thrips"),
 ## ----ccm on thrips and rainfall, results = "hide", warning = FALSE-------
 thrips_xmap_Rain <- ccm(thrips_block, E = 8, random_libs = TRUE,
                         lib_column = "Thrips_imaginis", target_column = "Rain_mm",
-                        lib_sizes = seq(10, 75, by = 5), num_samples = 300)
+                        lib_sizes = seq(10, 75, by = 5), num_samples = 300, 
+                        silent = TRUE)
 Rain_xmap_thrips <- ccm(thrips_block, E = 8, random_libs = TRUE,
                         lib_column = "Rain_mm", target_column = "Thrips_imaginis",
-                        lib_sizes = seq(10, 75, by = 5), num_samples = 300)
+                        lib_sizes = seq(10, 75, by = 5), num_samples = 300, 
+                        silent = TRUE)
 
 ccm_out <- list(ccm_means(thrips_xmap_Rain), ccm_means(Rain_xmap_thrips))
 
@@ -442,10 +449,12 @@ legend(x = "topleft", legend = c("Thrips xmap Rain", "Rain xmap Thrips"),
 ## ----ccm on thrips and season, results = "hide", warning = FALSE---------
 thrips_xmap_Season <- ccm(thrips_block, E = 8, random_libs = TRUE,
                           lib_column = "Thrips_imaginis", target_column = "Season",
-                          lib_sizes = seq(10, 75, by = 5), num_samples = 300)
+                          lib_sizes = seq(10, 75, by = 5), num_samples = 300, 
+                          silent = TRUE)
 Season_xmap_thrips <- ccm(thrips_block, E = 8, random_libs = TRUE,
                           lib_column = "Season", target_column = "Thrips_imaginis",
-                          lib_sizes = seq(10, 75, by = 5), num_samples = 300)
+                          lib_sizes = seq(10, 75, by = 5), num_samples = 300, 
+                          silent = TRUE)
 
 ccm_out <- list(ccm_means(thrips_xmap_Season), ccm_means(Season_xmap_thrips))
 
@@ -465,21 +474,23 @@ surr_maxT <- make_surrogate_data(thrips_block$maxT_degC, method = "seasonal",
 surr_Rain <- make_surrogate_data(thrips_block$Rain_mm, method = "seasonal",
                                  T_period = 12, num_surr = num_surr)
 
-rho_surr <- data.frame(maxT = numeric(num_surr), Rain = numeric(num_surr))
+ccm_rho_surr <- data.frame(maxT = numeric(num_surr), Rain = numeric(num_surr))
 
 for (i in 1:num_surr) {
-    rho_surr$maxT[i] <- ccm(cbind(thrips_block$Thrips_imaginis, surr_maxT[,i]),
+    ccm_rho_surr$maxT[i] <- ccm(cbind(thrips_block$Thrips_imaginis, surr_maxT[,i]),
                             E = 8, lib_column = 1, target_column = 2,
-                            lib_sizes = NROW(thrips_block), replace = FALSE)$rho
+                            lib_sizes = NROW(thrips_block), replace = FALSE, 
+                            silent = TRUE)$rho
     
-    rho_surr$Rain[i] <- ccm(cbind(thrips_block$Thrips_imaginis, surr_Rain[,i]),
+    ccm_rho_surr$Rain[i] <- ccm(cbind(thrips_block$Thrips_imaginis, surr_Rain[,i]),
                             E = 8, lib_column = 1, target_column = 2,
-                            lib_sizes = NROW(thrips_block), replace = FALSE)$rho
+                            lib_sizes = NROW(thrips_block), replace = FALSE, 
+                            silent = TRUE)$rho
 }
 
 ## ----significance of randomization test, tidy = FALSE--------------------
-(sum(ccm_matrix['Thrips_imaginis', 'Rain_mm'] < rho_surr$Rain) + 1) /
-    (length(rho_surr$Rain) + 1)
-(sum(ccm_matrix['Thrips_imaginis', 'maxT_degC'] < rho_surr$maxT) + 1) /
-    (length(rho_surr$maxT) + 1)
+(sum(ccm_rho_matrix['Thrips_imaginis', 'Rain_mm'] < ccm_rho_surr$Rain) + 1) /
+    (length(ccm_rho_surr$Rain) + 1)
+(sum(ccm_rho_matrix['Thrips_imaginis', 'maxT_degC'] < ccm_rho_surr$maxT) + 1) /
+    (length(ccm_rho_surr$maxT) + 1)
 

@@ -11,13 +11,13 @@ lib_x <- c(1, length(x))
 lib_y <- length(x) + c(1, length(y))
 
 ## ---- warning = FALSE----------------------------------------------------
-simplex_out_x <- simplex(concatenated_xy, lib = lib_x, pred = lib_x)
+simplex_out_x <- simplex(concatenated_xy, lib = lib_x, pred = lib_x, silent = TRUE)
 best_E_x <- simplex_out_x$E[which.max(simplex_out_x$rho)]
 
 copred_x_to_y <- simplex(concatenated_xy, lib = lib_x, pred = lib_y, E = best_E_x)
 
 ## ---- warning = FALSE----------------------------------------------------
-simplex_out_y <- simplex(concatenated_xy, lib = lib_y, pred = lib_y)
+simplex_out_y <- simplex(concatenated_xy, lib = lib_y, pred = lib_y, silent = TRUE)
 best_E_y <- simplex_out_y$E[which.max(simplex_out_y$rho)]
 
 copred_y_to_x <- simplex(concatenated_xy, lib = lib_y, pred = lib_x, E = best_E_y)
