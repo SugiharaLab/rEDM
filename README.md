@@ -87,7 +87,7 @@ output <- simplex(dat,
                   E = 3, 
                   stats_only = FALSE)     # return predictions, too
 
-predictions <- output$model_output[[1]]
+predictions <- na.omit(output$model_output[[1]])
 
 plot(dat$yr, dat$sunspot_count, type = "l", 
           xlab = "year", ylab = "sunspots")
