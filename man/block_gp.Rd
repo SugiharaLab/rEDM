@@ -2,7 +2,7 @@
 % Please edit documentation in R/block_GP.R
 \name{block_gp}
 \alias{block_gp}
-\title{Perform generalized forecasting using Gaussian processes}
+\title{(generalized) Block forecasting using Gaussian Processes}
 \usage{
 block_gp(block, lib = c(1, NROW(block)), pred = lib, tp = 1, phi = 0,
   v_e = 0, eta = 0, fit_params = TRUE, columns = NULL,

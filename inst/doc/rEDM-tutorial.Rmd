@@ -273,9 +273,104 @@ plot(observed, predicted, xlim = plot_range, ylim = plot_range,
 abline(a = 0, b = 1, lty = 2, col = "blue")
 ```
 
+```{r, echo = FALSE}
+par(pty = "m")
+```
+
+## Gaussian Process
+
+An alternative approach to using Simplex Projection or S-maps to forecast from the reconstructed attractor is to use Gaussian Processes (GP). In the **rEDM** package, the equivalent function to the univariate `simplex()` and `s_map()` is `tde_gp()` (for Time Delay Embedding using Gaussian Processes) and the equivalent function to the general `block_lnlp()` is `block_gp()`.
+
+Note that the arguments are slightly different: the GP formulation includes hyperparameters for fitting to the data (`phi`, `v_e`, and `eta`). These can be set directly, or fit over the points in the `lib` portion of the data. In addition, the GP specifies not only pointwise error estimates for the predicted points, but also the covariance between them. In other words, the uncertainty for nearby points, in the state-space of the reconstructed attractor, is correlated. Setting `save_covariance_matrix = TRUE` will also return the full covariance matrix for the predicted points in the output of these functions. For more details, please see the documentation for `tde_gp()` and `block_gp()`.
+
+We repeat the above example, but using `block_gp()` instead of `block_lnlp()`. 
+
+```{r make block_gp forecasts}
+data(block_3sp)
+lib <- c(1, NROW(block_3sp))
+pred <- c(1, NROW(block_3sp))
+cols <- c(1, 2, 4)
+target <- 1
+
+block_gp_output <- block_gp(block_3sp, lib = lib, pred = pred,
+                              columns = cols, target_column = target,
+                              stats_only = FALSE, first_column_time = TRUE, 
+                              silent = TRUE)
+
+str(block_gp_output)
+```
+
+The output is nearly identical to that of `block_lnlp()`, but with slightly different columns - the GP hyperparameters are included instead of the number of neighbors and `theta` parameters.
+
+To compare the observed and predicted values, we can again use the data.frame from the `model_output` column:
+
+```{r, echo = FALSE}
+par(pty = "s")
+```
+
+```{r predicted vs observed for block_gp, fig.width = 4, fig.height = 4}
+gp_predictions <- block_gp_output$model_output[[1]]
+
+plot_range <- range(c(gp_predictions$obs, gp_predictions$pred), na.rm = TRUE)
+plot(gp_predictions$obs, gp_predictions$pred, xlim = plot_range, ylim = plot_range,
+     xlab = "Observed", ylab = "Predicted", asp = 1, pch = 3)
+abline(a = 0, b = 1, lty = 2, col = "blue")
+```
 
 ```{r, echo = FALSE}
 par(pty = "m")
+```
+
+## Multiview Embedding
+
+The generality of Taken's Theorem means that in situations with multivariate time series, there can often be many different, valid attractor reconstructions. As described in [@Ye_2016], combining these different models can result in improved forecasts.
+
+Here, we demonstrate this idea using the `multiview()` function and with the same dataset as above. `multiview()` operates by constructing all possible embeddings of dimension `E`, with lag up to `max_lag` (and excluding embeddings that don't have at least one coordinate with 0 time lag). These embeddings are ranked by forecast skill (`rho`) over the `lib` portion of the data. The individual forecasts for the top `k` embeddings are then averaged together.
+
+```{r multiview setup}
+data("block_3sp")
+block <- block_3sp[, c(2, 5, 8)] # use only the unlagged time series
+
+lib <- c(1, floor(NROW(block_3sp) / 2))
+pred <- c(floor(NROW(block_3sp) / 2) + 1, NROW(block_3sp))
+
+# multiple values for `k` can be provided, 
+#   "sqrt" uses floor(sqrt(m)), where m is the number of embeddings
+k_list <- c(1, 3, "sqrt", "all")
+
+multiview_output <- multiview(block, lib = lib, pred = pred,
+                              E = 3, max_lag = 3, 
+                              k = k_list, target_column = 1, 
+                              stats_only = FALSE, 
+                              save_lagged_block = TRUE, 
+                              silent = TRUE)
+
+str(multiview_output, max.level = 1)
+```
+
+Note that the output has information about 3 models, since we specified 3 different values for `k`. Here, `lagged_block` gives the block that includes lags constructed for multiview embedding, and `embeddings` gives the list of the embeddings that were averaged together for each model.
+
+Again, we can compare the observed and predicted values using the data.frame from the `model_output` column:
+
+```{r, echo = FALSE}
+par(pty = "s", mfrow = c(2, 2))
+```
+
+```{r predicted vs observed for multiview, fig.width = 6, fig.height = 6}
+for (i in 1:4)
+{
+    predictions <- multiview_output$model_output[[i]]
+    
+    plot_range <- range(c(predictions$obs, predictions$pred), na.rm = TRUE)
+    plot(predictions$obs, predictions$pred, xlim = plot_range, ylim = plot_range,
+         xlab = "Observed", ylab = "Predicted", asp = 1, 
+         main = paste0(multiview_output$k[i], " embeddings"))
+    abline(a = 0, b = 1, lty = 2, col = "blue")
+}
+```
+
+```{r, echo = FALSE}
+par(pty = "m", mfrow = c(1, 1))
 ```
 
 ## Causality Inference and Cross Mapping

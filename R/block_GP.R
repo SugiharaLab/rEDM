@@ -1,4 +1,4 @@
-#' Perform generalized forecasting using Gaussian processes
+#' (generalized) Block forecasting using Gaussian Processes
 #'
 #' \code{\link{block_gp}} uses multiple time series given as input to generate an 
 #' attractor reconstruction, and then applies Gaussian process regression to 

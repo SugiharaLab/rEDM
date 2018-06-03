@@ -107,6 +107,72 @@ abline(a = 0, b = 1, lty = 2, col = "blue")
 ## ---- echo = FALSE-------------------------------------------------------
 par(pty = "m")
 
+## ----make block_gp forecasts---------------------------------------------
+data(block_3sp)
+lib <- c(1, NROW(block_3sp))
+pred <- c(1, NROW(block_3sp))
+cols <- c(1, 2, 4)
+target <- 1
+
+block_gp_output <- block_gp(block_3sp, lib = lib, pred = pred,
+                              columns = cols, target_column = target,
+                              stats_only = FALSE, first_column_time = TRUE, 
+                              silent = TRUE)
+
+str(block_gp_output)
+
+## ---- echo = FALSE-------------------------------------------------------
+par(pty = "s")
+
+## ----predicted vs observed for block_gp, fig.width = 4, fig.height = 4----
+gp_predictions <- block_gp_output$model_output[[1]]
+
+plot_range <- range(c(gp_predictions$obs, gp_predictions$pred), na.rm = TRUE)
+plot(gp_predictions$obs, gp_predictions$pred, xlim = plot_range, ylim = plot_range,
+     xlab = "Observed", ylab = "Predicted", asp = 1, pch = 3)
+abline(a = 0, b = 1, lty = 2, col = "blue")
+
+## ---- echo = FALSE-------------------------------------------------------
+par(pty = "m")
+
+## ----multiview setup-----------------------------------------------------
+data("block_3sp")
+block <- block_3sp[, c(2, 5, 8)] # use only the unlagged time series
+
+lib <- c(1, floor(NROW(block_3sp) / 2))
+pred <- c(floor(NROW(block_3sp) / 2) + 1, NROW(block_3sp))
+
+# multiple values for `k` can be provided, 
+#   "sqrt" uses floor(sqrt(m)), where m is the number of embeddings
+k_list <- c(1, 3, "sqrt", "all")
+
+multiview_output <- multiview(block, lib = lib, pred = pred,
+                              E = 3, max_lag = 3, 
+                              k = k_list, target_column = 1, 
+                              stats_only = FALSE, 
+                              save_lagged_block = TRUE, 
+                              silent = TRUE)
+
+str(multiview_output, max.level = 1)
+
+## ---- echo = FALSE-------------------------------------------------------
+par(pty = "s", mfrow = c(2, 2))
+
+## ----predicted vs observed for multiview, fig.width = 6, fig.height = 6----
+for (i in 1:4)
+{
+    predictions <- multiview_output$model_output[[i]]
+    
+    plot_range <- range(c(predictions$obs, predictions$pred), na.rm = TRUE)
+    plot(predictions$obs, predictions$pred, xlim = plot_range, ylim = plot_range,
+         xlab = "Observed", ylab = "Predicted", asp = 1, 
+         main = paste0(multiview_output$k[i], " embeddings"))
+    abline(a = 0, b = 1, lty = 2, col = "blue")
+}
+
+## ---- echo = FALSE-------------------------------------------------------
+par(pty = "m", mfrow = c(1, 1))
+
 ## ----fig_cross_mapping, echo = FALSE, fig.cap = "Cross Mapping Between Reconstructions of the Lorenz Attractor"----
 knitr::include_graphics(here::here("vignettes", "vignette_figs", "figure_3.svg"))
 

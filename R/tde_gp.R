@@ -1,4 +1,4 @@
-#' Perform univariate forecasting using Gaussian processes
+#' (univariate) Time-Delay Embedding forecasting using Gaussian Processes
 #' 
 #' \code{\link{tde_gp}} is used in the same vein as \code{\link{simplex}} or \code{\link{s_map}} to 
 #' do time series forecasting using Gaussian processes. Here, the default 

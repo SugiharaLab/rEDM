@@ -2,7 +2,7 @@
 #'
 #' \code{\link{multiview}} applies the method described in Ye & Sugihara (2016) for 
 #'   forecasting, wherein multiple attractor reconstructions are tested, and a 
-#'   single nearest neighbor is selected from each of the top "k" 
+#'   single nearest neighbor is selected from each of the top \code{k} 
 #'   reconstructions to produce final forecasts.
 #' 
 #'   uses multiple time series given as input to generate an attractor 
@@ -52,13 +52,15 @@
 #'   in-sample prediction (any of "e+1", "E+1", "e + 1", "E + 1" will peg this 
 #'   parameter to E+1 for each run, any value < 1 will use all possible 
 #'   neighbors.)
-#' @param k the number of embeddings to use (any of "sqrt", "SQRT" will use 
-#'   k = floor(sqrt(m)))
+#' @param k the number of embeddings to use ("sqrt" will use k = floor(sqrt(m)), 
+#'   "all" or values less than 1 will use k = m)
 #' @param na.rm logical. Should missing values (including `NaN`` be omitted 
 #'   from the calculations?)
 #' @param target_column the index (or name) of the column to forecast
 #' @param stats_only specify whether to output just the forecast statistics or 
 #'   the raw predictions for each run
+#' @param save_lagged_block specify whether to output the lagged block that 
+#'   is constructed as part of running \code{multiview}
 #' @param first_column_time indicates whether the first column of the given 
 #'   block is a time column (and therefore excluded when indexing)
 #' @param exclusion_radius excludes vectors from the search space of nearest 
@@ -102,7 +104,8 @@ multiview <- function(block, lib = c(1, floor(NROW(block) / 2)),
                       E = 3, tau = 1, tp = 1, max_lag = 3, 
                       num_neighbors = "e+1", k = "sqrt", na.rm = FALSE, 
                       target_column = 1, 
-                      stats_only = TRUE, first_column_time = FALSE, 
+                      stats_only = TRUE, save_lagged_block = FALSE, 
+                      first_column_time = FALSE, 
                       exclusion_radius = NULL, silent = FALSE)
 {
     # setup params
@@ -154,7 +157,9 @@ multiview <- function(block, lib = c(1, floor(NROW(block) / 2)),
     
     # rank embeddings
     num_embeddings <- NROW(in_results)
-    k[k == "sqrt"] <- floor(sqrt(num_embeddings))
+    k[tolower(k) == "sqrt"] <- floor(sqrt(num_embeddings))
+    k[k < 1] <- num_embeddings
+    k[tolower(k) == "all"] <- num_embeddings
     k <- as.numeric(k)
     k_list <- sort(unique(pmin(k, num_embeddings)))
     
@@ -201,6 +206,10 @@ multiview <- function(block, lib = c(1, floor(NROW(block) / 2)),
                 obs = out_obs, 
                 pred = mve_output$pred, 
                 pred_var = mve_output$pred_var)))
+        }
+        if (save_lagged_block)
+        {
+            df$lagged_block <- I(list(lagged_block))
         }
         return(df)
     })

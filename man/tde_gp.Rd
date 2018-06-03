@@ -2,7 +2,7 @@
 % Please edit documentation in R/tde_gp.R
 \name{tde_gp}
 \alias{tde_gp}
-\title{Perform univariate forecasting using Gaussian processes}
+\title{(univariate) Time-Delay Embedding forecasting using Gaussian Processes}
 \usage{
 tde_gp(time_series, lib = c(1, NROW(time_series)), pred = lib, E = 1:10,
   tau = 1, tp = 1, phi = 0, v_e = 0, eta = 0, fit_params = TRUE,
