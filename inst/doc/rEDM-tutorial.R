@@ -107,6 +107,42 @@ abline(a = 0, b = 1, lty = 2, col = "blue")
 ## ---- echo = FALSE-------------------------------------------------------
 par(pty = "m")
 
+## ----3-species s-map coefficients example--------------------------------
+data(block_3sp)
+lib <- c(1, 100)
+pred <- c(101, 200)
+
+cols <- c("x_t", "y_t", "z_t")
+target <- "x_t"
+
+block_smap_output <- block_lnlp(block_3sp, lib = lib, pred = pred,
+                                columns = cols, target_column = target, 
+                                method = "s-map", theta = 2, 
+                                stats_only = FALSE, first_column_time = TRUE, 
+                                save_smap_coefficients = TRUE, silent = TRUE)
+
+## ----get coefficients----------------------------------------------------
+smap_coeffs <- block_smap_output$smap_coefficients[[1]]
+str(smap_coeffs)
+
+## ---- echo = FALSE-------------------------------------------------------
+par(mfrow = c(4, 1), mar = c(2, 4, 1, 1), oma = c(0, 0, 0, 0),
+    mgp = c(2.5, 1, 0))
+
+## ----smap coefficients plot, fig.width = 6, fig.height = 7---------------
+predictions <- block_smap_output$model_output[[1]]
+t <- predictions$time
+
+plot(t, predictions$obs, type = "l", col = "black", ylab = "x", xlab = "")
+lines(t, predictions$pred, lty = 2)
+
+plot(t, smap_coeffs[, 1], type = "l", col = "red", ylab = "effect of x", xlab = "")
+plot(t, smap_coeffs[, 2], type = "l", col = "blue", ylab = "effect of y", xlab = "")
+plot(t, smap_coeffs[, 3], type = "l", col = "magenta", ylab = "effect of z", xlab = "")
+
+## ---- echo = FALSE-------------------------------------------------------
+par(mfrow = c(1, 1))
+
 ## ----make block_gp forecasts---------------------------------------------
 data(block_3sp)
 lib <- c(1, NROW(block_3sp))
@@ -400,17 +436,19 @@ abline(h = 0, lty = 3)
 data(thrips_block)
 str(thrips_block)
 
-## ----thrips plot, fig.width = 6, fig.height = 7--------------------------
+## ---- echo = FALSE-------------------------------------------------------
 par(mfrow = c(4, 1), mar = c(2, 4, 1, 1), oma = c(2, 0, 0, 0),
     mgp = c(2.5, 1, 0))
 
-time_dec <- thrips_block$Year + (thrips_block$Month) / 12
-plot(time_dec, thrips_block$Thrips_imaginis, type = "l", col = "green", ylab = "Thrips", xlab = "")
-plot(time_dec, thrips_block$maxT_degC, type = "l", col = "red", ylab = "maxT (oC)", xlab = "")
-plot(time_dec, thrips_block$Rain_mm, type = "l", col = "blue", ylab = "Rain (mm)", xlab = "")
-plot(time_dec, thrips_block$Season, type = "l", col = "magenta", ylab = "Season", xlab = "")
+## ----thrips plot, fig.width = 6, fig.height = 7--------------------------
+iso_date <- as.Date(paste0(thrips_block$Year, "-", thrips_block$Month, "-15"))
+plot(iso_date, thrips_block$Thrips_imaginis, type = "l", col = "green", ylab = "Thrips", xlab = "")
+plot(iso_date, thrips_block$maxT_degC, type = "l", col = "red", ylab = "maxT (oC)", xlab = "")
+plot(iso_date, thrips_block$Rain_mm, type = "l", col = "blue", ylab = "Rain (mm)", xlab = "")
+plot(iso_date, thrips_block$Season, type = "l", col = "magenta", ylab = "Season", xlab = "")
 mtext("Year", side = 1, outer = TRUE, line = 1)
 
+## ---- echo = FALSE-------------------------------------------------------
 par(mfrow = c(1, 1))
 
 ## ----univariate thrips, warning = FALSE----------------------------------

@@ -171,7 +171,7 @@ Consequently, if the time series are sampled from autoregressive red noise, then
 
 ### Example
 
-The S-map method is implemented as the function `s_map()` in the **rEDM** package. Following from the previous example, we again use the tent map time series, and set `E = 2` based on the results from simplex projection. Note that we allow many of the arguments to take on default values (e.g., `\tau = 1`, `tp = 1`). If we had changed these for simplex projection, we would want to propagate them here. The default values for the nonlinear tuning parameter, `theta`, range from `0` to `8`, and are suitable for our purposes.
+The S-map method is implemented as the function `s_map()` in the **rEDM** package. Following from the previous example, we again use the tent map time series, and set `E = 2` based on the results from simplex projection. Note that we allow many of the arguments to take on default values (e.g., `tau = 1`, `tp = 1`). If we had changed these for simplex projection, we would want to propagate them here. The default values for the nonlinear tuning parameter, `theta`, range from `0` to `8`, and are suitable for our purposes.
 
 Note also, that the default value for `num_neighbors` is `0`. When using S-maps to test for nonlinear behavior, we want to use all points in the reconstruction, and allow `theta` to control the weighting assigned to individual points. By using `0` for this argument (an otherwise nonsensical value), the program will use all nearest neighbors.
 
@@ -277,9 +277,58 @@ abline(a = 0, b = 1, lty = 2, col = "blue")
 par(pty = "m")
 ```
 
+## S-map Coefficients
+
+As described in [@Deyle_2016], the S-map coefficients from the appropriate multivariate embedding can be interpreted as dynamic, time-varying interaction strengths. We demonstrate this approach for the same 3-species simulation as above, using `x`, `y`, and `z` as the coordinates to predict `x`.
+
+```{r 3-species s-map coefficients example}
+data(block_3sp)
+lib <- c(1, 100)
+pred <- c(101, 200)
+
+cols <- c("x_t", "y_t", "z_t")
+target <- "x_t"
+
+block_smap_output <- block_lnlp(block_3sp, lib = lib, pred = pred,
+                                columns = cols, target_column = target, 
+                                method = "s-map", theta = 2, 
+                                stats_only = FALSE, first_column_time = TRUE, 
+                                save_smap_coefficients = TRUE, silent = TRUE)
+```
+
+The `smap_coefficients` column of the output is a list-column with the data.frames for the S-map coefficients of each model. Since we have just have one model, we just want the first element of that list. The result is a data.frame with 200 rows (for each prediction) and 4 columns (for each of the 3 predictors and a constant).
+
+```{r get coefficients}
+smap_coeffs <- block_smap_output$smap_coefficients[[1]]
+str(smap_coeffs)
+```
+
+Here, we plot the time series for the observed and predicted values of `x` and the inferred interactions (s-map coefficients) for the influence of `x`, `y`, and `z`.
+
+```{r, echo = FALSE}
+par(mfrow = c(4, 1), mar = c(2, 4, 1, 1), oma = c(0, 0, 0, 0),
+    mgp = c(2.5, 1, 0))
+```
+
+```{r smap coefficients plot, fig.width = 6, fig.height = 7}
+predictions <- block_smap_output$model_output[[1]]
+t <- predictions$time
+
+plot(t, predictions$obs, type = "l", col = "black", ylab = "x", xlab = "")
+lines(t, predictions$pred, lty = 2)
+
+plot(t, smap_coeffs[, 1], type = "l", col = "red", ylab = "effect of x", xlab = "")
+plot(t, smap_coeffs[, 2], type = "l", col = "blue", ylab = "effect of y", xlab = "")
+plot(t, smap_coeffs[, 3], type = "l", col = "magenta", ylab = "effect of z", xlab = "")
+```
+
+```{r, echo = FALSE}
+par(mfrow = c(1, 1))
+```
+
 ## Gaussian Process
 
-An alternative approach to using Simplex Projection or S-maps to forecast from the reconstructed attractor is to use Gaussian Processes (GP). In the **rEDM** package, the equivalent function to the univariate `simplex()` and `s_map()` is `tde_gp()` (for Time Delay Embedding using Gaussian Processes) and the equivalent function to the general `block_lnlp()` is `block_gp()`.
+An alternative approach to using Simplex Projection or S-maps is to use Gaussian Processes (GP). In the **rEDM** package, the equivalent function to the univariate `simplex()` and `s_map()` is `tde_gp()` (for "Time Delay Embedding using Gaussian Processes"") and the equivalent function to the general `block_lnlp()` is `block_gp()`.
 
 Note that the arguments are slightly different: the GP formulation includes hyperparameters for fitting to the data (`phi`, `v_e`, and `eta`). These can be set directly, or fit over the points in the `lib` portion of the data. In addition, the GP specifies not only pointwise error estimates for the predicted points, but also the covariance between them. In other words, the uncertainty for nearby points, in the state-space of the reconstructed attractor, is correlated. Setting `save_covariance_matrix = TRUE` will also return the full covariance matrix for the predicted points in the output of these functions. For more details, please see the documentation for `tde_gp()` and `block_gp()`.
 
@@ -728,17 +777,21 @@ The first data column, `Thrips_imaginis`, contains counts of *Thrips imaginis* o
 
 First, we plot the data.
 
-```{r thrips plot, fig.width = 6, fig.height = 7}
+```{r, echo = FALSE}
 par(mfrow = c(4, 1), mar = c(2, 4, 1, 1), oma = c(2, 0, 0, 0),
     mgp = c(2.5, 1, 0))
+```
 
-time_dec <- thrips_block$Year + (thrips_block$Month) / 12
-plot(time_dec, thrips_block$Thrips_imaginis, type = "l", col = "green", ylab = "Thrips", xlab = "")
-plot(time_dec, thrips_block$maxT_degC, type = "l", col = "red", ylab = "maxT (oC)", xlab = "")
-plot(time_dec, thrips_block$Rain_mm, type = "l", col = "blue", ylab = "Rain (mm)", xlab = "")
-plot(time_dec, thrips_block$Season, type = "l", col = "magenta", ylab = "Season", xlab = "")
+```{r thrips plot, fig.width = 6, fig.height = 7}
+iso_date <- as.Date(paste0(thrips_block$Year, "-", thrips_block$Month, "-15"))
+plot(iso_date, thrips_block$Thrips_imaginis, type = "l", col = "green", ylab = "Thrips", xlab = "")
+plot(iso_date, thrips_block$maxT_degC, type = "l", col = "red", ylab = "maxT (oC)", xlab = "")
+plot(iso_date, thrips_block$Rain_mm, type = "l", col = "blue", ylab = "Rain (mm)", xlab = "")
+plot(iso_date, thrips_block$Season, type = "l", col = "magenta", ylab = "Season", xlab = "")
 mtext("Year", side = 1, outer = TRUE, line = 1)
+```
 
+```{r, echo = FALSE}
 par(mfrow = c(1, 1))
 ```
 
@@ -956,63 +1009,76 @@ The **rEDM** functions are designed to accept data in common R data formats, nam
 
 Missing data can be recorded using either of the standard `NA` or `NaN` values. The program will automatically ignore such missing values when appropriate. For instance, simplex projection will not select nearest neighbors if any of the state vector coordinates is missing or if the corresponding target value is missing.
 
-Note that when there is no observed target value, it is still possible to predict from a given state vector, if it has no missing values. Thus, it is possible to use the software to forecast ahead from an observed state into an unobserved future. This can be done simply by substituting `NA` or `NaN` for unknown future values. However, be aware that the performance metrics will be computed so as to ignore such predictions (since there are no observed values to compare against). Thus, the statistics (e.g., `rho`, `MAE`, `RMSE`) may be computed based on fewer predictions than those actually made by the software.
+Note that when there is no observed target value, it is still possible to make a prediction if the corresponding predictors have no missing values. Thus, it is possible to use the software to forecast from an observed state into an unobserved future. This can be done by substituting `NA` or `NaN` for unknown future values. However, be aware that the performance metrics are computed in a way that ignore suchs predictions (since there is nothing to compare against). Thus, the forecast statistics (e.g., `rho`, `MAE`, `RMSE`) may be computed based on fewer predictions than those actually made by the software.
 
 ## General Parameters
 
 Many of the functions in **rEDM** are designed around the same prediction engine, and so share many of the same parameters. Please see the documentation associated with individual functions to verify which parameters are applicable as well as the default values (which can change from function to function)
 
 * `lib`
-+ a 2-column matrix (or 2-element vector) where each row specifies the portions of the time series to use for attractor reconstruction (i.e., which reconstructed states can be selected as nearest neighbors)
-+ e.g., `(1, n)` specifies that the first n *rows* (from 1 to n) of data are a contiguous time series block, each point of which can be used to construct state vectors
-+ by default, `lib` uses the entire input as a single contiguous segment
+  + a 2-column matrix (or 2-element vector) where each row specifies the portions of the time series to use for attractor reconstruction (i.e., which reconstructed states can be selected as nearest neighbors)
+  + e.g., `(1, n)` specifies that the first n *rows* (from 1 to n) of data are a contiguous time series block, each point of which can be used to construct state vectors
+  + by default, `lib` uses the entire input as a single contiguous segment
 * `pred`
-+ (same format as `lib`, but specifes the portions of the time series to make predictions for)
+  + (same format as `lib`, but specifes the portions of the time series to make predictions for)
 * `norm_type`
-+ `"L2 norm"` (default) or `"L1 norm"`: specifies which distance metric to use when doing calculations
-+ `"L2 norm"` is the standard Euclidean distance, where the distance between a vector $\mathbf{x} = \left(x_1, x_2, \dots, x_n \right)$ and $\mathbf{y} = \left( y_1, y_2, \dots, y_n \right)$ is computed as $\sqrt{(x_1 - y_1)^2 + (x_2 - y_2)^2 + \dots + (x_n - y_n)^2}$.
-+ `"L1 norm"` is the Manhattan norm (also known as taxicab distance), where the distance between a vector $\mathbf{x} = \left( x_1, x_2, \dots, x_n \right)$ and $\mathbf{y} = \left( y_1, y_2, \dots, y_n \right)$ is computed as $|x_1 - y_1| + |x_2 - y_2| + \dots + |x_n - y_n|$.
-+ `"P norm"` is the generalization of the L1 and L2 norms which adds a parameter $P$ as the exponent: the distance between a vector $\mathbf{x} = \left( x_1, x_2, \dots, x_n \right)$ and $\mathbf{y} = \left(y_1, y_2, \dots, y_n \right)$ is computed as ${\left((x_1 - y_1)^P + (x_2 - y_2)^P + \dots + (x_n - y_n)^P\right)^{1/P}}$.
+  + `"L2 norm"` (default) or `"L1 norm"`: specifies which distance metric to use when doing calculations
+  + `"L2 norm"` is the standard Euclidean distance, where the distance between a vector $\mathbf{x} = \left(x_1, x_2, \dots, x_n \right)$ and $\mathbf{y} = \left( y_1, y_2, \dots, y_n \right)$ is computed as $\sqrt{(x_1 - y_1)^2 + (x_2 - y_2)^2 + \dots + (x_n - y_n)^2}$.
+  + `"L1 norm"` is the Manhattan norm (also known as taxicab distance), where the distance between a vector $\mathbf{x} = \left( x_1, x_2, \dots, x_n \right)$ and $\mathbf{y} = \left( y_1, y_2, \dots, y_n \right)$ is computed as $|x_1 - y_1| + |x_2 - y_2| + \dots + |x_n - y_n|$.
+  + `"P norm"` is the generalization of the L1 and L2 norms which adds a parameter $P$ as the exponent: the distance between a vector $\mathbf{x} = \left( x_1, x_2, \dots, x_n \right)$ and $\mathbf{y} = \left(y_1, y_2, \dots, y_n \right)$ is computed as ${\left((x_1 - y_1)^P + (x_2 - y_2)^P + \dots + (x_n - y_n)^P\right)^{1/P}}$.
 * `P`
-+ the exponent for the "P norm" (and otherwise ignored)
+  + the exponent for the "P norm" (and otherwise ignored)
 * `E`
-+ the embedding dimension to use for time delay embedding
+  + the embedding dimension to use for time delay embedding
 * `tau`
-+ the lag to use for time delay embedding
-+ by default, `tau` is set to `1`
+  + the lag to use for time delay embedding
+  + by default, `tau` is set to `1`
 * `tp`
-+ the prediction horizon (how many steps ahead to make forecasts)
-+ negative values will also work
-+ by default, `tp` is set to `1` for forecasting functions, and `0` for cross mapping
+  + the prediction horizon (how many steps ahead to make forecasts)
+  + negative values will also work
+  + by default, `tp` is set to `1` for forecasting functions, and `0` for cross mapping
 * `num_neighbors`
-+ the number of neighbors to use
-+ `"e+1"`, `"E+1"`, `"e + 1"`, and `"E + 1"` will all peg this parameter to be `E+1` for each run
-+ values less than 1 will use all possible neighbors
+  + the number of neighbors to use
+  + `"e+1"`, `"E+1"`, `"e + 1"`, and `"E + 1"` will all peg this parameter to be `E+1` for each run
+  + values less than 1 will use all possible neighbors
 * `theta`
-+ the nonlinear tuning parameter (for use with S-maps) that adjusts how distance is factored into computation of the local linear map (`0` corresponds to a globally linear map, while values greater than 0 correspond to nonlinear models where the local linear map changes as a function of state-space)
+  + the nonlinear tuning parameter (for use with S-maps) that adjusts how distance is factored into computation of the local linear map (`0` corresponds to a globally linear map, while values greater than 0 correspond to nonlinear models where the local linear map changes as a function of state-space)
 * `stats_only`
-+ `TRUE` (default) or `FALSE`: specifies whether the output should just contain statistics of the predictions, or also contain all the predictions that were made
-+ the predictions are included as a list-column in the output if enabled
+  + `TRUE` (default) or `FALSE`: specifies whether the output should just contain statistics of the predictions, or also contain all the predictions that were made
+  + the predictions are included as a list-column in the output if enabled
 * `exclusion_radius`
-+ `exclusion_radius` sets the threshold whereby all vectors with time indices too close to the predictee will be excluded from being considered nearest neighbors
-+ e.g., `1` means that vectors must have an associated **time index** more than 1 away from potential nearest neighbors
-+ by default, `exclusion_radius` is set to `NULL` (turning this filtering off)
+  + `exclusion_radius` sets the threshold whereby all vectors with time indices too close to the predictee will be excluded from being considered nearest neighbors
+  + e.g., `1` means that vectors must have an associated **time index** more than 1 away from potential nearest neighbors
+  + by default, `exclusion_radius` is set to `NULL` (turning this filtering off)
 * `epsilon`
-+ `epsilon` sets the threshold whereby all vectors with distance too far away from the predictee will be excluded from being considered nearest neighbors
-+ e.g., `2` means that vectors must have be within a **distance** of 2 from potential nearest neighbors
-+ by default, `epsilon` is set to `NULL` (turning this filtering off)
+  + `epsilon` sets the threshold whereby all vectors with distance too far away from the predictee will be excluded from being considered nearest neighbors
+  + e.g., `2` means that vectors must have be within a **distance** of 2 from potential nearest neighbors
+  + by default, `epsilon` is set to `NULL` (turning this filtering off)
 * `silent`
-+ `TRUE` or `FALSE` (default): specifies whether to suppress warning messages from being printed to the R console
+  + `TRUE` or `FALSE` (default): specifies whether to suppress warning messages from being printed to the R console
 * `save_smap_coefficients`
-+ `TRUE` or `FALSE` (default): specifies whether to include a table of S-map coefficients with the output
-+ (note that setting this to `TRUE` forces the full output as if `stats_only = FALSE`)
-+ the s-map coefficeints are included as a list-column in the output if enabled
+  + `TRUE` or `FALSE` (default): specifies whether to include a data.frame of S-map coefficients with the output
+  + (note that setting this to `TRUE` forces the full output as if `stats_only = FALSE`)
+  + the s-map coefficeints are included as a list-column in the output if enabled
+
+The Gaussian Process based functions, (`tde_gp()` and `block_gp()`), have a few additional parameters specific to the GP methods:
+
+* `phi`
+  + the length-scale parameter (how wiggly the function is in state-space)
+* `v_e`
+  + the noise-variance parameter (the variance of noise on top of the outputs of the GP)
+* `eta`
+  + the signal-variance parameter (the variance of the deterministic skeleton of the GP)
+* `fit_params`
+  + `TRUE` (default) or `FALSE`: specifies whether to fit the above parameters over the `lib` portion of the data, or use the parameters as given
+* `save_covariance_matrix`
+  + `TRUE` or `FALSE` (default): specifies whether to include a matrix for the covariance between predictions
 
 # Acknowledgements
 
 **rEDM** is the latest incarnation of EDM code. Past versions have been developed by George Sugihara, Alan Trombla, Richard Penner, Victor Wong, Martin Casdagli, Jerome Cartagena, Mohsen Azarbayejani, Ava Pierce, Jennifer Trezzo, and Hao Ye.
 
-We thank Jun Cai, Jane Cowles, Andrew Edwards, Oliver Keyes, James Stagge, Ethan White, and Yair Daon for their suggestions and contributions to the package and its documentation.
+We thank Jun Cai, Jane Cowles, Yair Daon, Andrew Edwards, Oliver Keyes, James Stagge, Masayuki Ushio, and Ethan White, for their suggestions and contributions to the package and its documentation.
 
 Package development and its documentation were supported by a Gordon and Betty Moore Foundation Data-Driven Discovery Initiative through Grant GBMF4563 (to Ethan P. White), U.S. Department of Defense Strategic Environmental Research and Development Program 15 RC-2509 (GS), Lenfest Ocean Program award 00028335 (GS), NSF grant DEB-1020372 (GS), the McQuown Chair in the Natural Sciences (GS), and the Sugihara Family Trust (GS).
 
