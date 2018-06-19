@@ -29,6 +29,7 @@ public:
     void run();
     DataFrame get_output();
     DataFrame get_smap_coefficients();
+    List get_smap_coefficient_covariances();
     DataFrame get_stats();
     
 private:

@@ -191,6 +191,17 @@ DataFrame LNLP::get_smap_coefficients()
     return(df);
 }
 
+List LNLP::get_smap_coefficient_covariances()
+{
+    std::vector<size_t> pred_idx = which_indices_true(pred_requested_indices);
+    List tmp_lst(pred_idx.size());
+    for(size_t i = 0; i < pred_idx.size(); ++i)
+    {
+        tmp_lst[i] = smap_coefficient_covariances[pred_idx[i]];
+    }
+    return(tmp_lst);
+}
+
 DataFrame LNLP::get_stats()
 {
     PredStats output = make_stats();
@@ -302,6 +313,7 @@ RCPP_MODULE(lnlp_module)
     .method("run", &LNLP::run)
     .method("get_output", &LNLP::get_output)
     .method("get_smap_coefficients", &LNLP::get_smap_coefficients)
+    .method("get_smap_coefficient_covariances", &LNLP::get_smap_coefficient_covariances)
     .method("get_stats", &LNLP::get_stats)
     ;
 }

@@ -35,30 +35,27 @@
 #' @return If stats_only, then a data.frame with components for the parameters 
 #'   and forecast statistics:
 #' \tabular{ll}{
-#'   E \tab embedding dimension\cr
-#'   tp \tab prediction horizon\cr
-#'   phi \tab length-scale parameter\cr
-#'   v_e \tab noise-variance parameter\cr
-#'   eta \tab signal-variance parameter\cr
-#'   fit_params \tab whether params were fitted or not\cr
-#'   num_pred \tab number of predictions\cr
-#'   rho \tab correlation coefficient between observations and predictions\cr
-#'   mae \tab mean absolute error\cr
-#'   rmse \tab root mean square error\cr
-#'   perc \tab percent correct sign\cr
-#'   p_val \tab p-value that rho is significantly greater than 0 using Fisher's 
-#'   z-transformation\cr
-#' }
-#' If stats_only is FALSE or save_covariance_matrix is TRUE, then there is an 
-#' additional list-column variable:
-#' \tabular{ll}{
-#'   model_output \tab data.frame with columns for the time index, 
-#'   observations, and mean-value for predictions\cr
-#' }
-#' If save_covariance_matrix is TRUE, then there is an additional list-column 
-#'   variable:
-#' \tabular{ll}{
-#'   covariance_matrix \tab covariance matrix for predictions\cr
+#'   \code{E} \tab embedding dimension\cr
+#'   \code{tau} \tab time lag\cr
+#'   \code{tp} \tab prediction horizon\cr
+#'   \code{phi} \tab length-scale parameter\cr
+#'   \code{v_e} \tab noise-variance parameter\cr
+#'   \code{eta} \tab signal-variance parameter\cr
+#'   \code{fit_params} \tab whether params were fitted or not\cr
+#'   \code{num_pred} \tab number of predictions\cr
+#'   \code{rho} \tab correlation coefficient between observations and 
+#'     predictions\cr
+#'   \code{mae} \tab mean absolute error\cr
+#'   \code{rmse} \tab root mean square error\cr
+#'   \code{perc} \tab percent correct sign\cr
+#'   \code{p_val} \tab p-value that rho is significantly greater than 0 using 
+#'     Fisher's z-transformation\cr
+#'   \code{model_output} \tab data.frame with columns for the time index, 
+#'     observations, mean-value for predictions, and independent variance for 
+#'     predictions (if \code{stats_only == FALSE} or 
+#'     \code{save_covariance_matrix == TRUE})\cr
+#'   \code{covariance_matrix} \tab the full covariance matrix for predictions 
+#'     (if \code{save_covariance_matrix == TRUE})\cr
 #' }
 #' @examples 
 #' data("two_species_model")

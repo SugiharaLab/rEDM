@@ -24,11 +24,11 @@ test_nonlinearity(ts, method = "ebisuzaki", num_surr = 200, T_period = 1,
 \value{
 A data.frame containing the following components:
 \tabular{ll}{
-  delta_rho \tab the value of the delta rho statistic\cr
-  delta_mae \tab the value of the delat mae statistic\cr
-  num_surr \tab the size of the null distribution\cr
-  delta_rho_p_value \tab the p-value for delta rho\cr
-  delta_mae_p_value \tab the p-value for delta mae\cr
+  \code{delta_rho} \tab the value of the delta rho statistic\cr
+  \code{delta_mae} \tab the value of the delat mae statistic\cr
+  \code{num_surr} \tab the size of the null distribution\cr
+  \code{delta_rho_p_value} \tab the p-value for delta rho\cr
+  \code{delta_mae_p_value} \tab the p-value for delta mae\cr
 }
 }
 \description{

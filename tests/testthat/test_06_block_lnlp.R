@@ -59,6 +59,25 @@ test_that("block_lnlp smap_coefficients works", {
                  "82a3b6164cfcfe8d69d98689b95d04c7")
 })
 
+test_that("block_lnlp smap_coefficient_covariances works", {
+    expect_warning(output <- block_lnlp(block, columns = c("x", "y"),
+                                        first_column_time = TRUE, 
+                                        method = "s-map", theta = 1, 
+                                        save_smap_coefficients = TRUE))
+    expect_s3_class(output, "data.frame")
+    expect_true("smap_coefficient_covariances" %in% names(output))
+    expect_true(is.list(output$smap_coefficient_covariances))
+    expect_error(smap_coeff_covariances <- output$smap_coefficient_covariances[[1]], NA)
+    expect_true(is.list(smap_coeff_covariances))
+    expect_equal(length(smap_coeff_covariances), 200)
+    expect_null(smap_coeff_covariances[[200]])
+    expect_equal(sapply(smap_coeff_covariances[1:199], dim), 
+                 matrix(3, nrow = 2, ncol = 199))
+    expect_error(covariance_mat <- do.call(rbind, smap_coeff_covariances[1:199]), NA)
+    expect_equal(digest::digest(round(covariance_mat, 4)), 
+                 "440dcb1311b66571f942575c77aa0eb8")
+})
+
 test_that("block_lnlp error checking works", {
     df <- data.frame(a = 1:5, b = 0:4)
     expect_warning(block_lnlp(df))

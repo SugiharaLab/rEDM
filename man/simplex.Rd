@@ -66,36 +66,40 @@ coefficients with the output (and forces the full output as if stats_only
 were set to FALSE)}
 }
 \value{
-For \code{\link{simplex}}, a data.frame with components for the parameters 
-  and forecast statistics:
-\describe{
-  \item{\code{E}}{embedding dimension}
-  \item{\code{tau}}{time lag}
-  \item{\code{tp}}{prediction horizon}
-  \item{\code{nn}}{number of neighbors}
-  \item{\code{num_pred}}{number of predictions}
-  \item{\code{rho}}{correlation coefficient between observations and predictions}
-  \item{\code{mae}}{mean absolute error}
-  \item{\code{rmse}}{root mean square error}
-  \item{\code{perc}}{percent correct sign}
-  \item{\code{p_val}}{p-value that rho is significantly greater than 0 using Fisher's 
-  z-transformation}
-  \item{\code{const_rho}}{same as \code{rho}, but for the constant predictor}
-  \item{\code{const_mae}}{same as \code{mae}, but for the constant predictor}
-  \item{\code{const_rmse}}{same as \code{rmse}, but for the constant predictor}
-  \item{\code{const_perc}}{same as \code{perc}, but for the constant predictor}
-  \item{\code{const_p_val}}{same as \code{p_val}, but for the constant predictor}
-}
-  If \code{stats_only == FALSE}, then additionally a list column:
-\describe{
-  \item{\code{model_output}}{data.frame with columns for the time index, 
-    observations, predictions, and estimated prediction variance}
+For \code{\link{simplex}}, a data.frame with components for the 
+  parameters and forecast statistics:
+\tabular{ll}{
+  \code{E} \tab embedding dimension\cr
+  \code{tau} \tab time lag\cr
+  \code{tp} \tab prediction horizon\cr
+  \code{nn} \tab number of neighbors\cr
+  \code{num_pred} \tab number of predictions\cr
+  \code{rho} \tab correlation coefficient between observations and 
+    predictions\cr
+  \code{mae} \tab mean absolute error\cr
+  \code{rmse} \tab root mean square error\cr
+  \code{perc} \tab percent correct sign\cr
+  \code{p_val} \tab p-value that rho is significantly greater than 0 using 
+    Fisher's z-transformation\cr
+  \code{const_rho} \tab same as \code{rho}, but for the constant predictor\cr
+  \code{const_mae} \tab same as \code{mae}, but for the constant predictor\cr
+  \code{const_rmse} \tab same as \code{rmse}, but for the constant predictor\cr
+  \code{const_perc} \tab same as \code{perc}, but for the constant predictor\cr
+  \code{const_p_val} \tab same as \code{p_val}, but for the constant predictor\cr
+  \code{model_output} \tab data.frame with columns for the time index, 
+    observations, predictions, and estimated prediction variance
+    (if \code{stats_only == FALSE})\cr
 }
 
-For \code{\link{s_map}}, the same as for \code{\link{simplex}}, but with an 
-  additional column for the value of theta. If 
-  \code{save_smap_coefficients == TRUE}, then an additional list-column for 
-  the S-map coefficients.
+For \code{\link{s_map}}, the same as for \code{\link{simplex}}, but 
+  with additional columns:
+\tabular{ll}{
+  \code{theta} \tab the nonlinear tuning parameter\cr
+  \code{smap_coefficients} \tab data.frame with columns for the s-map 
+  coefficients (if \code{save_smap_coefficients == TRUE})\cr
+  \code{smap_coefficient_covariances} \tab list of covariance matrices for 
+  the s-map coefficients (if \code{save_smap_coefficients == TRUE})\cr
+}
 }
 \description{
 \code{\link{simplex}} uses time delay embedding on a single time 

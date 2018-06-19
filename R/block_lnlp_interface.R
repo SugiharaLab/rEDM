@@ -1,11 +1,11 @@
 #' Perform generalized forecasting using simplex projection or s-map
 #'
-#' \code{\link{block_lnlp}} uses multiple time series given as input to generate an 
-#'   attractor reconstruction, and then applies the simplex projection or s-map 
-#'   algorithm to make forecasts. This method generalizes the \code{\link{simplex}} 
-#'   and \code{\link{s_map}} routines, and allows for "mixed" embeddings, where 
-#'   multiple time series can be used as different dimensions of an attractor 
-#'   reconstruction.
+#' \code{\link{block_lnlp}} uses multiple time series given as input to generate 
+#'   an attractor reconstruction, and then applies the simplex projection or 
+#'   s-map algorithm to make forecasts. This method generalizes the 
+#'   \code{\link{simplex}} and \code{\link{s_map}} routines, and allows for 
+#'   "mixed" embeddings, where multiple time series can be used as different 
+#'   dimensions of an attractor reconstruction.
 #' 
 #' The default parameters are set so that passing a vector as the only argument
 #'   will use that vector to predict itself one time step ahead. If a matrix or 
@@ -67,32 +67,33 @@
 #' @return A data.frame with components for the parameters and forecast 
 #'   statistics:
 #' \tabular{ll}{
-#'   cols \tab embedding\cr
-#'   tp \tab prediction horizon\cr
-#'   nn \tab number of neighbors\cr
-#'   num_pred \tab number of predictions\cr
-#'   rho \tab correlation coefficient between observations and predictions\cr
-#'   mae \tab mean absolute error\cr
-#'   rmse \tab root mean square error\cr
-#'   perc \tab percent correct sign\cr
-#'   p_val \tab p-value that rho is significantly greater than 0 using Fisher's 
-#'   z-transformation\cr
-#'   const_rho \tab same as rho, but for the constant predictor\cr
-#'   const_mae \tab same as mae, but for the constant predictor\cr
-#'   const_rmse \tab same as rmse, but for the constant predictor\cr
-#'   const_perc \tab same as perc, but for the constant predictor\cr
-#'   const_p_val \tab same as p_val, but for the constant predictor
+#'   \code{cols} \tab embedding\cr
+#'   \code{tp} \tab prediction horizon\cr
+#'   \code{nn} \tab number of neighbors\cr
+#'   \code{num_pred} \tab number of predictions\cr
+#'   \code{rho} \tab correlation coefficient between observations and 
+#'     predictions\cr
+#'   \code{mae} \tab mean absolute error\cr
+#'   \code{rmse} \tab root mean square error\cr
+#'   \code{perc} \tab percent correct sign\cr
+#'   \code{p_val} \tab p-value that rho is significantly greater than 0 using 
+#'     Fisher's z-transformation\cr
+#'   \code{const_rho} \tab same as \code{rho}, but for the constant predictor\cr
+#'   \code{const_mae} \tab same as \code{mae}, but for the constant predictor\cr
+#'   \code{const_rmse} \tab same as \code{rmse}, but for the constant predictor\cr
+#'   \code{const_perc} \tab same as \code{perc}, but for the constant predictor\cr
+#'   \code{const_p_val} \tab same as \code{p_val}, but for the constant predictor\cr
+#'   \code{model_output} \tab data.frame with columns for the time index, 
+#'     observations, predictions, and estimated prediction variance
+#'     (if \code{stats_only == FALSE})\cr
 #' }
-#' If \code{stats_only == FALSE}, then additionally a list column:
+#' If "s-map" is the method, then the same, but with additional columns:
 #' \tabular{ll}{
-#'   model_output \tab data.frame with columns for the time index, 
-#'     observations, predictions, and estimated prediction variance\cr
-#' }
-#' If \code{save_smap_coefficients == TRUE} and "s-map" is the method, then 
-#'   another list column:
-#' \tabular{ll}{
-#'   smap_coefficients \tab data.frame with columns for the coefficients of the 
-#'   s-map\cr
+#'   \code{theta} \tab the nonlinear tuning parameter\cr
+#'   \code{smap_coefficients} \tab data.frame with columns for the s-map 
+#'   coefficients (if \code{save_smap_coefficients == TRUE})\cr
+#'   \code{smap_coefficient_covariances} \tab list of covariance matrices for 
+#'   the s-map coefficients (if \code{save_smap_coefficients == TRUE})\cr
 #' }
 #' @examples 
 #' data("two_species_model")
@@ -201,6 +202,8 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
                 {
                     df$smap_coefficients <- 
                         I(list(model$get_smap_coefficients()))
+                    df$smap_coefficient_covariances <- 
+                        I(list(model$get_smap_coefficient_covariances()))
                 }
             }
             return(df)
@@ -230,7 +233,7 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
             model$set_embedding(columns[[params$embedding[i]]])
             model$set_params(params$tp[i], params$nn[i])
             model$run()
-            if(stats_only)
+            if (stats_only)
             {
                 df <- model$get_stats()
             } else {

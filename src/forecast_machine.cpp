@@ -470,6 +470,8 @@ void ForecastMachine::smap_forecast()
     */
     if(SAVE_SMAP_COEFFICIENTS)
     {
+        List tmp(num_vectors);
+        smap_coefficient_covariances = tmp;
         smap_coefficients.assign(data_vectors[0].size()+1, vec(num_vectors, qnan));
     }
     smap_prediction(0, which_pred.size());
@@ -605,8 +607,7 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
             LOG_WARNING("no nearest neighbors found; using NA for forecast");
             continue;
         }
-        weights = Eigen::VectorXd::Constant(effective_nn, 1.0);
-        //        weights.assign(effective_nn, 1.0); // default is for theta = 0
+        weights = Eigen::VectorXd::Constant(effective_nn, 1.0); // default is for theta = 0
         if(theta > 0.0)
         {
             // compute average distance
@@ -659,20 +660,22 @@ void ForecastMachine::smap_prediction(const size_t start, const size_t end)
         {
             for(size_t j = 0; j <= E; ++j)
                 smap_coefficients[j][curr_pred] = x(j);
+            
+            // compute covariance matrix for coefficients
+            MatrixXd H = svd.matrixV() * S_inv * svd.matrixU().transpose() * weights.asDiagonal();
+            
+            VectorXd w_resid = B - A * x;
+            double total_w = 0;
+            for(size_t i = 0; i < effective_nn; ++i)
+            {
+                total_w += weights(i) * weights(i);
+            }
+            double sigma_squared = w_resid.dot(w_resid) / total_w;
+            smap_coefficient_covariances[curr_pred] = sigma_squared * H * H.transpose();
         }
         // save prediction
         predicted[curr_pred] = pred;
         
-        // compute variance of prediction through residuals of fitted s-map model
-        /*
-        VectorXd w_resid = B - A * x;
-        double total_w = 0;
-        for(size_t i = 0; i < effective_nn; ++i)
-        {
-            total_w += weights(i) * weights(i);
-        }
-        predicted_var[curr_pred] = w_resid.dot(w_resid) / total_w;
-        */
         // compute variance of prediction (using same approach as simplex)
         predicted_var[curr_pred] = 0;
         double total_weight = 0;

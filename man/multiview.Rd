@@ -73,23 +73,26 @@ A data.frame with components for the parameters and forecast
   tp \tab prediction horizon\cr
   nn \tab number of neighbors\cr
   k \tab number of embeddings used\cr
-  num_pred \tab number of predictions\cr
-  rho \tab correlation coefficient between observations and predictions\cr
-  mae \tab mean absolute error\cr
-  rmse \tab root mean square error\cr
-  perc \tab percent correct sign\cr
-  p_val \tab p-value that rho is significantly greater than 0 using Fisher's 
-  z-transformation\cr
-  const_rho \tab same as rho, but for the constant predictor\cr
-  const_mae \tab same as mae, but for the constant predictor\cr
-  const_rmse \tab same as rmse, but for the constant predictor\cr
-  const_perc \tab same as perc, but for the constant predictor\cr
-  const_p_val \tab same as p_val, but for the constant predictor
 }
-If \code{stats_only == FALSE}, then additionally a list column:
 \tabular{ll}{
-  model_output \tab data.frame with columns for the time index, 
-  observations, and predictions\cr
+  \code{E} \tab embedding dimension\cr
+  \code{tau} \tab time lag\cr
+  \code{tp} \tab prediction horizon\cr
+  \code{nn} \tab number of neighbors\cr
+  \code{k} \tab number of embeddings used\cr
+  \code{num_pred} \tab number of predictions\cr
+  \code{rho} \tab correlation coefficient between observations and 
+    predictions\cr
+  \code{mae} \tab mean absolute error\cr
+  \code{rmse} \tab root mean square error\cr
+  \code{perc} \tab percent correct sign\cr
+  \code{p_val} \tab p-value that rho is significantly greater than 0 using 
+    Fisher's z-transformation\cr
+  \code{model_output} \tab data.frame with columns for the time index, 
+    observations, predictions, and estimated prediction variance
+    (if \code{stats_only == FALSE})\cr
+  \code{embeddings} \tab list of the columns used in each of the embeddings 
+    that comprise the model (if \code{stats_only == FALSE})\cr
 }
 }
 \description{

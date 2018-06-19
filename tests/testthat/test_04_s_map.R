@@ -57,6 +57,25 @@ test_that("s-map smap_coefficients works", {
                  "d63e5b1c25e79b2c65352fa3ec118e99")
 })
 
+test_that("s-map smap_coefficient_covariances works", {
+    expect_warning(smap_out <- s_map(ts, E = 2, theta = 1, 
+                                     save_smap_coefficients = TRUE, 
+                                     silent = TRUE), NA)
+    expect_s3_class(smap_out, "data.frame")
+    expect_true("smap_coefficient_covariances" %in% names(smap_out))
+    expect_true(is.list(smap_out$smap_coefficient_covariances))
+    expect_error(smap_coeff_covariances <- smap_out$smap_coefficient_covariances[[1]], NA)
+    expect_true(is.list(smap_coeff_covariances))
+    expect_equal(length(smap_coeff_covariances), 200)
+    expect_null(smap_coeff_covariances[[1]])
+    expect_null(smap_coeff_covariances[[200]])
+    expect_equal(sapply(smap_coeff_covariances[2:199], dim), 
+                 matrix(3, nrow = 2, ncol = 198))
+    expect_error(covariance_mat <- do.call(rbind, smap_coeff_covariances[2:199]), NA)
+    expect_equal(digest::digest(round(covariance_mat, 4)), 
+                 "4c4643578927d95cc473c9bf873afcf6")
+})
+
 test_that("s-map error checking works", {
     expect_warning(s_map(1:10))
     expect_error(s_map(1:5, E = 5, silent = TRUE))

@@ -53,6 +53,7 @@ protected:
     vec target_time;
     std::vector<vec> data_vectors;
     std::vector<vec> smap_coefficients;
+    List smap_coefficient_covariances;
     vec targets;
     vec predicted;
     vec predicted_var;

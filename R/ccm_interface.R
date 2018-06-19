@@ -60,11 +60,11 @@
 #' @return A data.frame with forecast statistics for the different parameter 
 #'   settings:
 #' \tabular{ll}{
-#'   L \tab library length (number of vectors)\cr
-#'   num_pred \tab number of predictions\cr
-#'   rho \tab correlation coefficient between observations and predictions\cr
-#'   mae \tab mean absolute error\cr
-#'   rmse \tab root mean square error
+#'   \code{L} \tab library length (number of vectors)\cr
+#'   \code{num_pred} \tab number of predictions\cr
+#'   \code{rho} \tab correlation coefficient between observations and predictions\cr
+#'   \code{mae} \tab mean absolute error\cr
+#'   \code{rmse} \tab root mean square error
 #' }
 #' @examples
 #' data("sardine_anchovy_sst")
