@@ -6,6 +6,11 @@ cache:
     - $HOME/.texlive
 sudo: required
 warnings_are_errors: false
+
+r:
+  - release
+  - devel
+
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install texlive-latex-base
