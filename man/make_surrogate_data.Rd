@@ -85,6 +85,6 @@ make_surrogate_ebisuzaki(rnorm(100), 10)
 
 make_surrogate_seasonal(rnorm(100) + sin(1:100 * pi / 6), 10)
 
-make_surrogate_twin(rnorm(100) + sin(1:100 * pi / 6), 10)
+make_surrogate_twin(rnorm(100, sd = 0.1) + sin(1:100 * pi / 6), 10)
 
 }

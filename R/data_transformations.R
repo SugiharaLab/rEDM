@@ -306,7 +306,7 @@ identify_twins <- function(block,
 #' @inheritParams identify_twins
 #'
 #' @examples
-#' make_surrogate_twin(rnorm(100) + sin(1:100 * pi / 6), 10)
+#' make_surrogate_twin(rnorm(100, sd = 0.1) + sin(1:100 * pi / 6), 10)
 #' 
 make_surrogate_twin <- function(ts,
                                  num_surr = 1,

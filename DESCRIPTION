@@ -27,6 +27,6 @@ Imports:
     methods
 LinkingTo: Rcpp, RcppEigen
 RcppModules: lnlp_module, block_lnlp_module, ccm_module
-Suggests: knitr, rmarkdown, R.rsp, ggplot2, testthat, formatR, here, tibble
+Suggests: knitr, rmarkdown, R.rsp, ggplot2, testthat, formatR, tibble
 VignetteBuilder: knitr, R.rsp
 RoxygenNote: 6.0.1
