@@ -75,7 +75,7 @@ test_that("make_block produces desired output", {
     lag_one_short <- make_block(df, max_lag = 2, t = NULL, lib = c(1, 4), tau = 1)
     expect_equal(lag_one_short, lag_one_actual[1:4, ])
     lag_one_long <- make_block(df, max_lag = 2, t = NULL, tau = 1, 
-                               lib =　matrix(c(1, 5, 4, 8), ncol = 2), 
+                               lib = matrix(c(1, 5, 4, 8), ncol = 2), 
                                restrict_to_lib = FALSE)
     expect_equal(lag_one_long, lag_one_actual)
     

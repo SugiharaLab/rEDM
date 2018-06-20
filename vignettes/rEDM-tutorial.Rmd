@@ -543,7 +543,7 @@ As expected for this simple predator-prey system, we see evidence for causation 
 
 ## Community Productivity and Invasibility
 
-The data presented here are part of Experiment 120, the "Big Biodiversity" experiment at Cedar Creek LTER [@Tilman_1997]. The full data and metadata are available at https://www.cedarcreek.umn.edu/research/data. This experiment is the longest running randomized test for the effects of plant diversity on ecosystem functions. Plots were established in 1994 and planted with 1, 2, 4, 8, or 16 species, and are sampled annually for above-ground plant biomass. The most well-known result from the experiment is that the number of planted species has strong positive effects on above-ground biomass production. However, because the diversity treatments are weeded annually to prevent non-planted species from establishing (i.e. species richness is not allowed to vary dynamically), this well-known result does not lend itself to EDM.
+The data presented here are part of Experiment 120, the "Big Biodiversity" experiment at Cedar Creek LTER [@Tilman_1997]. The full data and metadata are available at http://www.cedarcreek.umn.edu/research/data. This experiment is the longest running randomized test for the effects of plant diversity on ecosystem functions. Plots were established in 1994 and planted with 1, 2, 4, 8, or 16 species, and are sampled annually for above-ground plant biomass. The most well-known result from the experiment is that the number of planted species has strong positive effects on above-ground biomass production. However, because the diversity treatments are weeded annually to prevent non-planted species from establishing (i.e. species richness is not allowed to vary dynamically), this well-known result does not lend itself to EDM.
 
 Instead, we focus on a different set of published results from the experiment: interactions between primary productivity, soil nitrate, and invasion rates. Increased biomass is associated with decreases in soil nitrate levels and decreases in invasion success [@Fargione_2005]. A posited mechanism is that increased primary productivity leads to decreased soil nitrate, which in turn reduces resources available to invaders. In order to increase sample size, we combine data from the treatments with 16 planted species, which have almost identical planted compositions and follow similar dynamics. We then analyze these different plots together as spatial replicates, similar to Hsieh et al. [-@Hsieh_2008] and Clark et al. [-@Clark_2015].
 
@@ -705,7 +705,7 @@ par(mfrow = c(1, 1), pty = "m")
 Finally, we can apply CCM to test for pairwise causal links among variables. For each individual test, we use the embedding dimension corresponding to the best embedding dimension of the variable used for reconstruction (i.e. the putative affected process). Recall we are primarily interested in testing whether the biomass of planted species or soil nitrogen concentration affects the dynamics of invading species.
 
 First, we examine the relationship between invader richness and soil nitrate level:
-```{r richness <-> nitrate, warning = FALSE}
+```{r richness and nitrate, warning = FALSE}
 lib_sizes <- c(seq(5, 50, by = 5), seq(55, 230, by = 20))
 
 inv_xmap_no <- ccm(composite_ts, lib = segments, pred = segments, 
@@ -732,7 +732,7 @@ abline(h = 0, lty = 3)
 ```
 
 And then repeat for the relationship between invader richness and biological productivity:
-```{r richness <-> biomass, warning = FALSE}
+```{r richness and biomass, warning = FALSE}
 inv_xmap_abv <- ccm(composite_ts, lib = segments, pred = segments, 
                     lib_column = "invrichness", target_column = "AbvBioAnnProd", 
                     E = best_E["invrichness"], lib_sizes = lib_sizes, 

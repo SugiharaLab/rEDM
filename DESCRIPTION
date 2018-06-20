@@ -1,7 +1,7 @@
 Package: rEDM
 Type: Package
 Title: Applications of Empirical Dynamic Modeling from Time Series
-Version: 0.7.0
+Version: 0.7.1
 Date: 2018-06-20
 Maintainer: Hao Ye <hao.ye@weecology.org>
 Author: Hao Ye [aut, cre],
@@ -27,6 +27,6 @@ Imports:
     methods
 LinkingTo: Rcpp, RcppEigen
 RcppModules: lnlp_module, block_lnlp_module, ccm_module
-Suggests: knitr, rmarkdown, R.rsp, ggplot2, testthat, formatR, tibble
+Suggests: knitr, rmarkdown, R.rsp, ggplot2, testthat, formatR, tibble, digest
 VignetteBuilder: knitr, R.rsp
 RoxygenNote: 6.0.1
