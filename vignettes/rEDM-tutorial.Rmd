@@ -54,7 +54,7 @@ devtools::install_github("ha0ye/rEDM")
 
 The essential concept is that time series can be viewed as projections of the behavior of a dynamic system. Here, only a few modest assumptions are required. First, the system state can be described as a point in a high-dimensional space. The axes of this space can be thought of as fundamental state variables; in an ecosystem, these variables might correspond to population abundances, resources, or environmental conditions. Second, the system state changes through time following a set of deterministic rules. In other words, the behavior of the system is not completely stochastic.
 
-Consequently, it is possible to project the system state onto one of the coordinate axes and obtain the value of the corresponding state variable. Sequential projections over time will thus produce a time series for that variable. For example, in Figure \ref{fig_time_series_projection}, the states of the canonical Lorenz Attractor [@Lorenz_1963] are projected to the $x$-axis, creating a time series of variable $x$.
+Consequently, it is possible to project the system state onto one of the coordinate axes and obtain the value of the corresponding state variable. Sequential projections over time will thus produce a time series for that variable. For example, in the below figure, the states of the canonical Lorenz Attractor [@Lorenz_1963] are projected to the $x$-axis, creating a time series of variable $x$.
 
 ```{r fig_time_series_projection, echo = FALSE, fig.cap = "Time Series Projection from the Lorenz Attractor"}
 knitr::include_graphics(here::here("vignettes", "vignette_figs", "figure_1.svg"))
@@ -71,7 +71,7 @@ $$ \mathbf{x}_t = \left( x_t, x_{t-\tau}, \dots, x_{t-(E-1)\tau} \right) $$
 knitr::include_graphics(here::here("vignettes", "vignette_figs", "figure_2.svg"))
 ```
 
-By Takens' Theorem [@Takens_1981], if sufficient lags are used, the reconstruction is a diffeomorphism of the original system. In other words, reconstructed states will map one-to-one to actual system states, and nearby points in the reconstruction will correspond to similar system states. Figure \ref{fig_attractor_reconstruction} shows a reconstruction of the Lorenz attractor where the reconstructed system state is comprised of 3 lags of variable $x$. There is a clear visual correspondence between the reconstruction and the original Lorenz attractor.
+By Takens' Theorem [@Takens_1981], if sufficient lags are used, the reconstruction is a diffeomorphism of the original system. In other words, reconstructed states will map one-to-one to actual system states, and nearby points in the reconstruction will correspond to similar system states. The above figure shows a reconstruction of the Lorenz attractor where the reconstructed system state is comprised of 3 lags of variable $x$. There is a clear visual correspondence between the reconstruction and the original Lorenz attractor.
 
 There are many applications for using this approach to recover system dynamics from time series. For example, empirical models can be used for forecasting [@Sugihara_1990], to understand nonlinear behavior [@Sugihara_1994], or to uncover mechanism [@Dixon_1999]. Recent work describes how EDM can be used to identify causal interactions, by testing whether two time series are observed from the same system [@Sugihara_2012]. In the next section, we demonstrate how the **rEDM** software package can be used to accomplish these tasks.
 
@@ -117,7 +117,7 @@ pred <- c(201, 500)
 
 We begin by initializing the `lib` and `pred` variables. These variables define the portions of the data that will be used to create the reconstruction. `lib` corresponds to the "training" portion of the data, on which nearest neighbors can be identified; and `pred` corresponds to the "test" portion of the data, on which 1-step ahead forecasts will be made. Here, the first 100 points (positions 1 to 100) in the time series constitute the "library set", and 300 points (positions 201 to 500) constitute the "prediction set".
 
-The remaining arguments will be left at their default values (see section \ref{sec_general_parameters} for details). For the `simplex()` function, this means that the embedding dimension, $E$, will range from $1$ to $10$.
+The remaining arguments will be left at their default values (see section "General Parameters" for details). For the `simplex()` function, this means that the embedding dimension, $E$, will range from $1$ to $10$.
 
 *Note that if the code detects any overlap in the lib and pred, it will prevent a vector from becoming its own neighbor by enabling leave-one-out cross-validation and outputting a warning message.*
 
@@ -126,7 +126,7 @@ simplex_output <- simplex(ts, lib, pred)
 str(simplex_output)
 ```
 
-The output is a data.frame with columns for each of the model parameters and forecast statistics, and rows for each separate model (i.e. different parameter combinations). For Simplex Projection, the model parameters are `E`, embedding dimension; `tau`, time lag between successive dimensions; `tp`, time to prediction; and `nn`, number of nearest neighbors (see section \ref{sec_general_parameters} for a detailed description). The forecast statistics are `num_pred`, the number of predictions made; `rho`, Pearson's correlation coefficient between predictions and observations; `mae`, mean absolute error of predictions; `rmse`, root mean squared error of predictions; `perc`, the percent of predictions that are the same sign as observations; and `p_val`, the p-value for `rho` being significantly greater than 0, using Fisher's transformation [@Fisher_1915]. For the purpose of comparison, the last 6 columns give those same forecast statistics, but for a naive constant predictor (where the 1-step ahead forecast is the current value) over the same set of predictions.
+The output is a data.frame with columns for each of the model parameters and forecast statistics, and rows for each separate model (i.e. different parameter combinations). For Simplex Projection, the model parameters are `E`, embedding dimension; `tau`, time lag between successive dimensions; `tp`, time to prediction; and `nn`, number of nearest neighbors. The forecast statistics are `num_pred`, the number of predictions made; `rho`, Pearson's correlation coefficient between predictions and observations; `mae`, mean absolute error of predictions; `rmse`, root mean squared error of predictions; `perc`, the percent of predictions that are the same sign as observations; and `p_val`, the p-value for `rho` being significantly greater than 0, using Fisher's transformation [@Fisher_1915]. For the purpose of comparison, the last 6 columns give those same forecast statistics, but for a naive constant predictor (where the 1-step ahead forecast is the current value) over the same set of predictions.
 
 In this case, there are 10 separate models (one for each value of `E`), so we can plot `E` against `rho` (the correlation between observed and predicted values) to determine the optimal embedding dimension (i.e. the number of dimensions for which the reconstructed attractor is best unfolded, producing the highest forecast skill).
 
@@ -214,7 +214,7 @@ data(block_3sp)
 str(block_3sp)
 ```
 
-Here, the `block_3sp` variable is a 10-column data.frame with 1 column for time, and 3 columns for each of the variables (unlagged: $t$, lag-1: $t-1$, and lag-2: $t-2$). Note that the lagged columns begin with `NA` values because there are no observations of the variables for times $t < 1$. The vectors that include `NA` values are excluded if that specific value is needed for computation (see section \ref{sec_data_input} for more details).
+Here, the `block_3sp` variable is a 10-column data.frame with 1 column for time, and 3 columns for each of the variables (unlagged: $t$, lag-1: $t-1$, and lag-2: $t-2$). Note that the lagged columns begin with `NA` values because there are no observations of the variables for times $t < 1$. The vectors that include `NA` values are excluded if that specific value is needed for computation (see section "Data Input" for more details).
 
 Columns can be referred to using either numerical indices or the column names. If numerical indices are used, `block_lnlp` has an option to indicate that the first column is actually a time index. When `first_column_time` is set to `TRUE`, a value of `1` for `target_column` will point to the first *data* column in the data.frame.
 
