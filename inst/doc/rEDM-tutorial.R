@@ -36,7 +36,7 @@ simplex_output <- simplex(ts, lib, pred)
 str(simplex_output)
 
 ## ----rho vs. E for tentmap-----------------------------------------------
-par(mar = c(4, 4, 1, 1), mgp = c(2.5, 1, 0)) # set up margins for plotting
+par(mar = c(4, 4, 1, 1), mgp = c(2.5, 1, 0)) # set margins for plotting
 plot(simplex_output$E, simplex_output$rho, type = "l",  
      xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)")
 
@@ -135,13 +135,14 @@ t <- predictions$time
 
 plot(t, predictions$obs, type = "l", col = "black", ylab = "x", xlab = "")
 lines(t, predictions$pred, lty = 2)
+legend("topright", legend = c("observed", "predicted"), lty = c(1, 2), bty = "n")
 
 plot(t, smap_coeffs[, 1], type = "l", col = "red", ylab = "effect of x", xlab = "")
 plot(t, smap_coeffs[, 2], type = "l", col = "blue", ylab = "effect of y", xlab = "")
 plot(t, smap_coeffs[, 3], type = "l", col = "magenta", ylab = "effect of z", xlab = "")
 
 ## ---- echo = FALSE-------------------------------------------------------
-par(mfrow = c(1, 1))
+par(mfrow = c(1, 1), mar = c(4, 4, 1, 1))
 
 ## ----make block_gp forecasts---------------------------------------------
 data(block_3sp)
@@ -449,14 +450,14 @@ plot(iso_date, thrips_block$Season, type = "l", col = "magenta", ylab = "Season"
 mtext("Year", side = 1, outer = TRUE, line = 1)
 
 ## ---- echo = FALSE-------------------------------------------------------
-par(mfrow = c(1, 1))
+par(mfrow = c(1, 1), mar = c(4, 4, 1, 1), oma = c(0, 0, 0, 0),
+    mgp = c(2.5, 1, 0))
 
 ## ----univariate thrips, warning = FALSE----------------------------------
 ts <- thrips_block$Thrips_imaginis
 lib <- c(1, length(ts))
 pred <- c(1, length(ts))
 simplex_output <- simplex(ts, lib, pred, silent = TRUE)
-
 plot(simplex_output$E, simplex_output$rho, type = "l",
      xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)")
 

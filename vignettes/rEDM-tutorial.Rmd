@@ -1,5 +1,5 @@
 ---
-title: "rEDM: an R package for Empirical Dynamic Modeling and Convergent Cross Mapping"
+title: "rEDM: An R package for Empirical Dynamic Modeling and Convergent Cross Mapping"
 author:
 - Hao Ye
 - Adam Clark
@@ -27,7 +27,7 @@ par(mar = c(4, 4, 1, 1), oma = c(0, 0, 0, 0), mgp = c(2.5, 1, 0))
 ```
 
 # Abstract
-Empirical dynamic modeling (EDM) is an emerging non-parametric framework for modeling nonlinear dynamic systems. EDM is based on the mathematical theory of recontructing attractor manifolds from time series data [@Takens_1981]. The **rEDM** package collects several EDM methods, including simplex projection [@Sugihara_1990], S-map [@Sugihara_1994], multivariate embeddings [@Dixon_1999], convergent cross mapping [@Sugihara_2012], and multiview embedding [@Ye_2016]. Here, we introduce the basic underlying theory, and describe the functionality of the **rEDM**, using examples from both model simulations and real data.
+Empirical dynamic modeling (EDM) is an emerging non-parametric framework for modeling nonlinear dynamic systems. EDM is based on the mathematical theory of recontructing attractor manifolds from time series data [@Takens_1981]. The **rEDM** package collects several EDM methods, including simplex projection [@Sugihara_1990], S-map [@Sugihara_1994], multivariate embeddings [@Dixon_1999], convergent cross mapping [@Sugihara_2012], and multiview embedding [@Ye_2016]. Here, we introduce the basic underlying theory, and describe the functionality of **rEDM**, using examples from both model simulations and real data.
 
 # Introduction
 Many scientific fields use models as approximations of reality and for various purposes (e.g. testing hypotheses regarding mechanisms or processes, explaining past observations, predicting future outcomes). In most cases these models are based on hypothesized parametric equations; however explicit equations can be impractical when the exact mechanisms are unknown or too complex to be characterized with existing datasets. Empirical models, which infer patterns and associations from the data (instead of using hypothesized equations), represent an alternative and highly flexible approach. Here, we review the theoretical background for empirical dynamic modeling (EDM) and the functionality of the **rEDM** package, which are intended for nonlinear dynamic systems that can prove problematic for traditional modeling approaches.
@@ -131,7 +131,7 @@ The output is a data.frame with columns for each of the model parameters and for
 In this case, there are 10 separate models (one for each value of `E`), so we can plot `E` against `rho` (the correlation between observed and predicted values) to determine the optimal embedding dimension (i.e. the number of dimensions for which the reconstructed attractor is best unfolded, producing the highest forecast skill).
 
 ```{r rho vs. E for tentmap}
-par(mar = c(4, 4, 1, 1), mgp = c(2.5, 1, 0)) # set up margins for plotting
+par(mar = c(4, 4, 1, 1), mgp = c(2.5, 1, 0)) # set margins for plotting
 plot(simplex_output$E, simplex_output$rho, type = "l",  
      xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)")
 ```
@@ -303,7 +303,7 @@ smap_coeffs <- block_smap_output$smap_coefficients[[1]]
 str(smap_coeffs)
 ```
 
-Here, we plot the time series for the observed and predicted values of `x` and the inferred interactions (s-map coefficients) for the influence of `x`, `y`, and `z`.
+Here, we plot the time series for the observed (solid) and predicted (dashed) values of `x` in the top panel; and the inferred interactions (s-map coefficients) for the influence of `x`, `y`, and `z` on future values of `x` in the remaining 3 panels.
 
 ```{r, echo = FALSE}
 par(mfrow = c(4, 1), mar = c(2, 4, 1, 1), oma = c(0, 0, 0, 0),
@@ -316,6 +316,7 @@ t <- predictions$time
 
 plot(t, predictions$obs, type = "l", col = "black", ylab = "x", xlab = "")
 lines(t, predictions$pred, lty = 2)
+legend("topright", legend = c("observed", "predicted"), lty = c(1, 2), bty = "n")
 
 plot(t, smap_coeffs[, 1], type = "l", col = "red", ylab = "effect of x", xlab = "")
 plot(t, smap_coeffs[, 2], type = "l", col = "blue", ylab = "effect of y", xlab = "")
@@ -323,7 +324,7 @@ plot(t, smap_coeffs[, 3], type = "l", col = "magenta", ylab = "effect of z", xla
 ```
 
 ```{r, echo = FALSE}
-par(mfrow = c(1, 1))
+par(mfrow = c(1, 1), mar = c(4, 4, 1, 1))
 ```
 
 ## Gaussian Process
@@ -436,7 +437,7 @@ In essence, $\mathbf{M}_y$ must have complete information about $y$, which means
 
 To be more precise, although $x$ has incomplete information about $y$, it does have a causal influence on $y$, and there will likely be some predictive skill in the mapping from $\mathbf{M}_x$ to $y$. However, this will be limited to the statistical association between $x$ and $y$ and will generally not improve with more data.
 
-In contrast, the mapping from $\mathbf{M}_y$ to $x$ is expected to become complete with more data. This convergence is a critical property for inferring causality, and can be tested by measuring the cross mapping skill when using different amounts of data to reconstruct $\mathbf{M}_y$. For a more detailed description of using cross mapping to infer causation, see [@Sugihara_2012, @Ye_2015a].
+In contrast, the mapping from $\mathbf{M}_y$ to $x$ is expected to become complete with more data. This convergence is a critical property for inferring causality, and can be tested by measuring the cross mapping skill when using different amounts of data to reconstruct $\mathbf{M}_y$. For a more detailed description of using cross mapping to infer causation, see [@Sugihara_2012; @Ye_2015a].
 
 ## Convergent Cross Mapping (CCM)
 
@@ -545,14 +546,14 @@ As expected for this simple predator-prey system, we see evidence for causation 
 
 The data presented here are part of Experiment 120, the "Big Biodiversity" experiment at Cedar Creek LTER [@Tilman_1997]. The full data and metadata are available at https://www.cedarcreek.umn.edu/research/data. This experiment is the longest running randomized test for the effects of plant diversity on ecosystem functions. Plots were established in 1994 and planted with 1, 2, 4, 8, or 16 species, and are sampled annually for above-ground plant biomass. The most well-known result from the experiment is that the number of planted species has strong positive effects on above-ground biomass production. However, because the diversity treatments are weeded annually to prevent non-planted species from establishing (i.e. species richness is not allowed to vary dynamically), this well-known result does not lend itself to EDM.
 
-Instead, we focus on a different set of published results from the experiment: interactions between primary productivity, soil nitrate, and invasion rates. Increased biomass is associated with decreases in soil nitrate levels and decreases in invasion success [@Fargione_2005]. A posited mechanism is that increased primary productivity leads to decreased soil nitrate, which in turn reduces resources available to invaders. In order to increase sample size, we combine data from the treatments with 16 planted species, which have almost identical planted compositions and follow similar dynamics. We then analyze these different plots together as spatial replicates, similar to [@Hsieh_2008; @Clark_2015].
+Instead, we focus on a different set of published results from the experiment: interactions between primary productivity, soil nitrate, and invasion rates. Increased biomass is associated with decreases in soil nitrate levels and decreases in invasion success [@Fargione_2005]. A posited mechanism is that increased primary productivity leads to decreased soil nitrate, which in turn reduces resources available to invaders. In order to increase sample size, we combine data from the treatments with 16 planted species, which have almost identical planted compositions and follow similar dynamics. We then analyze these different plots together as spatial replicates, similar to Hsieh et al. [-@Hsieh_2008] and Clark et al. [-@Clark_2015].
 
 ```{r load e120 data}
 data(e120_invnit16)
 str(e120_invnit16)
 ```
 
-The columns in the dataset `e120_invnit16` are as follows: `Exp` indicates the experiment code, `Year` shows the sampling time; `Plot` describes plot identity; `AbvBioAnnProd` shows annual above-ground productivity of planted species, in g/m$^2$; `noh020tot` shows soil nitrate levels in the top 20 cm of soil, measured in $\mu$g/kg soil; `invrichness` shows species richness of unplanted species in the plot (i.e. weeds); `SummerPrecip.mm.` shows precipitation annual from May to August measured in mm.
+The columns in the dataset `e120_invnit16` are as follows: `Exp` indicates the experiment code, `Year` shows the sampling time; `Plot` describes plot identity; `AbvBioAnnProd` shows annual above-ground productivity of planted species, in g/m$^2$; `noh020tot` shows soil nitrate levels in the top 20 cm of soil, measured in mg/kg soil; `invrichness` shows species richness of unplanted species in the plot (i.e. weeds); `SummerPrecip.mm.` shows precipitation annual from May to August measured in mm.
 
 ### Preparing the Data
 
@@ -758,11 +759,11 @@ legend(x = "topleft", col = c("red", "blue"), lwd = 2,
 abline(h = 0, lty = 3)
 ```
 
-The first figure suggests that plot-level soil nitrate is causally forced by invader richness, while the reverse is not true. This is plausible, as the planted compositions are quite similar among experimental replicates, and fluctuations in soil nitrate may be largely indicative of minor variations due to transient populations of invading species before they can be weeded out. Thus, the effect of nitrate on invader richness may be minimal, if at all. However, recall from the S-map analysis that soil nitrate dynamics also appear linear. As such, a more detailed look into the relationship between nitrate and invader richness may be warranted, that also considers methods more appropriate for linear systems, such as Granger Causality [@Granger_1969].
+The first figure suggests that plot-level soil nitrate is causally forced by invader richness, while the reverse is not true. This is plausible, as the planted compositions are quite similar among experimental replicates, and fluctuations in soil nitrate may be largely indicative of minor variations due to transient populations of invading species before they can be weeded out. Thus, the effect of nitrate on invader richness may be minimal. However, recall from the S-map analysis that soil nitrate dynamics also appear linear. As such, a more detailed look into the relationship between nitrate and invader richness may be warranted, that also considers methods more appropriate for linear systems, such as Granger Causality [@Granger_1969].
 
 The second figure indicates bidirectional forcing between inavder richness and total biomass. Although we would normally expect $\rho$ to continue to increase with library length, the decrease here is not necessarily problematic. For the CCM analysis, we use a composite time series constructed from multiple plots with no more than 7 time points each. Consequently, the larger library sizes represent samples that contain multiple plots. The small decrease in $\rho$ at larger library sizes may therefore indicate heterogeneity in the causal effects among plots.
 
-Overall, these results suggest that invader richness is influenced by the biomass of the planted community, with a somewhat weaker effect in the opposite direction, but that nitrate is influenced by invader dynamics without feedbacks. In contrast to existing hypotheses, this result indicates that in plots planted with 16 species, the planted community biomass itself directly inhibits invasion (e.g. through light limitation), rather than through an indirect effects on soil nitrate, as nitrate does not appear to affect invader richness.
+Overall, these results suggest that invader richness is influenced by the biomass of the planted community, with a somewhat weaker effect in the opposite direction, but that nitrate is influenced by invader dynamics without feedbacks. In contrast to existing hypotheses, this result indicates that in plots planted with 16 species, the planted community biomass itself directly inhibits invasion (e.g. through light limitation), rather than through an indirect effects on soil nitrate, as nitrate does not appear to affect invader richness (n.b. though recall that we are analyzing dynamics within only a single level of planted species richness).
 
 ## Apple-Blossom Thrips
 
@@ -792,7 +793,8 @@ mtext("Year", side = 1, outer = TRUE, line = 1)
 ```
 
 ```{r, echo = FALSE}
-par(mfrow = c(1, 1))
+par(mfrow = c(1, 1), mar = c(4, 4, 1, 1), oma = c(0, 0, 0, 0),
+    mgp = c(2.5, 1, 0))
 ```
 
 Note that all the time-series variables show marked seasonality.
@@ -804,7 +806,6 @@ ts <- thrips_block$Thrips_imaginis
 lib <- c(1, length(ts))
 pred <- c(1, length(ts))
 simplex_output <- simplex(ts, lib, pred, silent = TRUE)
-
 plot(simplex_output$E, simplex_output$rho, type = "l",
      xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)")
 ```
@@ -1025,7 +1026,7 @@ Many of the functions in **rEDM** are designed around the same prediction engine
   + `"L2 norm"` (default) or `"L1 norm"`: specifies which distance metric to use when doing calculations
   + `"L2 norm"` is the standard Euclidean distance, where the distance between a vector $\mathbf{x} = \left(x_1, x_2, \dots, x_n \right)$ and $\mathbf{y} = \left( y_1, y_2, \dots, y_n \right)$ is computed as $\sqrt{(x_1 - y_1)^2 + (x_2 - y_2)^2 + \dots + (x_n - y_n)^2}$.
   + `"L1 norm"` is the Manhattan norm (also known as taxicab distance), where the distance between a vector $\mathbf{x} = \left( x_1, x_2, \dots, x_n \right)$ and $\mathbf{y} = \left( y_1, y_2, \dots, y_n \right)$ is computed as $|x_1 - y_1| + |x_2 - y_2| + \dots + |x_n - y_n|$.
-  + `"P norm"` is the generalization of the L1 and L2 norms which adds a parameter $P$ as the exponent: the distance between a vector $\mathbf{x} = \left( x_1, x_2, \dots, x_n \right)$ and $\mathbf{y} = \left(y_1, y_2, \dots, y_n \right)$ is computed as ${\left((x_1 - y_1)^P + (x_2 - y_2)^P + \dots + (x_n - y_n)^P\right)^{1/P}}$.
+  + `"P norm"` is the generalization of the L1 and L2 norms which adds a parameter $P$ as the exponent: the distance between a vector $\mathbf{x} = \left( x_1, x_2, \dots, x_n \right)$ and $\mathbf{y} = \left(y_1, y_2, \dots, y_n \right)$ is computed as ${\left(\left|x_1 - y_1\right|^P + \left|x_2 - y_2\right|^P + \dots + \left|x_n - y_n\right|^P\right)^{1/P}}$.
 * `P`
   + the exponent for the "P norm" (and otherwise ignored)
 * `E`
@@ -1044,8 +1045,8 @@ Many of the functions in **rEDM** are designed around the same prediction engine
 * `theta`
   + the nonlinear tuning parameter (for use with S-maps) that adjusts how distance is factored into computation of the local linear map (`0` corresponds to a globally linear map, while values greater than 0 correspond to nonlinear models where the local linear map changes as a function of state-space)
 * `stats_only`
-  + `TRUE` (default) or `FALSE`: specifies whether the output should just contain statistics of the predictions, or also contain all the predictions that were made
-  + the predictions are included as a list-column in the output if enabled
+  + `TRUE` (default) or `FALSE`: specifies whether the output should just contain statistics of the predictions, or also include all the predictions that were made
+  + if enabled, adds a `model_output` list-column, which contains the time index, observed values, predictions, and variance of predictions for each model
 * `exclusion_radius`
   + `exclusion_radius` sets the threshold whereby all vectors with time indices too close to the predictee will be excluded from being considered nearest neighbors
   + e.g., `1` means that vectors must have an associated **time index** more than 1 away from potential nearest neighbors
@@ -1059,8 +1060,8 @@ Many of the functions in **rEDM** are designed around the same prediction engine
 * `save_smap_coefficients`
   + `TRUE` or `FALSE` (default): specifies whether to include a data.frame of S-map coefficients with the output
   + (note that setting this to `TRUE` forces the full output as if `stats_only = FALSE`)
-  + the s-map coefficeints are included as a list-column in the output if enabled
-
+  + if enabled, adds a `smap_coefficients` list-column, which contains the s-map coefficients; and a `smap_coefficient_covariance` list-column, which contains the covariance matrices for the s-map coefficients.
+  
 The Gaussian Process based functions, (`tde_gp()` and `block_gp()`), have a few additional parameters specific to the GP methods:
 
 * `phi`
@@ -1080,6 +1081,8 @@ The Gaussian Process based functions, (`tde_gp()` and `block_gp()`), have a few 
 
 We thank Jun Cai, Jane Cowles, Yair Daon, Andrew Edwards, Oliver Keyes, James Stagge, Masayuki Ushio, and Ethan White, for their suggestions and contributions to the package and its documentation.
 
-Package development and its documentation were supported by a Gordon and Betty Moore Foundation Data-Driven Discovery Initiative through Grant GBMF4563 (to Ethan P. White), U.S. Department of Defense Strategic Environmental Research and Development Program 15 RC-2509 (GS), Lenfest Ocean Program award 00028335 (GS), NSF grant DEB-1020372 (GS), the McQuown Chair in the Natural Sciences (GS), and the Sugihara Family Trust (GS).
+Package development and its documentation were supported by a Gordon and Betty Moore Foundation Data-Driven Discovery Initiative through Grant GBMF4563 (to Ethan P. White), NSF grant DEB-1655203 (GS), NSF grant DBI-1667584 (GS), U.S. Department of Defense Strategic Environmental Research and Development Program 15 RC-2509 (GS), Lenfest Ocean Program award 00028335 (GS), the Deutsche Bank-Jameson Complexity Studies Fund (GS), the Sugihara Family Trust (GS), the Leslie and John McQuown Gift and the McQuown Chair in Natural Sciences, UCSD (GS).
+
+Data collection for the Cedar Creek LTER was funded by NSF grant DEB-9411972 (to G. David Tilman), DEB-0080382 (to G. David Tilman), DEB-0620652 (to G. David Tilman), and DEB-1234162 (to Eric Seabloom).
 
 # References
