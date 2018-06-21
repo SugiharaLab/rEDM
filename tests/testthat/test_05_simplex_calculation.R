@@ -1,6 +1,6 @@
 context("Check calculations")
 
-testthat::test_that("simplex prediction is same as manual calculation", {
+testthat::test_that("Simplex identifies nearest neighbors correctly", {
     ts <- c(-0.056531409251883, 0.059223778257432, 5.24124928046977, -4.85399581474521,
             -0.46134818068973, 0.273317575696793, 0.801806230470337, -0.888891901824982,
             -0.202777622745051, 0.497565422757662, 5.10219324323769, -5.36826459373178,
@@ -28,11 +28,11 @@ testthat::test_that("simplex prediction is same as manual calculation", {
             0.177114631209318, 2.19942374686687, -2.9488856529422)
     
     # construct lagged block
-    lag_block <- cbind(c(ts[2:length(ts)], NA), ts, c(NA, ts[1:(length(ts)-1)]))
+    lag_block <- cbind(c(ts[2:length(ts)], NA), ts, c(NA, ts[1:(length(ts) - 1)]))
     t <- c(2:63, 65:99)
     
     # lib and pred portions
-    lib_block <- cbind(t+1, lag_block[t,])
+    lib_block <- cbind(t + 1, lag_block[t,])
     pred_block <- cbind(65, lag_block[64, , drop = FALSE])
     
     block <- rbind(lib_block, pred_block)
@@ -40,7 +40,7 @@ testthat::test_that("simplex prediction is same as manual calculation", {
     # make EDM forecast
     out <- block_lnlp(block,
                       lib = c(1, NROW(lib_block)),
-                      pred = c(NROW(lib_block)+1, NROW(lib_block)+1),
+                      pred = c(NROW(lib_block) + 1, NROW(lib_block) + 1),
                       first_column_time = TRUE,
                       tp = 0,
                       columns = c(2, 3), target_column = 1,
@@ -52,12 +52,67 @@ testthat::test_that("simplex prediction is same as manual calculation", {
     dist_vec <- dist_mat[NROW(dist_mat),]
     dist_vec[length(dist_vec)] <- NA
     nn <- order(dist_vec)[1:3] # 3 closest neighbors
-    weights <- exp(- dist_vec[nn] / dist_vec[nn[1]])
+    weights <- exp(-dist_vec[nn] / dist_vec[nn[1]])
     est <- sum(weights * block[nn, 2]) / sum(weights) # weighted average
     
     testthat::expect_equal(model_est, est)
 })
 
+testthat::test_that("Simplex excludes ties in nearest neighbors correctly", {
+    ## smallish block (does full search over neighbors)
+    block <- data.frame(target = c(0, 1, 9, 9, -3, -3, -1), 
+                        x =      c(0, 2, 5, 5, -5, -5, -2))
+    lib <- c(2, NROW(block))
+    pred <- c(1, 1)
+    out <- block_lnlp(block, lib = lib, pred = pred, 
+                      tp = 0, columns = 2, target_column = 1, 
+                      num_neighbors = 2, stats_only = FALSE)
+    
+    expect_equal(out$model_output[[1]]$obs, out$model_output[[1]]$pred)
+   
+    ## larger block (does incremental search for neighbors)
+    block <- data.frame(target = c(0, 1, rep(c(9, -3), each = 100), -1), 
+                        x =      c(0, 2, rep(c(5, -5), each = 100), -2))
+    lib <- c(2, NROW(block))
+    pred <- c(1, 1)
+    out <- block_lnlp(block, lib = lib, pred = pred, 
+                      tp = 0, columns = 2, target_column = 1, 
+                      num_neighbors = 2, stats_only = FALSE)
+    
+    expect_equal(out$model_output[[1]]$obs, out$model_output[[1]]$pred)
+})
 
-
-
+testthat::test_that("Simplex includes ties in nearest neighbors correctly", {
+    ## smallish block (does full search over neighbors)
+    block <- data.frame(target = c(0, 1, 9, 9, -3, -3, -1), 
+                        x =      c(0, 2, 5, 5, -5, -5, -2))
+    lib <- c(2, NROW(block))
+    pred <- c(1, 1)
+    out <- block_lnlp(block, lib = lib, pred = pred, 
+                      tp = 0, columns = 2, target_column = 1, 
+                      num_neighbors = 3, stats_only = FALSE)
+    nn <- seq(from = 2, to = NROW(block))
+    neighbor_dist <- abs(block[nn, 2])
+    weights <- exp(-neighbor_dist / min(neighbor_dist))
+    weights[neighbor_dist > 2] <- weights[neighbor_dist > 2] / 
+        length(weights[neighbor_dist > 2])
+    est <- sum(weights * block[nn, 1]) / sum(weights)
+    expect_equal(est, out$model_output[[1]]$pred)
+    
+    ## larger block (does incremental search for neighbors)
+    block <- data.frame(target = c(0, 1, rep(c(9, -4), each = 100), -1), 
+                        x =      c(0, 2, rep(c(5, -5), each = 100), -2))
+    lib <- c(2, NROW(block))
+    pred <- c(1, 1)
+    out <- block_lnlp(block, lib = lib, pred = pred, 
+                      tp = 0, columns = 2, target_column = 1, 
+                      num_neighbors = 4, stats_only = FALSE)
+    
+    nn <- seq(from = 2, to = NROW(block))
+    neighbor_dist <- abs(block[nn, 2])
+    weights <- exp(-neighbor_dist / min(neighbor_dist))
+    weights[neighbor_dist > 2] <- 2 * weights[neighbor_dist > 2] / 
+        length(weights[neighbor_dist > 2])
+    est <- sum(weights * block[nn, 1]) / sum(weights)
+    expect_equal(est, out$model_output[[1]]$pred)
+})

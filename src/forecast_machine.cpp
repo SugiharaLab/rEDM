@@ -207,7 +207,7 @@ std::vector<size_t> ForecastMachine::find_nearest_neighbors(const vec& dist)
 
                 // if we've added too many neighbors and there isn't a tie, then
                 // pop off the farthest neighbor
-                if((nearest_neighbors.size() > nn) &&
+                while((nearest_neighbors.size() > nn) &&
                    (dist[nearest_neighbors[nn-1]] < dist[nearest_neighbors.back()]))
                 {
                     nearest_neighbors.pop_back();
@@ -543,16 +543,30 @@ void ForecastMachine::simplex_prediction(const size_t start, const size_t end)
             // count ties
             num_ties = 0;
             for(auto& neighbor_index: nearest_neighbors)
+            {
                 if(distances[curr_pred][neighbor_index] == tie_distance)
                     num_ties++;
+            }
                 
-                tie_adj_factor = double(num_ties + nn - effective_nn) / double(num_ties);
+            tie_adj_factor = double(num_ties + nn - effective_nn) / double(num_ties);
                 
-                // adjust weights
-                for(size_t k = 0; k < nearest_neighbors.size(); ++k)
-                    if(distances[curr_pred][nearest_neighbors[k]] == tie_distance)
-                        weights[k] *= tie_adj_factor;
+            // adjust weights
+            for(size_t k = 0; k < nearest_neighbors.size(); ++k)
+            {
+                if(distances[curr_pred][nearest_neighbors[k]] == tie_distance)
+                    weights[k] *= tie_adj_factor;
+            }
         }
+        
+        /* check info on neighbors
+        for(size_t k = 0; k < effective_nn; ++k)
+        {
+            std::cerr << "neighbor " << k+1 << ": " << "\n";
+            std::cerr << "  distance = " << distances[curr_pred][nearest_neighbors[k]] << "\n";
+            std::cerr << "  weight   = " << weights[k] << "\n";
+            std::cerr << "  target   = " << targets[nearest_neighbors[k]] << "\n";
+        }
+        */
         
         // make prediction
         total_weight = accumulate(weights.begin(), weights.end(), 0.0);
