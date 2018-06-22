@@ -53,7 +53,7 @@ devtools::install_github("ha0ye/rEDM")
 
 The essential concept is that time series can be viewed as projections of the behavior of a dynamic system. Here, only a few modest assumptions are required. First, the system state can be described as a point in a high-dimensional space. The axes of this space can be thought of as fundamental state variables; in an ecosystem, these variables might correspond to population abundances, resources, or environmental conditions. Second, the system state changes through time following a set of deterministic rules. In other words, the behavior of the system is not completely stochastic.
 
-Consequently, it is possible to project the system state onto one of the coordinate axes and obtain the value of the corresponding state variable. Sequential projections over time will thus produce a time series for that variable. For example, in the below figure, the states of the canonical Lorenz Attractor [@Lorenz_1963] are projected to the $x$-axis, creating a time series of variable $x$.
+Consequently, it is possible to project the system state onto one of the coordinate axes and obtain the value of the corresponding state variable. Sequential projections over time will thus produce a time series for that variable. For example, in the below figure, the states of the canonical Lorenz Attractor [-@Lorenz_1963] are projected to the $x$-axis, creating a time series of variable $x$.
 
 ```{r fig_time_series_projection, echo = FALSE, fig.cap = "Time Series Projection from the Lorenz Attractor"}
 knitr::include_graphics("figure_1.svg")
@@ -63,14 +63,14 @@ In simple cases, each time series will represent a different state variable. How
 
 ## Attractor Reconstruction / Takens' Theorem
 
-The goal of EDM is to reconstruct the system dynamics from time series data. Because time series are sequential observations of the system behavior, information about the rules that govern system behavior (i.e. the system dynamics) is therefore encoded in the data. Takens' Theorem [@Takens_1981] provides a way to recover this information using just a single time series. Although the system behavior is nominally determined by a high-dimensional state space, we can substitute lags of a time series for any unknown or unobserved variables. For example, instead of representing the system state of the Lorenz Attractor using $x$, $y$, and $z$, we can instead use an embedding that consists of $E$ lags of $x$:
+The goal of EDM is to reconstruct the system dynamics from time series data. Because time series are sequential observations of the system behavior, information about the rules that govern system behavior (i.e. the system dynamics) is therefore encoded in the data. Takens' Theorem [-@Takens_1981] provides a way to recover this information using just a single time series. Although the system behavior is nominally determined by a high-dimensional state space, we can substitute lags of a time series for any unknown or unobserved variables. For example, instead of representing the system state of the Lorenz Attractor using $x$, $y$, and $z$, we can instead use an embedding that consists of $E$ lags of $x$:
 $$ \mathbf{x}_t = \left( x_t, x_{t-\tau}, \dots, x_{t-(E-1)\tau} \right) $$
 
 ```{r fig_attractor_reconstruction, echo = FALSE, fig.cap = "Attractor Reconstruction from 3 Lagged Coordinates"}
 knitr::include_graphics("figure_2.svg")
 ```
 
-By Takens' Theorem [@Takens_1981], if sufficient lags are used, the reconstruction is a diffeomorphism of the original system. In other words, reconstructed states will map one-to-one to actual system states, and nearby points in the reconstruction will correspond to similar system states. The above figure shows a reconstruction of the Lorenz attractor where the reconstructed system state is comprised of 3 lags of variable $x$. There is a clear visual correspondence between the reconstruction and the original Lorenz attractor.
+By Takens' Theorem, if sufficient lags are used, the reconstruction is a diffeomorphism of the original system. In other words, reconstructed states will map one-to-one to actual system states, and nearby points in the reconstruction will correspond to similar system states. The above figure shows a reconstruction of the Lorenz attractor where the reconstructed system state is comprised of 3 lags of variable $x$. There is a clear visual correspondence between the reconstruction and the original Lorenz attractor.
 
 There are many applications for using this approach to recover system dynamics from time series. For example, empirical models can be used for forecasting [@Sugihara_1990], to understand nonlinear behavior [@Sugihara_1994], or to uncover mechanism [@Dixon_1999]. Recent work describes how EDM can be used to identify causal interactions, by testing whether two time series are observed from the same system [@Sugihara_2012]. In the next section, we demonstrate how the **rEDM** software package can be used to accomplish these tasks.
 
@@ -88,8 +88,8 @@ In this example, time series come from a simulation of the tent map that exhibit
 
 \begin{equation*}
 x_{t+1} = \begin{cases}
-2x_t & x_t < \frac{1}{2}\\
-2(1-x_t) & x_t \ge \frac{1}{2}
+2x_t, & x_t < \frac{1}{2}\\
+2(1-x_t), & x_t \ge \frac{1}{2}
 \end{cases}
 \end{equation*}
 
@@ -125,7 +125,7 @@ simplex_output <- simplex(ts, lib, pred)
 str(simplex_output)
 ```
 
-The output is a data.frame with columns for each of the model parameters and forecast statistics, and rows for each separate model (i.e. different parameter combinations). For Simplex Projection, the model parameters are `E`, embedding dimension; `tau`, time lag between successive dimensions; `tp`, time to prediction; and `nn`, number of nearest neighbors. The forecast statistics are `num_pred`, the number of predictions made; `rho`, Pearson's correlation coefficient between predictions and observations; `mae`, mean absolute error of predictions; `rmse`, root mean squared error of predictions; `perc`, the percent of predictions that are the same sign as observations; and `p_val`, the p-value for `rho` being significantly greater than 0, using Fisher's transformation [@Fisher_1915]. For the purpose of comparison, the last 6 columns give those same forecast statistics, but for a naive constant predictor (where the 1-step ahead forecast is the current value) over the same set of predictions.
+The output is a data.frame with columns for each of the model parameters and forecast statistics, and rows for each separate model (i.e. different parameter combinations). For Simplex Projection, the model parameters are `E`, embedding dimension; `tau`, time lag between successive dimensions; `tp`, time to prediction; and `nn`, number of nearest neighbors. The forecast statistics are `num_pred`, the number of predictions made; `rho`, Pearson's correlation coefficient between predictions and observations; `mae`, mean absolute error of predictions; `rmse`, root mean squared error of predictions; `perc`, the percent of predictions that are the same sign as observations; and `p_val`, the p-value for `rho` being significantly greater than 0, using Fisher's transformation [-@Fisher_1915]. For the purpose of comparison, the last 6 columns give those same forecast statistics, but for a naive constant predictor (where the 1-step ahead forecast is the current value) over the same set of predictions.
 
 In this case, there are 10 separate models (one for each value of `E`), so we can plot `E` against `rho` (the correlation between observed and predicted values) to determine the optimal embedding dimension (i.e. the number of dimensions for which the reconstructed attractor is best unfolded, producing the highest forecast skill).
 
@@ -135,7 +135,7 @@ plot(simplex_output$E, simplex_output$rho, type = "l",
      xlab = "Embedding Dimension (E)", ylab = "Forecast Skill (rho)")
 ```
 
-Here, we observe that forecast skill peaks at $E = 2$, indicating that the dynamics of our data are unfolded best in 2 dimensions. *Note that this optimal value does not have to correspond to the dimensionality of the original system.*  The forecast skill will be affected by factors such as observational noise, process error, and time series length, and so it is more useful to think of the embedding dimension as a practical measure that is dependent on properties of the data.
+Here, we observe that forecast skill peaks at `E = 2`, indicating that the dynamics of our data are unfolded best in 2 dimensions. *Note that this optimal value does not have to correspond to the dimensionality of the original system.*  The forecast skill will be affected by factors such as observational noise, process error, and time series length, and so it is more useful to think of the embedding dimension as a practical measure that is dependent on properties of the data.
 
 ## Prediction Decay
 
@@ -143,7 +143,7 @@ An important property of many natural systems is that nearby trajectories eventu
 
 ### Example
 
-Using the same data and the `simplex()` function, we supply a range for the `tp` argument and fix the embedding dimension to the value determined previously ($E = 2$):
+Using the same data and the `simplex()` function, we supply a range for the `tp` argument and fix the embedding dimension to the value determined previously (`E = 2`):
 
 ```{r simplex varying tp for tentmap}
 simplex_output <- simplex(ts, lib, pred, E = 2, tp = 1:10)
@@ -164,7 +164,7 @@ One concern is that time series may show predictability even if they are purely 
 
 In contrast to the nearest-neighbor interpolation of simplex projection, the S-map forecasting method [@Sugihara_1994] fits local linear maps to forecast from the reconstructed state space. Here, "local" means that the map can be different at different locations in the reconstructed state space.
 
-With S-maps, the nonlinear tuning parameter, $\theta$, determines the strength of the weighting when fitting the lcoal linear map. For example, when $\theta = 0$, all points always receive equal weighting. In other words, the local linear map does not change, and will be identical to a global linear map -- equivalent to fitting an autoregressive model to the data. In contrast, when $\theta > 0$, nearby points receive larger weights, allowing the local linear map to vary in state-space and accommodate nonlinear behavior (see the vignette "rEDM-algorithms" for more details).
+With S-maps, the nonlinear tuning parameter, $\theta$, determines the strength of the weighting when fitting the lcoal linear map. For example, when $\theta = 0$, all points always receive equal weighting. In other words, the local linear map does not change, and will be identical to a global linear map -- equivalent to fitting an autoregressive model to the data. In contrast, when $\theta > 0$, nearby points receive larger weights, allowing the local linear map to vary in state-space and accommodate nonlinear behavior (see the "rEDM-algorithms" vignette for more details).
 
 Consequently, if the time series are sampled from autoregressive red noise, then there will be no improvement to forecast skill when $\theta > 0$. In fact, it is likely that the linear model ($\theta = 0$) produces the best forecasts, because it uses all the data for constructing the global linear map, thereby reducing the effects of observational noise. Thus, increases in forecast skill when $\theta > 0$ is indicative of nonlinear dynamics; allowing the local linear map to vary in state-space produces a better description of state-dependent behavior.
 
@@ -187,7 +187,7 @@ plot(smap_output$theta, smap_output$rho, type = "l",
 
 Here, we can see that forecast skill substantially improves as `theta` increases, indicating the presence of nonlinear dynamics. Typically, we would expect forecast skill to begin to decrease at high values of `theta`, because the local linear map will overfit to the nearest points. However, because the example data are observed without any noise, we continue to get a better approximation to the true function with higher `theta`.
 
-By simulating the addition of a small amount of observational noise, a `rho` vs. `theta` plot more typical of real data can be achieved:
+By simulating the addition of a small amount of observational noise, a plot more typical of real data can be achieved:
 
 ```{r rho vs. theta with noise}
 ts_err <- ts + rnorm(length(ts), sd = sd(ts) * 0.2)
@@ -328,7 +328,7 @@ par(mfrow = c(1, 1), mar = c(4, 4, 1, 1))
 
 ## Gaussian Process
 
-An alternative approach to using Simplex Projection or S-maps is to use Gaussian Processes (GP). In the **rEDM** package, the equivalent function to the univariate `simplex()` and `s_map()` is `tde_gp()` (for "Time Delay Embedding using Gaussian Processes"") and the equivalent function to the general `block_lnlp()` is `block_gp()`.
+An alternative approach to using Simplex Projection or S-maps is to use Gaussian Processes (GP). In the **rEDM** package, the equivalent function to the univariate `simplex()` and `s_map()` is `tde_gp()` (for "Time Delay Embedding using Gaussian Processes") and the equivalent function to the general `block_lnlp()` is `block_gp()`.
 
 Note that the arguments are slightly different: the GP formulation includes hyperparameters for fitting to the data (`phi`, `v_e`, and `eta`). These can be set directly, or fit over the points in the `lib` portion of the data. In addition, the GP specifies not only pointwise error estimates for the predicted points, but also the covariance between them. In other words, the uncertainty for nearby points, in the state-space of the reconstructed attractor, is correlated. Setting `save_covariance_matrix = TRUE` will also return the full covariance matrix for the predicted points in the output of these functions. For more details, please see the documentation for `tde_gp()` and `block_gp()`.
 
@@ -474,7 +474,7 @@ legend(x = "topleft", legend = c("anchovy xmap SST", "SST xmap anchovy"),
 
 By default, the `ccm()` function identifies a causal effect of $x$ on $y$ by computing a mapping between lagged-coordinate vectors of the affected variable, $y$, and the simultaneous value of the causal variable, $y$:
 $$ x_{t+tp} = F\left(\mathbf{y}_t\right) = F\left(y_t, y_{t-\tau}, \dots, y_{t-(E-1)\tau} \right) $$
-where $tp = 0$.
+where `tp = 0`.
 
 However, `tp` is an argument to `ccm()`, and accepts both positive and negative values. This allows us to determine the value of `tp` that produces the best mapping for $F$. This is, to a first approximation, the time delay by which information about $y$ is encoded in the time series of $x$ [see @Ye_2015a for more information].
 
@@ -537,7 +537,7 @@ time_delay_ccm_fig <- ggplot(output, aes(x = tp, y = rho, color = direction)) +
 print(time_delay_ccm_fig)
 ```
 
-As expected for this simple predator-prey system, we see evidence for causation in both directions (cross map skill, `rho`, peaks for negative `tp`). Using cross map skill as a proxy for interaction strength (under the assumption that all else is equal, which is reasonable for this laboratory experiment), it looks like the causal interaction is equally strong in both directions. We further note that the estimated time delay for the effect of predators (*Didinium*) on prey (*Paramecium*) is fast ($tp = -1$ for "paramecium xmap to didinium") compared to the effect of prey on predators ($tp = -4$ for "didinium xmap to paramecium"). This is consistent with the ecological interpretation that changes in predator abundance affect prey abundance quickly, while there is a lag in the response of predator abundance to changes in prey abundance.
+As expected for this simple predator-prey system, we see evidence for causation in both directions (cross map skill, `rho`, peaks for negative `tp`). Using cross map skill as a proxy for interaction strength (under the assumption that all else is equal, which is reasonable for this laboratory experiment), it looks like the causal interaction is equally strong in both directions. We further note that the estimated time delay for the effect of predators (*Didinium*) on prey (*Paramecium*) is fast (`tp = -1` for "paramecium xmap to didinium") compared to the effect of prey on predators (`tp = -4` for "didinium xmap to paramecium"). This is consistent with the ecological interpretation that changes in predator abundance affect prey abundance quickly, while there is a lag in the response of predator abundance to changes in prey abundance.
 
 # Real Data Examples
 
@@ -758,15 +758,15 @@ legend(x = "topleft", col = c("red", "blue"), lwd = 2,
 abline(h = 0, lty = 3)
 ```
 
-The first figure suggests that plot-level soil nitrate is causally forced by invader richness, while the reverse is not true. This is plausible, as the planted compositions are quite similar among experimental replicates, and fluctuations in soil nitrate may be largely indicative of minor variations due to transient populations of invading species before they can be weeded out. Thus, the effect of nitrate on invader richness may be minimal. However, recall from the S-map analysis that soil nitrate dynamics also appear linear. As such, a more detailed look into the relationship between nitrate and invader richness may be warranted, that also considers methods more appropriate for linear systems, such as Granger Causality [@Granger_1969].
+The first figure suggests that plot-level soil nitrate is causally forced by invader richness, while the reverse is not true. This is plausible, as the planted compositions are quite similar among experimental replicates, and fluctuations in soil nitrate may be largely indicative of minor variations due to transient populations of invading species before they can be weeded out. Thus, the effect of nitrate on invader richness may be minimal. However, recall from the S-map analysis that soil nitrate dynamics also appear linear. As such, a more detailed look into the relationship between nitrate and invader richness may be warranted, that also considers methods more appropriate for linear systems, such as Granger Causality [-@Granger_1969].
 
-The second figure indicates bidirectional forcing between inavder richness and total biomass. Although we would normally expect $\rho$ to continue to increase with library length, the decrease here is not necessarily problematic. For the CCM analysis, we use a composite time series constructed from multiple plots with no more than 7 time points each. Consequently, the larger library sizes represent samples that contain multiple plots. The small decrease in $\rho$ at larger library sizes may therefore indicate heterogeneity in the causal effects among plots.
+The second figure indicates bidirectional forcing between invader richness and total biomass. Although we would normally expect $\rho$ to continue to increase with library length, the decrease here is not necessarily problematic. For the CCM analysis, we use a composite time series constructed from multiple plots with no more than 7 time points each. Consequently, the larger library sizes represent samples that contain multiple plots. The small decrease in $\rho$ at larger library sizes may therefore indicate heterogeneity in the causal effects among plots.
 
 Overall, these results suggest that invader richness is influenced by the biomass of the planted community, with a somewhat weaker effect in the opposite direction, but that nitrate is influenced by invader dynamics without feedbacks. In contrast to existing hypotheses, this result indicates that in plots planted with 16 species, the planted community biomass itself directly inhibits invasion (e.g. through light limitation), rather than through an indirect effects on soil nitrate, as nitrate does not appear to affect invader richness (n.b. though recall that we are analyzing dynamics within only a single level of planted species richness).
 
 ## Apple-Blossom Thrips
 
-Next, we re-examine the classic apple-blossom thrips (*Thrips imaginis*) time series from the Waite Institute in Australia [@Davidson_1948; @Davidson_1948a]. Seasonal outbreaks of thrips were observed to vary greatly in magnitude from year to year, with large outbreaks occurring simultaneously across space. This led to the hypothesis that regional-scale climatic factors were responsible for controlling the size of the seasonal outbreaks (what might now be called the Moran effect [@Moran_1953]).
+Next, we re-examine the classic apple-blossom thrips (*Thrips imaginis*) time series from the Waite Institute in Australia [@Davidson_1948; @Davidson_1948a]. Seasonal outbreaks of thrips were observed to vary greatly in magnitude from year to year, with large outbreaks occurring simultaneously across space. This led to the hypothesis that regional-scale climatic factors were responsible for controlling the size of the seasonal outbreaks (what might now be called the Moran effect [-@Moran_1953]).
 
 ```{r thrips data}
 data(thrips_block)
@@ -827,13 +827,13 @@ plot(smap_output[[2]]$theta, smap_output[[2]]$rho, type = "l", xlim = c(0, 4),
      xlab = "Nonlinearity (theta)", ylab = "Forecast Skill (rho)")
 ```
 
-The S-map results indicate nonlinearity in *Thrips* abundance, as the nonlinear models (`theta > 0`) give substantially better predictions than the linear model (`theta = 0`). This suggests that, despite the strong seasonal dynamics, the *Thrips* population might not simply track the environment. To look more closely at the issue of seasonal drivers, we turn to convergent cross-mapping (CCM).
+The S-map results indicate nonlinearity in Thrips abundance, as the nonlinear models (`theta > 0`) give substantially better predictions than the linear model (`theta = 0`). This suggests that, despite the strong seasonal dynamics, the Thrips population might not simply track the environment. To look more closely at the issue of seasonal drivers, we turn to convergent cross-mapping (CCM).
 
 ### Seasonal Drivers
 
 Recall that there is a two-part criterion for CCM to be a rigorous test of causality: (1) cross map prediction skill is statistically significant when using the full time series as the library. (2) cross map prediction skill demonstrates convergence -- prediction skill increases as more of the time series is used to reconstruct the attractor.
 
-We first compute the cross map skill for each variable pair, using the full time series as the library. We use `E = 8` as it is the larger of the two values identified for *Thrips* abundance, and setting a fixed value reduces the chance of overfitting when cross mapping between all variable pairs.
+We first compute the cross map skill for each variable pair, using the full time series as the library. We use `E = 8` as it is the larger of the two values identified for Thrips abundance, and setting a fixed value reduces the chance of overfitting when cross mapping between all variable pairs.
 
 ```{r compute ccm matrix for thrips, results = "hold", warning = FALSE}
 vars <- colnames(thrips_block[3:6])
@@ -907,7 +907,7 @@ legend(x = "bottomright", legend = c("Thrips xmap maxT", "maxT xmap Thrips"),
        col = c("red", "blue"), lwd = 1, inset = 0.02)
 ```
 
-The magnitude of the cross-correlation between *Thrips* and temperature is shown as a black dashed line for comparison. We repeat the analysis for rainfall.
+The magnitude of the cross-correlation between Thrips and temperature is shown as a black dashed line for comparison. We repeat the analysis for rainfall.
 
 ```{r ccm on thrips and rainfall, results = "hide", warning = FALSE}
 thrips_xmap_Rain <- ccm(thrips_block, E = 8, random_libs = TRUE,
@@ -947,7 +947,6 @@ ccm_out <- list(ccm_means(thrips_xmap_Season), ccm_means(Season_xmap_thrips))
 ```
 
 ```{r season and thrips ccm plot, echo = FALSE}
-par(mar = c(4, 4, 1, 1), mgp = c(2.5, 1, 0)) # set up margins for plotting
 plot(ccm_out[[1]]$lib_size, pmax(0, ccm_out[[1]]$rho), type = "l", col = "red",
      xlab = "Library Size", ylab = "Cross Map Skill (rho)", ylim = c(0, 1))
 lines(ccm_out[[2]]$lib_size, pmax(0, ccm_out[[2]]$rho), col = "blue")
@@ -956,7 +955,7 @@ legend(x = "bottomright", legend = c("Thrips xmap Season", "Season xmap Thrips")
        col = c("red", "blue"), lwd = 1, inset = 0.02)
 ```
 
-The results show clear evidence of convergence for *Thrips* cross mapping the climactic variables, with the cross map $\rho$ at the maximum library size exceeding cross-correlation between the variables.
+The results show clear evidence of convergence for Thrips cross mapping the climactic variables, with the cross map $\rho$ at the maximum library size exceeding cross-correlation between the variables.
 
 However, we are still left with the conundrum that temperature and to a lesser extent, rainfall, are easily predicted from the seasonal cycle. In other words, the cross map results could be an artifact of shared seasonal forcing. Indeed, note that the pattern of results is similar for cross mapping between Thrips and an artificial indicator of the season in the figure above.
 
@@ -964,7 +963,7 @@ We can distinguish a true causal effect from shared seasonal forcing and a true 
 
 #### Seasonal Surrogate Test
 
-We use the `make_surrogate_data()` function to generate surrogate time series. Note that we select `method = "seasonal"` to produce surrogate time series with the same seasonal pattern, but with the anomalies shuffled. The `T_period` argument specifies the period for the seasonal signal; we use the `12` as the data are monthly and the seasonality is annual.
+We use the `make_surrogate_data()` function to generate surrogate time series. Note that we select `method = "seasonal"` to produce surrogate time series with the same seasonal pattern, but with the anomalies shuffled. The `T_period` argument specifies the period for the seasonal signal; we use `12` as the data are monthly and the seasonality is annual.
 
 Next we compute cross mapping between the true abundance and these surrogate environmental variables.
 
