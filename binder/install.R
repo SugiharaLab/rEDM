@@ -1,5 +1,6 @@
 install.packages("Rcpp")
 install.packages("methods")
 install.packages("RcppEigen")
+install.packages("rEDM")
 install.packages("knitr")
 install.packages("rmarkdown")
