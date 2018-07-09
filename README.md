@@ -9,6 +9,14 @@ Status](https://travis-ci.org/ha0ye/rEDM.svg?branch=master)](https://travis-ci.o
 [![CRAN
 downloads](https://cranlogs.r-pkg.org/badges/grand-total/rEDM)](https://cran.rstudio.com/web/packages/rEDM/index.html)
 
+## Binder Demo
+
+Try out the package without installation (after loading, try clicking on
+`README.Rmd` in the `Files`
+tab).
+
+[![Binder](http://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/ha0ye/rEDM/master?urlpath=rstudio)
+
 ## Overview
 
 The `rEDM` package is a collection of methods for Empirical Dynamic
@@ -69,12 +77,12 @@ summary(output[, 1:9])
 #>  3rd Qu.: 7.75   3rd Qu.:1   3rd Qu.:1   3rd Qu.: 8.75   3rd Qu.:188.8  
 #>  Max.   :10.00   Max.   :1   Max.   :1   Max.   :11.00   Max.   :191.0  
 #>       rho              mae             rmse            perc  
-#>  Min.   :0.6991   Min.   :10.17   Min.   :13.94   Min.   :1  
+#>  Min.   :0.7082   Min.   :10.17   Min.   :13.94   Min.   :1  
 #>  1st Qu.:0.8759   1st Qu.:10.78   1st Qu.:14.21   1st Qu.:1  
 #>  Median :0.9079   Median :11.32   Median :14.86   Median :1  
-#>  Mean   :0.8806   Mean   :12.23   Mean   :16.51   Mean   :1  
+#>  Mean   :0.8815   Mean   :12.15   Mean   :16.48   Mean   :1  
 #>  3rd Qu.:0.9172   3rd Qu.:12.72   3rd Qu.:17.42   3rd Qu.:1  
-#>  Max.   :0.9195   Max.   :19.03   Max.   :26.31   Max.   :1
+#>  Max.   :0.9195   Max.   :18.23   Max.   :25.92   Max.   :1
 ```
 
 It looks like `E = 3` or `4` is optimal. Since we generally want a

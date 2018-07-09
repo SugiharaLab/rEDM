@@ -17,6 +17,11 @@ knitr::opts_chunk$set(
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.596502.svg)](https://doi.org/10.5281/zenodo.596502)
 [![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/rEDM)](https://cran.rstudio.com/web/packages/rEDM/index.html)
 
+## Binder Demo
+Try out the package without installation (after loading, try clicking on `README.Rmd` in the `Files` tab).
+
+[![Binder](http://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/ha0ye/rEDM/master?urlpath=rstudio)
+
 ## Overview
 
 The `rEDM` package is a collection of methods for Empirical Dynamic Modeling (EDM). EDM is based on the mathematical theory of recontructing attractor manifolds from time series data, with applications to forecasting, causal inference, and more. It is based on research software previously developed for the Sugihara Lab (University of California San Diego, Scripps Institution of Oceanography).
