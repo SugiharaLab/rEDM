@@ -21,21 +21,16 @@ void LNLP::set_time_series(const NumericVector data)
     return;
 }
 
-void LNLP::set_norm_type(const int norm_type)
+void LNLP::set_norm(const double norm)
 {
-    switch(norm_type)
+    if(norm == 1)
     {
-        case 1:
-            norm_mode = L1_NORM;
-            break;
-        case 2:
-            norm_mode = L2_NORM;
-            break;
-        case 3:
-            norm_mode = P_NORM;
-            break;
-        default:
-            throw(std::domain_error("unknown norm type selected"));
+        norm_mode = L1_NORM;
+    } else if (norm == 2) {
+        norm_mode = L2_NORM;
+    } else {
+        norm_mode = P_NORM;
+        p = norm;
     }
     return;
 }
@@ -118,12 +113,6 @@ void LNLP::set_params(const size_t new_E, const size_t new_tau, const int new_tp
 void LNLP::set_theta(const double new_theta)
 {
     theta = new_theta;
-    return;
-}
-
-void LNLP::set_p(const double new_p)
-{
-    p = new_p;
     return;
 }
 
@@ -299,7 +288,7 @@ RCPP_MODULE(lnlp_module)
     
     .method("set_time", &LNLP::set_time)
     .method("set_time_series", &LNLP::set_time_series)
-    .method("set_norm_type", &LNLP::set_norm_type)
+    .method("set_norm", &LNLP::set_norm)
     .method("set_pred_type", &LNLP::set_pred_type)
     .method("set_lib", &LNLP::set_lib)
     .method("set_pred", &LNLP::set_pred)
@@ -307,7 +296,6 @@ RCPP_MODULE(lnlp_module)
     .method("set_epsilon", &LNLP::set_epsilon)
     .method("set_params", &LNLP::set_params)
     .method("set_theta", &LNLP::set_theta)
-    .method("set_p", &LNLP::set_p)
     .method("suppress_warnings", &LNLP::suppress_warnings)
     .method("save_smap_coefficients", &LNLP::save_smap_coefficients)
     .method("run", &LNLP::run)

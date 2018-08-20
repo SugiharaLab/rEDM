@@ -14,7 +14,7 @@ data.frame or matrix with at least 2 columns (in which case the first
 column will be used as the time index, and the second column as the time 
 series)}
 
-\item{lib}{a 2-column matrix (or 2-element vector) where each row specifes 
+\item{lib}{a 2-column matrix (or 2-element vector) where each row specifies 
 the first and last *rows* of the time series to use for attractor 
 reconstruction}
 
@@ -27,20 +27,8 @@ series to forecast.}
 
 \item{tp}{the prediction horizon (how far ahead to forecast)}
 
-\item{phi}{length-scale parameter. see 'Details'}
-
-\item{v_e}{noise-variance parameter. see 'Details'}
-
-\item{eta}{signal-variance parameter. see 'Details'}
-
-\item{fit_params}{specify whether to use MLE to estimate params over the lib}
-
 \item{stats_only}{specify whether to output just the forecast statistics or 
 the raw predictions for each run}
-
-\item{save_covariance_matrix}{specifies whether to include the full 
-covariance matrix with the output (and forces the full output as if 
-stats_only were set to FALSE)}
 
 \item{silent}{prevents warning messages from being printed to the R console}
 

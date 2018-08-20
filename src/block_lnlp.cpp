@@ -28,21 +28,16 @@ void BlockLNLP::set_block(const NumericMatrix new_block)
     return;
 }
 
-void BlockLNLP::set_norm_type(const int norm_type)
+void BlockLNLP::set_norm(const double norm)
 {
-    switch(norm_type)
+    if(norm == 1)
     {
-        case 1:
-            norm_mode = L1_NORM;
-            break;
-        case 2:
-            norm_mode = L2_NORM;
-            break;
-        case 3:
-            norm_mode = P_NORM;
-            break;
-        default:
-            throw(std::domain_error("unknown norm type selected"));
+        norm_mode = L1_NORM;
+    } else if (norm == 2) {
+        norm_mode = L2_NORM;
+    } else {
+        norm_mode = P_NORM;
+        p = norm;
     }
     return;
 }
@@ -136,12 +131,6 @@ void BlockLNLP::set_params(const int new_tp, const size_t new_nn)
 void BlockLNLP::set_theta(const double new_theta)
 {
     theta = new_theta;
-    return;
-}
-
-void BlockLNLP::set_p(const double new_p)
-{
-    p = new_p;
     return;
 }
 
@@ -322,7 +311,7 @@ RCPP_MODULE(block_lnlp_module)
 
     .method("set_time", &BlockLNLP::set_time)
     .method("set_block", &BlockLNLP::set_block)
-    .method("set_norm_type", &BlockLNLP::set_norm_type)
+    .method("set_norm", &BlockLNLP::set_norm)
     .method("set_pred_type", &BlockLNLP::set_pred_type)
     .method("set_lib", &BlockLNLP::set_lib)
     .method("set_pred", &BlockLNLP::set_pred)
@@ -332,7 +321,6 @@ RCPP_MODULE(block_lnlp_module)
     .method("set_target_column", &BlockLNLP::set_target_column)
     .method("set_params", &BlockLNLP::set_params)
     .method("set_theta", &BlockLNLP::set_theta)
-    .method("set_p", &BlockLNLP::set_p)
     .method("suppress_warnings", &BlockLNLP::suppress_warnings)
     .method("save_smap_coefficients", &BlockLNLP::save_smap_coefficients)
     .method("run", &BlockLNLP::run)

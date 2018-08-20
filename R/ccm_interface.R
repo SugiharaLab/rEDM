@@ -13,50 +13,27 @@
 #' second column, letting the library size vary from 10 to 100 in increments of 
 #' 10.
 #' 
-#' norm_type "L2 norm" (default) uses the typical Euclidean distance:
-#' \deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}
-#' }{distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
-#' norm_type "L1 norm" uses the Manhattan distance:
-#' \deqn{distance(a,b) := \sum_i{|a_i - b_i|}
-#' }{distance(a, b) := \sum|a_i - b_i|}
-#' norm type "P norm" uses the P norm, generalizing the L1 and L2 norm to use 
-#'   $P$ as the exponent:
-#' \deqn{distance(a,b) := \sum_i{(a_i - b_i)^P}^{1/P}
-#' }{distance(a, b) := (\sum(a_i - b_i)^P)^(1/P)}
+#' \code{norm = 2} (default) uses the "L2 norm", Euclidean distance:
+#'   \deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}
+#'     }{distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
+#' \code{norm = 1} uses the "L1 norm", Manhattan distance:
+#'   \deqn{distance(a,b) := \sum_i{|a_i - b_i|}
+#'     }{distance(a, b) := \sum|a_i - b_i|}
+#' Other values generalize the L1 and L2 norm to use the given argument as the 
+#'   exponent, P, as:
+#'   \deqn{distance(a,b) := \sum_i{(a_i - b_i)^P}^{1/P}
+#'     }{distance(a, b) := (\sum(a_i - b_i)^P)^(1/P)}
 #' 
-#' @param block either a vector to be used as the time series, or a 
-#'   data.frame or matrix where each column is a time series
-#' @param lib a 2-column matrix (or 2-element vector) where each row specifies 
-#'   the first and last *rows* of the time series to use for attractor 
-#'   reconstruction
-#' @param pred (same format as lib), but specifying the sections of the time 
-#'   series to forecast.
-#' @param norm_type the distance function to use. see 'Details'
-#' @param P the exponent for the P norm
-#' @param E the embedding dimensions to use for time delay embedding
-#' @param tau the lag to use for time delay embedding
-#' @param tp the prediction horizon (how far ahead to forecast)
-#' @param num_neighbors the number of nearest neighbors to use (any of "e+1", 
-#'   "E+1", "e + 1", "E + 1" will peg this parameter to E+1 for each run, any
-#'   value < 1 will use all possible neighbors.)
+#' @inheritParams block_lnlp
+#' @inheritParams simplex
 #' @param lib_sizes the vector of library sizes to try
 #' @param random_libs indicates whether to use randomly sampled libs
 #' @param num_samples is the number of random samples at each lib size (this 
 #'   parameter is ignored if random_libs is FALSE)
 #' @param replace indicates whether to sample vectors with replacement
 #' @param lib_column the index (or name) of the column to cross map from
-#' @param target_column the index (or name) of the column to cross map to
-#' @param first_column_time indicates whether the first column of the given 
-#'   block is a time column (and therefore excluded when indexing)
 #' @param RNGseed will set a seed for the random number generator, enabling 
 #'   reproducible runs of ccm with randomly generated libraries
-#' @param exclusion_radius excludes vectors from the search space of nearest 
-#'   neighbors if their *time index* is within exclusion_radius (NULL turns 
-#'   this option off)
-#' @param epsilon excludes vectors from the search space of nearest neighbors 
-#'   if their *distance* is farther away than epsilon (NULL turns this option 
-#'   off)
-#' @param silent prevents warning messages from being printed to the R console
 #' @return A data.frame with forecast statistics for the different parameter 
 #'   settings:
 #' \tabular{ll}{
@@ -73,7 +50,7 @@
 #'   lib_sizes = seq(10, 80, by = 10), num_samples = 100)
 #'  
 ccm <- function(block, lib = c(1, NROW(block)), pred = lib, 
-                norm_type = c("L2 norm", "L1 norm", "LP norm"), P = 0.5, E = 1, 
+                norm = 2, E = 1, 
                 tau = 1, tp = 0, num_neighbors = "e+1", 
                 lib_sizes = seq(10, 100, by = 10), random_libs = TRUE, 
                 num_samples = 100, replace = TRUE, lib_column = 1, 
@@ -93,9 +70,7 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
     model$set_target_column(my_target_column)
     
     # setup norm type
-    model$set_norm_type(switch(match.arg(norm_type), 
-                               "P norm" = 3, "L2 norm" = 2, "L1 norm" = 1))
-    model$set_p(P)
+    model$set_norm(norm)
     
     # setup lib and pred ranges
     lib <- coerce_lib(lib, silent = silent)
@@ -107,7 +82,7 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
     prev_num_lib_sizes <- length(lib_sizes)
     lib_sizes <- lib_sizes[lib_sizes >= 0]
     lib_sizes <- unique(sort(lib_sizes))
-    if(length(lib_sizes) < 1)
+    if (length(lib_sizes) < 1)
         stop("No valid lib sizes found among input", lib_sizes)
     if (length(lib_sizes) < prev_num_lib_sizes)
         rEDM_warning("Some requested lib sizes were redundant or bad and ignored.", 
@@ -136,7 +111,7 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
     params <- data.frame(E, tau, tp, nn = num_neighbors, lib_column, target_column)
     e_plus_1_index <- match(num_neighbors, c("e+1", "E+1", "e + 1", "E + 1"))
     if (any(e_plus_1_index, na.rm = TRUE))
-        params$nn <- params$E+1
+        params$nn <- params$E + 1
     params$nn <- as.numeric(params$nn)
     
     if (!check_params_against_lib(params$E, params$tau, params$tp, lib, 

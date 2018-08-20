@@ -5,10 +5,10 @@
 \title{Perform forecasting using multiview embedding}
 \usage{
 multiview(block, lib = c(1, floor(NROW(block)/2)),
-  pred = c(floor(NROW(block)/2) + 1, NROW(block)), norm_type = c("L2 norm",
-  "L1 norm", "P norm"), P = 0.5, E = 3, tau = 1, tp = 1, max_lag = 3,
-  num_neighbors = "e+1", k = "sqrt", na.rm = FALSE, target_column = 1,
-  stats_only = TRUE, save_lagged_block = FALSE, first_column_time = FALSE,
+  pred = c(floor(NROW(block)/2) + 1, NROW(block)), norm = 2, E = 3,
+  tau = 1, tp = 1, max_lag = 3, num_neighbors = "e+1", k = "sqrt",
+  na.rm = FALSE, target_column = 1, stats_only = TRUE,
+  save_lagged_block = FALSE, first_column_time = FALSE,
   exclusion_radius = NULL, silent = FALSE)
 }
 \arguments{
@@ -22,9 +22,7 @@ reconstruction}
 \item{pred}{(same format as lib), but specifying the sections of the time 
 series to forecast.}
 
-\item{norm_type}{the distance function to use. see 'Details'}
-
-\item{P}{the exponent for the P norm}
+\item{norm}{the distance measure to use. see 'Details'}
 
 \item{E}{the embedding dimensions to use for time delay embedding}
 
@@ -36,10 +34,10 @@ series to forecast.}
 So if max_lag == 3, a variable X will appear with lags X[t], X[t - tau], 
 X[t - 2*tau]}
 
-\item{num_neighbors}{the number of nearest neighbors to use for the 
-in-sample prediction (any of "e+1", "E+1", "e + 1", "E + 1" will peg this 
-parameter to E+1 for each run, any value < 1 will use all possible 
-neighbors.)}
+\item{num_neighbors}{the number of nearest neighbors to use. Note that the 
+default value will change depending on the method selected. (any of "e+1", 
+"E+1", "e + 1", "E + 1" will peg this parameter to E+1 for each run, any
+value < 1 will use all possible neighbors.)}
 
 \item{k}{the number of embeddings to use ("sqrt" will use k = floor(sqrt(m)), 
 "all" or values less than 1 will use k = m)}
@@ -119,16 +117,16 @@ The default parameters are set so that, given a matrix of time series,
   second half of the data. Unless otherwise set, the output will be just the 
   forecast statistics.
 
-norm_type "L2 norm" (default) uses the typical Euclidean distance:
-\deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}
-}{distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
-norm_type "L1 norm" uses the Manhattan distance:
-\deqn{distance(a,b) := \sum_i{|a_i - b_i|}
-}{distance(a, b) := \sum|a_i - b_i|}
-norm type "P norm" uses the P norm, generalizing the L1 and L2 norm to use 
-  $P$ as the exponent:
-\deqn{distance(a,b) := \sum_i{(a_i - b_i)^P}^{1/P}
-}{distance(a, b) := (\sum(a_i - b_i)^P)^(1/P)}
+\code{norm = 2} (default) uses the "L2 norm", Euclidean distance:
+  \deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}
+    }{distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
+\code{norm = 1} uses the "L1 norm", Manhattan distance:
+  \deqn{distance(a,b) := \sum_i{|a_i - b_i|}
+    }{distance(a, b) := \sum|a_i - b_i|}
+Other values generalize the L1 and L2 norm to use the given argument as the 
+  exponent, P, as:
+  \deqn{distance(a,b) := \sum_i{(a_i - b_i)^P}^{1/P}
+    }{distance(a, b) := (\sum(a_i - b_i)^P)^(1/P)}
 }
 \examples{
 data("block_3sp")

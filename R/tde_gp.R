@@ -9,28 +9,9 @@
 #' See \code{\link{block_gp}} for implementation details of the Gaussian process 
 #' regression.
 #' 
-#' @param time_series either a vector to be used as the time series, or a 
-#'   data.frame or matrix with at least 2 columns (in which case the first 
-#'   column will be used as the time index, and the second column as the time 
-#'   series)
-#' @param lib a 2-column matrix (or 2-element vector) where each row specifes 
-#'   the first and last *rows* of the time series to use for attractor 
-#'   reconstruction
-#' @param pred (same format as lib), but specifying the sections of the time 
-#'   series to forecast.
-#' @param E the embedding dimensions to use for time delay embedding
-#' @param tau the lag to use for time delay embedding
-#' @param tp the prediction horizon (how far ahead to forecast)
-#' @param phi length-scale parameter. see 'Details'
-#' @param v_e noise-variance parameter. see 'Details'
-#' @param eta signal-variance parameter. see 'Details'
-#' @param fit_params specify whether to use MLE to estimate params over the lib
-#' @param stats_only specify whether to output just the forecast statistics or 
-#'   the raw predictions for each run
-#' @param save_covariance_matrix specifies whether to include the full 
-#'   covariance matrix with the output (and forces the full output as if 
-#'   stats_only were set to FALSE)
-#' @param silent prevents warning messages from being printed to the R console
+#' @inheritParams block_lnlp
+#' @inheritParams simplex
+#' @inheritParams tde_gp
 #' @param ... other parameters. see 'Details'
 #' @return If stats_only, then a data.frame with components for the parameters 
 #'   and forecast statistics:

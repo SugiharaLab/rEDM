@@ -75,29 +75,14 @@
 #'   }{V(y) = eta + v_e - C(x, x_d)[K_d]^(-1) C(x_d, x)}
 #' where the vector \eqn{C(x, x_d)} is obtained by evaluating C at x and each 
 #' of the observed inputs while holding eta, phi, and v_e at the MAP estimates.
-#' @param block either a vector to be used as the time series, or a 
-#'   data.frame or matrix where each column is a time series
-#' @param lib a 2-column matrix (or 2-element vector) where each row specifies 
-#'   the first and last *rows* of the time series to use for attractor 
-#'   reconstruction
-#' @param pred (same format as lib), but specifying the sections of the time 
-#'   series to forecast.
-#' @param tp the prediction horizon (how far ahead to forecast)
+#' @inheritParams block_lnlp
 #' @param phi length-scale parameter. see 'Details'
 #' @param v_e noise-variance parameter. see 'Details'
 #' @param eta signal-variance parameter. see 'Details'
 #' @param fit_params specify whether to use MLE to estimate params over the lib
-#' @param columns either a vector with the columns to use (indices or names), 
-#'   or a list of such columns
-#' @param target_column the index (or name) of the column to forecast
-#' @param stats_only specify whether to output just the forecast statistics or 
-#'   the raw predictions for each run
 #' @param save_covariance_matrix specifies whether to include the full 
 #'   covariance matrix with the output (and forces the full output as if 
 #'   stats_only were set to FALSE)
-#' @param first_column_time indicates whether the first column of the given 
-#'   block is a time column (and therefore excluded when indexing)
-#' @param silent prevents warning messages from being printed to the R console
 #' @param ... other parameters. see 'Details'
 #' @return If stats_only, then a data.frame with components for the parameters 
 #'   and forecast statistics:

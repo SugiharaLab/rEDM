@@ -4,8 +4,7 @@
 \alias{block_lnlp}
 \title{Perform generalized forecasting using simplex projection or s-map}
 \usage{
-block_lnlp(block, lib = c(1, NROW(block)), pred = lib,
-  norm_type = c("L2 norm", "L1 norm", "P norm"), P = 0.5,
+block_lnlp(block, lib = c(1, NROW(block)), pred = lib, norm = 2,
   method = c("simplex", "s-map"), tp = 1,
   num_neighbors = switch(match.arg(method), simplex = "e+1", `s-map` = 0),
   columns = NULL, target_column = 1, stats_only = TRUE,
@@ -23,9 +22,7 @@ reconstruction}
 \item{pred}{(same format as lib), but specifying the sections of the time 
 series to forecast.}
 
-\item{norm_type}{the distance function to use. see 'Details'}
-
-\item{P}{the exponent for the P norm}
+\item{norm}{the distance measure to use. see 'Details'}
 
 \item{method}{the prediction method to use. see 'Details'}
 
@@ -114,16 +111,16 @@ The default parameters are set so that passing a vector as the only argument
   pred are for leave-one-out cross-validation over the whole time series, 
   and returning just the forecast statistics.
 
-norm_type "L2 norm" (default) uses the typical Euclidean distance:
-\deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}
-}{distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
-norm_type "L1 norm" uses the Manhattan distance:
-\deqn{distance(a,b) := \sum_i{|a_i - b_i|}
-}{distance(a, b) := \sum|a_i - b_i|}
-norm type "P norm" uses the P norm, generalizing the L1 and L2 norm to use 
-  $P$ as the exponent:
-\deqn{distance(a,b) := \sum_i{(a_i - b_i)^P}^{1/P}
-}{distance(a, b) := (\sum(a_i - b_i)^P)^(1/P)}
+\code{norm = 2} (default) uses the "L2 norm", Euclidean distance:
+  \deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}
+    }{distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
+\code{norm = 1} uses the "L1 norm", Manhattan distance:
+  \deqn{distance(a,b) := \sum_i{|a_i - b_i|}
+    }{distance(a, b) := \sum|a_i - b_i|}
+Other values generalize the L1 and L2 norm to use the given argument as the 
+  exponent, P, as:
+  \deqn{distance(a,b) := \sum_i{(a_i - b_i)^P}^{1/P}
+    }{distance(a, b) := (\sum(a_i - b_i)^P)^(1/P)}
 
 method "simplex" (default) uses the simplex projection forecasting algorithm
 

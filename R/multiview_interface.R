@@ -22,51 +22,28 @@
 #'   second half of the data. Unless otherwise set, the output will be just the 
 #'   forecast statistics.
 #' 
-#' norm_type "L2 norm" (default) uses the typical Euclidean distance:
-#' \deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}
-#' }{distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
-#' norm_type "L1 norm" uses the Manhattan distance:
-#' \deqn{distance(a,b) := \sum_i{|a_i - b_i|}
-#' }{distance(a, b) := \sum|a_i - b_i|}
-#' norm type "P norm" uses the P norm, generalizing the L1 and L2 norm to use 
-#'   $P$ as the exponent:
-#' \deqn{distance(a,b) := \sum_i{(a_i - b_i)^P}^{1/P}
-#' }{distance(a, b) := (\sum(a_i - b_i)^P)^(1/P)}
+#' \code{norm = 2} (default) uses the "L2 norm", Euclidean distance:
+#'   \deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}
+#'     }{distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
+#' \code{norm = 1} uses the "L1 norm", Manhattan distance:
+#'   \deqn{distance(a,b) := \sum_i{|a_i - b_i|}
+#'     }{distance(a, b) := \sum|a_i - b_i|}
+#' Other values generalize the L1 and L2 norm to use the given argument as the 
+#'   exponent, P, as:
+#'   \deqn{distance(a,b) := \sum_i{(a_i - b_i)^P}^{1/P}
+#'     }{distance(a, b) := (\sum(a_i - b_i)^P)^(1/P)}
 #' 
-#' @param block either a vector to be used as the time series, or a 
-#'   data.frame or matrix where each column is a time series
-#' @param lib a 2-column matrix (or 2-element vector) where each row specifies 
-#'   the first and last *rows* of the time series to use for attractor 
-#'   reconstruction
-#' @param pred (same format as lib), but specifying the sections of the time 
-#'   series to forecast.
-#' @param norm_type the distance function to use. see 'Details'
-#' @param P the exponent for the P norm
-#' @param E the embedding dimensions to use for time delay embedding
-#' @param tau the lag to use for time delay embedding
-#' @param tp the prediction horizon (how far ahead to forecast)
+#' @inheritParams block_lnlp
+#' @inheritParams simplex
 #' @param max_lag the maximum number of lags to use for variable combinations. 
 #'   So if max_lag == 3, a variable X will appear with lags X[t], X[t - tau], 
 #'   X[t - 2*tau]
-#' @param num_neighbors the number of nearest neighbors to use for the 
-#'   in-sample prediction (any of "e+1", "E+1", "e + 1", "E + 1" will peg this 
-#'   parameter to E+1 for each run, any value < 1 will use all possible 
-#'   neighbors.)
 #' @param k the number of embeddings to use ("sqrt" will use k = floor(sqrt(m)), 
 #'   "all" or values less than 1 will use k = m)
 #' @param na.rm logical. Should missing values (including `NaN`` be omitted 
 #'   from the calculations?)
-#' @param target_column the index (or name) of the column to forecast
-#' @param stats_only specify whether to output just the forecast statistics or 
-#'   the raw predictions for each run
 #' @param save_lagged_block specify whether to output the lagged block that 
 #'   is constructed as part of running \code{multiview}
-#' @param first_column_time indicates whether the first column of the given 
-#'   block is a time column (and therefore excluded when indexing)
-#' @param exclusion_radius excludes vectors from the search space of nearest 
-#'   neighbors if their *time index* is within exclusion_radius (NULL turns 
-#'   this option off)
-#' @param silent prevents warning messages from being printed to the R console
 #' @return A data.frame with components for the parameters and forecast 
 #'   statistics:
 #' \tabular{ll}{
@@ -103,8 +80,7 @@
 #' 
 multiview <- function(block, lib = c(1, floor(NROW(block) / 2)), 
                       pred = c(floor(NROW(block) / 2) + 1, NROW(block)), 
-                      norm_type = c("L2 norm", "L1 norm", "P norm"), P = 0.5, 
-                      E = 3, tau = 1, tp = 1, max_lag = 3, 
+                      norm = 2, E = 3, tau = 1, tp = 1, max_lag = 3, 
                       num_neighbors = "e+1", k = "sqrt", na.rm = FALSE, 
                       target_column = 1, 
                       stats_only = TRUE, save_lagged_block = FALSE, 
@@ -150,7 +126,7 @@ multiview <- function(block, lib = c(1, floor(NROW(block) / 2)),
     
     # make in-sample forecasts
     in_results <- block_lnlp(lagged_block, lib = lib, pred = lib, 
-                             norm_type = norm_type, P = P, method = "simplex", 
+                             norm = norm, method = "simplex", 
                              tp = tp, num_neighbors = num_neighbors, 
                              columns = my_embeddings, 
                              target_column = target_column, 
@@ -172,7 +148,7 @@ multiview <- function(block, lib = c(1, floor(NROW(block) / 2)),
     
     # make out-sample forecasts
     out_results <- block_lnlp(lagged_block, lib = lib, pred = pred, 
-                              norm_type = norm_type, P = P, method = "simplex", 
+                              norm = norm, method = "simplex", 
                               tp = tp, num_neighbors = 1, 
                               columns = best_embeddings, 
                               target_column = target_column, 

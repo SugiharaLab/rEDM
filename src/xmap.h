@@ -17,13 +17,12 @@ public:
     // *** methods *** //
     void set_time(const NumericVector time);
     void set_block(const NumericMatrix new_block);
-    void set_norm_type(const int norm_type);
+    void set_norm(const double norm);
     void set_lib(const NumericMatrix lib);
     void set_pred(const NumericMatrix pred);
     void set_lib_sizes(const NumericVector new_lib_sizes);
     void set_exclusion_radius(const double new_exclusion_radius);
     void set_epsilon(const double new_epsilon);
-    void set_p(const double new_p);
     void set_lib_column(const size_t new_lib_col);
     void set_target_column(const size_t new_target);
     void set_params(const size_t new_E, const size_t new_tau, const int new_tp, 

@@ -16,16 +16,16 @@
 #'   pred are for leave-one-out cross-validation over the whole time series, 
 #'   and returning just the forecast statistics.
 #' 
-#' norm_type "L2 norm" (default) uses the typical Euclidean distance:
-#' \deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}
-#' }{distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
-#' norm_type "L1 norm" uses the Manhattan distance:
-#' \deqn{distance(a,b) := \sum_i{|a_i - b_i|}
-#' }{distance(a, b) := \sum|a_i - b_i|}
-#' norm type "P norm" uses the P norm, generalizing the L1 and L2 norm to use 
-#'   $P$ as the exponent:
-#' \deqn{distance(a,b) := \sum_i{(a_i - b_i)^P}^{1/P}
-#' }{distance(a, b) := (\sum(a_i - b_i)^P)^(1/P)}
+#' \code{norm = 2} (default) uses the "L2 norm", Euclidean distance:
+#'   \deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}
+#'     }{distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
+#' \code{norm = 1} uses the "L1 norm", Manhattan distance:
+#'   \deqn{distance(a,b) := \sum_i{|a_i - b_i|}
+#'     }{distance(a, b) := \sum|a_i - b_i|}
+#' Other values generalize the L1 and L2 norm to use the given argument as the 
+#'   exponent, P, as:
+#'   \deqn{distance(a,b) := \sum_i{(a_i - b_i)^P}^{1/P}
+#'     }{distance(a, b) := (\sum(a_i - b_i)^P)^(1/P)}
 #' 
 #' method "simplex" (default) uses the simplex projection forecasting algorithm
 #' 
@@ -38,8 +38,7 @@
 #'   reconstruction
 #' @param pred (same format as lib), but specifying the sections of the time 
 #'   series to forecast.
-#' @param norm_type the distance function to use. see 'Details'
-#' @param P the exponent for the P norm
+#' @param norm the distance measure to use. see 'Details'
 #' @param method the prediction method to use. see 'Details'
 #' @param tp the prediction horizon (how far ahead to forecast)
 #' @param num_neighbors the number of nearest neighbors to use. Note that the 
@@ -101,7 +100,7 @@
 #' block_lnlp(block, columns = c("x", "y"), first_column_time = TRUE)
 #' 
 block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib, 
-                       norm_type = c("L2 norm", "L1 norm", "P norm"), P = 0.5, 
+                       norm = 2, 
                        method = c("simplex", "s-map"), 
                        tp = 1, 
                        num_neighbors = switch(match.arg(method), 
@@ -121,9 +120,7 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
                                                       silent = silent))
     
     # setup norm and pred types
-    model$set_norm_type(switch(match.arg(norm_type), 
-                               "P norm" = 3, "L2 norm" = 2, "L1 norm" = 1))
-    model$set_p(P)
+    model$set_norm(as.numeric(norm))
     model$set_pred_type(switch(match.arg(method), "simplex" = 2, "s-map" = 1))
     if (match.arg(method) == "s-map")
     {

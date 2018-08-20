@@ -17,49 +17,26 @@
 #' 0.03, 0.1, 0.3, 0.5, 0.75, 1.0, 1.5, 2, 3, 4, 6, and 8), using E = 1, 
 #' leave-one-out cross-validation over the whole time series, and returning 
 #' just the forecast statistics.
+#'
+#' \code{norm = 2} (default) uses the "L2 norm", Euclidean distance:
+#'   \deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}
+#'     }{distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
+#' \code{norm = 1} uses the "L1 norm", Manhattan distance:
+#'   \deqn{distance(a,b) := \sum_i{|a_i - b_i|}
+#'     }{distance(a, b) := \sum|a_i - b_i|}
+#' Other values generalize the L1 and L2 norm to use the given argument as the 
+#'   exponent, P, as:
+#'   \deqn{distance(a,b) := \sum_i{(a_i - b_i)^P}^{1/P}
+#'     }{distance(a, b) := (\sum(a_i - b_i)^P)^(1/P)}
 #' 
-#' norm_type "L2 norm" (default) uses the typical Euclidean distance:
-#' \deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}
-#' }{distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
-#' norm_type "L1 norm" uses the Manhattan distance:
-#' \deqn{distance(a,b) := \sum_i{|a_i - b_i|}
-#' }{distance(a, b) := \sum|a_i - b_i|}
-#' norm type "P norm" uses the LP norm, generalizing the L1 and L2 norm to use 
-#'   $P$ as the exponent:
-#' \deqn{distance(a,b) := \sum_i{(a_i - b_i)^P}^{1/P}
-#' }{distance(a, b) := (\sum(a_i - b_i)^P)^(1/P)}
-#' 
+#' @inheritParams block_lnlp
 #' @param time_series either a vector to be used as the time series, or a 
 #'   data.frame or matrix with at least 2 columns (in which case the first 
 #'   column will be used as the time index, and the second column as the time 
 #'   series)
-#' @param lib a 2-column matrix (or 2-element vector) where each row specifes 
-#'   the first and last *rows* of the time series to use for attractor 
-#'   reconstruction
-#' @param pred (same format as lib), but specifying the sections of the time 
-#'   series to forecast.
-#' @param norm_type the distance function to use. see 'Details'
-#' @param P the exponent for the P norm
 #' @param E the embedding dimensions to use for time delay embedding
 #' @param tau the lag to use for time delay embedding
 #' @param tp the prediction horizon (how far ahead to forecast)
-#' @param num_neighbors the number of nearest neighbors to use (any of "e+1", 
-#'   "E+1", "e + 1", "E + 1" will peg this parameter to E+1 for each run, any
-#'   value < 1 will use all possible neighbors.)
-#' @param theta the nonlinear tuning parameter (note that theta = 0 is 
-#'   equivalent to an autoregressive model of order E.)
-#' @param stats_only specify whether to output just the forecast statistics or 
-#'   the raw predictions for each run
-#' @param exclusion_radius excludes vectors from the search space of nearest 
-#'   neighbors if their *time index* is within exclusion_radius (NULL turns 
-#'   this option off)
-#' @param epsilon excludes vectors from the search space of nearest neighbors 
-#'   if their *distance* is farther away than epsilon (NULL turns this option 
-#'   off)
-#' @param silent prevents warning messages from being printed to the R console
-#' @param save_smap_coefficients specifies whether to include the s_map 
-#'   coefficients with the output (and forces the full output as if stats_only 
-#'   were set to FALSE)
 
 #' @rdname simplex
 #' 
@@ -101,7 +78,7 @@
 #' simplex(ts, stats_only = FALSE)
 #'  
 simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = lib, 
-                    norm_type = c("L2 norm", "L1 norm", "P norm"), P = 0.5, 
+                    norm = 2, 
                     E = 1:10, tau = 1, tp = 1, num_neighbors = "e+1", 
                     stats_only = TRUE, exclusion_radius = NULL, epsilon = NULL, 
                     silent = FALSE)
@@ -127,9 +104,7 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
     model$set_time_series(time_series)
            
     # setup norm and pred types
-    model$set_norm_type(switch(match.arg(norm_type), 
-                               "P norm" = 3, "L2 norm" = 2, "L1 norm" = 1))
-    model$set_p(P)
+    model$set_norm(norm)
     model$set_pred_type(2)
     
     # setup lib and pred ranges
@@ -200,7 +175,7 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
 #' s_map(ts, E = 2, theta = 1, save_smap_coefficients = TRUE)
 #' 
 s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = lib, 
-                  norm_type = c("L2 norm", "L1 norm", "P norm"), P = 0.5, 
+                  norm = 2, 
                   E = 1, tau = 1, tp = 1, num_neighbors = 0, 
                   theta = c(0, 0.0001, 0.0003, 0.001, 0.003, 0.01, 0.03, 0.1, 
                             0.3, 0.5, 0.75, 1.0, 1.5, 2, 3, 4, 6, 8), 
@@ -224,9 +199,7 @@ s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
     model$set_time_series(time_series)
     
     # setup norm and pred types
-    model$set_norm_type(switch(match.arg(norm_type), 
-                               "P norm" = 3, "L2 norm" = 2, "L1 norm" = 1))
-    model$set_p(P)
+    model$set_norm(norm)
     model$set_pred_type(1)
     
     # setup lib and pred ranges

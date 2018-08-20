@@ -6,15 +6,13 @@
 \alias{s_map}
 \title{Perform univariate forecasting}
 \usage{
-simplex(time_series, lib = c(1, NROW(time_series)), pred = lib,
-  norm_type = c("L2 norm", "L1 norm", "P norm"), P = 0.5, E = 1:10,
-  tau = 1, tp = 1, num_neighbors = "e+1", stats_only = TRUE,
+simplex(time_series, lib = c(1, NROW(time_series)), pred = lib, norm = 2,
+  E = 1:10, tau = 1, tp = 1, num_neighbors = "e+1", stats_only = TRUE,
   exclusion_radius = NULL, epsilon = NULL, silent = FALSE)
 
-s_map(time_series, lib = c(1, NROW(time_series)), pred = lib,
-  norm_type = c("L2 norm", "L1 norm", "P norm"), P = 0.5, E = 1,
-  tau = 1, tp = 1, num_neighbors = 0, theta = c(0, 1e-04, 3e-04, 0.001,
-  0.003, 0.01, 0.03, 0.1, 0.3, 0.5, 0.75, 1, 1.5, 2, 3, 4, 6, 8),
+s_map(time_series, lib = c(1, NROW(time_series)), pred = lib, norm = 2,
+  E = 1, tau = 1, tp = 1, num_neighbors = 0, theta = c(0, 1e-04,
+  3e-04, 0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 0.5, 0.75, 1, 1.5, 2, 3, 4, 6, 8),
   stats_only = TRUE, exclusion_radius = NULL, epsilon = NULL,
   silent = FALSE, save_smap_coefficients = FALSE)
 }
@@ -24,16 +22,14 @@ data.frame or matrix with at least 2 columns (in which case the first
 column will be used as the time index, and the second column as the time 
 series)}
 
-\item{lib}{a 2-column matrix (or 2-element vector) where each row specifes 
+\item{lib}{a 2-column matrix (or 2-element vector) where each row specifies 
 the first and last *rows* of the time series to use for attractor 
 reconstruction}
 
 \item{pred}{(same format as lib), but specifying the sections of the time 
 series to forecast.}
 
-\item{norm_type}{the distance function to use. see 'Details'}
-
-\item{P}{the exponent for the P norm}
+\item{norm}{the distance measure to use. see 'Details'}
 
 \item{E}{the embedding dimensions to use for time delay embedding}
 
@@ -41,7 +37,8 @@ series to forecast.}
 
 \item{tp}{the prediction horizon (how far ahead to forecast)}
 
-\item{num_neighbors}{the number of nearest neighbors to use (any of "e+1", 
+\item{num_neighbors}{the number of nearest neighbors to use. Note that the 
+default value will change depending on the method selected. (any of "e+1", 
 "E+1", "e + 1", "E + 1" will peg this parameter to E+1 for each run, any
 value < 1 will use all possible neighbors.)}
 
@@ -58,12 +55,11 @@ off)}
 
 \item{silent}{prevents warning messages from being printed to the R console}
 
-\item{theta}{the nonlinear tuning parameter (note that theta = 0 is 
-equivalent to an autoregressive model of order E.)}
+\item{theta}{the nonlinear tuning parameter (theta is only relevant if 
+method == "s-map")}
 
 \item{save_smap_coefficients}{specifies whether to include the s_map 
-coefficients with the output (and forces the full output as if stats_only 
-were set to FALSE)}
+coefficients with the output (and forces stats_only = FALSE, as well)}
 }
 \value{
 For \code{\link{simplex}}, a data.frame with components for the 
@@ -125,16 +121,16 @@ run over a default list of thetas (0, 0.0001, 0.0003, 0.001, 0.003, 0.01,
 leave-one-out cross-validation over the whole time series, and returning 
 just the forecast statistics.
 
-norm_type "L2 norm" (default) uses the typical Euclidean distance:
-\deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}
-}{distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
-norm_type "L1 norm" uses the Manhattan distance:
-\deqn{distance(a,b) := \sum_i{|a_i - b_i|}
-}{distance(a, b) := \sum|a_i - b_i|}
-norm type "P norm" uses the LP norm, generalizing the L1 and L2 norm to use 
-  $P$ as the exponent:
-\deqn{distance(a,b) := \sum_i{(a_i - b_i)^P}^{1/P}
-}{distance(a, b) := (\sum(a_i - b_i)^P)^(1/P)}
+\code{norm = 2} (default) uses the "L2 norm", Euclidean distance:
+  \deqn{distance(a,b) := \sqrt{\sum_i{(a_i - b_i)^2}}
+    }{distance(a, b) := \sqrt(\sum(a_i - b_i)^2)}
+\code{norm = 1} uses the "L1 norm", Manhattan distance:
+  \deqn{distance(a,b) := \sum_i{|a_i - b_i|}
+    }{distance(a, b) := \sum|a_i - b_i|}
+Other values generalize the L1 and L2 norm to use the given argument as the 
+  exponent, P, as:
+  \deqn{distance(a,b) := \sum_i{(a_i - b_i)^P}^{1/P}
+    }{distance(a, b) := (\sum(a_i - b_i)^P)^(1/P)}
 }
 \examples{
 data("two_species_model")

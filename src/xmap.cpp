@@ -31,21 +31,16 @@ void Xmap::set_block(const NumericMatrix new_block)
     return;
 }
 
-void Xmap::set_norm_type(const int norm_type)
+void Xmap::set_norm(const double norm)
 {
-    switch(norm_type)
+    if(norm == 1)
     {
-        case 1:
-            norm_mode = L1_NORM;
-            break;
-        case 2:
-            norm_mode = L2_NORM;
-            break;
-        case 3:
-            norm_mode = P_NORM;
-            break;
-        default:
-            throw(std::domain_error("unknown norm type selected"));
+        norm_mode = L1_NORM;
+    } else if (norm == 2) {
+        norm_mode = L2_NORM;
+    } else {
+        norm_mode = P_NORM;
+        p = norm;
     }
     return;
 }
@@ -93,12 +88,6 @@ void Xmap::set_exclusion_radius(const double new_exclusion_radius)
 void Xmap::set_epsilon(const double new_epsilon)
 {
     epsilon = new_epsilon;
-    return;
-}
-
-void Xmap::set_p(const double new_p)
-{
-    p = new_p;
     return;
 }
 
@@ -364,13 +353,12 @@ RCPP_MODULE(xmap_module)
     
     .method("set_time", &Xmap::set_time)
     .method("set_block", &Xmap::set_block)
-    .method("set_norm_type", &Xmap::set_norm_type)
+    .method("set_norm", &Xmap::set_norm)
     .method("set_lib", &Xmap::set_lib)
     .method("set_pred", &Xmap::set_pred)
     .method("set_lib_sizes", &Xmap::set_lib_sizes)
     .method("set_exclusion_radius", &Xmap::set_exclusion_radius)
     .method("set_epsilon", &Xmap::set_epsilon)
-    .method("set_p", &Xmap::set_p)
     .method("set_lib_column", &Xmap::set_lib_column)
     .method("set_target_column", &Xmap::set_target_column)
     .method("set_params", &Xmap::set_params)
