@@ -9,6 +9,8 @@ Status](https://travis-ci.org/ha0ye/rEDM.svg?branch=master)](https://travis-ci.o
 [![CRAN
 downloads](https://cranlogs.r-pkg.org/badges/grand-total/rEDM)](https://cran.rstudio.com/web/packages/rEDM/index.html)
 
+<img src="rEDM.png" width="200px">
+
 ## Binder Demo
 
 Try out the package without installation (after loading, try clicking on
