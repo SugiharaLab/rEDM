@@ -90,7 +90,7 @@
 <div class="page-header"><h1 class="hasAnchor">
 <a href="#redm" class="anchor"></a>rEDM</h1></div>
 
-<p><img src="rEDM.png" width="200px"></p>
+<p><img src="reference/figures/rEDM.png" width="200px"></p>
 <div id="binder-demo" class="section level2">
 <h2 class="hasAnchor">
 <a href="#binder-demo" class="anchor"></a>Binder Demo</h2>
@@ -120,7 +120,7 @@
 <a class="sourceLine" id="cb3-3" data-line-number="3"></a>
 <a class="sourceLine" id="cb3-4" data-line-number="4"><span class="kw">plot</span>(dat<span class="op">$</span>yr, dat<span class="op">$</span>sunspot_count, <span class="dt">type =</span> <span class="st">"l"</span>, </a>
 <a class="sourceLine" id="cb3-5" data-line-number="5">     <span class="dt">xlab =</span> <span class="st">"year"</span>, <span class="dt">ylab =</span> <span class="st">"sunspots"</span>)</a></code></pre></div>
-<p><img src="README-sunspots-1.png" width="576"></p>
+<p><img src="reference/figures/sunspots-1.png" width="576"></p>
 <p>First, we use simplex to determine the optimal embedding dimension, E:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="kw">library</span>(rEDM)                             <span class="co"># load the package</span></a>
 <a class="sourceLine" id="cb4-2" data-line-number="2"></a>
@@ -162,7 +162,7 @@
 <a class="sourceLine" id="cb5-12" data-line-number="12">        <span class="kw">c</span>(predictions<span class="op">$</span>pred <span class="op">-</span><span class="st"> </span><span class="kw">sqrt</span>(predictions<span class="op">$</span>pred_var), </a>
 <a class="sourceLine" id="cb5-13" data-line-number="13">        <span class="kw">rev</span>(predictions<span class="op">$</span>pred <span class="op">+</span><span class="st"> </span><span class="kw">sqrt</span>(predictions<span class="op">$</span>pred_var))), </a>
 <a class="sourceLine" id="cb5-14" data-line-number="14">        <span class="dt">col =</span> <span class="kw">rgb</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="fl">0.5</span>), <span class="dt">border =</span> <span class="ot">NA</span>)</a></code></pre></div>
-<p><img src="README-unnamed-chunk-3-1.png" width="576"></p>
+<p><img src="reference/figures/unnamed-chunk-3-1.png" width="576"></p>
 </div>
 <div id="further-examples" class="section level2">
 <h2 class="hasAnchor">

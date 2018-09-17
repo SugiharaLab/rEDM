@@ -9,7 +9,7 @@ Status](https://travis-ci.org/ha0ye/rEDM.svg?branch=master)](https://travis-ci.o
 [![CRAN
 downloads](https://cranlogs.r-pkg.org/badges/grand-total/rEDM)](https://cran.rstudio.com/web/packages/rEDM/index.html)
 
-<img src="rEDM.png" width="200px">
+<img src="man/figures/rEDM.png" width="200px">
 
 ## Binder Demo
 
@@ -55,7 +55,7 @@ plot(dat$yr, dat$sunspot_count, type = "l",
      xlab = "year", ylab = "sunspots")
 ```
 
-![](README-sunspots-1.png)<!-- -->
+![](man/figures/sunspots-1.png)<!-- -->
 
 First, we use simplex to determine the optimal embedding dimension, E:
 
@@ -108,7 +108,7 @@ polygon(c(predictions$time, rev(predictions$time)),
         col = rgb(0, 0, 1, 0.5), border = NA)
 ```
 
-![](README-unnamed-chunk-3-1.png)<!-- -->
+![](man/figures/unnamed-chunk-3-1.png)<!-- -->
 
 ## Further Examples
 
