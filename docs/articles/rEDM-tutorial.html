@@ -63,14 +63,7 @@
   </ul>
 </li>
       </ul>
-<ul class="nav navbar-nav navbar-right">
-<li>
-  <a href="https://github.com/ha0ye/rEDM">
-    <span class="fa fa-github fa-lg"></span>
-     
-  </a>
-</li>
-      </ul>
+<ul class="nav navbar-nav navbar-right"></ul>
 </div>
 <!--/.nav-collapse -->
   </div>
@@ -90,7 +83,7 @@
             
             <h4 class="date">2018-09-17</h4>
       
-      <small class="dont-index">Source: <a href="https://github.com/ha0ye/rEDM/blob/master/vignettes/rEDM-tutorial.Rmd"><code>vignettes/rEDM-tutorial.Rmd</code></a></small>
+      
       <div class="hidden name"><code>rEDM-tutorial.Rmd</code></div>
 
     </div>
@@ -499,9 +492,9 @@ x_{t+1} = \begin{cases}
 ##  $ target_column: Factor w/ 1 level "np_sst": 1 1 1 1 1 1 1 1 1 1 ...
 ##  $ lib_size     : num  10 10 10 10 10 10 10 10 10 10 ...
 ##  $ num_pred     : num  76 76 76 76 76 76 76 76 76 76 ...
-##  $ rho          : num  0.4203 -0.1881 0.229 0.0571 0.2908 ...
-##  $ mae          : num  1.059 1.002 0.976 0.889 1.041 ...
-##  $ rmse         : num  1.29 1.26 1.23 1.13 1.28 ...</code></pre>
+##  $ rho          : num  0.0362 0.3208 0.2559 0.1475 -0.0635 ...
+##  $ mae          : num  0.905 0.92 0.791 0.886 0.889 ...
+##  $ rmse         : num  1.143 1.156 0.979 1.096 1.146 ...</code></pre>
 <p>The output is a data.frame with statistics for each model run (in this case, 100 models at each of 8 library sizes). To interpret the results, we aggregate the cross map performance at each library size using the <code><a href="../reference/ccm_means.html">ccm_means()</a></code> function, which computes a mean value at each unique <code>lib_size</code>. Because average cross map skill less than 0 means there is no prediction skill, (predictions should not be anticorrelated with observations), we set negative values to 0 when plotting.</p>
 <div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb35-1" data-line-number="1">a_xmap_t_means &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ccm_means.html">ccm_means</a></span>(anchovy_xmap_sst)</a>
 <a class="sourceLine" id="cb35-2" data-line-number="2">t_xmap_a_means &lt;-<span class="st"> </span><span class="kw"><a href="../reference/ccm_means.html">ccm_means</a></span>(sst_xmap_anchovy)</a>
