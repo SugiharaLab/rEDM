@@ -1,0 +1,35 @@
+reference:
+  - title: "Modeling Functions"
+    desc: "Functions to construct EDM models"
+    contents: 
+      - simplex
+      - s_map
+      - block_lnlp
+      - ccm
+      - multiview
+      - tde_gp
+      - block_gp
+  - title: "Surrogate Data Functions"
+    desc: "Functions to generate surrogate time series data"
+    contents: 
+      - make_surrogate_data
+      - make_surrogate_shuffle
+      - make_surrogate_ebisuzaki
+      - make_surrogate_seasonal
+      - make_surrogate_twin
+  - title: "Miscellaneous Helper Functions"
+    contents:
+      - compute_stats
+      - make_block
+      - test_nonlinearity
+  - title: "Datasets"
+    desc: "Example datasets included with the package."
+    contents: 
+      - block_3sp
+      - e120_invnit16
+      - paramecium_didinium
+      - sardine_anchovy_sst
+      - sockeye_returns
+      - tentmap_del
+      - thrips_block
+      - two_species_model
