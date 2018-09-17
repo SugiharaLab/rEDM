@@ -2,9 +2,8 @@ Package: rEDM
 Type: Package
 Title: Applications of Empirical Dynamic Modeling from Time Series
 Version: 0.7.2
-Date: 2018-08-20
-Maintainer: Hao Ye <hao.ye@weecology.org>
-Authors@R: c(person("Hao", "Ye", role = c("aut", "cre")), 
+Authors@R: c(person("Hao", "Ye", role = c("aut", "cre"), 
+                    email = "hao.ye@weecology.org"), 
              person("Adam", "Clark", role = c("aut")), 
              person("Ethan", "Deyle", role = c("aut")), 
              person("Steve", "Munch", role = c("aut")), 

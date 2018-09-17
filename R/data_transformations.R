@@ -163,7 +163,7 @@ make_surrogate_seasonal <- function(ts, num_surr = 100, T_period = 12)
 #' @inheritParams make_surrogate_twin
 #' @return A vector of the same length as the original time series (here, 
 #'   `length(twins)`) and containing the reordered time indices.
-#'   
+#' @noRd
 make_twin_idx <- function(twins, 
                           phase_lock = TRUE, 
                           T_period = 24, 
@@ -239,7 +239,7 @@ make_twin_idx <- function(twins,
 #'   threshold for twins
 #' @return A list of the twins. The list has length equal to the time 
 #'   series, and each element is a vector of the candidate twins. 
-#'   
+#' @noRd
 identify_twins <- function(block, 
                            phase_lock = TRUE, 
                            T_period = 24, 
