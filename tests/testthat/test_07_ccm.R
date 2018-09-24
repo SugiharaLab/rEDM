@@ -49,6 +49,18 @@ test_that("ccm_means works", {
                   "c966dd8ec76cb29d1fc0dc34b64638ea")
 })
 
+test_that("ccm works on multivariate time series", {
+    expect_warning(output <- ccm(EuStockMarkets, 
+                                 lib_column = "DAX",
+                                 target_column = "CAC", 
+                                 RNGseed = 42))
+    
+    output <- data.frame(lapply(output, function(y) 
+        if (is.numeric(y)) round(y, 4) else y))
+    attributes(output) <- attributes(output)[sort(names(attributes(output)))]
+    expect_equal(digest::digest(output), "590ff1e7c72c3be3e143a96073a07a01")
+})
+
 test_that("ccm error checking works", {
     df <- data.frame(a = 1:5, b = 0:4)
     expect_warning(ccm(df))

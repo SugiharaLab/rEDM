@@ -78,6 +78,21 @@ test_that("block_lnlp smap_coefficient_covariances works", {
                  "440dcb1311b66571f942575c77aa0eb8")
 })
 
+test_that("block_lnlp works on multivariate time series", {
+    expect_warning(output <- block_lnlp(EuStockMarkets, columns = c("DAX", "SMI"),
+                                        target_column = "CAC", 
+                                        method = "s-map", theta = 1, 
+                                        stats_only = FALSE))
+    model_output <- output$model_output[[1]]
+    expect_equal(digest::digest(model_output), "6e2cff4cc75b5251a40b8955b75b321d")
+    
+    output <- output[, !(names(output) %in% "model_output")]
+    output <- data.frame(lapply(output, function(y) 
+        if (is.numeric(y)) round(y, 4) else y))
+    attributes(output) <- attributes(output)[sort(names(attributes(output)))]
+    expect_equal(digest::digest(output), "708342ad3fd0a0250345f637b5cc67ec")
+})
+
 test_that("block_lnlp error checking works", {
     df <- data.frame(a = 1:5, b = 0:4)
     expect_warning(block_lnlp(df))
@@ -87,4 +102,6 @@ test_that("block_lnlp error checking works", {
     expect_error(block_lnlp(df, tp = 5, silent = TRUE))
     expect_error(block_lnlp(df, tp = -5, silent = TRUE))
     expect_error(block_lnlp(df, target_column = 0, silent = TRUE))
+    expect_error(block_lnlp(df[, 1], first_column_time = TRUE))
+    expect_error(block_lnlp(sunspot.year, first_column_time = TRUE))
 })

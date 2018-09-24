@@ -1,6 +1,6 @@
 rEDM_warning <- function(..., silent = FALSE)
 {
-    if(!silent)
+    if (!silent)
         warning(..., call. = FALSE)
     return()
 }
@@ -12,7 +12,7 @@ check_params_against_lib <- function(E, tau, tp, lib, silent = FALSE)
     vector_length <- abs(vector_start - vector_end) + 1
     
     max_lib_segment <- max(lib[, 2] - lib[, 1] + 1)
-    if(vector_length > max_lib_segment)
+    if (vector_length > max_lib_segment)
     {
         rEDM_warning("Invalid parameter combination: E = ", E, ", tau = ", tau, 
                      ", tp = ", tp, silent = silent)
@@ -36,10 +36,10 @@ convert_to_column_indices <- function(columns, block, silent = FALSE)
                          silent = silent)
         out <- indices[is.finite(indices)]
     }
-    if(length(out) < 1)
+    if (length(out) < 1)
     {
-        stop("Columns requested were invalid, please check the ", 
-             match.call()$columns, " argument.")
+        stop("in ", deparse(sys.call(-1)), ", Columns requested were invalid, please check the ", 
+             match.call()$columns, " argument.", call. = FALSE)
     }
     return(out)
 }
@@ -52,7 +52,7 @@ coerce_lib <- function(lib, silent = FALSE) {
     return(lib)
 }
 
-setup_time_and_time_series <- function(model, time_series)
+setup_time_and_time_series <- function(time_series)
 {
     if (is.ts(time_series)) {
         time <- as.numeric(time(time_series))
@@ -70,38 +70,49 @@ setup_time_and_time_series <- function(model, time_series)
         time <- time_series[, 1]
         time_series <- time_series[, 2]
     }
-    model$set_time(time)
-    model$set_time_series(time_series)
-    return()
+    if (any(is.na(time)))
+        time <- 1:NROW(block)
+    return(list(time = time, 
+                time_series = time_series))
 }
 
-setup_time_and_data_block <- function(model, first_column_time, block)
+setup_time_and_block <- function(block, first_column_time)
 {
     if (first_column_time)
     {
-        if (is.vector(block))
-            time <- block
-        else
+        if (is.mts(block)) # convert multivariate time series into matrix
         {
+            block <- as.matrix(block)
+        }
+        
+        if (is.vector(block) || is.ts(block))
+        {
+            stop("in ", deparse(sys.call(-1)), ", No data columns to work with if `first_column_time = TRUE`.", call. = FALSE)
+        } else {# matrix or data.frame
             time <- block[, 1]
             block <- block[, -1, drop = FALSE]
         }
     }
     else
     {
-        time <- rownames(block)
+        if (is.mts(block)) # use time index from multivariate time series
+        {
+            time <- time(block)
+            block <- as.matrix(block)
+        } else {
+            time <- rownames(block)
+        }
     }
     if (is.null(time))
     {
         time <- 1:NROW(block)
     } else {
         time <- as.numeric(time)
-        if (any(is.na(time)))
-            time <- 1:NROW(block)
     }
-    model$set_time(time)
-    model$set_block(data.matrix(block))
-    return(block)
+    if (any(is.na(time)))
+        time <- 1:NROW(block)
+    return(list(time = time, 
+                block = data.matrix(block)))
 }
 
 setup_model_flags <- function(model, exclusion_radius, epsilon, silent)

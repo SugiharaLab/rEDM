@@ -87,8 +87,12 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
     model <- new(LNLP)
     
     # setup data
-    setup_time_and_time_series(model, time_series)
-           
+    dat <- setup_time_and_time_series(time_series)
+    time <- dat$time
+    time_series <- dat$time_series
+    model$set_time(time)
+    model$set_time_series(time_series)
+    
     # setup norm and pred types
     model$set_norm(norm)
     model$set_pred_type(2)
@@ -174,7 +178,11 @@ s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
     model <- new(LNLP)
     
     # setup data
-    setup_time_and_time_series(model, time_series)
+    dat <- setup_time_and_time_series(time_series)
+    time <- dat$time
+    time_series <- dat$time_series
+    model$set_time(time)
+    model$set_time_series(time_series)
     
     # setup norm and pred types
     model$set_norm(norm)

@@ -121,29 +121,10 @@ block_gp <- function(block, lib = c(1, NROW(block)), pred = lib,
                      first_column_time = FALSE, silent = FALSE, ...)
 {
     # setup data
-    if (first_column_time)
-    {
-        if (is.vector(block))
-            time <- block
-        else
-        {
-            time <- block[, 1]
-            block <- block[, -1, drop = FALSE]
-        }
-    }
-    else
-    {
-        time <- rownames(block)
-    }
-    if (is.null(time))
-    {
-        time <- 1:NROW(block)
-    } else {
-        time <- as.numeric(time)
-        if (any(is.na(time)))
-            time <- 1:NROW(block)
-    }
-    
+    dat <- setup_time_and_block(block, first_column_time)
+    time <- dat$time
+    block <- dat$block
+
     # setup embeddings
     col_names <- colnames(block)
     if (is.null(col_names)) {
@@ -269,13 +250,13 @@ block_gp <- function(block, lib = c(1, NROW(block)), pred = lib,
         # add in full output if requested
         if (!stats_only || save_covariance_matrix)
         {
-            out_df$model_output <- list(data.frame(time = time_pred[valid_pred_idx], 
+            out_df$model_output <- I(list(data.frame(time = time_pred[valid_pred_idx], 
                                                    obs = y_pred, 
                                                    pred = out_gp$mean_pred, 
-                                                   pred_var = out_gp$pred_var))
+                                                   pred_var = out_gp$pred_var)))
             if (save_covariance_matrix)
             {
-                out_df$covariance_matrix <- list(out_gp$covariance_pred)
+                out_df$covariance_matrix <- I(list(out_gp$covariance_pred))
             }
         }
         row.names(out_df) <- NULL

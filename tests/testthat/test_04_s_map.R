@@ -76,6 +76,19 @@ test_that("s-map smap_coefficient_covariances works", {
                  "4c4643578927d95cc473c9bf873afcf6")
 })
 
+test_that("s-map works on time series", {
+    expect_warning(output <- s_map(AirPassengers, 
+                                   E = 7, theta = 1, stats_only = FALSE))
+    model_output <- round(output$model_output[[1]], 4)
+    expect_equal(digest::digest(model_output), "2e8bddf61e78cef8493b47046c00d071")
+    
+    output <- output[, !(names(output) %in% "model_output")]
+    output <- data.frame(lapply(output, function(y) 
+        if (is.numeric(y)) round(y, 4) else y))
+    attributes(output) <- attributes(output)[sort(names(attributes(output)))]
+    expect_equal(digest::digest(output), "b31f94cc3d234f45e4b26aa4a4444159")
+})
+
 test_that("s-map error checking works", {
     expect_warning(s_map(1:10))
     expect_error(s_map(1:5, E = 5, silent = TRUE))

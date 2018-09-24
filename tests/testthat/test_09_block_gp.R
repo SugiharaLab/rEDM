@@ -46,7 +46,7 @@ test_that("block_gp model_output works", {
     expect_true("pred_var" %in% names(model_output))
     expect_equal(dim(model_output), c(199, 4))
     expect_equal(digest::digest(round(model_output, 4)),
-                 "5faf8205dd2871e5c4cb9c84bc429651")
+                 "412915324b52e227ef8bf93b05e85224")
 })
 
 test_that("block_gp covariance matrix works", {
@@ -66,4 +66,21 @@ test_that("block_gp covariance matrix works", {
     expect_equal(dim(covariance_matrix), c(199, 199))
     expect_equal(digest::digest(round(covariance_matrix, 4)),
                  "df5a7a72abacf6f4ecb9791928177888")
+})
+
+test_that("block_gp works on multivariate time series", {
+    expect_error(output <- block_gp(EuStockMarkets[1:300,], columns = c("DAX", "SMI"),
+                                    target_column = "CAC", 
+                                    phi = 0.5, v_e = 0.005, eta = 100, 
+                                    stats_only = FALSE, 
+                                    silent = TRUE),
+                 NA)
+    model_output <- round(output$model_output[[1]], 4)
+    expect_equal(digest::digest(model_output), "5b6e433b50c35360d7c3a89824f07804")
+    
+    output <- output[, !(names(output) %in% "model_output")]
+    output <- data.frame(lapply(output, function(y) 
+        if (is.numeric(y)) round(y, 4) else y))
+    attributes(output) <- attributes(output)[sort(names(attributes(output)))]
+    expect_equal(digest::digest(output), "e950f0451835e77bc94b91499dd73949")
 })

@@ -39,5 +39,19 @@ test_that("tde_gp model_output works", {
     expect_true("pred_var" %in% names(model_output))
     expect_equal(dim(model_output), c(99, 4))
     expect_equal(digest::digest(round(model_output, 4)),
-                 "8f765da4f14bb15fd30981aff41c221f")
+                 "a0f1673cb54878e9c88a8e7b47b9bb4d")
+})
+
+test_that("tde_gp works on time series", {
+    expect_error(output <- tde_gp(AirPassengers, 
+                                  E = 7, stats_only = FALSE),
+                 NA)
+    model_output <- round(output$model_output[[1]], 4)
+    expect_equal(digest::digest(model_output), "99364c2456a65ec7a13dd0d8f2f1bf2c")
+    
+    output <- output[, !(names(output) %in% "model_output")]
+    output <- data.frame(lapply(output, function(y) 
+        if (is.numeric(y)) round(y, 4) else y))
+    attributes(output) <- attributes(output)[sort(names(attributes(output)))]
+    expect_equal(digest::digest(output), "5c59eef4c687a6bd589f72a64d35c5f8")
 })

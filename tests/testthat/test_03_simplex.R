@@ -40,6 +40,19 @@ test_that("simplex model_output works", {
                  "3ca91650810e31a0f84eccc8d35a513c")
 })
 
+test_that("simplex works on time series", {
+    expect_warning(output <- simplex(AirPassengers, 
+                                     E = 7, stats_only = FALSE))
+    model_output <- round(output$model_output[[1]], 4)
+    expect_equal(digest::digest(model_output), "22d06a4d868f1e3070aef99f270f1dee")
+    
+    output <- output[, !(names(output) %in% "model_output")]
+    output <- data.frame(lapply(output, function(y) 
+        if (is.numeric(y)) round(y, 4) else y))
+    attributes(output) <- attributes(output)[sort(names(attributes(output)))]
+    expect_equal(digest::digest(output), "e3d42ba41f5d9e7527af7e31a2cad576")
+})
+
 test_that("simplex error checking works", {
     expect_warning(simplex(1:10))
     expect_error(simplex(1:5, E = 5, silent = TRUE))

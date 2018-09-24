@@ -115,7 +115,12 @@ block_lnlp <- function(block, lib = c(1, NROW(block)), pred = lib,
     model <- new(BlockLNLP)
     
     # setup data
-    block <- setup_time_and_data_block(model, first_column_time, block)
+    dat <- setup_time_and_block(block, first_column_time)
+    time <- dat$time
+    block <- dat$block
+    model$set_time(time)
+    model$set_block(block)
+    
     model$set_target_column(convert_to_column_indices(target_column, block, 
                                                       silent = silent))
     
