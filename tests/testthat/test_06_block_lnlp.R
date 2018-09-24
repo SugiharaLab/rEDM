@@ -84,7 +84,7 @@ test_that("block_lnlp works on multivariate time series", {
                                         method = "s-map", theta = 1, 
                                         stats_only = FALSE))
     model_output <- round(output$model_output[[1]], 4)
-    expect_equal(digest::digest(model_output), "6e2cff4cc75b5251a40b8955b75b321d")
+    expect_equal(digest::digest(model_output), "0aa6e157bcaa8a827f592364edffdd9b")
     
     output <- output[, !(names(output) %in% "model_output")]
     output <- data.frame(lapply(output, function(y) 
