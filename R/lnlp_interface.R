@@ -87,21 +87,7 @@ simplex <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
     model <- new(LNLP)
     
     # setup data
-    if (is.vector(time_series)) {
-        if (!is.null(names(time_series))) {
-            time <- as.numeric(names(time_series))
-            if (any(is.na(time)))
-                time <- seq_along(time_series)
-        } else {
-            time <- seq_along(time_series)
-        }
-    } else if ((is.matrix(time_series) || is.data.frame(time_series)) && 
-               NCOL(time_series) >= 2) {
-        time <- time_series[, 1]
-        time_series <- time_series[, 2]
-    }
-    model$set_time(time)
-    model$set_time_series(time_series)
+    setup_time_and_time_series(model, time_series)
            
     # setup norm and pred types
     model$set_norm(norm)
@@ -188,15 +174,7 @@ s_map <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
     model <- new(LNLP)
     
     # setup data
-    if (is.vector(time_series)) {
-        time <- seq_along(time_series)
-    } else if ((is.matrix(time_series) || is.data.frame(time_series)) && 
-               NCOL(time_series) >= 2) {
-        time <- time_series[, 1]
-        time_series <- time_series[, 2]
-    }
-    model$set_time(time)
-    model$set_time_series(time_series)
+    setup_time_and_time_series(model, time_series)
     
     # setup norm and pred types
     model$set_norm(norm)

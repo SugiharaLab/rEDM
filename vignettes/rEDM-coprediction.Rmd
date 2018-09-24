@@ -7,7 +7,6 @@ output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{"co-prediction: using rEDM to quantify dynamic similarity"}
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
   %\VignetteDepends{ggplot2}
 ---
 

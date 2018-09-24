@@ -10,7 +10,6 @@ output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{"rEDM: an R package for Empirical Dynamic Modeling and Convergent Cross Mapping"}
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
   %\VignetteDepends{ggplot2}
 csl: ecology.csl
 bibliography: refs.bib

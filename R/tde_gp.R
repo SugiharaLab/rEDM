@@ -54,7 +54,10 @@ tde_gp <- function(time_series, lib = c(1, NROW(time_series)), pred = lib,
     pred <- coerce_lib(pred, silent = silent)
 
     # setup data
-    if (is.vector(time_series)) {
+    if (is.ts(time_series)) {
+        time <- as.numeric(time(time_series))
+        time_series <- as.numeric(time_series)
+    } else if (is.vector(time_series)) {
         if (!is.null(names(time_series))) {
             time <- as.numeric(names(time_series))
             if (any(is.na(time)))

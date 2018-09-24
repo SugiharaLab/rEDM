@@ -52,6 +52,29 @@ coerce_lib <- function(lib, silent = FALSE) {
     return(lib)
 }
 
+setup_time_and_time_series <- function(model, time_series)
+{
+    if (is.ts(time_series)) {
+        time <- as.numeric(time(time_series))
+        time_series <- as.numeric(time_series)
+    } else if (is.vector(time_series)) {
+        if (!is.null(names(time_series))) {
+            time <- as.numeric(names(time_series))
+            if (any(is.na(time)))
+                time <- seq_along(time_series)
+        } else {
+            time <- seq_along(time_series)
+        }
+    } else if ((is.matrix(time_series) || is.data.frame(time_series)) && 
+               NCOL(time_series) >= 2) {
+        time <- time_series[, 1]
+        time_series <- time_series[, 2]
+    }
+    model$set_time(time)
+    model$set_time_series(time_series)
+    return()
+}
+
 setup_time_and_data_block <- function(model, first_column_time, block)
 {
     if (first_column_time)
@@ -61,7 +84,7 @@ setup_time_and_data_block <- function(model, first_column_time, block)
         else
         {
             time <- block[, 1]
-            block <- block[, -1]
+            block <- block[, -1, drop = FALSE]
         }
     }
     else
