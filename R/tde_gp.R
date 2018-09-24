@@ -11,7 +11,7 @@
 #' 
 #' @inheritParams block_lnlp
 #' @inheritParams simplex
-#' @inheritParams tde_gp
+#' @inheritParams block_gp
 #' @param ... other parameters. see 'Details'
 #' @return If stats_only, then a data.frame with components for the parameters 
 #'   and forecast statistics:

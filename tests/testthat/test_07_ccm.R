@@ -50,15 +50,15 @@ test_that("ccm_means works", {
 })
 
 test_that("ccm works on multivariate time series", {
-    expect_warning(output <- ccm(EuStockMarkets, 
+    expect_warning(output <- ccm(EuStockMarkets[1:300, ], 
                                  lib_column = "DAX",
                                  target_column = "CAC", 
-                                 RNGseed = 42))
+                                 random_libs = FALSE))
     
     output <- data.frame(lapply(output, function(y) 
         if (is.numeric(y)) round(y, 4) else y))
     attributes(output) <- attributes(output)[sort(names(attributes(output)))]
-    expect_equal(digest::digest(output), "590ff1e7c72c3be3e143a96073a07a01")
+    expect_equal(digest::digest(output), "004d6d6aa7e57fed21ec9385b02dac03")
 })
 
 test_that("ccm error checking works", {

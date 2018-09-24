@@ -27,8 +27,20 @@ series to forecast.}
 
 \item{tp}{the prediction horizon (how far ahead to forecast)}
 
+\item{phi}{length-scale parameter. see 'Details'}
+
+\item{v_e}{noise-variance parameter. see 'Details'}
+
+\item{eta}{signal-variance parameter. see 'Details'}
+
+\item{fit_params}{specify whether to use MLE to estimate params over the lib}
+
 \item{stats_only}{specify whether to output just the forecast statistics or 
 the raw predictions for each run}
+
+\item{save_covariance_matrix}{specifies whether to include the full 
+covariance matrix with the output (and forces the full output as if 
+stats_only were set to FALSE)}
 
 \item{silent}{prevents warning messages from being printed to the R console}
 
