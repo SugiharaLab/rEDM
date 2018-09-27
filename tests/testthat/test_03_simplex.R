@@ -53,6 +53,19 @@ test_that("simplex works on time series", {
     expect_equal(digest::digest(output), "e3d42ba41f5d9e7527af7e31a2cad576")
 })
 
+test_that("simplex works on multivariate time series", {
+    expect_warning(output <- simplex(EuStockMarkets, 
+                                     E = 6, stats_only = FALSE))
+    model_output <- round(output$model_output[[1]], 4)
+    expect_equal(digest::digest(model_output), "a5bb66a31ce1816b11599acb59f3b55b")
+    
+    output <- output[, !(names(output) %in% "model_output")]
+    output <- data.frame(lapply(output, function(y) 
+        if (is.numeric(y)) round(y, 4) else y))
+    attributes(output) <- attributes(output)[sort(names(attributes(output)))]
+    expect_equal(digest::digest(output), "53a3720878b52780ddf89b9a604d49b2")
+})
+
 test_that("simplex error checking works", {
     expect_warning(simplex(1:10))
     expect_error(simplex(1:5, E = 5, silent = TRUE))

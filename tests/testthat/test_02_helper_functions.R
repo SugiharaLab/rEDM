@@ -48,6 +48,47 @@ test_that("coerce_lib produces desired output", {
     expect_warning(coerce_lib(pred), "the pred argument")
 })
 
+test_that("setup_time_and_time_series produces desired output", {
+    out <- setup_time_and_time_series(airquality$Temp)
+    expect_equal(out$time, seq(153))
+    expect_equal(out$time_series, airquality$Temp)
+    
+    out <- setup_time_and_time_series(airmiles)
+    expect_equal(out$time, seq(1937, 1960))
+    expect_equal(out$time_series, as.numeric(airmiles))
+
+    out <- setup_time_and_time_series(EuStockMarkets)
+    expect_equal(out$time, as.numeric(time(EuStockMarkets)))
+    expect_equal(out$time_series, as.numeric(EuStockMarkets[, "DAX"]))
+
+    out <- setup_time_and_time_series(iris)
+    expect_equal(out$time, iris$Sepal.Length)
+    expect_equal(out$time_series, iris$Sepal.Width)
+    
+    out <- setup_time_and_time_series(as.matrix(airquality))
+    expect_equal(out$time, seq(NROW(airquality)))
+    expect_equal(out$time_series, airquality$Solar.R)
+})
+
+test_that("setup_time_and_block produces desired output", {
+    expect_error(out <- setup_time_and_block(airquality$Temp, TRUE))
+    expect_error(out <- setup_time_and_block(AirPassengers, TRUE))
+
+    out <- setup_time_and_block(EuStockMarkets, TRUE)
+    expect_equal(out$time, as.numeric(EuStockMarkets[, 1]))
+    expect_equal(out$block, matrix(EuStockMarkets[, 2:4], ncol = 3, 
+                                   dimnames = list(NULL, colnames(EuStockMarkets)[2:4])))
+    
+    out <- setup_time_and_block(EuStockMarkets, FALSE)
+    expect_equal(out$time, as.numeric(time(EuStockMarkets)))
+    expect_equal(out$block, matrix(EuStockMarkets, ncol = 4, 
+                                   dimnames = list(NULL, colnames(EuStockMarkets))))
+    
+    out <- setup_time_and_block(airquality, FALSE)
+    expect_equal(out$time, seq(NROW(airquality)))
+    expect_equal(out$block, data.matrix(airquality))
+})
+
 test_that("make_block produces desired output", {
     out_actual <- data.frame(
         time = 1:100, 

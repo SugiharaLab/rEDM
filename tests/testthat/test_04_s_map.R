@@ -89,6 +89,20 @@ test_that("s-map works on time series", {
     expect_equal(digest::digest(output), "b31f94cc3d234f45e4b26aa4a4444159")
 })
 
+
+test_that("s-map works on multivariate time series", {
+    expect_warning(output <- s_map(EuStockMarkets, 
+                                     E = 6, theta = 1, stats_only = FALSE))
+    model_output <- round(output$model_output[[1]], 4)
+    expect_equal(digest::digest(model_output), "b72187b45cc3bc56fae75daeec740e11")
+    
+    output <- output[, !(names(output) %in% "model_output")]
+    output <- data.frame(lapply(output, function(y) 
+        if (is.numeric(y)) round(y, 4) else y))
+    attributes(output) <- attributes(output)[sort(names(attributes(output)))]
+    expect_equal(digest::digest(output), "db27e5eeec3de0f898ee82f9837558f4")
+})
+
 test_that("s-map error checking works", {
     expect_warning(s_map(1:10))
     expect_error(s_map(1:5, E = 5, silent = TRUE))

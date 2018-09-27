@@ -54,6 +54,9 @@ coerce_lib <- function(lib, silent = FALSE) {
 
 setup_time_and_time_series <- function(time_series)
 {
+    if (is.mts(time_series)) {
+        time_series <- time_series[, 1]
+    }
     if (is.ts(time_series)) {
         time <- as.numeric(time(time_series))
         time_series <- as.numeric(time_series)
@@ -71,18 +74,18 @@ setup_time_and_time_series <- function(time_series)
         time_series <- time_series[, 2]
     }
     if (any(is.na(time)))
-        time <- 1:NROW(block)
+        time <- seq(length(time_series))
     return(list(time = time, 
                 time_series = time_series))
 }
 
-setup_time_and_block <- function(block, first_column_time)
+setup_time_and_block <- function(block, first_column_time = FALSE)
 {
     if (first_column_time)
     {
         if (is.mts(block)) # convert multivariate time series into matrix
         {
-            block <- as.matrix(block)
+            class(block) <- "matrix"
         }
         
         if (is.vector(block) || is.ts(block))
@@ -98,19 +101,20 @@ setup_time_and_block <- function(block, first_column_time)
         if (is.mts(block)) # use time index from multivariate time series
         {
             time <- time(block)
-            block <- as.matrix(block)
+            class(block) <- "matrix"
+            attr(block, "tsp") <- NULL
         } else {
             time <- rownames(block)
         }
     }
     if (is.null(time))
     {
-        time <- 1:NROW(block)
+        time <- seq(NROW(block))
     } else {
         time <- as.numeric(time)
     }
     if (any(is.na(time)))
-        time <- 1:NROW(block)
+        time <- seq(NROW(block))
     return(list(time = time, 
                 block = data.matrix(block)))
 }
