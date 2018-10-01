@@ -65,7 +65,7 @@ passing in that block and all remaining arguments into block_gp." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rEDM</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.7.2</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.7.3</span>
       </span>
     </div>
 
@@ -167,9 +167,31 @@ series to forecast.</p></td>
       <td><p>the prediction horizon (how far ahead to forecast)</p></td>
     </tr>
     <tr>
+      <th>phi</th>
+      <td><p>length-scale parameter. see 'Details'</p></td>
+    </tr>
+    <tr>
+      <th>v_e</th>
+      <td><p>noise-variance parameter. see 'Details'</p></td>
+    </tr>
+    <tr>
+      <th>eta</th>
+      <td><p>signal-variance parameter. see 'Details'</p></td>
+    </tr>
+    <tr>
+      <th>fit_params</th>
+      <td><p>specify whether to use MLE to estimate params over the lib</p></td>
+    </tr>
+    <tr>
       <th>stats_only</th>
       <td><p>specify whether to output just the forecast statistics or 
 the raw predictions for each run</p></td>
+    </tr>
+    <tr>
+      <th>save_covariance_matrix</th>
+      <td><p>specifies whether to include the full 
+covariance matrix with the output (and forces the full output as if 
+stats_only were set to FALSE)</p></td>
     </tr>
     <tr>
       <th>silent</th>
