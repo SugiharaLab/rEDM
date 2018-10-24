@@ -1,8 +1,0 @@
-pandoc: '2.3'
-pkgdown: 1.1.0
-pkgdown_sha: ~
-articles:
-  rEDM-coprediction: rEDM-coprediction.html
-  rEDM-time-delay-ccm: rEDM-time-delay-ccm.html
-  rEDM-tutorial: rEDM-tutorial.html
-

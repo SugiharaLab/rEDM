@@ -17,3 +17,15 @@ before_install:
   - tlmgr install pgfplots algorithmicx
 r_build_args: '--no-build-vignettes'
 r_check_args: '--ignore-vignettes --no-examples'
+
+after_success:
+  - Rscript -e 'pkgdown::build_site()'
+  
+deploy:
+  provider: pages
+  skip-cleanup: true
+  github-token: $GITHUB_PAT
+  keep-history: true
+  local-dir: docs
+  on:
+    branch: master
