@@ -19,6 +19,7 @@ r_build_args: '--no-build-vignettes'
 r_check_args: '--ignore-vignettes --no-examples'
 
 after_success:
+  - R CMD INSTALL .
   - Rscript -e 'pkgdown::build_site()'
   
 deploy:

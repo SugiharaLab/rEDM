@@ -6,6 +6,7 @@ reference:
       - s_map
       - block_lnlp
       - ccm
+      - ccm_means
       - multiview
       - tde_gp
       - block_gp
