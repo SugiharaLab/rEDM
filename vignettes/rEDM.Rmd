@@ -54,9 +54,11 @@ The essential concept is that time series can be viewed as projections of the be
 
 Consequently, it is possible to project the system state onto one of the coordinate axes and obtain the value of the corresponding state variable. Sequential projections over time will thus produce a time series for that variable. For example, in the below figure, the states of the canonical Lorenz Attractor [-@Lorenz_1963] are projected to the $x$-axis, creating a time series of variable $x$.
 
-```{r fig_time_series_projection, echo = FALSE, fig.cap = "Time Series Projection from the Lorenz Attractor"}
-knitr::include_graphics("figure_1.svg")
-```
+<center>
+<img src = "figure_1.svg">
+
+*Time Series Projection from the Lorenz Attractor*
+</center>
 
 In simple cases, each time series will represent a different state variable. However, more generally, each time series is an *observation function* of the system state, and may be a function of several different state variables. 
 
@@ -65,9 +67,11 @@ In simple cases, each time series will represent a different state variable. How
 The goal of EDM is to reconstruct the system dynamics from time series data. Because time series are sequential observations of the system behavior, information about the rules that govern system behavior (i.e. the system dynamics) is therefore encoded in the data. Takens' Theorem [-@Takens_1981] provides a way to recover this information using just a single time series. Although the system behavior is nominally determined by a high-dimensional state space, we can substitute lags of a time series for any unknown or unobserved variables. For example, instead of representing the system state of the Lorenz Attractor using $x$, $y$, and $z$, we can instead use an embedding that consists of $E$ lags of $x$:
 $$ \mathbf{x}_t = \left( x_t, x_{t-\tau}, \dots, x_{t-(E-1)\tau} \right) $$
 
-```{r fig_attractor_reconstruction, echo = FALSE, fig.cap = "Attractor Reconstruction from 3 Lagged Coordinates"}
-knitr::include_graphics("figure_2.svg")
-```
+<center>
+<img src = "figure_2.svg">
+
+*Attractor Reconstruction from 3 Lagged Coordinates*
+</center>
 
 By Takens' Theorem, if sufficient lags are used, the reconstruction is a diffeomorphism of the original system. In other words, reconstructed states will map one-to-one to actual system states, and nearby points in the reconstruction will correspond to similar system states. The above figure shows a reconstruction of the Lorenz attractor where the reconstructed system state is comprised of 3 lags of variable $x$. There is a clear visual correspondence between the reconstruction and the original Lorenz attractor.
 
@@ -425,9 +429,11 @@ par(pty = "m", mfrow = c(1, 1))
 
 One of the corollaries to Takens' Theorem is that multiple reconstructions not only map to the original system, but also to each other. Consider two variables, $x$ and $y$ that interact in a dynamic system. The univariate reconstructions based on lags of $x$ ($\mathbf{M}_x$) or $y$ ($\mathbf{M}_y$) are each capable of uniquely identifying system states. Thus, the reconstructed states of $\mathbf{M}_x$ map to reconstructed states of $\mathbf{M}_y$. This suggests a way to test whether $x$ and $y$ interact in the same system, by testing for a mapping between $\mathbf{M}_x$ and $\mathbf{M}_y$. Practically this is done by testing the predictive skill for the mapping from $\mathbf{M}_x$ to $y$ and from $\mathbf{M}_y$ to $x$.
 
-```{r fig_cross_mapping, echo = FALSE, fig.cap = "Cross Mapping Between Reconstructions of the Lorenz Attractor"}
-knitr::include_graphics("figure_3.svg")
-```
+<center>
+<img src = "figure_3.svg">
+
+*Cross Mapping Between Reconstructions of the Lorenz Attractor*
+</center>
 
 Furthermore, in the case of unidirectional causality, e.g. $x$ causes $y$, but $y$ does not cause $x$, we would only expect cross mapping to be successful in one direction. Somewhat counterintuitively, if a causal variable ($x$) leaves a signature on the affected variable ($y$), then it is possible to map from $\mathbf{M}_y$ to $\mathbf{M}_x$, but not vice-versa.
 
