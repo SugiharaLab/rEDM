@@ -55,7 +55,8 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
                 lib_sizes = seq(10, 100, by = 10), random_libs = TRUE, 
                 num_samples = 100, replace = TRUE, lib_column = 1, 
                 target_column = 2, first_column_time = FALSE, RNGseed = NULL, 
-                exclusion_radius = NULL, epsilon = NULL, silent = FALSE)
+                exclusion_radius = NULL, epsilon = NULL, 
+                stats_only = TRUE, silent = FALSE)
 {
     # make new model object
     model <- new(Xmap)
@@ -129,9 +130,21 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
                      random_libs, num_samples, replace)
     if (!is.null(RNGseed))
         model$set_seed(RNGseed)
+    if (!stats_only)
+        model$save_model_output()
+    
     model$run()
-    stats <- model$get_output()
-    return(cbind(params, stats, row.names = NULL))
+    
+    if (stats_only)
+    {
+        stats <- model$get_stats()
+        out <- cbind(params, stats, row.names = NULL)
+    } else {
+        stats <- model$get_stats()
+        model_output <- model$get_output()
+        out <- cbind(params, stats, model_output, row.names = NULL)
+    }
+    return(out)
 }
 
 #' Take output from ccm and compute means as a function of library size.

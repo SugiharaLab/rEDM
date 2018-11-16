@@ -3,18 +3,19 @@
 \name{simplex}
 \alias{simplex}
 \alias{s_map}
-\alias{s_map}
 \title{Perform univariate forecasting}
 \usage{
-simplex(time_series, lib = c(1, NROW(time_series)), pred = lib, norm = 2,
-  E = 1:10, tau = 1, tp = 1, num_neighbors = "e+1", stats_only = TRUE,
-  exclusion_radius = NULL, epsilon = NULL, silent = FALSE)
-
-s_map(time_series, lib = c(1, NROW(time_series)), pred = lib, norm = 2,
-  E = 1, tau = 1, tp = 1, num_neighbors = 0, theta = c(0, 1e-04,
-  3e-04, 0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 0.5, 0.75, 1, 1.5, 2, 3, 4, 6, 8),
+simplex(time_series, lib = c(1, NROW(time_series)), pred = lib,
+  norm = 2, E = 1:10, tau = 1, tp = 1, num_neighbors = "e+1",
   stats_only = TRUE, exclusion_radius = NULL, epsilon = NULL,
-  silent = FALSE, save_smap_coefficients = FALSE)
+  silent = FALSE)
+
+s_map(time_series, lib = c(1, NROW(time_series)), pred = lib,
+  norm = 2, E = 1, tau = 1, tp = 1, num_neighbors = 0,
+  theta = c(0, 1e-04, 3e-04, 0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 0.5,
+  0.75, 1, 1.5, 2, 3, 4, 6, 8), stats_only = TRUE,
+  exclusion_radius = NULL, epsilon = NULL, silent = FALSE,
+  save_smap_coefficients = FALSE)
 }
 \arguments{
 \item{time_series}{either a vector to be used as the time series, or a 

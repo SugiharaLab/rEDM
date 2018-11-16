@@ -6,8 +6,8 @@
 \usage{
 block_lnlp(block, lib = c(1, NROW(block)), pred = lib, norm = 2,
   method = c("simplex", "s-map"), tp = 1,
-  num_neighbors = switch(match.arg(method), simplex = "e+1", `s-map` = 0),
-  columns = NULL, target_column = 1, stats_only = TRUE,
+  num_neighbors = switch(match.arg(method), simplex = "e+1", `s-map` =
+  0), columns = NULL, target_column = 1, stats_only = TRUE,
   first_column_time = FALSE, exclusion_radius = NULL, epsilon = NULL,
   theta = NULL, silent = FALSE, save_smap_coefficients = FALSE)
 }

@@ -49,6 +49,29 @@ test_that("ccm_means works", {
                   "c966dd8ec76cb29d1fc0dc34b64638ea")
 })
 
+test_that("ccm model_output works", {
+    expect_error(ccm_out <- ccm(sardine_anchovy_sst, E = 3, 
+                                lib_sizes = seq(10, 80, by = 10), 
+                                lib_column = "anchovy", target_column = "np_sst",
+                                stats_only = FALSE, 
+                                random_libs = FALSE, silent = TRUE),
+                 NA)
+    expect_s3_class(ccm_out, "data.frame")
+    expect_true("model_output" %in% names(ccm_out))
+    expect_true(is.list(ccm_out$model_output))
+    expect_error(model_output <- ccm_out$model_output[[1]], NA)
+    expect_s3_class(model_output, "data.frame")
+    expect_true("time" %in% names(model_output))
+    expect_true("obs" %in% names(model_output))
+    expect_true("pred" %in% names(model_output))
+    expect_true("pred_var" %in% names(model_output))
+    expect_equal(dim(model_output), c(200, 4))
+    expect_equal(digest::digest(round(model_output, 4)), 
+                 "d180a19cc4629e64c36712153226e8e0")
+    
+    ### add test for ccm_means on ccm_output with model_output
+})
+
 test_that("ccm works on multivariate time series", {
     expect_warning(output <- ccm(EuStockMarkets[1:300, ], 
                                  lib_column = "DAX",

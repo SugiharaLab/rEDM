@@ -4,10 +4,11 @@
 \alias{block_gp}
 \title{(generalized) Block forecasting using Gaussian Processes}
 \usage{
-block_gp(block, lib = c(1, NROW(block)), pred = lib, tp = 1, phi = 0,
-  v_e = 0, eta = 0, fit_params = TRUE, columns = NULL,
-  target_column = 1, stats_only = TRUE, save_covariance_matrix = FALSE,
-  first_column_time = FALSE, silent = FALSE, ...)
+block_gp(block, lib = c(1, NROW(block)), pred = lib, tp = 1,
+  phi = 0, v_e = 0, eta = 0, fit_params = TRUE, columns = NULL,
+  target_column = 1, stats_only = TRUE,
+  save_covariance_matrix = FALSE, first_column_time = FALSE,
+  silent = FALSE, ...)
 }
 \arguments{
 \item{block}{either a vector to be used as the time series, or a 

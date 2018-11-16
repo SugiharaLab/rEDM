@@ -4,7 +4,7 @@
 Xmap::Xmap():
     block(std::vector<vec>()), lib_sizes(std::vector<size_t>()), tp(0), E(0), 
     tau(1), lib_col(0), target(0), random_libs(true), num_samples(0), seed(42), 
-    remake_vectors(true), remake_targets(true), remake_ranges(true)
+    remake_vectors(true), remake_targets(true), remake_ranges(true), save_model_preds(false)
 {
     pred_mode = SIMPLEX;
     seed = (size_t)(std::chrono::high_resolution_clock::now().time_since_epoch().count());
@@ -133,6 +133,59 @@ void Xmap::set_seed(const size_t new_seed)
     return;
 }
 
+void Xmap::save_model_output()
+{
+    size_t num_models = 0;
+    std::vector<size_t> full_lib = which_lib;
+    size_t max_lib_size = full_lib.size();
+    
+    if (!random_libs || !replace)
+    {
+        num_models = lib_sizes.size();
+    }
+    else if(random_libs)
+    {
+        num_models = lib_sizes.size() * num_samples;
+    }
+    else
+    {
+        for(auto lib_size: lib_sizes)
+        {
+            for(size_t k = 0; k < max_lib_size; ++k)
+            {
+                num_models++;
+            }
+        }
+    }
+    
+    model_output = List(num_models);
+    save_model_preds = true;
+    
+    return;
+}
+
+DataFrame Xmap::make_current_output()
+{
+    std::vector<size_t> pred_idx = which_indices_true(pred_requested_indices);
+    vec short_time(pred_idx.size(), qnan);
+    vec short_obs(pred_idx.size(), qnan);
+    vec short_pred(pred_idx.size(), qnan);
+    vec short_pred_var(pred_idx.size(), qnan);
+    
+    for(size_t i = 0; i < pred_idx.size(); ++i)
+    {
+        short_time[i] = target_time[pred_idx[i]];
+        short_obs[i] = targets[pred_idx[i]];
+        short_pred[i] = predicted[pred_idx[i]];
+        short_pred_var[i] = predicted_var[pred_idx[i]];
+    }
+    
+    return DataFrame::create( Named("time") = short_time, 
+                              Named("obs") = short_obs, 
+                              Named("pred") = short_pred, 
+                              Named("pred_var") = short_pred_var);
+}
+
 void Xmap::suppress_warnings()
 {
     SUPPRESS_WARNINGS = true;
@@ -156,6 +209,7 @@ void Xmap::run()
  
     size_t m;
     size_t t;
+    size_t model_counter = 0;
 
     for(auto lib_size: lib_sizes)
     {
@@ -171,6 +225,10 @@ void Xmap::run()
             forecast();
             predicted_stats.push_back(make_stats());
             predicted_lib_sizes.push_back(max_lib_size);
+            if(save_model_preds)
+            {
+                model_output[model_counter] = make_current_output();
+            }
             if(lib_size != lib_sizes.back())
             {
                 LOG_WARNING("maximum lib size reached; ignoring remainder");
@@ -210,6 +268,10 @@ void Xmap::run()
                 forecast();
                 predicted_stats.push_back(make_stats());
                 predicted_lib_sizes.push_back(lib_size);
+                if(save_model_preds)
+                {
+                    model_output[model_counter] = make_current_output();
+                }
             }
         }
         else
@@ -232,6 +294,10 @@ void Xmap::run()
                 forecast();
                 predicted_stats.push_back(make_stats());
                 predicted_lib_sizes.push_back(lib_size);
+                if(save_model_preds)
+                {
+                    model_output[model_counter] = make_current_output();
+                }
             }
         }
     }
@@ -239,7 +305,7 @@ void Xmap::run()
     return;
 }
 
-DataFrame Xmap::get_output()
+DataFrame Xmap::get_stats()
 {
     std::vector<size_t> num_pred;
     std::vector<double> rho;
@@ -259,6 +325,11 @@ DataFrame Xmap::get_output()
                               Named("rho") = rho, 
                               Named("mae") = mae, 
                               Named("rmse") = rmse );
+}
+
+List Xmap::get_output()
+{
+    return model_output;
 }
 
 // *** PRIVATE METHODS FOR INTERNAL USE ONLY *** //
@@ -363,8 +434,10 @@ RCPP_MODULE(xmap_module)
     .method("set_target_column", &Xmap::set_target_column)
     .method("set_params", &Xmap::set_params)
     .method("set_seed", &Xmap::set_seed)
+    .method("save_model_output", &Xmap::save_model_output)
     .method("suppress_warnings", &Xmap::suppress_warnings)
     .method("run", &Xmap::run)
+    .method("get_stats", &Xmap::get_stats)
     .method("get_output", &Xmap::get_output)
     ;
 }
