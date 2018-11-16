@@ -131,18 +131,16 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
     if (!is.null(RNGseed))
         model$set_seed(RNGseed)
     if (!stats_only)
-        model$save_model_output()
+        model$enable_model_output()
     
     model$run()
     
-    if (stats_only)
+    stats <- model$get_stats()
+    out <- cbind(params, stats, row.names = NULL)
+    
+    if (!stats_only)
     {
-        stats <- model$get_stats()
-        out <- cbind(params, stats, row.names = NULL)
-    } else {
-        stats <- model$get_stats()
-        model_output <- model$get_output()
-        out <- cbind(params, stats, model_output, row.names = NULL)
+        out$model_output <- model$get_output()
     }
     return(out)
 }

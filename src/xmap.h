@@ -29,7 +29,7 @@ public:
                     const size_t new_nn, const bool new_random_libs, 
                     const size_t new_num_samples, const bool new_replace);
     void set_seed(const size_t new_seed);
-    void save_model_output();
+    void enable_model_output();
     DataFrame make_current_output();
     void suppress_warnings();
     void run();
@@ -40,6 +40,7 @@ private:
     void prepare_forecast();
     void make_vectors();
     void make_targets();
+    void prep_model_output();
     
     // *** local parameters *** //
     std::vector<vec> block;

@@ -65,9 +65,18 @@ test_that("ccm model_output works", {
     expect_true("obs" %in% names(model_output))
     expect_true("pred" %in% names(model_output))
     expect_true("pred_var" %in% names(model_output))
-    expect_equal(dim(model_output), c(200, 4))
-    expect_equal(digest::digest(round(model_output, 4)), 
-                 "d180a19cc4629e64c36712153226e8e0")
+    
+    # check that number of rows of model output match up with number of predictions
+    expect_equal(vapply(ccm_out$model_output, NROW, 1), 
+                 rep.int(78, times = 533))
+    expect_equal(vapply(ccm_out$model_output, NCOL, 1), 
+                 rep.int(4, times = 533))
+    
+    # check a few digests
+    expect_equal(digest::digest(round(ccm_out$model_output[[1]], 4)), 
+                 "c4725803e1b8974909c8128475b5d463")
+    expect_equal(digest::digest(round(ccm_out$model_output[[533]], 4)), 
+                 "7608d92d62c38edf583730e720635730")
     
     ### add test for ccm_means on ccm_output with model_output
 })

@@ -133,34 +133,44 @@ void Xmap::set_seed(const size_t new_seed)
     return;
 }
 
-void Xmap::save_model_output()
+void Xmap::enable_model_output()
 {
-    size_t num_models = 0;
-    std::vector<size_t> full_lib = which_lib;
-    size_t max_lib_size = full_lib.size();
+    save_model_preds = true;
+    return;
+}
+
+void Xmap::prep_model_output()
+{
+    if (!save_model_preds)
+        return;
     
-    if (!random_libs || !replace)
+    size_t model_counter = 0;
+    for(auto lib_size: lib_sizes)
     {
-        num_models = lib_sizes.size();
-    }
-    else if(random_libs)
-    {
-        num_models = lib_sizes.size() * num_samples;
-    }
-    else
-    {
-        for(auto lib_size: lib_sizes)
+        if(lib_size >= which_lib.size() && (!random_libs || !replace))
+            // no possible lib variation if using all vectors and
+            // [no random libs OR (random_libs and sampling without replacement)]
         {
-            for(size_t k = 0; k < max_lib_size; ++k)
+            model_counter++;
+            break;
+        }
+        else if(random_libs)
+        {
+            for(size_t k = 0; k < num_samples; ++k)
             {
-                num_models++;
+                model_counter++;
+            }
+        }
+        else // no random libs and using contiguous segments
+        {
+            for(size_t k = 0; k < which_lib.size(); ++k)
+            {
+                model_counter++;
             }
         }
     }
     
-    model_output = List(num_models);
-    save_model_preds = true;
-    
+    model_output = List(model_counter);
     return;
 }
 
@@ -179,7 +189,7 @@ DataFrame Xmap::make_current_output()
         short_pred[i] = predicted[pred_idx[i]];
         short_pred_var[i] = predicted_var[pred_idx[i]];
     }
-    
+
     return DataFrame::create( Named("time") = short_time, 
                               Named("obs") = short_obs, 
                               Named("pred") = short_pred, 
@@ -195,7 +205,8 @@ void Xmap::suppress_warnings()
 void Xmap::run()
 {
     prepare_forecast(); // check parameters
-
+    prep_model_output();
+    
     // setup data structures and compute maximum lib size
     predicted_stats.clear();
     predicted_lib_sizes.clear();
@@ -228,6 +239,7 @@ void Xmap::run()
             if(save_model_preds)
             {
                 model_output[model_counter] = make_current_output();
+                model_counter++;
             }
             if(lib_size != lib_sizes.back())
             {
@@ -271,6 +283,7 @@ void Xmap::run()
                 if(save_model_preds)
                 {
                     model_output[model_counter] = make_current_output();
+                    model_counter++;
                 }
             }
         }
@@ -297,6 +310,7 @@ void Xmap::run()
                 if(save_model_preds)
                 {
                     model_output[model_counter] = make_current_output();
+                    model_counter++;
                 }
             }
         }
@@ -349,7 +363,8 @@ void Xmap::prepare_forecast()
     {
         set_indices_from_range(lib_indices, lib_ranges, (E-1)*tau, -std::max(0, tp), true);
         set_indices_from_range(pred_indices, pred_ranges, (E-1)*tau, -std::max(0, tp), false);
-
+        set_pred_requested_indices_from_range(pred_requested_indices, pred_ranges);
+        
         check_cross_validation();
 
         which_lib = which_indices_true(lib_indices);
@@ -434,7 +449,7 @@ RCPP_MODULE(xmap_module)
     .method("set_target_column", &Xmap::set_target_column)
     .method("set_params", &Xmap::set_params)
     .method("set_seed", &Xmap::set_seed)
-    .method("save_model_output", &Xmap::save_model_output)
+    .method("enable_model_output", &Xmap::enable_model_output)
     .method("suppress_warnings", &Xmap::suppress_warnings)
     .method("run", &Xmap::run)
     .method("get_stats", &Xmap::get_stats)
