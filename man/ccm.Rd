@@ -5,11 +5,11 @@
 \title{Perform convergent cross mapping using simplex projection}
 \usage{
 ccm(block, lib = c(1, NROW(block)), pred = lib, norm = 2, E = 1,
-  tau = 1, tp = 0, num_neighbors = "e+1", lib_sizes = seq(10, 100, by =
-  10), random_libs = TRUE, num_samples = 100, replace = TRUE,
+  tau = 1, tp = 0, num_neighbors = "e+1", lib_sizes = seq(10, 100,
+  by = 10), random_libs = TRUE, num_samples = 100, replace = TRUE,
   lib_column = 1, target_column = 2, first_column_time = FALSE,
   RNGseed = NULL, exclusion_radius = NULL, epsilon = NULL,
-  silent = FALSE)
+  stats_only = TRUE, silent = FALSE)
 }
 \arguments{
 \item{block}{either a vector to be used as the time series, or a 
@@ -61,6 +61,9 @@ this option off)}
 \item{epsilon}{excludes vectors from the search space of nearest neighbors 
 if their *distance* is farther away than epsilon (NULL turns this option 
 off)}
+
+\item{stats_only}{specify whether to output just the forecast statistics or 
+the raw predictions for each run}
 
 \item{silent}{prevents warning messages from being printed to the R console}
 }

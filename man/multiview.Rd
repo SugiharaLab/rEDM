@@ -6,8 +6,8 @@
 \usage{
 multiview(block, lib = c(1, floor(NROW(block)/2)),
   pred = c(floor(NROW(block)/2) + 1, NROW(block)), norm = 2, E = 3,
-  tau = 1, tp = 1, max_lag = 3, num_neighbors = "e+1", k = "sqrt",
-  na.rm = FALSE, target_column = 1, stats_only = TRUE,
+  tau = 1, tp = 1, max_lag = 3, num_neighbors = "e+1",
+  k = "sqrt", na.rm = FALSE, target_column = 1, stats_only = TRUE,
   save_lagged_block = FALSE, first_column_time = FALSE,
   exclusion_radius = NULL, silent = FALSE)
 }

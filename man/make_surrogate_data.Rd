@@ -5,14 +5,11 @@
 \alias{make_surrogate_shuffle}
 \alias{make_surrogate_ebisuzaki}
 \alias{make_surrogate_seasonal}
-\alias{make_surrogate_shuffle}
-\alias{make_surrogate_ebisuzaki}
-\alias{make_surrogate_seasonal}
 \alias{make_surrogate_twin}
 \title{Generate surrogate data for permutation/randomization tests}
 \usage{
-make_surrogate_data(ts, method = c("random_shuffle", "ebisuzaki", "seasonal",
-  "twin"), num_surr = 100, ...)
+make_surrogate_data(ts, method = c("random_shuffle", "ebisuzaki",
+  "seasonal", "twin"), num_surr = 100, ...)
 
 make_surrogate_shuffle(ts, num_surr = 100)
 
@@ -21,7 +18,8 @@ make_surrogate_ebisuzaki(ts, num_surr = 100)
 make_surrogate_seasonal(ts, num_surr = 100, T_period = 12)
 
 make_surrogate_twin(ts, num_surr = 1, dim = 1, tau = 1,
-  phase_lock = TRUE, T_period = 24, initial_point = "same_season", ...)
+  phase_lock = TRUE, T_period = 24, initial_point = "same_season",
+  ...)
 }
 \arguments{
 \item{ts}{the original time series}

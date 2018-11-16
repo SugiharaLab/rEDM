@@ -4,8 +4,8 @@
 \alias{test_nonlinearity}
 \title{Randomization test for nonlinearity using S-maps and surrogate data}
 \usage{
-test_nonlinearity(ts, method = "ebisuzaki", num_surr = 200, T_period = 1,
-  E = 1, ...)
+test_nonlinearity(ts, method = "ebisuzaki", num_surr = 200,
+  T_period = 1, E = 1, ...)
 }
 \arguments{
 \item{ts}{the original time series}

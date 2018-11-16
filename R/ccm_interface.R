@@ -55,7 +55,8 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
                 lib_sizes = seq(10, 100, by = 10), random_libs = TRUE, 
                 num_samples = 100, replace = TRUE, lib_column = 1, 
                 target_column = 2, first_column_time = FALSE, RNGseed = NULL, 
-                exclusion_radius = NULL, epsilon = NULL, silent = FALSE)
+                exclusion_radius = NULL, epsilon = NULL, 
+                stats_only = TRUE, silent = FALSE)
 {
     # make new model object
     model <- new(Xmap)
@@ -129,15 +130,27 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
                      random_libs, num_samples, replace)
     if (!is.null(RNGseed))
         model$set_seed(RNGseed)
+    if (!stats_only)
+        model$enable_model_output()
+    
     model$run()
-    stats <- model$get_output()
-    return(cbind(params, stats, row.names = NULL))
+    
+    stats <- model$get_stats()
+    out <- cbind(params, stats, row.names = NULL)
+    
+    if (!stats_only)
+    {
+        out$model_output <- model$get_output()
+    }
+    return(out)
 }
 
 #' Take output from ccm and compute means as a function of library size.
 #'
 #' \code{\link{ccm_means}} is a utility function to summarize output from the 
-#'   \code{\link{ccm}} function
+#'   \code{\link{ccm}} function. If there is a `model_output` column (e.g. if 
+#'   `ccm()` was run with `stats_only = FALSE`), then that column is dropped 
+#'   before summaries are computed.
 #' 
 #' @param ccm_df a data.frame, usually output from the \code{\link{ccm}} 
 #'   function
@@ -159,6 +172,7 @@ ccm_means <- function(ccm_df, FUN = mean, ...)
     target <- ccm_df$target_column[!duplicated(ccm_df$lib_size)]
     ccm_df$lib_column <- NULL
     ccm_df$target_column <- NULL
+    ccm_df$model_output <- NULL
     ccm_means <- aggregate(ccm_df, by = list(ccm_df$lib_size), FUN, ...)
     col_idx <- which(names(ccm_means) == "lib_size")
     ccm_means <- cbind(ccm_means[, 1:(col_idx - 1)], 

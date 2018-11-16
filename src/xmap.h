@@ -29,14 +29,18 @@ public:
                     const size_t new_nn, const bool new_random_libs, 
                     const size_t new_num_samples, const bool new_replace);
     void set_seed(const size_t new_seed);
+    void enable_model_output();
+    DataFrame make_current_output();
     void suppress_warnings();
     void run();
-    DataFrame get_output();
+    DataFrame get_stats();
+    List get_output();
     
 private:
     void prepare_forecast();
     void make_vectors();
     void make_targets();
+    void prep_model_output();
     
     // *** local parameters *** //
     std::vector<vec> block;
@@ -51,6 +55,8 @@ private:
     bool remake_vectors;
     bool remake_targets;
     bool remake_ranges;
+    bool save_model_preds;
+    List model_output;
     
     // *** output data structures *** //
     std::vector<PredStats> predicted_stats;
