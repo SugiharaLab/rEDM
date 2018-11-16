@@ -73,9 +73,22 @@ test_that("ccm model_output works", {
                  rep.int(4, times = 533))
     
     # check a few digests
-    expect_equal(digest::digest(round(ccm_out$model_output[[1]], 4)), 
+    idx <- 1
+    model_output <- ccm_out$model_output[[idx]]
+    model_stats <- compute_stats(model_output$obs, model_output$pred)
+    expect_equal(model_stats[, c("num_pred", "rho", "mae", "rmse")], 
+                 ccm_out[idx, c("num_pred", "rho", "mae", "rmse")], 
+                 check.attributes = FALSE)
+    expect_equal(digest::digest(round(model_output, 4)), 
                  "c4725803e1b8974909c8128475b5d463")
-    expect_equal(digest::digest(round(ccm_out$model_output[[533]], 4)), 
+    
+    idx <- 533
+    model_output <- ccm_out$model_output[[idx]]
+    model_stats <- compute_stats(model_output$obs, model_output$pred)
+    expect_equal(model_stats[, c("num_pred", "rho", "mae", "rmse")], 
+                 ccm_out[idx, c("num_pred", "rho", "mae", "rmse")], 
+                 check.attributes = FALSE)
+    expect_equal(digest::digest(round(model_output, 4)), 
                  "7608d92d62c38edf583730e720635730")
     
     ### add test for ccm_means on ccm_output with model_output
