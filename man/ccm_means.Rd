@@ -21,7 +21,9 @@ A data.frame with forecast statistics aggregated at each unique
 }
 \description{
 \code{\link{ccm_means}} is a utility function to summarize output from the 
-  \code{\link{ccm}} function
+  \code{\link{ccm}} function. If there is a `model_output` column (e.g. if 
+  `ccm()` was run with `stats_only = FALSE`), then that column is dropped 
+  before summaries are computed.
 }
 \examples{
 data("sardine_anchovy_sst")

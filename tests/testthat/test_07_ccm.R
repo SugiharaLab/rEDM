@@ -79,6 +79,23 @@ test_that("ccm model_output works", {
                  "7608d92d62c38edf583730e720635730")
     
     ### add test for ccm_means on ccm_output with model_output
+    expect_error(ccm_results <- ccm_means(ccm_out), NA)
+    expect_s3_class(ccm_results, "data.frame")
+    expect_true("E" %in% names(ccm_results))
+    expect_true("tau" %in% names(ccm_results))
+    expect_true("tp" %in% names(ccm_results))
+    expect_true("nn" %in% names(ccm_results))
+    expect_true("lib_column" %in% names(ccm_results))
+    expect_true("target_column" %in% names(ccm_results))
+    expect_true("lib_size" %in% names(ccm_results))
+    expect_equal(anyDuplicated(ccm_results$lib_size), 0)
+    expect_true("num_pred" %in% names(ccm_results))
+    expect_true("rho" %in% names(ccm_results))
+    expect_true("mae" %in% names(ccm_results))
+    expect_true("rmse" %in% names(ccm_results))
+    expect_equal(NROW(ccm_results), 8)
+    expect_equal(digest::digest(round(ccm_results$rho, 4)), 
+                 "c966dd8ec76cb29d1fc0dc34b64638ea")
 })
 
 test_that("ccm works on multivariate time series", {

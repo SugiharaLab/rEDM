@@ -148,7 +148,9 @@ ccm <- function(block, lib = c(1, NROW(block)), pred = lib,
 #' Take output from ccm and compute means as a function of library size.
 #'
 #' \code{\link{ccm_means}} is a utility function to summarize output from the 
-#'   \code{\link{ccm}} function
+#'   \code{\link{ccm}} function. If there is a `model_output` column (e.g. if 
+#'   `ccm()` was run with `stats_only = FALSE`), then that column is dropped 
+#'   before summaries are computed.
 #' 
 #' @param ccm_df a data.frame, usually output from the \code{\link{ccm}} 
 #'   function
@@ -170,6 +172,7 @@ ccm_means <- function(ccm_df, FUN = mean, ...)
     target <- ccm_df$target_column[!duplicated(ccm_df$lib_size)]
     ccm_df$lib_column <- NULL
     ccm_df$target_column <- NULL
+    ccm_df$model_output <- NULL
     ccm_means <- aggregate(ccm_df, by = list(ccm_df$lib_size), FUN, ...)
     col_idx <- which(names(ccm_means) == "lib_size")
     ccm_means <- cbind(ccm_means[, 1:(col_idx - 1)], 
