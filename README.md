@@ -25,7 +25,7 @@ The `rEDM` package is a collection of methods for Empirical Dynamic
 Modeling (EDM). EDM is based on the mathematical theory of recontructing
 attractor manifolds from time series data, with applications to
 forecasting, causal inference, and more. It is based on research
-software previously developed for the Sugihara Lab (University of
+software developed by the Sugihara Lab (University of
 California San Diego, Scripps Institution of Oceanography).
 
 ## Installation
