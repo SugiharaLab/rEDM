@@ -3,8 +3,7 @@
 
 # rEDM
 
-[![Build
-Status](https://travis-ci.org/ha0ye/rEDM.svg?branch=master)](https://travis-ci.org/ha0ye/rEDM)
+
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.596502.svg)](https://doi.org/10.5281/zenodo.596502)
 [![CRAN
 downloads](https://cranlogs.r-pkg.org/badges/grand-total/rEDM)](https://cran.rstudio.com/web/packages/rEDM/index.html)
@@ -17,7 +16,7 @@ Try out the package without installation (after loading, try clicking on
 `README.Rmd` in the `Files`
 tab).
 
-[![Binder](http://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/ha0ye/rEDM/master?urlpath=rstudio)
+
 
 ## Overview
 
@@ -40,7 +39,7 @@ OR from github with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("ha0ye/rEDM")
+devtools::install_github("SugiharaLab/rEDM")
 ```
 
 ## Example
