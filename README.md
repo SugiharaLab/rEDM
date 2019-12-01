@@ -1,118 +1,123 @@
+rEDM
+====
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-
-# rEDM
-
-
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.596502.svg)](https://doi.org/10.5281/zenodo.596502)
-[![CRAN
-downloads](https://cranlogs.r-pkg.org/badges/grand-total/rEDM)](https://cran.rstudio.com/web/packages/rEDM/index.html)
-
-<img src="man/figures/rEDM.png" width="200px">
-
-## Binder Demo
-
-Try out the package without installation (after loading, try clicking on
-`README.Rmd` in the `Files`
-tab).
-
-
-
-## Overview
+Overview
+--------
 
 The `rEDM` package is a collection of methods for Empirical Dynamic
-Modeling (EDM). EDM is based on the mathematical theory of recontructing
-attractor manifolds from time series data, with applications to
-forecasting, causal inference, and more. It is based on research
-software developed by the Sugihara Lab (University of
-California San Diego, Scripps Institution of Oceanography).
+Modeling (EDM). EDM is based on the mathematical theory of
+reconstructing attractor manifolds from time series data, with
+applications to forecasting, causal inference, and more. It is based on
+research software developed for the Sugihara Lab (University
+of California San Diego, Scripps Institution of Oceanography).
 
-## Installation
+## Empirical Dynamic Modeling (EDM)
+-------------------------------------
+
+This package implements an R wrapper of
+[EDM](http://deepeco.ucsd.edu/nonlinear-dynamics-research/edm/) tools from
+the [cppEDM](https://github.com/SugiharaLab/cppEDM) library.
+
+Functionality includes:
+
+* Simplex projection (Sugihara and May 1990)
+* Sequential Locally Weighted Global Linear Maps (S-map) (Sugihara 1994)
+* Multivariate embeddings (Dixon et. al. 1999)
+* Convergent cross mapping (Sugihara et. al. 2012)
+* Multiview embedding (Ye and Sugihara 2016)
+
+Installation
+------------
 
 You can install rEDM from CRAN with:
 
-``` r
-install.packages("rEDM")
-```
+    install.packages("rEDM")
 
-OR from github with:
+or the development version from github with:
 
-``` r
-# install.packages("devtools")
-devtools::install_github("SugiharaLab/rEDM")
-```
+    install.packages("devtools")
+    devtools::install_github("SugiharaLab/rEDM")
 
-## Example
+Example
+-------
 
 We begin by looking at annual time series of sunspots:
 
-``` r
-dat <- data.frame(yr = as.numeric(time(sunspot.year)), 
-                  sunspot_count = as.numeric(sunspot.year))
+    df <- data.frame(yr = as.numeric(time(sunspot.year)), 
+                     sunspot_count = as.numeric(sunspot.year))
 
-plot(dat$yr, dat$sunspot_count, type = "l", 
-     xlab = "year", ylab = "sunspots")
-```
+    plot(df$yr, df$sunspot_count, type = "l", 
+         xlab = "year", ylab = "sunspots")
 
-![](man/figures/sunspots-1.png)<!-- -->
+![](man/figures/sunspots-1.png)
 
-First, we use simplex to determine the optimal embedding dimension, E:
+First, we use `EmbedDimension()` to determine the optimal embedding
+dimension, E:
 
-``` r
-library(rEDM)                             # load the package
+    library(rEDM)   # load the package
+    # If you're new to the rEDM package, please check out the tutorial:
+    # vignette("rEDM-tutorial")
 
-n <- NROW(dat)
-lib <- c(1, floor(2/3 * n))               # indices for the first 2/3 of the time series
-pred <- c(floor(2/3 * n) + 1, n)          # indices for the final 1/3 of the time series
+    E.opt = EmbedDimension( dataFrame = df,    # input data
+                            lib     = "1 280", # portion of data to train
+                            pred    = "1 280", # portion of data to predict
+                            columns = "sunspot_count",
+                            target  = "sunspot_count" )
 
-output <- simplex(dat,                    # input data (for data.frames, uses 2nd column)
-                  lib = lib, pred = lib,  # which portions of the data to train and predict
-                  E = 1:10)               # embedding dimensions to try
+![](man/figures/optimal-E-1.png)
 
-summary(output[, 1:9])
-#>        E              tau          tp          nn           num_pred    
-#>  Min.   : 1.00   Min.   :1   Min.   :1   Min.   : 2.00   Min.   :182.0  
-#>  1st Qu.: 3.25   1st Qu.:1   1st Qu.:1   1st Qu.: 4.25   1st Qu.:184.2  
-#>  Median : 5.50   Median :1   Median :1   Median : 6.50   Median :186.5  
-#>  Mean   : 5.50   Mean   :1   Mean   :1   Mean   : 6.50   Mean   :186.5  
-#>  3rd Qu.: 7.75   3rd Qu.:1   3rd Qu.:1   3rd Qu.: 8.75   3rd Qu.:188.8  
-#>  Max.   :10.00   Max.   :1   Max.   :1   Max.   :11.00   Max.   :191.0  
-#>       rho              mae             rmse            perc  
-#>  Min.   :0.7082   Min.   :10.17   Min.   :13.94   Min.   :1  
-#>  1st Qu.:0.8759   1st Qu.:10.78   1st Qu.:14.21   1st Qu.:1  
-#>  Median :0.9079   Median :11.32   Median :14.86   Median :1  
-#>  Mean   :0.8815   Mean   :12.15   Mean   :16.48   Mean   :1  
-#>  3rd Qu.:0.9172   3rd Qu.:12.72   3rd Qu.:17.42   3rd Qu.:1  
-#>  Max.   :0.9195   Max.   :18.23   Max.   :25.92   Max.   :1
-```
+    E.opt
+    #     E    rho
+    # 1   1 0.7397
+    # 2   2 0.8930
+    # 3   3 0.9126
+    # 4   4 0.9133
+    # 5   5 0.9179
+    # 6   6 0.9146
+    # 7   7 0.9098
+    # 8   8 0.9065
+    # 9   9 0.8878
+    # 10 10 0.8773
 
-It looks like `E = 3` or `4` is optimal. Since we generally want a
-simpler model, if possible, let’s go with `E = 3` to forecast the
-remaining 1/3 of the data.
+Highest predictive skill is found between `E = 3` and `E = 6`. Since we
+generally want a simpler model, if possible, we use `E = 3` to forecast
+the last 1/3 of data based on training (attractor reconstruction) from
+the first 2/3.
 
-``` r
-output <- simplex(dat,
-                  lib = lib, pred = pred, # predict on last 1/3
-                  E = 3, 
-                  stats_only = FALSE)     # return predictions, too
+    simplex <- Simplex( dataFrame = df, 
+                        lib     = "1   190", # portion of data to train
+                        pred    = "191 287", # portion of data to predict
+                        columns = "sunspot_count",
+                        target  = "sunspot_count",
+                        E       = 3 )
 
-predictions <- na.omit(output$model_output[[1]])
-
-plot(dat$yr, dat$sunspot_count, type = "l", 
+    plot( df$yr, df$sunspot_count, type = "l", lwd = 2,
           xlab = "year", ylab = "sunspots")
-lines(predictions$time, predictions$pred, col = "blue", lty = 2)
-polygon(c(predictions$time, rev(predictions$time)), 
-        c(predictions$pred - sqrt(predictions$pred_var), 
-        rev(predictions$pred + sqrt(predictions$pred_var))), 
-        col = rgb(0, 0, 1, 0.5), border = NA)
-```
+    lines( simplex$yr, simplex$Predictions, col = "red", lwd = 2)
+    legend( 'topleft', legend = c( "Observed", "Predicted (year + 1)" ),
+            fill = c( 'black', 'red' ), bty = 'n', cex = 1.3 )
 
-![](man/figures/unnamed-chunk-3-1.png)<!-- -->
+![](man/figures/simplex-projection-1.png)
 
-## Further Examples
+Further Examples
+----------------
 
 Please see the package vignettes for more details:
 
-``` r
-browseVignettes("rEDM")
-```
+    browseVignettes("rEDM")
+
+### References
+
+Sugihara G. and May R. 1990. Nonlinear forecasting as a way of
+distinguishing chaos from measurement error in time series. Nature,
+344:734–741.
+
+Sugihara G. 1994. Nonlinear forecasting for the classification of
+natural time series. Philosophical Transactions: Physical Sciences and
+Engineering, 348 (1688) : 477–495.
+
+Dixon, P. A., M. Milicich, and G. Sugihara, 1999. Episodic fluctuations
+in larval supply. Science 283:1528–1530.
+
+Sugihara G., May R., Ye H., Hsieh C., Deyle E., Fogarty M., Munch S.,
+2012. Detecting Causality in Complex Ecosystems. Science 338:496-500.

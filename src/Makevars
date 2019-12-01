@@ -1,2 +1,12 @@
-CXX_STD = CXX11
-PKG_CXXFLAGS = -I../inst/include
+LIB_PATH        = ./cppEDM/lib/
+CPPEDM_SRC_PATH = ./cppEDM/src/
+LIBEDM          = $(LIB_PATH)/libEDM.a
+
+PKG_CPPFLAGS = -I $(CPPEDM_SRC_PATH)
+PKG_LIBS     = -L $(LIB_PATH) -lEDM -llapack
+CXX_STD      = CXX11
+
+$(SHLIB): $(LIBEDM)
+
+$(LIBEDM): 
+	(cd $(CPPEDM_SRC_PATH); $(MAKE); $(MAKE) clean)

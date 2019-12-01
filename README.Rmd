@@ -13,20 +13,22 @@ knitr::opts_chunk$set(
 ```
 
 # rEDM
-[![Build Status](https://travis-ci.org/ha0ye/rEDM.svg?branch=master)](https://travis-ci.org/ha0ye/rEDM)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.596502.svg)](https://doi.org/10.5281/zenodo.596502)
 [![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/rEDM)](https://cran.rstudio.com/web/packages/rEDM/index.html)
-
-<img src="man/figures/rEDM.png" width="200px">
-
-## Binder Demo
-Try out the package without installation (after loading, try clicking on `README.Rmd` in the `Files` tab).
-
-[![Binder](http://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/ha0ye/rEDM/master?urlpath=rstudio)
 
 ## Overview
 
-The `rEDM` package is a collection of methods for Empirical Dynamic Modeling (EDM). EDM is based on the mathematical theory of recontructing attractor manifolds from time series data, with applications to forecasting, causal inference, and more. It is based on research software previously developed for the Sugihara Lab (University of California San Diego, Scripps Institution of Oceanography).
+The `rEDM` package is a collection of methods for Empirical Dynamic Modeling (EDM). EDM is based on the mathematical theory of reconstructing attractor manifolds from time series data, with applications to forecasting, causal inference, and more. It is based on research software previously developed for the Sugihara Lab (University of California San Diego, Scripps Institution of Oceanography).
+
+## Empirical Dynamic Modeling (EDM)
+---
+This package implements an R wrapper of [EDM](http://deepeco.ucsd.edu/nonlinear-dynamics-research/edm/) tools [cppEDM](https://github.com/SugiharaLab/cppEDM).
+
+Functionality includes:
+* Simplex projection (Sugihara and May 1990)
+* Sequential Locally Weighted Global Linear Maps (S-map) (Sugihara 1994)
+* Multivariate embeddings (Dixon et. al. 1999)
+* Convergent cross mapping (Sugihara et. al. 2012)
+* Multiview embedding (Ye and Sugihara 2016)
 
 ## Installation
 
@@ -40,7 +42,7 @@ OR from github with:
 
 ```{r gh-installation, eval = FALSE}
 # install.packages("devtools")
-devtools::install_github("ha0ye/rEDM")
+devtools::install_github("SugiharaLab/rEDM")
 ```
 
 ## Example
@@ -53,45 +55,40 @@ par(mar = c(4, 4, 1, 1), mgp = c(2.5, 1, 0), oma = c(0, 0, 0, 0))
 We begin by looking at annual time series of sunspots:
 
 ```{r sunspots}
-dat <- data.frame(yr = as.numeric(time(sunspot.year)), 
-                  sunspot_count = as.numeric(sunspot.year))
+df <- data.frame(yr = as.numeric(time(sunspot.year)), 
+                 sunspot_count = as.numeric(sunspot.year))
 
-plot(dat$yr, dat$sunspot_count, type = "l", 
+plot(df$yr, df$sunspot_count, type = "l", 
      xlab = "year", ylab = "sunspots")
 ```
 
-First, we use simplex to determine the optimal embedding dimension, E:
-```{r determining E, warning = FALSE}
-library(rEDM)                             # load the package
+First, we use `EmbedDimension()` to determine the optimal embedding dimension, E:
+```{r optimal-E}
+library(rEDM)   # load the package
 
-n <- NROW(dat)
-lib <- c(1, floor(2/3 * n))               # indices for the first 2/3 of the time series
-pred <- c(floor(2/3 * n) + 1, n)          # indices for the final 1/3 of the time series
-
-output <- simplex(dat,                    # input data (for data.frames, uses 2nd column)
-                  lib = lib, pred = lib,  # which portions of the data to train and predict
-                  E = 1:10)               # embedding dimensions to try
-
-summary(output[, 1:9])
+E.opt = EmbedDimension( dataFrame = df,    # input data
+                        lib     = "1 280", # portion of data to train
+                        pred    = "1 280", # portion of data to predict
+                        columns = "sunspot_count",
+                        target  = "sunspot_count" )
+E.opt
 ```
 
-It looks like `E = 3` or `4` is optimal. Since we generally want a simpler model, if possible, let's go with `E = 3` to forecast the remaining 1/3 of the data.
+Highest predictive skill is found between `E = 3` and `E = 6`. Since we generally want a simpler model, if possible, we use `E = 3` to forecast the last 1/3 of  data based on training (attractor reconstruction) from the first 2/3.
 
-```{r}
-output <- simplex(dat,
-                  lib = lib, pred = pred, # predict on last 1/3
-                  E = 3, 
-                  stats_only = FALSE)     # return predictions, too
+```{r simplex-projection}
+simplex <- Simplex( dataFrame = df, 
+                    lib     = "1   190", # portion of data to train
+                    pred    = "191 287", # portion of data to predict
+                    columns = "sunspot_count",
+                    target  = "sunspot_count",
+                    E       = 3 )
 
-predictions <- na.omit(output$model_output[[1]])
-
-plot(dat$yr, dat$sunspot_count, type = "l", 
-          xlab = "year", ylab = "sunspots")
-lines(predictions$time, predictions$pred, col = "blue", lty = 2)
-polygon(c(predictions$time, rev(predictions$time)), 
-        c(predictions$pred - sqrt(predictions$pred_var), 
-        rev(predictions$pred + sqrt(predictions$pred_var))), 
-        col = rgb(0, 0, 1, 0.5), border = NA)
+plot( df$yr, df$sunspot_count, type = "l", lwd = 2,
+      xlab = "year", ylab = "sunspots")
+lines( simplex$yr, simplex$Predictions, col = "red", lwd = 2)
+legend( 'topleft', legend = c( "Observed", "Predicted (year + 1)" ),
+        fill = c( 'black', 'red' ), bty = 'n', cex = 1.3 )
 ```
 
 ## Further Examples
@@ -101,3 +98,15 @@ Please see the package vignettes for more details:
 browseVignettes("rEDM")
 ```
 
+### References
+Sugihara G. and May R. 1990.  Nonlinear forecasting as a way of distinguishing 
+chaos from measurement error in time series. Nature, 344:734–741.
+
+Sugihara G. 1994. Nonlinear forecasting for the classification of natural 
+time series. Philosophical Transactions: Physical Sciences and 
+Engineering, 348 (1688) : 477–495.
+
+Dixon, P. A., M. Milicich, and G. Sugihara, 1999. Episodic fluctuations in larval supply. Science 283:1528–1530.
+
+Sugihara G., May R., Ye H., Hsieh C., Deyle E., Fogarty M., Munch S., 2012.
+Detecting Causality in Complex Ecosystems. Science 338:496-500.
