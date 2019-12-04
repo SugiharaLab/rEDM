@@ -68,27 +68,27 @@ r::DataFrame DataFrameToDF ( DataFrame< double > dataFrame ) {
         // Probe dataFrame.Time() to see if we can convert it to
         // a numeric, Date, or Datetime...
         std::string firstTime = dataFrame.Time()[0];
-        bool        numericTime  = false;
+        bool        numericTime  = true;
         bool        dateTime     = false;
         bool        datetimeTime = false;
 
-        // First try to convert to numeric/double
-        try {
-            // stod can throw invalid_argument or out_of_range exception
-            std::string::size_type sz; // alias of size_t
-            double firstTimeVal = stod( firstTime, &sz );
-
-            // If OK, convert the whole vector to double
+        // See if firstTime can be converted to a double
+        char *pEnd = NULL;
+        double firstTimeVal = strtod( firstTime.c_str(), &pEnd );
+        if ( pEnd != NULL ) {
+            // There are trailing characters, not numeric
+            numericTime = false;
+        }
+        
+        if ( numericTime ) {
+            // Convert the whole vector to numeric/double
             numericTime = true;
             r::NumericVector timeVec( dataFrame.Time().size() );
 
             for ( size_t i = 0; i < dataFrame.Time().size(); i++ ) {
-                timeVec[ i ] = stod( dataFrame.Time().at( i ), &sz );
+                timeVec[ i ] = strtod( dataFrame.Time().at( i ).c_str(), &pEnd );
             }
             columnList.push_back( timeVec );
-        }
-        catch ( const std::exception &excp ) {
-            // Ignore... move on to Date
         }
 
         if ( not numericTime ) {
