@@ -68,68 +68,59 @@ r::DataFrame DataFrameToDF ( DataFrame< double > dataFrame ) {
         // Probe dataFrame.Time() to see if we can convert it to
         // a numeric, Date, or Datetime...
         std::string firstTime = dataFrame.Time()[0];
-        bool        numericTime  = true;
-        bool        dateTime     = false;
-        bool        datetimeTime = false;
-
-        // See if firstTime can be converted to a double
-        char *pEnd = NULL;
-        double firstTimeVal = strtod( firstTime.c_str(), &pEnd );
-        if ( pEnd != NULL ) {
-            // There are trailing characters, not numeric
-            numericTime = false;
-        }
         
-        if ( numericTime ) {
-            // Convert the whole vector to numeric/double
-            numericTime = true;
+        // Is firstTime purely numeric characters (not Date or DateTime)?
+        // We presume time is not negative, or exponential 
+        bool numericTime = strspn( firstTime.c_str(),
+                                   ".0123456789" ) == firstTime.size();
+
+        // Does firstTime have two hyphens as in "%Y-%m-%d" Date format?
+        size_t nHyphen  = std::count(firstTime.begin(), firstTime.end(), '-');
+        bool   dateTime = nHyphen == 2 ? true : false;
+
+        // Does firstTime have two '-' and two ':' as in DateTime format?
+        size_t nColon     = std::count(firstTime.begin(), firstTime.end(), ':');
+        bool dateTimeTime = dateTime and nColon == 2 ? true : false;
+        if ( dateTimeTime ) { dateTime = false; }
+
+        if ( numericTime and not dateTime and not dateTimeTime ) {
+            // Convert the dataFrame.Time() vector to numeric/double
             r::NumericVector timeVec( dataFrame.Time().size() );
 
+            char *pEnd;
             for ( size_t i = 0; i < dataFrame.Time().size(); i++ ) {
                 timeVec[ i ] = strtod( dataFrame.Time().at( i ).c_str(), &pEnd );
+                // JP: check pEnd?
             }
             columnList.push_back( timeVec );
         }
-
-        if ( not numericTime ) {
-            // Try Date
-            r::Date firstDate = r::Date( firstTime, "%Y-%m-%d" );
-
-            if ( not firstDate.is_na() ) {
-                dateTime = true;
-                r::DateVector dateVec( dataFrame.Time().size() );
-
-                for ( size_t i = 0; i < dataFrame.Time().size(); i++ ) {
-                    dateVec[ i ] = r::Date( dataFrame.Time().at( i ),
-                                            "%Y-%m-%d" );
-                }
-                columnList.push_back( dateVec );
+        
+        if ( not numericTime and dateTime and not dateTimeTime ) {
+            // Convert to Date
+            r::DateVector dateVec( dataFrame.Time().size() );
+            
+            for ( size_t i = 0; i < dataFrame.Time().size(); i++ ) {
+                dateVec[ i ] = r::Date( dataFrame.Time().at( i ),
+                                        "%Y-%m-%d" );
             }
+            columnList.push_back( dateVec );
         }
         
-        if ( not numericTime and not dateTime ) {
-            // Try Datetime
-            r::Datetime firstDatetime = r::Datetime( firstTime,
-                                                     "%Y-%m-%d %H:%M:%OS" );
-
-            if ( not firstDatetime.is_na() ) {
-                datetimeTime = true;
-                r::DatetimeVector datetimeVec( dataFrame.Time().size() );
-
-                for ( size_t i = 0; i < dataFrame.Time().size(); i++ ) {
-                    datetimeVec[ i ] = r::Datetime( dataFrame.Time().at( i ),
-                                                    "%Y-%m-%d %H:%M:%OS" );
-                }
-                columnList.push_back( datetimeVec );
+        if ( not numericTime and not dateTime and dateTimeTime )  {
+            // Convert to Datetime
+            r::DatetimeVector datetimeVec( dataFrame.Time().size() );
+            
+            for ( size_t i = 0; i < dataFrame.Time().size(); i++ ) {
+                datetimeVec[ i ] = r::Datetime( dataFrame.Time().at( i ),
+                                                "%Y-%m-%d %H:%M:%OS" );
             }
+            columnList.push_back( datetimeVec );
         }
-        
-        // Couldn't convert dataFrame.Time(), just push it as-is
-        // R will see it as a vector of factors... 
-        if ( not numericTime and not dateTime and not datetimeTime ) {
-            if ( not dataFrame.Time().size() ) {
-                columnList.push_back( dataFrame.Time() );
-            }
+
+        if ( not numericTime and not dateTime and not dateTimeTime )  {
+            // Couldn't convert dataFrame.Time(), just push it as-is
+            // R will see it as a vector of factors... why not strings?
+            columnList.push_back( dataFrame.Time() );
         }
     } // if ( dataFrame.Time().size() ) 
 
@@ -140,7 +131,7 @@ r::DataFrame DataFrameToDF ( DataFrame< double > dataFrame ) {
             continue;  // skip time. It's a vector< std::string > 
         }
 
-        // unfortunately we have to copy to vector first
+        // Unfortunately we have to copy to vector first
         std::valarray<double> col_val = dataFrame.VectorColumnName( *ci );
         std::vector<double> col_vec(std::begin(col_val), std::end(col_val));
         columnList.push_back( col_vec );
