@@ -14,7 +14,12 @@ ColumnsInDataFrame <- function( pathIn, dataFile, dataFrame, columns, target ) {
   if ( nchar( dataFile ) ) {
     # Shame to have to read the data just for this...
     # Perhaps pass the df back ?  Gets messy.
-    df = read.csv( paste( pathIn, dataFile, sep = '/' ), as.is = TRUE )
+    #
+    # R data.frame names are presumed to be valid variable names.
+    #   Numeric fist character or hyphen/dash/minus "-" are not valid.
+    #   So we disable check.names that calls make.names() on column names.
+    df = read.csv( paste( pathIn, dataFile, sep = '/' ),
+                   as.is = TRUE, check.names = FALSE )
   }
   else {
     df = dataFrame
@@ -26,7 +31,7 @@ ColumnsInDataFrame <- function( pathIn, dataFile, dataFrame, columns, target ) {
   }
 
   columnNames = names( df )
-  columnVec   = strsplit( columns, "\\s+" ) # split on whitespace
+  columnVec   = strsplit( columns, "\\s+" )[[1]] # split on whitespace
   
   if ( ! (target %in% columnNames) ) {
     print( paste( "Error: ColumnsInDataFrame(): Target",
@@ -35,13 +40,12 @@ ColumnsInDataFrame <- function( pathIn, dataFile, dataFrame, columns, target ) {
   }
   
   for ( column in columnVec ) {
-    
-    if ( length( column ) == 0 ) {
-      print( "Error: ColumnsInDataFrame(): Column is empty." )
+    if ( length( df[,column] ) == 0 ) {
+      print( paste("Error: ColumnsInDataFrame(): Column", column, "is empty."))
       return( FALSE )
     }
-    # Why is column of length > 1 in Examples() CCM ?
-    if ( ! (column[1] %in% columnNames) ) {
+
+    if ( ! (column %in% columnNames) ) {
       print( paste( "Error: ColumnsInDataFrame(): Column",
                     column, "not found." ) )
       return( FALSE )

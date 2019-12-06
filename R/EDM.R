@@ -15,6 +15,11 @@ MakeBlock <- function( dataFrame,
     stop( "MakeBlock(): dataFrame argument is not a data.frame." )
   }
   
+  # If columns are vectors/list, convert to string for cppEDM
+  if ( is.vector( columns ) || is.list( columns ) ) {
+    columns = paste( columns, collapse = " " )
+  }
+  
   # Mapped to MakeBlock_rcpp() (Embed.cpp) in RcppEDMCommon.cpp
   block = INTERNAL_MakeBlock( dataFrame, E, tau, columns, verbose )
   
@@ -38,6 +43,11 @@ Embed <- function( path      = "./",
     stop( "Embed(): dataFrame argument is not a data.frame." )
   }
 
+  # If columns are vectors/list, convert to string for cppEDM
+  if ( is.vector( columns ) || is.list( columns ) ) {
+    columns = paste( columns, collapse = " " )
+  }
+  
   # Mapped to Embed_rcpp() (Embed.cpp) in RcppEDMCommon.cpp
   df = INTERNAL_Embed( path,
                        dataFile,
@@ -74,6 +84,13 @@ Simplex <- function( pathIn       = "./",
 
   if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
     stop( "Simplex(): Failed to find column or target in DataFrame." )
+  }
+
+  # If lib, pred, columns are vectors/list, convert to string for cppEDM
+  if (is.vector(lib ) || is.list(lib )) { lib  = paste( lib,  collapse = " ") }
+  if (is.vector(pred) || is.list(pred)) { pred = paste( pred, collapse = " ") }
+  if ( is.vector( columns ) || is.list( columns ) ) {
+    columns = paste( columns, collapse = " " )
   }
   
   # Mapped to Simplex_rcpp() (Simplex.cpp) in RcppEDMCommon.cpp
@@ -131,6 +148,13 @@ SMap <- function( pathIn       = "./",
     stop( "SMap(): Failed to find column or target in DataFrame." )
   }
   
+  # If lib, pred, columns are vectors/list, convert to string for cppEDM
+  if (is.vector(lib ) || is.list(lib )) { lib  = paste( lib,  collapse = " ") }
+  if (is.vector(pred) || is.list(pred)) { pred = paste( pred, collapse = " ") }
+  if ( is.vector( columns ) || is.list( columns ) ) {
+    columns = paste( columns, collapse = " " )
+  }
+  
   # Mapped to SMap_rcpp() (SMap.cpp) in RcppEDMCommon.cpp
   # smapList has data.frames of "predictions" and "coefficients"
   smapList <- INTERNAL_SMap( pathIn,
@@ -185,6 +209,13 @@ Multiview <- function( pathIn          = "./",
 
   if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
     stop( "Multiview(): Failed to find column or target in DataFrame." )
+  }
+  
+  # If lib, pred, columns are vectors/list, convert to string for cppEDM
+  if (is.vector(lib ) || is.list(lib )) { lib  = paste( lib,  collapse = " ") }
+  if (is.vector(pred) || is.list(pred)) { pred = paste( pred, collapse = " ") }
+  if ( is.vector( columns ) || is.list( columns ) ) {
+    columns = paste( columns, collapse = " " )
   }
   
   # Mapped to Multiview_rcpp() (Multiview.cpp) in RcppEDMCommon.cpp
@@ -276,6 +307,14 @@ CCM <- function( pathIn       = "./",
     stop( "CCM(): Failed to find column or target in DataFrame." )
   }
   
+  # If libSizes, columns are vectors/list, convert to string for cppEDM
+  if ( is.vector( columns ) || is.list( columns ) ) {
+    columns = paste( columns, collapse = " " )
+  }
+  if ( is.vector( libSizes ) || is.list( libSizes ) ) {
+    libSizes = paste( libSizes, collapse = " " )
+  }
+  
   # Mapped to CCM_rcpp() (CCM.cpp) in RcppEDMCommon.cpp
   # CCMList has "LibSize" and columns:target target:columns
   CCMList <- INTERNAL_CCM( pathIn,
@@ -340,6 +379,13 @@ EmbedDimension <- function ( pathIn       = "./",
     stop( "EmbedDimension(): Failed to find column or target in DataFrame." )
   }
   
+  # If lib, pred, columns are vectors/list, convert to string for cppEDM
+  if (is.vector(lib ) || is.list(lib )) { lib  = paste( lib,  collapse = " ") }
+  if (is.vector(pred) || is.list(pred)) { pred = paste( pred, collapse = " ") }
+  if ( is.vector( columns ) || is.list( columns ) ) {
+    columns = paste( columns, collapse = " " )
+  }
+  
   # Mapped to EmbedDimension_rcpp() (EmbedDim.cpp) in RcppEDMCommon.cpp
   df = INTERNAL_EmbedDimension( pathIn,
                                 dataFile,
@@ -384,10 +430,17 @@ PredictInterval <- function( pathIn      = "./",
                              embedded    = FALSE,
                              verbose     = FALSE,
                              numThreads  = 4,
-                            showPlot    = TRUE ) {
+                             showPlot    = TRUE ) {
   
   if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
     stop( "PredictInterval(): Failed to find column or target in DataFrame." )
+  }
+  
+  # If lib, pred, columns are vectors/list, convert to string for cppEDM
+  if (is.vector(lib ) || is.list(lib )) { lib  = paste( lib,  collapse = " ") }
+  if (is.vector(pred) || is.list(pred)) { pred = paste( pred, collapse = " ") }
+  if ( is.vector( columns ) || is.list( columns ) ) {
+    columns = paste( columns, collapse = " " )
   }
   
   # Mapped to PredictInterval_rcpp() (PredictInterval.cpp) in RcppEDMCommon.cpp
@@ -439,6 +492,14 @@ PredictNonlinear <- function( pathIn      = "./",
 
   if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
     stop( "PredictNonlinear(): Failed to find column or target in DataFrame." )
+  }
+  
+  # If lib, pred, theta, columns are vectors/list, convert to string for cppEDM
+  if (is.vector(lib ) || is.list(lib )) { lib   = paste( lib,   collapse = " ") }
+  if (is.vector(pred) || is.list(pred)) { pred  = paste( pred,  collapse = " ") }
+  if (is.vector(theta)|| is.list(theta)){ theta = paste( theta, collapse = " ") }
+  if ( is.vector( columns ) || is.list( columns ) ) {
+    columns = paste( columns, collapse = " " )
   }
   
   # Mapped to PredictNonlinear_rcpp() (PredictNL.cpp) in RcppEDMCommon.cpp
