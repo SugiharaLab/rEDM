@@ -31,7 +31,8 @@ predictions. A single contiguous range is supported.}
 
 \item{Tp}{prediction horizon (number of time column rows).}
 
-\item{knn}{number of nearest neighbors. If knn=0, knn is set to E+1.}
+\item{knn}{number of nearest neighbors. If knn=0, knn is set to the
+library size.} 
 
 \item{tau}{lag of time delay embedding specified as number of
 time column rows.}

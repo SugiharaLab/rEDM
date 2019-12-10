@@ -144,6 +144,7 @@ auto PredictNonlinearArgs = r::List::create(
     r::_["theta"]       = std::string(""),
     r::_["E"]           = 0,
     r::_["Tp"]          = 1,
+    r::_["knn"]         = 0,
     r::_["tau"]         = 1,
     r::_["columns"]     = std::string(""),
     r::_["target"]      = std::string(""),

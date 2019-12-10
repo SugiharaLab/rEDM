@@ -4,8 +4,8 @@
 \usage{
 PredictNonlinear(pathIn = "./", dataFile = "", dataFrame = NULL,
   pathOut = "./",  predictFile = "", lib = "", pred = "", theta = "",
-  E = 1, Tp = 1, tau = 1, columns = "", target = "", embedded = FALSE,
-  verbose = FALSE, numThreads = 4, showPlot = TRUE)  
+  E = 1, Tp = 1, knn = 0, tau = 1, columns = "", target = "",
+  embedded = FALSE, verbose = FALSE, numThreads = 4, showPlot = TRUE)  
 }
 \arguments{
 \item{pathIn}{path to \code{dataFile}.}
@@ -33,6 +33,9 @@ predictions. A single contiguous range is supported.}
 \item{E}{embedding dimension.}
 
 \item{Tp}{prediction horizon (number of time column rows).}
+
+\item{knn}{number of nearest neighbors. If knn=0, knn is set to the
+library size.} 
 
 \item{tau}{lag of time delay embedding specified as number of
 time column rows.}

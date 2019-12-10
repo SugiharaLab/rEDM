@@ -22,7 +22,4 @@ block_3sp
 Time series generated from a discrete-time coupled 
   Lotka-Volterra model exhibiting chaotic dynamics.
 }
-\author{
-Hao Ye
-}
 \keyword{datasets}
