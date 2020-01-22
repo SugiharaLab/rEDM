@@ -3,7 +3,7 @@
 \title{Optimal embedding dimension}
 \usage{
 EmbedDimension(pathIn = "./", dataFile = "", dataFrame = NULL, pathOut = "", 
-  predictFile = "", lib = "", pred = "", maxE = 10, Tp = 1, tau = 1, 
+  predictFile = "", lib = "", pred = "", maxE = 10, Tp = 1, tau = -1, 
   columns = "", target = "", embedded = FALSE, verbose = FALSE, numThreads = 4, 
   showPlot = TRUE)  
 }

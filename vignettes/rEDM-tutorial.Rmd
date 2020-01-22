@@ -281,7 +281,7 @@ We begin by examining an example dataset from a coupled 3-species model system.
 head( block_3sp, 3 )
 ```
 
-Here, `block_3sp` is a 10-column data.frame with 9 data columns. This data has already been time-delay embedded to dimension `E = 3` with a time delay of `tau = 1`. We use simplex forecasting based on a multivariate embedding of the three data vectors `x_t x_t-1 z_t` with `embedded = TRUE` and `E = 3`:
+Here, `block_3sp` is a 10-column data.frame with 9 data columns. This data has already been time-delay embedded to dimension `E = 3` with a time delay of `tau = -1`. We use simplex forecasting based on a multivariate embedding of the three data vectors `x_t x_t-1 z_t` with `embedded = TRUE` and `E = 3`:
 
 ```{r 3_Species_simplex, fig.cap="Simplex Tp=1 forecast of $x_t$."}
 smplx_3species = Simplex( dataFrame = block_3sp, lib = "1 100",

@@ -3,7 +3,7 @@
 \title{SMap forecasting}
 \usage{
 SMap(pathIn = "./", dataFile = "", dataFrame = NULL, pathOut = "./", 
-  predictFile = "", lib = "", pred = "", E = 0, Tp = 1, knn = 0, tau = 1, 
+  predictFile = "", lib = "", pred = "", E = 0, Tp = 1, knn = 0, tau = -1, 
   theta = 0, exclusionRadius = 0, columns = "", target = "", smapFile = "", 
   jacobians = "", embedded = FALSE, const_pred = FALSE, verbose = FALSE,
   showPlot = FALSE)  

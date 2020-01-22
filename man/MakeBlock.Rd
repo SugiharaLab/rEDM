@@ -3,7 +3,7 @@
 \title{Make embedded data block}
 
 \usage{
-MakeBlock(dataFrame, E = 0, tau = 1, columns = "", verbose = FALSE)  
+MakeBlock(dataFrame, E = 0, tau = -1, columns = "", verbose = FALSE)  
 }
 
 \arguments{
@@ -12,7 +12,7 @@ index or time values. The columns must be named.}
 
 \item{E}{embedding dimension.}
 
-\item{tau}{positive integer time delay embedding lag specified as number of
+\item{tau}{integer time delay embedding lag specified as number of
 time column rows.}
 
 \item{columns}{string of whitespace separated column name(s) in the

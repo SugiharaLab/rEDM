@@ -3,7 +3,7 @@
 \title{Forecast interval accuracy}
 \usage{
 PredictInterval(pathIn = "./", dataFile = "", dataFrame = NULL, pathOut = "./", 
-  predictFile = "", lib = "", pred = "", maxTp = 10, E = 1, tau = 1, 
+  predictFile = "", lib = "", pred = "", maxTp = 10, E = 1, tau = -1, 
   columns = "", target = "", embedded = FALSE, verbose = FALSE,
   numThreads = 4, showPlot = TRUE)  
 }

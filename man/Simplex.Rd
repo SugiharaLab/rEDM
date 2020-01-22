@@ -3,7 +3,7 @@
 \title{Simplex forecasting}
 \usage{
 Simplex(pathIn = "./", dataFile = "", dataFrame = NULL, pathOut = "./", 
-  predictFile = "", lib = "", pred = "", E = 0, Tp = 1, knn = 0, tau = 1, 
+  predictFile = "", lib = "", pred = "", E = 0, Tp = 1, knn = 0, tau = -1, 
   exclusionRadius = 0, columns = "", target = "", embedded = FALSE,
   verbose = FALSE, const_pred = FALSE, showPlot = FALSE)
 }

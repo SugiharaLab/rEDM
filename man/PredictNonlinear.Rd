@@ -4,7 +4,7 @@
 \usage{
 PredictNonlinear(pathIn = "./", dataFile = "", dataFrame = NULL,
   pathOut = "./",  predictFile = "", lib = "", pred = "", theta = "",
-  E = 1, Tp = 1, knn = 0, tau = 1, columns = "", target = "",
+  E = 1, Tp = 1, knn = 0, tau = -1, columns = "", target = "",
   embedded = FALSE, verbose = FALSE, numThreads = 4, showPlot = TRUE)  
 }
 \arguments{

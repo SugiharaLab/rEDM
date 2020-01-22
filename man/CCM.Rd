@@ -3,7 +3,7 @@
 \title{Convergent cross mapping using simplex projection}
 \usage{
 CCM(pathIn = "./", dataFile = "", dataFrame = NULL, pathOut = "./", 
-  predictFile = "", E = 0, Tp = 0, knn = 0, tau = 1, columns = "", target = "", 
+  predictFile = "", E = 0, Tp = 0, knn = 0, tau = -1, columns = "", target = "", 
   libSizes = "", sample = 0, random = TRUE, replacement = FALSE, seed = 0, 
   verbose = FALSE, showPlot = FALSE)  
 }

@@ -4,7 +4,7 @@
 \usage{
 Multiview(pathIn = "./", dataFile = "", dataFrame = NULL, pathOut = "./", 
   predictFile = "", lib = "", pred = "", E = 0, Tp = 1, knn = 0, 
-  tau = 1, columns = "", target = "", multiview = 0, exclusionRadius = 0,
+  tau = -1, columns = "", target = "", multiview = 0, exclusionRadius = 0,
   verbose = FALSE, numThreads = 4, showPlot = FALSE)
 }
 \arguments{
