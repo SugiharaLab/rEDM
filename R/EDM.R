@@ -39,8 +39,10 @@ Embed <- function( path      = "./",
                    columns   = "",
                    verbose   = FALSE ) {
 
-  if ( ! isValidDF( dataFrame ) ) {
-    stop( "Embed(): dataFrame argument is not a data.frame." )
+  if ( ! is.null( dataFrame ) ) {
+    if ( ! isValidDF( dataFrame ) ) {
+      stop( "Embed(): dataFrame argument is not a data.frame." )
+    }
   }
 
   # If columns are vectors/list, convert to string for cppEDM
