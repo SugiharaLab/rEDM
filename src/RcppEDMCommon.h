@@ -1,8 +1,11 @@
 #ifndef RCPPEDMCOMMON
 #define RCPPEDMCOMMON
 
+#define RCPPTHREAD_OVERRIDE_COUT 1 // std::cout override
+
 #include <Rcpp.h>
 #include <R.h>
+#include <RcppThread.h>
 #include <iostream>
 #include "Common.h"
 

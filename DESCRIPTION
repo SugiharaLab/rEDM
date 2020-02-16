@@ -1,8 +1,8 @@
 Package: rEDM
 Type:    Package
 Title:   Empirical Dynamic Modeling (EDM)
-Version: 1.2.1
-Date:    2020-02-05
+Version: 1.2.2
+Date:    2020-02-16
 Authors@R: c(person("Joseph", "Park", role = c("aut", "cre"),
                     email = "JosephPark@IEEE.org",
                     comment = "ORCID:0000-0001-5411-1409" ),
@@ -16,12 +16,12 @@ Authors@R: c(person("Joseph", "Park", role = c("aut", "cre"),
              person("George", "Sugihara", role = c("aut", "ccp"), 
                     comment = "ORCID:0000-0002-2863-6946") )
 Maintainer: Joseph Park <JosephPark@IEEE.org>
-Description: An implementation of EDM algorithms based on research software developed for internal use at the Sugihara Lab (UCSD/SIO).  The package is implemented with Rcpp wrappers around the cppEDM library.  It supports both the simplex projection method from Sugihara & May (1990) and the S-map algorithm in Sugihara (1994). In addition, it implements convergent cross mapping as described in Sugihara et al. (2012) and multiview embedding as described in Ye & Sugihara (2016).
-Note: Version 1.0.1 is a major rewrite of the rEDM package as a wrapper for the cppEDM library.  Function names and signatures have changed.  This allows a unified computation engine for EDM algorithms across C++, Python and R implementations.  The cppEDM is written in a functional programming paradigm, facilitating clarity and ease of understanding to foster collaboration and extension.  Additionally, cppEDM is intended for computationally intensive application, such as supercomputers including the AI Bridging Cloud Infrastructure (ABCI) where it has been applied to massively parallel neuronal timeseries cross mapping.  The new package provides improved alignment between observed and forecast data rows, and, strict exclusion of partial data vectors.  It does not currently support Gaussian process regression. 
+Description: An implementation of EDM algorithms based on research software developed for internal use at the Sugihara Lab (UCSD/SIO).  The package is implemented with Rcpp wrappers around the cppEDM library.  It supports the simplex projection method from Sugihara & May (1990), and, the S-map algorithm from Sugihara (1994). In addition, it implements convergent cross mapping as described in Sugihara et al. (2012), and multiview embedding as described in Ye & Sugihara (2016).
+Note: Version 1.0.1 is a major rewrite of the rEDM package as a wrapper for the cppEDM library.  Function names and signatures have changed.  This allows a unified computation engine for EDM algorithms across C++, Python and R implementations.  The cppEDM is written in a functional programming paradigm, facilitating clarity and ease of understanding to foster collaboration and extension.  The revised package provides improved alignment between observed and forecast data rows, and, strict exclusion of partial data vectors.  Gaussian process regression is not currently implemented. 
 License: file LICENSE
 LazyData: true
 LazyLoad: yes
 Imports: methods, Rcpp (>= 1.0.1)
-LinkingTo: Rcpp
+LinkingTo: Rcpp, RcppThread
 Suggests: knitr, rmarkdown
 VignetteBuilder: knitr
