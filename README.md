@@ -8,8 +8,8 @@ The `rEDM` package is a collection of methods for Empirical Dynamic
 Modeling (EDM). EDM is based on the mathematical theory of
 reconstructing attractor manifolds from time series data, with
 applications to forecasting, causal inference, and more. It is based on
-research software developed for the Sugihara Lab (University
-of California San Diego, Scripps Institution of Oceanography).
+research software developed for the [Sugihara Lab](http://deepeco.ucsd.edu/)
+(University of California San Diego, Scripps Institution of Oceanography).
 
 ## Empirical Dynamic Modeling (EDM)
 -------------------------------------
@@ -17,6 +17,9 @@ of California San Diego, Scripps Institution of Oceanography).
 This package implements an R wrapper of
 [EDM](http://deepeco.ucsd.edu/nonlinear-dynamics-research/edm/) tools from
 the [cppEDM](https://github.com/SugiharaLab/cppEDM) library.
+Introduction and documentation are are avilable
+[online](https://sugiharalab.github.io/EDM_Documentation/ "EDM Docs"), or
+in the package [API docs](https://github.com/SugiharaLab/prEDM/blob/master/doc/rEDM.pdf "rEDM API").  
 
 Functionality includes:
 
@@ -121,3 +124,7 @@ in larval supply. Science 283:1528–1530.
 
 Sugihara G., May R., Ye H., Hsieh C., Deyle E., Fogarty M., Munch S.,
 2012. Detecting Causality in Complex Ecosystems. Science 338:496-500.
+
+Ye H., and G. Sugihara, 2016. Information leverage in interconnected 
+ecosystems: Overcoming the curse of dimensionality. Science 353:922–925.
+
