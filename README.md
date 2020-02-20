@@ -19,7 +19,7 @@ This package implements an R wrapper of
 the [cppEDM](https://github.com/SugiharaLab/cppEDM) library.
 Introduction and documentation are are avilable
 [online](https://sugiharalab.github.io/EDM_Documentation/ "EDM Docs"), or
-in the package [API docs](https://github.com/SugiharaLab/prEDM/blob/master/doc/rEDM.pdf "rEDM API").  
+in the package [API docs](https://github.com/SugiharaLab/rEDM/blob/master/inst/doc/rEDM.pdf "rEDM API").  
 
 Functionality includes:
 
