@@ -3,7 +3,7 @@
 #------------------------------------------------------------------------
 ComputeError <- function( obs, pred ) {
   # Pearson rho, RMSE, MAE.
-  return ( INTERNAL_ComputeError( obs, pred ) )
+  return ( RtoCpp_ComputeError( obs, pred ) )
 }
 
 #------------------------------------------------------------------------

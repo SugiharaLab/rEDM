@@ -1,3 +1,7 @@
+
+// R to C++ interface using Rcpp
+// Functional flow: R func calls Rcpp func calls C++ func.
+
 #ifndef RCPPEDMCOMMON
 #define RCPPEDMCOMMON
 

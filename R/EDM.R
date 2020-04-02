@@ -21,7 +21,7 @@ MakeBlock <- function( dataFrame,
   }
   
   # Mapped to MakeBlock_rcpp() (Embed.cpp) in RcppEDMCommon.cpp
-  block = INTERNAL_MakeBlock( dataFrame, E, tau, columns, verbose )
+  block = RtoCpp_MakeBlock( dataFrame, E, tau, columns, verbose )
   
   return ( block )
 }
@@ -51,13 +51,13 @@ Embed <- function( path      = "./",
   }
   
   # Mapped to Embed_rcpp() (Embed.cpp) in RcppEDMCommon.cpp
-  df = INTERNAL_Embed( path,
-                       dataFile,
-                       dataFrame,
-                       E, 
-                       tau,
-                       columns,
-                       verbose )
+  df = RtoCpp_Embed( path,
+                     dataFile,
+                     dataFrame,
+                     E, 
+                     tau,
+                     columns,
+                     verbose )
 
   return ( df )
 }
@@ -96,23 +96,23 @@ Simplex <- function( pathIn       = "./",
   }
   
   # Mapped to Simplex_rcpp() (Simplex.cpp) in RcppEDMCommon.cpp
-  smplx <- INTERNAL_Simplex( pathIn, 
-                             dataFile, 
-                             dataFrame, 
-                             pathOut, 
-                             predictFile, 
-                             lib, 
-                             pred, 
-                             E, 
-                             Tp, 
-                             knn, 
-                             tau, 
-                             exclusionRadius,
-                             columns, 
-                             target, 
-                             embedded, 
-                             const_pred,
-                             verbose )
+  smplx <- RtoCpp_Simplex( pathIn, 
+                           dataFile, 
+                           dataFrame, 
+                           pathOut, 
+                           predictFile, 
+                           lib, 
+                           pred, 
+                           E, 
+                           Tp, 
+                           knn, 
+                           tau, 
+                           exclusionRadius,
+                           columns, 
+                           target, 
+                           embedded, 
+                           const_pred,
+                           verbose )
 
   if ( showPlot ) {
     PlotObsPred( smplx, dataFile, E, Tp ) 
@@ -156,33 +156,33 @@ SMap <- function( pathIn       = "./",
   if ( is.vector( columns ) || is.list( columns ) ) {
     columns = paste( columns, collapse = " " )
   }
-  
+
   # Mapped to SMap_rcpp() (SMap.cpp) in RcppEDMCommon.cpp
   # smapList has data.frames of "predictions" and "coefficients"
-  smapList <- INTERNAL_SMap( pathIn,
-                             dataFile,
-                             dataFrame,
-                             pathOut,
-                             predictFile,
-                             lib,
-                             pred,  
-                             E, 
-                             Tp,
-                             knn,
-                             tau,
-                             theta,
-                             exclusionRadius,
-                             columns,
-                             target,
-                             smapFile,
-                             jacobians,
-                             embedded,
-                             const_pred,
-                             verbose )
-
-    if ( showPlot ) {
-      PlotSmap( smapList, dataFile, E, Tp )
-    }
+  smapList <- RtoCpp_SMap( pathIn,
+                           dataFile,
+                           dataFrame,
+                           pathOut,
+                           predictFile,
+                           lib,
+                           pred,  
+                           E, 
+                           Tp,
+                           knn,
+                           tau,
+                           theta,
+                           exclusionRadius,
+                           columns,
+                           target,
+                           smapFile,
+                           jacobians,
+                           embedded,
+                           const_pred,
+                           verbose )
+  
+  if ( showPlot ) {
+    PlotSmap( smapList, dataFile, E, Tp )
+  }
   
   return( smapList )
 }
@@ -222,23 +222,23 @@ Multiview <- function( pathIn          = "./",
   
   # Mapped to Multiview_rcpp() (Multiview.cpp) in RcppEDMCommon.cpp
   # mvList has data.frames "Combo_rho" and  "Predictions" 
-  mvList <- INTERNAL_Multiview( pathIn,
-                                dataFile,
-                                dataFrame,
-                                pathOut,
-                                predictFile,
-                                lib,
-                                pred,
-                                E, 
-                                Tp,
-                                knn,
-                                tau,
-                                columns,
-                                target,
-                                multiview,
-                                exclusionRadius,
-                                verbose,
-                                numThreads )
+  mvList <- RtoCpp_Multiview( pathIn,
+                              dataFile,
+                              dataFrame,
+                              pathOut,
+                              predictFile,
+                              lib,
+                              pred,
+                              E, 
+                              Tp,
+                              knn,
+                              tau,
+                              columns,
+                              target,
+                              multiview,
+                              exclusionRadius,
+                              verbose,
+                              numThreads )
 
   if ( showPlot ) {
     PlotObsPred( mvList $ Predictions, dataFile, E, Tp )
@@ -319,23 +319,23 @@ CCM <- function( pathIn       = "./",
   
   # Mapped to CCM_rcpp() (CCM.cpp) in RcppEDMCommon.cpp
   # CCMList has "LibSize" and columns:target target:columns
-  CCMList <- INTERNAL_CCM( pathIn,
-                           dataFile,
-                           dataFrame,
-                           pathOut,
-                           predictFile,
-                           E, 
-                           Tp,
-                           knn,
-                           tau,
-                           columns,
-                           target,
-                           libSizes,
-                           sample,
-                           random,
-                           replacement,
-                           seed,
-                           verbose )
+  CCMList <- RtoCpp_CCM( pathIn,
+                         dataFile,
+                         dataFrame,
+                         pathOut,
+                         predictFile,
+                         E, 
+                         Tp,
+                         knn,
+                         tau,
+                         columns,
+                         target,
+                         libSizes,
+                         sample,
+                         random,
+                         replacement,
+                         seed,
+                         verbose )
 
   if ( showPlot ) {
     libSize = CCMList[[ 'LibSize' ]]
@@ -389,21 +389,21 @@ EmbedDimension <- function ( pathIn       = "./",
   }
   
   # Mapped to EmbedDimension_rcpp() (EmbedDim.cpp) in RcppEDMCommon.cpp
-  df = INTERNAL_EmbedDimension( pathIn,
-                                dataFile,
-                                dataFrame,
-                                pathOut,
-                                predictFile,
-                                lib,
-                                pred, 
-                                maxE, 
-                                Tp,
-                                tau,
-                                columns,
-                                target,
-                                embedded,
-                                verbose,
-                                numThreads )
+  df = RtoCpp_EmbedDimension( pathIn,
+                              dataFile,
+                              dataFrame,
+                              pathOut,
+                              predictFile,
+                              lib,
+                              pred, 
+                              maxE, 
+                              Tp,
+                              tau,
+                              columns,
+                              target,
+                              embedded,
+                              verbose,
+                              numThreads )
 
   if ( showPlot ) {
     title <- paste(dataFile , "\nTp=" , Tp )
@@ -446,21 +446,21 @@ PredictInterval <- function( pathIn      = "./",
   }
   
   # Mapped to PredictInterval_rcpp() (PredictInterval.cpp) in RcppEDMCommon.cpp
-  df = INTERNAL_PredictInterval( pathIn,
-                                 dataFile,
-                                 dataFrame,
-                                 pathOut,
-                                 predictFile,
-                                 lib,
-                                 pred, 
-                                 maxTp,
-                                 E,
-                                 tau,
-                                 columns,
-                                 target,
-                                 embedded,
-                                 verbose,
-                                 numThreads )
+  df = RtoCpp_PredictInterval( pathIn,
+                               dataFile,
+                               dataFrame,
+                               pathOut,
+                               predictFile,
+                               lib,
+                               pred, 
+                               maxTp,
+                               E,
+                               tau,
+                               columns,
+                               target,
+                               embedded,
+                               verbose,
+                               numThreads )
 
   if ( showPlot ) {
     title <- paste( dataFile , "\nE=" , E )
@@ -498,31 +498,31 @@ PredictNonlinear <- function( pathIn      = "./",
   }
   
   # If lib, pred, theta, columns are vectors/list, convert to string for cppEDM
-  if (is.vector(lib ) || is.list(lib )) { lib   = paste( lib,   collapse = " ") }
-  if (is.vector(pred) || is.list(pred)) { pred  = paste( pred,  collapse = " ") }
-  if (is.vector(theta)|| is.list(theta)){ theta = paste( theta, collapse = " ") }
+  if (is.vector(lib ) || is.list(lib )) { lib   = paste( lib,   collapse = " ")}
+  if (is.vector(pred) || is.list(pred)) { pred  = paste( pred,  collapse = " ")}
+  if (is.vector(theta)|| is.list(theta)){ theta = paste( theta, collapse = " ")}
   if ( is.vector( columns ) || is.list( columns ) ) {
     columns = paste( columns, collapse = " " )
   }
   
   # Mapped to PredictNonlinear_rcpp() (PredictNL.cpp) in RcppEDMCommon.cpp
-  df = INTERNAL_PredictNonlinear( pathIn,
-                                  dataFile,
-                                  dataFrame,
-                                  pathOut,
-                                  predictFile,
-                                  lib,
-                                  pred, 
-                                  theta,
-                                  E,
-                                  Tp,
-                                  knn,
-                                  tau,
-                                  columns,
-                                  target,
-                                  embedded,
-                                  verbose,
-                                  numThreads )
+  df = RtoCpp_PredictNonlinear( pathIn,
+                                dataFile,
+                                dataFrame,
+                                pathOut,
+                                predictFile,
+                                lib,
+                                pred, 
+                                theta,
+                                E,
+                                Tp,
+                                knn,
+                                tau,
+                                columns,
+                                target,
+                                embedded,
+                                verbose,
+                                numThreads )
   
   if ( showPlot ) {
     title = paste(dataFile , "\nE=", E )

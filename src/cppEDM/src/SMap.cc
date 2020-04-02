@@ -499,9 +499,9 @@ std::valarray< double > Lapack_SVD( int     m, // number of rows in matrix
     // Copy solution vector in b to C
     std::valarray< double > C( b, N_SingularValues );
 
-    delete s;
-    delete work;
-    delete iwork;
+    delete[] s;
+    delete[] work;
+    delete[] iwork;
     
     return C;
 }
