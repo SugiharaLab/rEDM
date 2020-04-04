@@ -31,22 +31,31 @@ Functionality includes:
 
 Installation
 ------------
-
-You can install rEDM from CRAN with:
-
-    install.packages("rEDM")
-
-or the development version from github with:
-
+    Using R devtools:
     install.packages("devtools")
     devtools::install_github("SugiharaLab/rEDM")
+
+    Building from source:
+    git clone https://github.com/SugiharaLab/rEDM.git
+    cd rEDM
+    R CMD INSTALL .
+
+<!---
+To install from CRAN:
+
+    install.packages("rEDM")
+--->
+
+Note
+------------
+This package is currently (2020-04-04) exported as the R library "EDM". This allows concurrent installation of the previous version as "rEDM".  This package may be exported as "rEDM" in the future. 
 
 Example
 -------
 
 We begin by looking at annual time series of sunspots:
 
-    df <- data.frame(yr = as.numeric(time(sunspot.year)), 
+    df = data.frame(yr = as.numeric(time(sunspot.year)), 
                      sunspot_count = as.numeric(sunspot.year))
 
     plot(df$yr, df$sunspot_count, type = "l", 
@@ -57,8 +66,8 @@ We begin by looking at annual time series of sunspots:
 First, we use `EmbedDimension()` to determine the optimal embedding
 dimension, E:
 
-    library(rEDM)   # load the package
-    # If you're new to the rEDM package, please check out the tutorial:
+    library(EDM)   # load the package
+    # If you're new to the rEDM package, please consult the tutorial:
     # vignette("rEDM-tutorial")
 
     E.opt = EmbedDimension( dataFrame = df,    # input data
@@ -87,12 +96,12 @@ generally want a simpler model, if possible, we use `E = 3` to forecast
 the last 1/3 of data based on training (attractor reconstruction) from
 the first 2/3.
 
-    simplex <- Simplex( dataFrame = df, 
-                        lib     = "1   190", # portion of data to train
-                        pred    = "191 287", # portion of data to predict
-                        columns = "sunspot_count",
-                        target  = "sunspot_count",
-                        E       = 3 )
+    simplex = Simplex( dataFrame = df, 
+                       lib     = "1   190", # portion of data to train
+                       pred    = "191 287", # portion of data to predict
+                       columns = "sunspot_count",
+                       target  = "sunspot_count",
+                       E       = 3 )
 
     plot( df$yr, df$sunspot_count, type = "l", lwd = 2,
           xlab = "year", ylab = "sunspots")
@@ -107,7 +116,7 @@ Further Examples
 
 Please see the package vignettes for more details:
 
-    browseVignettes("rEDM")
+    browseVignettes("EDM")
 
 ### References
 
