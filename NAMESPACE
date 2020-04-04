@@ -1,4 +1,4 @@
-useDynLib( rEDM, .registration = TRUE )
+useDynLib( EDM, .registration = TRUE )
 
 export( Simplex   )
 export( SMap      )
@@ -11,6 +11,20 @@ export( EmbedDimension   )
 export( PredictInterval  )
 export( PredictNonlinear )
 export( SurrogateData    )
+
+# Legacy functions
+export( ccm           )
+export( block_lnlp    )
+export( s_map         )
+export( simplex       )
+export( multiview     )
+export( make_block    )
+export( compute_stats )
+export( ccm_means     )
+export( tde_gp        )
+export( block_gp      )
+export( test_nonlinearity   )
+export( make_surrogate_data )
 
 importFrom("graphics", "abline", "legend", "lines", "mtext", "par", "plot")
 importFrom("utils", "data", "read.csv")

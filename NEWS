@@ -1,0 +1,7 @@
+2020-04-04 version 1.3.1 <JosephPark@IEEE.org>
+
+Version 1.0 is a major rewrite of the 'rEDM' package as a wrapper for the 'cppEDM' library.  This allows a unified computation engine for EDM algorithms across C++, Python and R implementations.  The revised package provides improved alignment between observed and forecast data rows, and, strict exclusion of partial data vectors.  The package is loaded as library(EDM).  This allows the previous version (< 0.7.3) to be loaded as library(rEDM).
+
+Function names and signatures have changed, it is recommended to use the new function names: Simplex, SMap, CCM, Embed, Multiview, EmbedDimension, PredictInterval, PredictNonlinear, ComputeError. See https://sugiharalab.github.io/EDM_Documentation/ or the package documentation. 
+
+Legacy function interfaces have limited support. These include: simplex, s_map, block_lnlp, ccm, multiview, make_block, compute_stats.  Functions are ccm_means, tde_gp, block_gp, test_nonlinearity, make_surrogate_data are deprecated. 

@@ -6,14 +6,14 @@
 using namespace Rcpp;
 
 
-RcppExport SEXP _rcpp_module_boot_rEDMInternal();
+RcppExport SEXP _rcpp_module_boot_EDMInternal();
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_rcpp_module_boot_rEDMInternal", (DL_FUNC) &_rcpp_module_boot_rEDMInternal, 0},
+    {"_rcpp_module_boot_EDMInternal", (DL_FUNC) &_rcpp_module_boot_EDMInternal, 0},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_rEDM(DllInfo *dll) {
+RcppExport void R_init_EDM(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

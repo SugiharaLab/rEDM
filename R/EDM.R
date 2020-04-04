@@ -5,11 +5,11 @@ source("R/EDM_AuxFuncs.R")
 # Takens time-delay embedding on columnNames in dataFrame.
 # Truncates the timeseries by tau * (E-1) rows.
 #------------------------------------------------------------------------
-MakeBlock <- function( dataFrame,
-                       E       = 0, 
-                       tau     = -1,
-                       columns = "",
-                       verbose = FALSE ) {
+MakeBlock = function( dataFrame,
+                      E       = 0, 
+                      tau     = -1,
+                      columns = "",
+                      verbose = FALSE ) {
 
   if ( ! isValidDF( dataFrame ) ) {
     stop( "MakeBlock(): dataFrame argument is not a data.frame." )
@@ -31,13 +31,13 @@ MakeBlock <- function( dataFrame,
 # Embed DataFrame columns (subset) in E dimensions.
 # Calls MakeBlock() after validation and column subset selection.
 #------------------------------------------------------------------------
-Embed <- function( path      = "./",
-                   dataFile  = "",
-                   dataFrame = NULL,
-                   E         = 0, 
-                   tau       = -1,
-                   columns   = "",
-                   verbose   = FALSE ) {
+Embed = function( path      = "./",
+                  dataFile  = "",
+                  dataFrame = NULL,
+                  E         = 0, 
+                  tau       = -1,
+                  columns   = "",
+                  verbose   = FALSE ) {
 
   if ( ! is.null( dataFrame ) ) {
     if ( ! isValidDF( dataFrame ) ) {
@@ -65,24 +65,24 @@ Embed <- function( path      = "./",
 #------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------
-Simplex <- function( pathIn       = "./",
-                     dataFile     = "",
-                     dataFrame    = NULL,
-                     pathOut      = "./",
-                     predictFile  = "",
-                     lib          = "",
-                     pred         = "",
-                     E            = 0, 
-                     Tp           = 1,
-                     knn          = 0,
-                     tau          = -1,
-                     exclusionRadius = 0,
-                     columns      = "",
-                     target       = "", 
-                     embedded     = FALSE,
-                     verbose      = FALSE,
-                     const_pred   = FALSE,
-                     showPlot     = FALSE ) {
+Simplex = function( pathIn       = "./",
+                    dataFile     = "",
+                    dataFrame    = NULL,
+                    pathOut      = "./",
+                    predictFile  = "",
+                    lib          = "",
+                    pred         = "",
+                    E            = 0, 
+                    Tp           = 1,
+                    knn          = 0,
+                    tau          = -1,
+                    exclusionRadius = 0,
+                    columns      = "",
+                    target       = "", 
+                    embedded     = FALSE,
+                    verbose      = FALSE,
+                    const_pred   = FALSE,
+                    showPlot     = FALSE ) {
 
   if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
     stop( "Simplex(): Failed to find column or target in DataFrame." )
@@ -96,23 +96,23 @@ Simplex <- function( pathIn       = "./",
   }
   
   # Mapped to Simplex_rcpp() (Simplex.cpp) in RcppEDMCommon.cpp
-  smplx <- RtoCpp_Simplex( pathIn, 
-                           dataFile, 
-                           dataFrame, 
-                           pathOut, 
-                           predictFile, 
-                           lib, 
-                           pred, 
-                           E, 
-                           Tp, 
-                           knn, 
-                           tau, 
-                           exclusionRadius,
-                           columns, 
-                           target, 
-                           embedded, 
-                           const_pred,
-                           verbose )
+  smplx = RtoCpp_Simplex( pathIn, 
+                          dataFile, 
+                          dataFrame, 
+                          pathOut, 
+                          predictFile, 
+                          lib, 
+                          pred, 
+                          E, 
+                          Tp, 
+                          knn, 
+                          tau, 
+                          exclusionRadius,
+                          columns, 
+                          target, 
+                          embedded, 
+                          const_pred,
+                          verbose )
 
   if ( showPlot ) {
     PlotObsPred( smplx, dataFile, E, Tp ) 
@@ -124,27 +124,27 @@ Simplex <- function( pathIn       = "./",
 #------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------
-SMap <- function( pathIn       = "./",
-                  dataFile     = "",
-                  dataFrame    = NULL,
-                  pathOut      = "./",
-                  predictFile  = "",
-                  lib          = "",
-                  pred         = "",
-                  E            = 0, 
-                  Tp           = 1,
-                  knn          = 0,
-                  tau          = -1,
-                  theta        = 0,
-                  exclusionRadius = 0,
-                  columns      = "",
-                  target       = "",
-                  smapFile     = "",
-                  jacobians    = "",
-                  embedded     = FALSE,
-                  const_pred   = FALSE,
-                  verbose      = FALSE,
-                  showPlot     = FALSE ) {
+SMap = function( pathIn       = "./",
+                 dataFile     = "",
+                 dataFrame    = NULL,
+                 pathOut      = "./",
+                 predictFile  = "",
+                 lib          = "",
+                 pred         = "",
+                 E            = 0, 
+                 Tp           = 1,
+                 knn          = 0,
+                 tau          = -1,
+                 theta        = 0,
+                 exclusionRadius = 0,
+                 columns      = "",
+                 target       = "",
+                 smapFile     = "",
+                 jacobians    = "",
+                 embedded     = FALSE,
+                 const_pred   = FALSE,
+                 verbose      = FALSE,
+                 showPlot     = FALSE ) {
 
   if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
     stop( "SMap(): Failed to find column or target in DataFrame." )
@@ -159,26 +159,26 @@ SMap <- function( pathIn       = "./",
 
   # Mapped to SMap_rcpp() (SMap.cpp) in RcppEDMCommon.cpp
   # smapList has data.frames of "predictions" and "coefficients"
-  smapList <- RtoCpp_SMap( pathIn,
-                           dataFile,
-                           dataFrame,
-                           pathOut,
-                           predictFile,
-                           lib,
-                           pred,  
-                           E, 
-                           Tp,
-                           knn,
-                           tau,
-                           theta,
-                           exclusionRadius,
-                           columns,
-                           target,
-                           smapFile,
-                           jacobians,
-                           embedded,
-                           const_pred,
-                           verbose )
+  smapList = RtoCpp_SMap( pathIn,
+                          dataFile,
+                          dataFrame,
+                          pathOut,
+                          predictFile,
+                          lib,
+                          pred,  
+                          E, 
+                          Tp,
+                          knn,
+                          tau,
+                          theta,
+                          exclusionRadius,
+                          columns,
+                          target,
+                          smapFile,
+                          jacobians,
+                          embedded,
+                          const_pred,
+                          verbose )
   
   if ( showPlot ) {
     PlotSmap( smapList, dataFile, E, Tp )
@@ -190,24 +190,24 @@ SMap <- function( pathIn       = "./",
 #------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------
-Multiview <- function( pathIn          = "./",
-                       dataFile        = "",
-                       dataFrame       = NULL,
-                       pathOut         = "./",
-                       predictFile     = "",
-                       lib             = "",
-                       pred            = "",
-                       E               = 0, 
-                       Tp              = 1,
-                       knn             = 0,
-                       tau             = -1,
-                       columns         = "",
-                       target          = "",
-                       multiview       = 0,
-                       exclusionRadius = 0,
-                       verbose         = FALSE,
-                       numThreads      = 4,
-                       showPlot        = FALSE ) {
+Multiview = function( pathIn          = "./",
+                      dataFile        = "",
+                      dataFrame       = NULL,
+                      pathOut         = "./",
+                      predictFile     = "",
+                      lib             = "",
+                      pred            = "",
+                      E               = 0, 
+                      Tp              = 1,
+                      knn             = 0,
+                      tau             = -1,
+                      columns         = "",
+                      target          = "",
+                      multiview       = 0,
+                      exclusionRadius = 0,
+                      verbose         = FALSE,
+                      numThreads      = 4,
+                      showPlot        = FALSE ) {
 
   if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
     stop( "Multiview(): Failed to find column or target in DataFrame." )
@@ -222,23 +222,23 @@ Multiview <- function( pathIn          = "./",
   
   # Mapped to Multiview_rcpp() (Multiview.cpp) in RcppEDMCommon.cpp
   # mvList has data.frames "Combo_rho" and  "Predictions" 
-  mvList <- RtoCpp_Multiview( pathIn,
-                              dataFile,
-                              dataFrame,
-                              pathOut,
-                              predictFile,
-                              lib,
-                              pred,
-                              E, 
-                              Tp,
-                              knn,
-                              tau,
-                              columns,
-                              target,
-                              multiview,
-                              exclusionRadius,
-                              verbose,
-                              numThreads )
+  mvList = RtoCpp_Multiview( pathIn,
+                             dataFile,
+                             dataFrame,
+                             pathOut,
+                             predictFile,
+                             lib,
+                             pred,
+                             E, 
+                             Tp,
+                             knn,
+                             tau,
+                             columns,
+                             target,
+                             multiview,
+                             exclusionRadius,
+                             verbose,
+                             numThreads )
 
   if ( showPlot ) {
     PlotObsPred( mvList $ Predictions, dataFile, E, Tp )
@@ -286,24 +286,24 @@ Multiview <- function( pathIn          = "./",
 #------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------
-CCM <- function( pathIn       = "./",
-                 dataFile     = "",
-                 dataFrame    = NULL,
-                 pathOut      = "./",
-                 predictFile  = "",
-                 E            = 0, 
-                 Tp           = 0,
-                 knn          = 0,
-                 tau          = -1,
-                 columns      = "",
-                 target       = "",
-                 libSizes     = "",
-                 sample       = 0,
-                 random       = TRUE,
-                 replacement  = FALSE,
-                 seed         = 0,
-                 verbose      = FALSE,
-                 showPlot     = FALSE ) {
+CCM = function( pathIn       = "./",
+                dataFile     = "",
+                dataFrame    = NULL,
+                pathOut      = "./",
+                predictFile  = "",
+                E            = 0, 
+                Tp           = 0,
+                knn          = 0,
+                tau          = -1,
+                columns      = "",
+                target       = "",
+                libSizes     = "",
+                sample       = 0,
+                random       = TRUE,
+                replacement  = FALSE,
+                seed         = 0,
+                verbose      = FALSE,
+                showPlot     = FALSE ) {
   
   if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
     stop( "CCM(): Failed to find column or target in DataFrame." )
@@ -319,30 +319,30 @@ CCM <- function( pathIn       = "./",
   
   # Mapped to CCM_rcpp() (CCM.cpp) in RcppEDMCommon.cpp
   # CCMList has "LibSize" and columns:target target:columns
-  CCMList <- RtoCpp_CCM( pathIn,
-                         dataFile,
-                         dataFrame,
-                         pathOut,
-                         predictFile,
-                         E, 
-                         Tp,
-                         knn,
-                         tau,
-                         columns,
-                         target,
-                         libSizes,
-                         sample,
-                         random,
-                         replacement,
-                         seed,
-                         verbose )
+  CCMList = RtoCpp_CCM( pathIn,
+                        dataFile,
+                        dataFrame,
+                        pathOut,
+                        predictFile,
+                        E, 
+                        Tp,
+                        knn,
+                        tau,
+                        columns,
+                        target,
+                        libSizes,
+                        sample,
+                        random,
+                        replacement,
+                        seed,
+                        verbose )
 
   if ( showPlot ) {
     libSize = CCMList[[ 'LibSize' ]]
     V1      = names( CCMList )[2]
     V2      = names( CCMList )[3]
                                     
-    title <- paste( V1, " : ", V2, "\nE=" , E )
+    title = paste( V1, " : ", V2, "\nE=" , E )
     
     plot( libSize, CCMList[[ V1 ]],
           ylim = range( CCMList[[ V1 ]], CCMList[[ V2 ]] ),
@@ -360,22 +360,22 @@ CCM <- function( pathIn       = "./",
 #------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------
-EmbedDimension <- function ( pathIn       = "./",
-                             dataFile     = "",
-                             dataFrame    = NULL,
-                             pathOut      = "",
-                             predictFile  = "",
-                             lib          = "",
-                             pred         = "",
-                             maxE         = 10,
-                             Tp           = 1,
-                             tau          = -1,
-                             columns      = "",
-                             target       = "",
-                             embedded     = FALSE,
-                             verbose      = FALSE,
-                             numThreads   = 4,
-                             showPlot     = TRUE ) {
+EmbedDimension = function ( pathIn       = "./",
+                            dataFile     = "",
+                            dataFrame    = NULL,
+                            pathOut      = "",
+                            predictFile  = "",
+                            lib          = "",
+                            pred         = "",
+                            maxE         = 10,
+                            Tp           = 1,
+                            tau          = -1,
+                            columns      = "",
+                            target       = "",
+                            embedded     = FALSE,
+                            verbose      = FALSE,
+                            numThreads   = 4,
+                            showPlot     = TRUE ) {
 
   if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
     stop( "EmbedDimension(): Failed to find column or target in DataFrame." )
@@ -406,7 +406,7 @@ EmbedDimension <- function ( pathIn       = "./",
                               numThreads )
 
   if ( showPlot ) {
-    title <- paste(dataFile , "\nTp=" , Tp )
+    title = paste(dataFile , "\nTp=" , Tp )
     plot( df $ E, df $ rho, main = title, xlab = "Embedding Dimension",
           ylab = "Prediction Skill (\U03C1)", type = "l", lwd = 3 )
   }
@@ -417,22 +417,22 @@ EmbedDimension <- function ( pathIn       = "./",
 #------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------
-PredictInterval <- function( pathIn      = "./",
-                             dataFile    = "",
-                             dataFrame   = NULL,
-                             pathOut     = "./",
-                             predictFile = "",
-                             lib         = "",
-                             pred        = "",
-                             maxTp       = 10,
-                             E           = 1,
-                             tau         = -1,
-                             columns     = "",
-                             target      = "",
-                             embedded    = FALSE,
-                             verbose     = FALSE,
-                             numThreads  = 4,
-                             showPlot    = TRUE ) {
+PredictInterval = function( pathIn      = "./",
+                            dataFile    = "",
+                            dataFrame   = NULL,
+                            pathOut     = "./",
+                            predictFile = "",
+                            lib         = "",
+                            pred        = "",
+                            maxTp       = 10,
+                            E           = 1,
+                            tau         = -1,
+                            columns     = "",
+                            target      = "",
+                            embedded    = FALSE,
+                            verbose     = FALSE,
+                            numThreads  = 4,
+                            showPlot    = TRUE ) {
   
   if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
     stop( "PredictInterval(): Failed to find column or target in DataFrame." )
@@ -463,7 +463,7 @@ PredictInterval <- function( pathIn      = "./",
                                numThreads )
 
   if ( showPlot ) {
-    title <- paste( dataFile , "\nE=" , E )
+    title = paste( dataFile , "\nE=" , E )
     plot( df $ Tp, df $ rho, main = title, xlab = "Forecast Interval",
           ylab = "Prediction Skill (\U03C1)", type = "l", lwd = 3 )
   }
@@ -474,24 +474,24 @@ PredictInterval <- function( pathIn      = "./",
 #------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------
-PredictNonlinear <- function( pathIn      = "./",
-                              dataFile    = "",
-                              dataFrame   = NULL,
-                              pathOut     = "./",
-                              predictFile = "",
-                              lib         = "",
-                              pred        = "",
-                              theta       = "",
-                              E           = 1,
-                              Tp          = 1,
-                              knn         = 0,
-                              tau         = -1,
-                              columns     = "",
-                              target      = "",
-                              embedded    = FALSE,
-                              verbose     = FALSE,
-                              numThreads  = 4,
-                              showPlot    = TRUE ) {
+PredictNonlinear = function( pathIn      = "./",
+                             dataFile    = "",
+                             dataFrame   = NULL,
+                             pathOut     = "./",
+                             predictFile = "",
+                             lib         = "",
+                             pred        = "",
+                             theta       = "",
+                             E           = 1,
+                             Tp          = 1,
+                             knn         = 0,
+                             tau         = -1,
+                             columns     = "",
+                             target      = "",
+                             embedded    = FALSE,
+                             verbose     = FALSE,
+                             numThreads  = 4,
+                             showPlot    = TRUE ) {
 
   if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
     stop( "PredictNonlinear(): Failed to find column or target in DataFrame." )
