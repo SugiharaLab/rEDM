@@ -899,6 +899,24 @@ PredictConstN = function( df ) {
 }
 
 #--------------------------------------------------------------------------
+# make_surrogate_data()  
+#--------------------------------------------------------------------------
+make_surrogate_data = function( ts,
+                                method   = c("random_shuffle", "ebisuzaki",
+                                             "seasonal" ),
+                                num_surr = 100,
+                                T_period = 1,
+                                alpha    = 0 )
+{
+  data = SurrogateData( ts,
+                        method   = method,
+                        num_surr = num_surr,
+                        T_period = T_period,
+                        alpha    = alpha )
+  return( data )
+}
+
+#--------------------------------------------------------------------------
 # ccm_means()  
 #--------------------------------------------------------------------------
 ccm_means = function( df, FUN = mean, ... ) {
@@ -955,14 +973,4 @@ test_nonlinearity = function( ts,
                               E = 1,
                               ... ) {
   stop( "test_nonlinearity() not implemented." )
-}
-
-#--------------------------------------------------------------------------
-# make_surrogate_data()  
-#--------------------------------------------------------------------------
-make_surrogate_data = function( ts,
-                                method = c("random_shuffle", "ebisuzaki",
-                                           "seasonal", "twin"),
-                                num_surr = 100, ...) {
-  stop( "make_surrogate_data() not implemented." )
 }

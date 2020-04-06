@@ -84,17 +84,21 @@ Simplex = function( pathIn       = "./",
                     const_pred   = FALSE,
                     showPlot     = FALSE ) {
 
+  # If lib, pred, columns are vectors/list, convert to string for cppEDM
+  if ( ! is.character( lib ) || length( lib ) > 1 ) {
+    lib = FlattenToString( lib )
+  }
+  if ( ! is.character( pred ) || length( pred ) > 1 ) {
+    pred = FlattenToString( pred )
+  }
+  if ( ! is.character( columns ) || length( columns ) > 1 ) {
+    columns = FlattenToString( columns )
+  }
+
   if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
     stop( "Simplex(): Failed to find column or target in DataFrame." )
   }
 
-  # If lib, pred, columns are vectors/list, convert to string for cppEDM
-  if (is.vector(lib ) || is.list(lib )) { lib  = paste( lib,  collapse = " ") }
-  if (is.vector(pred) || is.list(pred)) { pred = paste( pred, collapse = " ") }
-  if ( is.vector( columns ) || is.list( columns ) ) {
-    columns = paste( columns, collapse = " " )
-  }
-  
   # Mapped to Simplex_rcpp() (Simplex.cpp) in RcppEDMCommon.cpp
   smplx = RtoCpp_Simplex( pathIn, 
                           dataFile, 
@@ -151,10 +155,14 @@ SMap = function( pathIn       = "./",
   }
   
   # If lib, pred, columns are vectors/list, convert to string for cppEDM
-  if (is.vector(lib ) || is.list(lib )) { lib  = paste( lib,  collapse = " ") }
-  if (is.vector(pred) || is.list(pred)) { pred = paste( pred, collapse = " ") }
-  if ( is.vector( columns ) || is.list( columns ) ) {
-    columns = paste( columns, collapse = " " )
+  if ( ! is.character( lib ) || length( lib ) > 1 ) {
+    lib = FlattenToString( lib )
+  }
+  if ( ! is.character( pred ) || length( pred ) > 1 ) {
+    pred = FlattenToString( pred )
+  }
+  if ( ! is.character( columns ) || length( columns ) > 1 ) {
+    columns = FlattenToString( columns )
   }
 
   # Mapped to SMap_rcpp() (SMap.cpp) in RcppEDMCommon.cpp
@@ -214,10 +222,14 @@ Multiview = function( pathIn          = "./",
   }
   
   # If lib, pred, columns are vectors/list, convert to string for cppEDM
-  if (is.vector(lib ) || is.list(lib )) { lib  = paste( lib,  collapse = " ") }
-  if (is.vector(pred) || is.list(pred)) { pred = paste( pred, collapse = " ") }
-  if ( is.vector( columns ) || is.list( columns ) ) {
-    columns = paste( columns, collapse = " " )
+  if ( ! is.character( lib ) || length( lib ) > 1 ) {
+    lib = FlattenToString( lib )
+  }
+  if ( ! is.character( pred ) || length( pred ) > 1 ) {
+    pred = FlattenToString( pred )
+  }
+  if ( ! is.character( columns ) || length( columns ) > 1 ) {
+    columns = FlattenToString( columns )
   }
   
   # Mapped to Multiview_rcpp() (Multiview.cpp) in RcppEDMCommon.cpp
@@ -310,11 +322,11 @@ CCM = function( pathIn       = "./",
   }
   
   # If libSizes, columns are vectors/list, convert to string for cppEDM
-  if ( is.vector( columns ) || is.list( columns ) ) {
-    columns = paste( columns, collapse = " " )
+  if ( ! is.character( libSizes ) || length( libSizes ) > 1 ) {
+    libSizes = FlattenToString( libSizes )
   }
-  if ( is.vector( libSizes ) || is.list( libSizes ) ) {
-    libSizes = paste( libSizes, collapse = " " )
+  if ( ! is.character( columns ) || length( columns ) > 1 ) {
+    columns = FlattenToString( columns )
   }
   
   # Mapped to CCM_rcpp() (CCM.cpp) in RcppEDMCommon.cpp
@@ -382,10 +394,14 @@ EmbedDimension = function ( pathIn       = "./",
   }
   
   # If lib, pred, columns are vectors/list, convert to string for cppEDM
-  if (is.vector(lib ) || is.list(lib )) { lib  = paste( lib,  collapse = " ") }
-  if (is.vector(pred) || is.list(pred)) { pred = paste( pred, collapse = " ") }
-  if ( is.vector( columns ) || is.list( columns ) ) {
-    columns = paste( columns, collapse = " " )
+  if ( ! is.character( lib ) || length( lib ) > 1 ) {
+    lib = FlattenToString( lib )
+  }
+  if ( ! is.character( pred ) || length( pred ) > 1 ) {
+    pred = FlattenToString( pred )
+  }
+  if ( ! is.character( columns ) || length( columns ) > 1 ) {
+    columns = FlattenToString( columns )
   }
   
   # Mapped to EmbedDimension_rcpp() (EmbedDim.cpp) in RcppEDMCommon.cpp
@@ -439,10 +455,14 @@ PredictInterval = function( pathIn      = "./",
   }
   
   # If lib, pred, columns are vectors/list, convert to string for cppEDM
-  if (is.vector(lib ) || is.list(lib )) { lib  = paste( lib,  collapse = " ") }
-  if (is.vector(pred) || is.list(pred)) { pred = paste( pred, collapse = " ") }
-  if ( is.vector( columns ) || is.list( columns ) ) {
-    columns = paste( columns, collapse = " " )
+  if ( ! is.character( lib ) || length( lib ) > 1 ) {
+    lib = FlattenToString( lib )
+  }
+  if ( ! is.character( pred ) || length( pred ) > 1 ) {
+    pred = FlattenToString( pred )
+  }
+  if ( ! is.character( columns ) || length( columns ) > 1 ) {
+    columns = FlattenToString( columns )
   }
   
   # Mapped to PredictInterval_rcpp() (PredictInterval.cpp) in RcppEDMCommon.cpp
@@ -498,13 +518,19 @@ PredictNonlinear = function( pathIn      = "./",
   }
   
   # If lib, pred, theta, columns are vectors/list, convert to string for cppEDM
-  if (is.vector(lib ) || is.list(lib )) { lib   = paste( lib,   collapse = " ")}
-  if (is.vector(pred) || is.list(pred)) { pred  = paste( pred,  collapse = " ")}
-  if (is.vector(theta)|| is.list(theta)){ theta = paste( theta, collapse = " ")}
-  if ( is.vector( columns ) || is.list( columns ) ) {
-    columns = paste( columns, collapse = " " )
+  if ( ! is.character( lib ) || length( lib ) > 1 ) {
+    lib = FlattenToString( lib )
   }
-  
+  if ( ! is.character( pred ) || length( pred ) > 1 ) {
+    pred = FlattenToString( pred )
+  }
+  if ( ! is.character( theta ) || length( theta ) > 1 ) {
+    theta = FlattenToString( theta )
+  }
+  if ( ! is.character( columns ) || length( columns ) > 1 ) {
+    columns = FlattenToString( columns )
+  }
+
   # Mapped to PredictNonlinear_rcpp() (PredictNL.cpp) in RcppEDMCommon.cpp
   df = RtoCpp_PredictNonlinear( pathIn,
                                 dataFile,

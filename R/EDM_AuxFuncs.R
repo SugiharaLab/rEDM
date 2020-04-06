@@ -1,15 +1,41 @@
 #------------------------------------------------------------------------
 # 
 #------------------------------------------------------------------------
-ComputeError <- function( obs, pred ) {
+ComputeError = function( obs, pred ) {
   # Pearson rho, RMSE, MAE.
   return ( RtoCpp_ComputeError( obs, pred ) )
 }
 
 #------------------------------------------------------------------------
+# 
+#------------------------------------------------------------------------
+FlattenToString = function( x ) {
+  # R is wonderful... is.vector( list() ) is TRUE is.list( data.frame ) TRUE
+  # Test for data.frame or matrix first, then list, then vector
+  # or, use class string as selector
+  if ( is.data.frame( x ) || is.matrix( x ) ) {
+    s = ""
+    for( row in 1:nrow( x ) ) {
+      s = paste( s, paste( x[row,], collapse = " " ), collapse = " " )
+    }
+  }
+  else if ( is.list( x ) ) {
+    s = paste( unlist( x ),  collapse = " " )
+  }
+  else if ( is.vector( x ) ) {
+    s = paste( x,  collapse = " " )
+  }
+  else {
+    s = x
+  }
+
+  return ( s )
+}
+
+#------------------------------------------------------------------------
 # Validate columns are present
 #------------------------------------------------------------------------
-ColumnsInDataFrame <- function( pathIn, dataFile, dataFrame, columns, target ) {
+ColumnsInDataFrame = function( pathIn, dataFile, dataFrame, columns, target ) {
 
   if ( nchar( dataFile ) ) {
     # Shame to have to read the data just for this...
@@ -58,7 +84,7 @@ ColumnsInDataFrame <- function( pathIn, dataFile, dataFrame, columns, target ) {
 #------------------------------------------------------------------------
 # Is dataFrame a non-empty data.frame?  TRUE : FALSE
 #------------------------------------------------------------------------
-isValidDF <- function( dataFrame ) {
+isValidDF = function( dataFrame ) {
   if ( inherits( dataFrame, "data.frame" ) ) {
     if ( nrow( dataFrame ) == 0 || ncol( dataFrame ) == 0 ) { 
       print( paste( "isValidDF(): dataFrame is empty." ) )
@@ -74,10 +100,10 @@ isValidDF <- function( dataFrame ) {
 #------------------------------------------------------------------------
 # Plot data.frame with "time" "Observations" "Predictions"
 #------------------------------------------------------------------------
-PlotObsPred <- function( df,
-                         dataFile = NULL,
-                         E        = NULL,
-                         Tp       = NULL ) {
+PlotObsPred = function( df,
+                        dataFile = NULL,
+                        E        = NULL,
+                        Tp       = NULL ) {
 
   if ( ncol( df ) < 3 ) {
     print( "PlotObsPred: at least 3 columns are expected." )
@@ -133,10 +159,10 @@ PlotObsPred <- function( df,
 #------------------------------------------------------------------------
 # Plot S-Map coefficients
 #------------------------------------------------------------------------
-PlotSmap <- function( SmapList,
-                      dataFile = NULL,
-                      E        = NULL,
-                      Tp       = NULL ) {
+PlotSmap = function( SmapList,
+                     dataFile = NULL,
+                     E        = NULL,
+                     Tp       = NULL ) {
 
   if ( ! "predictions" %in% names( SmapList ) ) {
     print( "PlotSmap: unable to find predictions." )
@@ -218,7 +244,7 @@ PlotSmap <- function( SmapList,
 # the specified period and shuffling the residuals.
 # 
 #------------------------------------------------------------------------
-SurrogateData <- function(
+SurrogateData = function(
   ts,
   method = c("random_shuffle", "ebisuzaki", "seasonal"), 
   num_surr = 100, T_period = 1, alpha = 0 )
