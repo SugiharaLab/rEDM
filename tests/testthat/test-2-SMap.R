@@ -11,7 +11,7 @@ test_that("SMap works", {
     expect_type(S.List, "list")
     expect_true("predictions"  %in% names(S.List))
     expect_true("coefficients" %in% names(S.List))
-    expect_equal( dim(S.List $ predictions  ), c(82,3) )
+    expect_equal( dim(S.List $ predictions  ), c(82,4) )
     expect_equal( dim(S.List $ coefficients ), c(82,4) )
 })
 

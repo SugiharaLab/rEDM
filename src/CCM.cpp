@@ -4,29 +4,30 @@
 //-----------------------------------------------------------
 // 
 //-----------------------------------------------------------
-r::DataFrame CCM_rcpp( std::string  pathIn, 
-                       std::string  dataFile,
-                       r::DataFrame dataList,
-                       std::string  pathOut,
-                       std::string  predictFile,
-                       int          E,
-                       int          Tp,
-                       int          knn,
-                       int          tau, 
-                       std::string  columns,
-                       std::string  target,
-                       std::string  libSizes,
-                       int          sample,
-                       bool         random,
-                       bool         replacement,
-                       unsigned     seed, 
-                       bool         verbose ) {
+Rcpp::List CCM_rcpp( std::string  pathIn, 
+                     std::string  dataFile,
+                     r::DataFrame dataList,
+                     std::string  pathOut,
+                     std::string  predictFile,
+                     int          E,
+                     int          Tp,
+                     int          knn,
+                     int          tau, 
+                     std::string  columns,
+                     std::string  target,
+                     std::string  libSizes,
+                     int          sample,
+                     bool         random,
+                     bool         replacement,
+                     unsigned     seed,
+                     bool         includeData,
+                     bool         verbose ) {
     
-    DataFrame< double > ccmOutput;
+    CCMValues ccmValues;
 
     if ( dataFile.size() ) {
         // dataFile specified, dispatch overloaded CCM, ignore dataList
-        ccmOutput = CCM( pathIn,
+        ccmValues = CCM( pathIn,
                          dataFile,
                          pathOut,
                          predictFile,
@@ -41,12 +42,13 @@ r::DataFrame CCM_rcpp( std::string  pathIn,
                          random,
                          replacement,
                          seed,
+                         includeData,
                          verbose );
     }
     else if ( dataList.size() ) {
         DataFrame< double > dataFrame = DFToDataFrame( dataList );
 
-        ccmOutput = CCM( dataFrame,
+        ccmValues = CCM( dataFrame,
                          pathOut,
                          predictFile,
                          E, 
@@ -60,11 +62,45 @@ r::DataFrame CCM_rcpp( std::string  pathIn,
                          random,
                          replacement,
                          seed,
+                         includeData,
                          verbose );
     }
     else {
         Rcpp::warning( "CCM_rcpp(): No dataFile or dataFrame.\n" );
     }
-    
-    return DataFrameToDF( ccmOutput );
+
+    // Ouput Rcpp DataFrames
+    r::DataFrame allLibStat   = DataFrameToDF( ccmValues.AllLibStats );
+
+    r::List output;
+    if ( includeData ) {
+        // Have to unroll and convert CCMValues.Predictions forward_list
+        // to Rcpp::DataFrame for output.
+        r::List PredictionsList1;
+        for ( auto pi =  ccmValues.CrossMap1.Predictions.begin();
+              pi != ccmValues.CrossMap1.Predictions.end(); ++pi ) {
+            PredictionsList1.push_back( DataFrameToDF( *pi ) );
+        }
+        r::List PredictionsList2;
+        for ( auto pi =  ccmValues.CrossMap2.Predictions.begin();
+              pi != ccmValues.CrossMap2.Predictions.end(); ++pi ) {
+            PredictionsList2.push_back( DataFrameToDF( *pi ) );
+        }
+        
+        r::DataFrame cm1_PredStat =
+            DataFrameToDF( ccmValues.CrossMap1.PredictStats );
+        r::DataFrame cm2_PredStat =
+            DataFrameToDF( ccmValues.CrossMap2.PredictStats );
+        
+        output =
+            r::List::create(r::Named( "LibMeans"         ) = allLibStat,
+                            r::Named( "CCM1_PredictStat" ) = cm1_PredStat,
+                            r::Named( "CCM1_Predictions" ) = PredictionsList1,
+                            r::Named( "CCM2_PredictStat" ) = cm2_PredStat,
+                            r::Named( "CCM2_Predictions" ) = PredictionsList2);
+    }
+    else {
+        output = r::List::create( r::Named( "LibMeans" ) = allLibStat);
+    }
+    return output;
 }

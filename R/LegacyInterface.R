@@ -12,13 +12,12 @@ source("R/EDM.R")
 #   tau          : mathematically correct tau
 # 
 # Not implemented:
-#   block_gp() tde_gp() ccm_means() 
-#   make_surrogate_data() test_nonlinearity() 
+#   block_gp() tde_gp() ccm_means() test_nonlinearity() 
 #--------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------
 # ccm() 
-# 
+# Wrapper for CCM() : returns data.frame or list if stats_only = FALSE
 #--------------------------------------------------------------------------
 ccm = function( block,
                 lib               = NULL,
@@ -41,7 +40,8 @@ ccm = function( block,
                 stats_only        = TRUE,
                 silent            = TRUE )
 {
-  verbose = ! silent
+  verbose     = ! silent
+  includeData = ! stats_only
   
   if ( norm != 2 ) {
     stop( "ccm(): L2-norm is the only metric currently available." )
@@ -121,7 +121,7 @@ ccm = function( block,
     seed = RNGseed
   }
 
-  ccm.means = CCM( pathIn       = "./",
+  ccmReturn = CCM( pathIn       = "./",
                    dataFile     = "",
                    dataFrame    = dataFrame,
                    pathOut      = "./",
@@ -137,18 +137,36 @@ ccm = function( block,
                    random       = random_libs,
                    replacement  = replace,
                    seed         = seed,
+                   includeData  = includeData,
                    verbose      = verbose,
                    showPlot     = FALSE )
-
-  # Add additional (redundant) fields
-  if ( knn == 0 ) { knn = E + 1 }
-  N = nrow( ccm.means )
-  ccm.means $ E   = rep( E,   N )
-  ccm.means $ tau = rep( tau, N )
-  ccm.means $ tp  = rep( tp,  N )
-  ccm.means $ nn  = rep( knn, N )
   
-  return( ccm.means )
+  # Add additional fields to the return
+  if ( knn == 0 ) { knn = E + 1 }
+  if ( includeData ) {
+    # ccmReturn is a list
+    N = nrow( ccmReturn $ LibMeans )
+    ccmReturn $ LibMeans $ E   = rep( E,   N )
+    ccmReturn $ LibMeans $ tau = rep( tau, N )
+    ccmReturn $ LibMeans $ tp  = rep( tp,  N )
+    ccmReturn $ LibMeans $ nn  = rep( knn, N )
+    
+    # Add lib and target column names to the PredictStats
+    ccmReturn $ CCM1_PredictStat $ lib    = rep( columns, N )
+    ccmReturn $ CCM1_PredictStat $ target = rep( target,  N )
+    ccmReturn $ CCM2_PredictStat $ target = rep( columns, N )
+    ccmReturn $ CCM2_PredictStat $ lib    = rep( target,  N )
+  }
+  else {
+    # ccmReturn is data.frame
+    N = nrow( ccmReturn )
+    ccmReturn $ E   = rep( E,   N )
+    ccmReturn $ tau = rep( tau, N )
+    ccmReturn $ tp  = rep( tp,  N )
+    ccmReturn $ nn  = rep( knn, N )
+  }
+  
+  return( ccmReturn )
 }
 
 #--------------------------------------------------------------------------
@@ -192,6 +210,13 @@ block_lnlp = function(
   #-----------------------------------------------------------------
   # block : either a vector to be used as the time series, or
   #         data.frame or matrix where each column is a time series
+  #
+  # Default parameters are set so that passing a vector as the only
+  # argument will use that vector to predict itself one time step ahead.
+  # If a matrix or data.frame is given as the only argument, the first
+  # column will be predicted (one time step ahead), using the remaining
+  # columns as the embedding. If the first column is not a time vector,
+  # 1:NROW will be used as time values.
   #-----------------------------------------------------------------
   if ( is.null( dim( block ) ) ) {
     # Not a data.frame or matrix, not much sense since E must be 1.
@@ -213,22 +238,33 @@ block_lnlp = function(
     }
     
     if ( is.numeric( target_column ) ) {
-      target_column = target_column + 1
+      target_column = target_column + 1 # first col is time/index
       target        = names( dataFrame )[ target_column ]
     }
     else {
-      target = target_column
+      target = target_column # Modern user... provided a column name
+    }
+
+    if ( is.null( columns ) ) {
+      # presume first data column is the target, all others the columns
+      columns = names( dataFrame )[ 3 : ncol(dataFrame) ]
     }
   }
   #-----------------------------------------------------------------
 
-  E = ncol( dataFrame )
-  if ( first_column_time ) {
-    E = E - 1
+  # Much better to force the user to specify E... So... let's make a guess
+  if ( ! is.character( columns ) || length( columns ) > 1 ) {
+    # It's not a character string (is it?) length should work
+    E = length( columns )
   }
-
+  else {
+    # Maybe it's a string with multiple columns... (? who knows...)
+    E = length( strsplit( trimws( columns ), "\\s+" )[[1]] )
+  }
+  
   if ( verbose ) {
-    print( paste( 'block_lnlp(): Using target', target, 'E =', E ) )
+    print( paste( 'block_lnlp(): Using target', target,
+                  'columns', FlattenToString( columns ), 'E =', E ) )
   }
 
   if ( is.null( lib ) ) {
@@ -278,8 +314,10 @@ block_lnlp = function(
     if ( knn == 0 ) {
       knn = E + 1 # As set in cppEDM Simplex()
     }
-    
-    stats = ComputeStats( list( smplx ), E, 0, tp, knn, NULL )
+
+    # First column is cols
+    stats = data.frame( cols = FlattenToString( columns ) )
+    stats = cbind( stats, ComputeStats( list( smplx ), E, 0, tp, knn, NULL ) )
 
     if ( stats_only ) {
       return.object = stats
@@ -338,7 +376,10 @@ block_lnlp = function(
     names( smapList ) = paste0( "theta", theta )
 
     smapListPred = lapply( smapList, function(L){ L $ predictions } )
-    stats        = ComputeStats( smapListPred, E, 0, tp, knn, theta )
+    
+    # First column is cols
+    stats = data.frame( cols = columns )
+    stats = cbind( stats, ComputeStats( smapListPred, E, 0, tp, knn, theta ) )
 
     if ( stats_only ) {
       return.object = stats
@@ -355,8 +396,8 @@ block_lnlp = function(
                              function(L){ cols = ncol( L $ coefficients );
                                           cov( L $ coefficients[,2:cols],
                                                use = 'complete.obs') } )
-      return.object[[ "coef" ]] = smapListCoef
-      return.object[[ "cov"  ]] = smapListCov
+      return.object[[ "smap_coefficients" ]]             = smapListCoef
+      return.object[[ "smap_coefficient_covariances"  ]] = smapListCov
     }
   }
   #---------------------------------------------------------------------------
@@ -477,24 +518,28 @@ s_map = function(
   stats        = ComputeStats( smapListPred, E, tau, tp, knn, theta )
 
   if ( stats_only ) {
-    return.object = stats
+    return.object = stats # data.frame
   }
-  else {
-    # list with "stats_only" and "model_results"
-    # model_results is a list of data.frames for each E
-    return.object = list( stats = stats, model_output = smapListPred )
-  }
-
+  
   if ( save_smap_coefficients ) {
+    # return.object is a list, add coefficients & covariance
+    return.object = list( stats = stats )
+    
     smapListCoef = lapply( smapList, function(L){ L $ coefficients } )
     smapListCov  = lapply( smapList,
                            function(L){ cols = ncol( L $ coefficients );
                                         cov( L $ coefficients[,2:cols],
                                              use = 'complete.obs') } )
-    return.object[[ "coef" ]] = smapListCoef
-    return.object[[ "cov"  ]] = smapListCov
+    return.object[[ "smap_coefficients" ]]             = smapListCoef
+    return.object[[ "smap_coefficient_covariances"  ]] = smapListCov
   }
   
+  if ( ! stats_only ) {
+    # ALready a list with "stats"
+    # Add model_results as a list of data.frames for each E
+    return.object[[ "model_output" ]] = smapListPred
+  }
+
   return( return.object )
 }
 
@@ -620,7 +665,7 @@ multiview = function( block,
                       lib               = NULL,
                       pred              = NULL,
                       norm              = 2,
-                      E                 = 3,
+                      E                 = 1,
                       tau               = -1,
                       tp                = 1,
                       max_lag           = 3, 
@@ -663,7 +708,7 @@ multiview = function( block,
       first_column_time = TRUE # Argh... Bogus
     }
     
-    columns = names( dataFrame )[ 2 : ncol( block ) ] # ignore first col time
+    columns = names( dataFrame )[ 2 : ncol( dataFrame ) ] # ignore first col time
     columns = paste( columns, collapse = " " )
     
     if ( is.numeric( target_column ) ) {
@@ -676,9 +721,10 @@ multiview = function( block,
   }
   #-----------------------------------------------------------------
 
-  print( columns )
-  print( target )
-  print( class( target ) )
+  if ( verbose ) {
+    print( paste( 'columns:', columns ) )
+    print( paste( 'target:',  target  ) )
+  }
   
   if ( is.null( lib ) ) {
     lib = c( 1, floor(NROW(block)/2) )
@@ -701,6 +747,13 @@ multiview = function( block,
   else {
     exclusionRadius = exclusion_radius
   }
+
+  if ( 'sqrt' %in% k || k == 0 ) {
+    multiview = 0
+  }
+  else {
+    multiview = k
+  }
   
   mv = Multiview( pathIn          = "./",
                   dataFile        = "",
@@ -715,7 +768,7 @@ multiview = function( block,
                   tau             = tau,
                   columns         = columns,
                   target          = target,
-                  multiview       = 0,
+                  multiview       = multiview,
                   exclusionRadius = exclusionRadius,
                   verbose         = FALSE,
                   numThreads      = 4,
@@ -768,7 +821,7 @@ make_block = function( block,
 compute_stats = function( observed, predicted ) {
   err = ComputeError( observed, predicted )
 
-  num_pred = length( which( ! is.na( predictions ) ) )
+  num_pred = length( which( ! is.na( predicted ) ) )
   rho      = err $ rho
   mae      = err $ MAE
   rmse     = err $ RMSE

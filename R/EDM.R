@@ -205,7 +205,7 @@ Multiview = function( pathIn          = "./",
                       predictFile     = "",
                       lib             = "",
                       pred            = "",
-                      E               = 0, 
+                      E               = 1,
                       Tp              = 1,
                       knn             = 0,
                       tau             = -1,
@@ -314,6 +314,7 @@ CCM = function( pathIn       = "./",
                 random       = TRUE,
                 replacement  = FALSE,
                 seed         = 0,
+                includeData  = FALSE,
                 verbose      = FALSE,
                 showPlot     = FALSE ) {
   
@@ -347,26 +348,35 @@ CCM = function( pathIn       = "./",
                         random,
                         replacement,
                         seed,
+                        includeData,
                         verbose )
 
   if ( showPlot ) {
-    libSize = CCMList[[ 'LibSize' ]]
-    V1      = names( CCMList )[2]
-    V2      = names( CCMList )[3]
+    ccm.df = CCMList[[ 'LibMeans' ]]
+    libSize = ccm.df $ LibSize
+    V1      = names( ccm.df )[2]
+    V2      = names( ccm.df )[3]
                                     
     title = paste( V1, " : ", V2, "\nE=" , E )
     
-    plot( libSize, CCMList[[ V1 ]],
-          ylim = range( CCMList[[ V1 ]], CCMList[[ V2 ]] ),
+    plot( libSize, ccm.df[ , V1 ],
+          ylim = range( ccm.df[ , V1 ], ccm.df[ , V2 ] ),
           main = title, col = "blue", type = "l", lwd = 3,
           xlab = 'Library Size', ylab = 'Prediction Skill (\U03C1)' )
-    lines( libSize, CCMList[[ V2 ]], col = "red", lwd = 3 )
+    lines( libSize, ccm.df[ , V2 ], col = "red", lwd = 3 )
     abline( h = 0 )
     legend( 'topright', c( V1, V2 ), 
             fill = c( 'blue', 'red' ), bty = 'n', cex = 1.2 )
   }
+
+  if ( includeData ) {
+    output = CCMList  # return list with all data
+  }
+  else {
+    output = CCMList $ LibMeans # return data.frame LibMeans
+  }
   
-  return( CCMList )
+  return( output )
 }
 
 #------------------------------------------------------------------------

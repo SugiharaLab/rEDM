@@ -113,6 +113,7 @@ auto CCMArgs = r::List::create(
     r::_["random"]      = true,
     r::_["replacement"] = false,
     r::_["seed"]        = 0,
+    r::_["includeData"] = false,
     r::_["verbose"]     = false );
     
 auto EmbedDimensionArgs = r::List::create( 

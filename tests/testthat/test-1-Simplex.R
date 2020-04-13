@@ -13,7 +13,7 @@ test_that("Simplex embedded works", {
     expect_true("time"         %in% names(S.df))
     expect_true("Observations" %in% names(S.df))
     expect_true("Predictions"  %in% names(S.df))
-    expect_equal( dim(S.df), c(97,3) )
+    expect_equal( dim(S.df), c(97,4) )
     Err <- ComputeError( S.df $ Observations, S.df $ Predictions )
     expect_true("MAE"  %in% names(Err))
     expect_true("rho"  %in% names(Err))
@@ -29,7 +29,7 @@ test_that("Simplex embedding works", {
     expect_true("time"         %in% names(S.df))
     expect_true("Observations" %in% names(S.df))
     expect_true("Predictions"  %in% names(S.df))
-    expect_equal( dim(S.df), c(97,3) )
+    expect_equal( dim(S.df), c(97,4) )
 })
 
 test_that("Simplex errors", {

@@ -57,7 +57,7 @@ ColumnsInDataFrame = function( pathIn, dataFile, dataFrame, columns, target ) {
   }
 
   columnNames = names( df )
-  columnVec   = strsplit( columns, "\\s+" )[[1]] # split on whitespace
+  columnVec   = strsplit( trimws( columns ), "\\s+" )[[1]] # split on whitespace
   
   if ( ! (target %in% columnNames) ) {
     print( paste( "Error: ColumnsInDataFrame(): Target",
