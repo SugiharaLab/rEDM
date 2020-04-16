@@ -3,9 +3,9 @@
 \title{Forecasting using multiview embedding}
 \usage{
 Multiview(pathIn = "./", dataFile = "", dataFrame = NULL, pathOut = "./", 
-  predictFile = "", lib = "", pred = "", E = 0, Tp = 1, knn = 0, 
+  predictFile = "", lib = "", pred = "", D = 0, E = 1, Tp = 1, knn = 0, 
   tau = -1, columns = "", target = "", multiview = 0, exclusionRadius = 0,
-  verbose = FALSE, numThreads = 4, showPlot = FALSE)
+  trainLib = TRUE, verbose = FALSE, numThreads = 4, showPlot = FALSE)
 }
 \arguments{
 \item{pathIn}{path to \code{dataFile}.}
@@ -20,13 +20,16 @@ index or time values. The columns must be named.}
 
 \item{predictFile}{prediction output file name.}
 
-\item{lib}{string with start and stop indices of input data rows used to
-create the library of observations. A single contiguous range is supported.}
+\item{lib}{a 2-column matrix, data.frame, 2-element vector or string of 
+  row indice pairs, where each pair specifies the first and last *rows* of
+  the time series to create the library.}
 
-\item{pred}{string with start and stop indices of input data rows used for
-predictions. A single contiguous range is supported.}
+\item{pred}{(same format as lib), but specifying the sections of the time 
+series to forecast.}
 
-\item{E}{multivariate dimension.}
+\item{D}{multivariate dimension.}
+
+\item{E}{embedding dimension.}
 
 \item{Tp}{prediction horizon (number of time column rows).}
 
@@ -45,6 +48,9 @@ prediction estimate.}
 
 \item{exclusionRadius}{number of adjacent observation vector rows to exclude as
 nearest neighbors in prediction.}
+
+\item{trainLib}{logical to use in-sample (lib=pred) projections for the
+  ranking of column combinations.}
 
 \item{verbose}{logical to produce additional console reporting.}
 
@@ -83,11 +89,18 @@ dynamics.
   the observed dynamics.  It is a multistep algorithm with these general
   steps:
   \enumerate{
-    \item Evaluate E-dimensional variable combinations within the
-    library itself (in-sample).
-    \item Rank in-sample (library) forecasts.
-    \item Compute Multiview averaged out-of-sample prediction
+    \item Compute D-dimensional variable combination forecasts.
+    \item Rank forecasts.
+    \item Compute predictions of top combinations.
+    \item Compute multiview averaged prediction.
   }
+  If \code{E>1}, all variables are embedded to dimension E. 
+  If \code{trainLib} is \code{TRUE} initial forecasts and ranking are
+  done in-sample (\code{lib=pred}) and predictions using the top ranked
+  combinations use the specified \code{lib} and \code{pred}.
+  If \code{trainLib} is \code{FALSE} initial forecasts and ranking use
+  the specified \code{lib} and \code{pred}, the step of computing
+  predictions of the top combinations is skipped. 
 }
 
 \examples{

@@ -771,6 +771,7 @@ multiview = function( block,
                   target          = target,
                   multiview       = multiview,
                   exclusionRadius = exclusionRadius,
+                  trainLib        = TRUE,    # Not available in legacy
                   verbose         = FALSE,
                   numThreads      = 4,
                   showPlot        = FALSE )

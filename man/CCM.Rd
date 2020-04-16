@@ -5,7 +5,7 @@
 CCM(pathIn = "./", dataFile = "", dataFrame = NULL, pathOut = "./", 
   predictFile = "", E = 0, Tp = 0, knn = 0, tau = -1, columns = "", target = "", 
   libSizes = "", sample = 0, random = TRUE, replacement = FALSE, seed = 0, 
-  verbose = FALSE, showPlot = FALSE)  
+  includeData = FALSE, verbose = FALSE, showPlot = FALSE)  
 }
 \arguments{
 \item{pathIn}{path to \code{dataFile}.}
@@ -48,6 +48,9 @@ each library size evaluation.}
 
 \item{seed}{integer specifying the random sampler seed.  If
   \code{seed=0} then a random seed is generated.}
+
+\item{includeData}{logical to include statistics and predictions for
+  every prediction in the ensemble.}
 
 \item{verbose}{logical to produce additional console reporting.}
 

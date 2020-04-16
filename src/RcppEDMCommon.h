@@ -72,6 +72,7 @@ r::List Multiview_rcpp ( std::string  pathIn,
                          std::string  target,
                          int          multiview,
                          int          exlcusionRadius,
+                         bool         trainLib,
                          bool         verbose,
                          unsigned int numThreads );
 

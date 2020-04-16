@@ -94,6 +94,7 @@ auto MultiviewArgs = r::List::create(
     r::_["target"]          = std::string(""),
     r::_["multiview"]       = 0,
     r::_["exlcusionRadius"] = 0,
+    r::_["trainLib"]        = true,
     r::_["verbose"]         = false,
     r::_["numThreads"]      = 4 );
 
