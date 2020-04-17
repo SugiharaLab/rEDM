@@ -520,11 +520,18 @@ s_map = function(
   if ( stats_only ) {
     return.object = stats # data.frame
   }
-  
+  else {
+    # Add model_output as a list of data.frames for each E
+    return.object = list( stats = stats, model_output = smapListPred )
+  }
+
   if ( save_smap_coefficients ) {
-    # return.object is a list, add coefficients & covariance
-    return.object = list( stats = stats )
+    if ( stats_only ) {
+      # convert data.frame return.object into list
+      return.object = list( stats = stats )
+    }
     
+    # add coefficients & covariance
     smapListCoef = lapply( smapList, function(L){ L $ coefficients } )
     smapListCov  = lapply( smapList,
                            function(L){ cols = ncol( L $ coefficients );
@@ -534,12 +541,6 @@ s_map = function(
     return.object[[ "smap_coefficient_covariances"  ]] = smapListCov
   }
   
-  if ( ! stats_only ) {
-    # ALready a list with "stats"
-    # Add model_results as a list of data.frames for each E
-    return.object[[ "model_output" ]] = smapListPred
-  }
-
   return( return.object )
 }
 
