@@ -446,6 +446,10 @@ s_map = function(
     theta = c(0, 1e-04, 3e-04, 0.001, 0.003, 0.01, 0.03,
               0.1, 0.3, 0.5, 0.75, 1, 1.5, 2, 3, 4, 6, 8)
   }
+  # If theta is not a list, make it an iterable
+  if ( is.scalar( theta ) ) {
+    theta = as.vector( theta )
+  }
 
   dataList  = DataFrameFromTimeseries( time_series )
   dataFrame = dataList[[ 'dataFrame' ]]
@@ -607,6 +611,11 @@ simplex = function(
     exclusionRadius = exclusion_radius
   }
 
+  # If E is not a list, make it an iterable
+  if ( is.scalar( E ) ) {
+    E = as.vector( E )
+  }
+  
   # Would be much more efficient to use EmbedDimension() to find E_opt, 
   # then call Simplex(), but the legacy returns all (heavily redundant)
   # simplex results. 
@@ -616,24 +625,27 @@ simplex = function(
   # Compute Simplex for all E
   simplexList = list()
   
-  for ( E.i in E ) {
+  for ( i in 1:length( E ) ) {
+
+    E.i = E[ i ]
+    
     # data.frame: Time Observations Predictions Const_Predictions
-    simplexList[[ E.i ]] = Simplex( dataFrame       = dataFrame,
-                                    pathOut         = "./",
-                                    predictFile     = "",
-                                    lib             = lib,
-                                    pred            = pred,
-                                    E               = E.i, 
-                                    Tp              = tp,
-                                    knn             = knn,
-                                    tau             = tau,
-                                    exclusionRadius = exclusionRadius,
-                                    columns         = columns,
-                                    target          = target, 
-                                    embedded        = FALSE,
-                                    verbose         = verbose,
-                                    const_pred      = TRUE,
-                                    showPlot        = FALSE )
+    simplexList[[ i ]] = Simplex( dataFrame       = dataFrame,
+                                  pathOut         = "./",
+                                  predictFile     = "",
+                                  lib             = lib,
+                                  pred            = pred,
+                                  E               = E.i, 
+                                  Tp              = tp,
+                                  knn             = knn,
+                                  tau             = tau,
+                                  exclusionRadius = exclusionRadius,
+                                  columns         = columns,
+                                  target          = target, 
+                                  embedded        = FALSE,
+                                  verbose         = verbose,
+                                  const_pred      = TRUE,
+                                  showPlot        = FALSE )
   }
   
   names( simplexList ) = paste0( "E", E )
@@ -878,7 +890,7 @@ ComputeStats = function( PredictList, E, tau, tp, knn.E, theta ) {
   #  "const_p_val"
   #---------------------------------------------------------------------
   N = length( PredictList )
-  
+
   # Here's the redundant part...
   stats = data.frame( E = E, tau = rep( tau, N ),
                       tp = rep( tp, N ), nn = knn.E )
