@@ -817,8 +817,6 @@ make_block = function( block,
     print( "make_block(): Ignoring first column of block, assumed to be time." )
   }
 
-  print( columns )
-  
   embed.block = Embed( path      = "./",
                        dataFile  = "",
                        dataFrame = block,
