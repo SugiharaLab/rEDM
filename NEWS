@@ -1,7 +1,7 @@
-2020-04-10 version 1.3.3 <JosephPark@IEEE.org>
+2020-05-05 version 1.3.7 <JosephPark@IEEE.org>
 
-Version 1.0 is a major rewrite of the 'rEDM' package as a wrapper for the 'cppEDM' library.  This allows a unified computation engine for EDM algorithms across C++, Python and R implementations.  The revised package provides improved alignment between observed and forecast data rows, and, strict exclusion of partial data vectors.  The package is loaded as library(EDM).  This allows the previous version (< 0.7.3) to be loaded as library(rEDM).
+Version 1.3 is a major rewrite of the 'rEDM' package as a wrapper for the 'cppEDM' library.  This allows a unified computation engine for EDM algorithms across C++, Python and R implementations.  The revised package provides improved alignment between observed and forecast data rows, and, strict exclusion of partial data vectors.
 
-Function names and signatures have changed, it is recommended to use the new function names: Simplex, SMap, CCM, Embed, Multiview, EmbedDimension, PredictInterval, PredictNonlinear, ComputeError. See https://sugiharalab.github.io/EDM_Documentation/ or the package documentation. 
+To align with cppEDM and pyEDM, function names and signatures have changed. It is recommended to use the new function names: Simplex, SMap, CCM, Embed, Multiview, EmbedDimension, PredictInterval, PredictNonlinear, ComputeError. See https://sugiharalab.github.io/EDM_Documentation/ or the package documentation. 
 
-A legacy function interface is provided to emulate function signatures of rEDM 0.7, but does not have complete coverage.  Implemented functions include: simplex, s_map, block_lnlp, ccm, multiview, make_block, compute_stats and make_surrogate_data.  Functions ccm_means, tde_gp, block_gp and test_nonlinearity are deprecated.
+A legacy function interface is provided to emulate function signatures of rEDM 0.7, but does not have complete coverage.  Implemented functions' include: simplex, s_map, block_lnlp, ccm, multiview, make_block, compute_stats and make_surrogate_data.  Functions ccm_means, tde_gp, block_gp and test_nonlinearity are deprecated.

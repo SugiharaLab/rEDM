@@ -2,11 +2,13 @@
 \alias{make_block}
 \title{Make a time delay offset block}
 \usage{
-make_block(block, t = NULL, max_lag = 3, tau = -1, lib = NULL,
-  restrict_to_lib = TRUE)
+make_block(block, columns = NULL, t = NULL, max_lag = 3, tau = -1, lib =
+NULL, restrict_to_lib = TRUE)
 }
 \arguments{
 \item{block}{a data.frame or matrix where each column is a time series}
+
+\item{columns}{list of column names to time delay.}
 
 \item{t}{Not used}
 

@@ -1,4 +1,4 @@
-useDynLib( EDM, .registration = TRUE )
+useDynLib( rEDM, .registration = TRUE )
 
 export( Simplex   )
 export( SMap      )
@@ -28,6 +28,6 @@ export( make_surrogate_data )
 
 importFrom("graphics", "abline", "legend", "lines", "mtext", "par", "plot")
 importFrom("utils", "data", "read.csv")
-importFrom("stats", "fft", "predict", "rnorm", "runif", "sd", "smooth.spline")
+importFrom("stats", "fft", "predict", "rnorm", "runif", "sd", "smooth.spline", "cov", "pnorm")
 import( methods )
 import( Rcpp )

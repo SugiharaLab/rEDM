@@ -31,24 +31,20 @@ Functionality includes:
 
 Installation
 ------------
-    Using R devtools:
+To install from CRAN:
+
+    install.packages(rEDM)
+
+Using R devtools for latest development version:
+
     install.packages("devtools")
     devtools::install_github("SugiharaLab/rEDM")
 
-    Building from source:
+Building from source:
+
     git clone https://github.com/SugiharaLab/rEDM.git
     cd rEDM
     R CMD INSTALL .
-
-<!---
-To install from CRAN:
-
-    install.packages("rEDM")
---->
-
-Note
-------------
-This package is currently (2020-04-04) exported as the R library "EDM". This allows concurrent installation of the previous version as "rEDM".  This package may be exported as "rEDM" in the future. 
 
 Example
 -------
@@ -66,7 +62,7 @@ We begin by looking at annual time series of sunspots:
 First, we use `EmbedDimension()` to determine the optimal embedding
 dimension, E:
 
-    library(EDM)   # load the package
+    library(rEDM)   # load the package
     # If you're new to the rEDM package, please consult the tutorial:
     # vignette("rEDM-tutorial")
 
@@ -116,7 +112,7 @@ Further Examples
 
 Please see the package vignettes for more details:
 
-    browseVignettes("EDM")
+    browseVignettes("rEDM")
 
 ### References
 

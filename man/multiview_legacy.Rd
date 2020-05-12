@@ -2,7 +2,7 @@
 \alias{multiview}
 \title{Perform forecasting using multiview embedding}
 \usage{
-multiview(block, lib = NULL, pred = NULL, norm = 2, E = 0, tau = -1, 
+multiview(block, lib = NULL, pred = NULL, norm = 2, E = 1, tau = -1, 
     tp = 1, max_lag = 3, num_neighbors = "e+1", k = "sqrt", na.rm = FALSE, 
     target_column = 1, stats_only = TRUE, save_lagged_block = FALSE, 
     first_column_time = FALSE, exclusion_radius = NULL, silent = FALSE)
