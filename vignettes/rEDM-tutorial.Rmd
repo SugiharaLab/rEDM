@@ -27,6 +27,7 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, tidy = TRUE,
                       fig.width = 4, fig.height = 3.3)
 knitr::opts_knit$set(global.par = TRUE, progress = FALSE)
 options(digits = 2)
+par.orig = par()
 par(mar = c(4, 4, 2, 1), mgp = c(2.5, 1, 0))
 ```
 
@@ -616,6 +617,10 @@ We now have a null distribution, and can estimate a $p$-value for rejecting the 
 ```
 
 In the case of temperature, the CCM influence we estimated (`r ccm_matrix["maxT_degC", "Thrips_imaginis" ]`) is higher than the linear correlation (`r corr_matrix["maxT_degC", "Thrips_imaginis" ]`), and is highly significant in relation to a surrogate null distribution.  Regarding rainfall, the CCM influence (`r ccm_matrix["Rain_mm", "Thrips_imaginis" ]`) is higher than the linear correlate (`r corr_matrix["Rain_mm", "Thrips_imaginis" ]`), but not significant at the 95th percentile of the surrogate null distribution.  We note that the original Thrips data collections were at a much higher frequency than those available through the GPDD, and that monthly accumulated rainfall may be inadequate to resolve lifecycle influences on a species with a lifecycle of approximately one month. With more highly resolved data, it may well be possible to establish significance.
+
+```{r reset par, include = FALSE}
+par( par.orig )
+```
 
 <!------------------------------------------------------------------------->
 # Package Core
