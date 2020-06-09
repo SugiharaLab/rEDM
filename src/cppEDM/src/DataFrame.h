@@ -14,10 +14,11 @@
 
 #include "Common.h"
 
-// Since #include DataFrame.h is in Common.h, need forward declaration
-extern std::vector<std::string> SplitString( std::string inString, 
-                                             std::string delimeters = "," );
-extern bool OnlyDigits( std::string str, bool integerOnly );
+// Since #include DataFrame.h is in Common.h, need forward declarations
+bool OnlyDigits( std::string str, bool integerOnly );
+
+std::vector<std::string> SplitString( std::string inString, 
+                                      std::string delimeters = "," );
 
 // Type definition for CSV NamedData to pair column names & column data
 typedef std::vector<std::pair<std::string, std::vector<double>>> NamedData;
