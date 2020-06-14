@@ -21,7 +21,7 @@ DataFrame< double > DFToDataFrame ( Rcpp::DataFrame df ) {
     std::vector< std::string > colNames;
     r::CharacterVector tmp_colNames = df.names();
 
-    for ( size_t idx = 1; idx < tmp_colNames.size(); idx++ ) {
+    for ( int idx = 1; idx < tmp_colNames.size(); idx++ ) {
         colNames.push_back( r::as<std::string>( tmp_colNames[idx] ) );
     }
 
@@ -38,7 +38,7 @@ DataFrame< double > DFToDataFrame ( Rcpp::DataFrame df ) {
     // read in data columns to the cppEDM DF
     // JP: Are df.names() ensured to be in order as accessed by index?
     //     If not, this will give incorrect results.
-    for ( size_t idx = 1; idx < df.ncol(); idx++ ) {
+    for ( int idx = 1; idx < df.ncol(); idx++ ) {
         // unfortunately we can't convert numeric vec to valarray
         std::vector<double> tmp = r::as<std::vector<double>>( df[idx] );
         std::valarray<double> col ( tmp.data(), tmp.size() );
