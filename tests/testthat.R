@@ -1,4 +1,4 @@
 library(testthat)
-library(EDM)
+library(rEDM)
 
-test_check("EDM")
+test_check("rEDM")

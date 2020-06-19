@@ -51,7 +51,7 @@ Neighbors FindNeighbors(
     // We assume that the dataFrame has been selected to the proper columns
     size_t maxCol_i = N_columns - 1;
 
-    if ( parameters.verbose ) {
+    if ( parameters.verbose and parameters.method != Method::CCM ) {
         // Identify degenerate library : prediction points by
         // set_intersection() of lib & pred indices, needs a result vector
         std::vector< double > result( N_library_rows + N_prediction_rows, 0 );
@@ -127,9 +127,14 @@ Neighbors FindNeighbors(
     //-------------------------------------------------------------------
     for ( size_t pred_row = 0; pred_row < predPairs.size(); pred_row++ ) {
 
+        // The actual prediction row specified by user (zero offset)
+        size_t predictionRow = parameters.prediction[ pred_row ];
+
         // rowPair is a vector of pairs of length library rows
         // Get the rowPair for this prediction row
         std::vector< std::pair<double, size_t> > rowPair = predPairs[ pred_row ];
+
+        int rowPairSize = (int) rowPair.size();
 
         // sort < distance, lib_row > pairs for this pred_row
         // distance must be .first
@@ -142,8 +147,21 @@ Neighbors FindNeighbors(
         size_t lib_row_i = 0;
         size_t k         = 0;
         while ( k < parameters.knn ) {
+            if ( lib_row_i >= rowPairSize ) {
+                std::stringstream errMsg;
+                errMsg << "FindNeighbors(): knn search failed. "
+                       << k << " out of " << parameters.knn
+                       << " neighbors were found in the library.\n" ;
+                throw std::runtime_error( errMsg.str() );
+            }
+
             double distance = rowPair[ lib_row_i ].first;
             size_t lib_row  = rowPair[ lib_row_i ].second;
+
+            if ( lib_row == predictionRow ) {
+                lib_row_i++;
+                continue; // degenerate pred : lib, ignore
+            }
 
             if ( not parameters.noNeighborLimit ) {
                 // Reach exceeding grasp : forecast point is outside library
