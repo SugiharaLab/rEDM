@@ -1,13 +1,14 @@
 
-CC  = g++
+## CXX = g++ # CXX defined in Makevars from R environment variables
+
+## CXXFLAGS defined in Makevars from R environment variables
+## CFLAGS += -std=c++11 -DCCM_THREADED -DMULTIVIEW_VALUES_OVERLOAD -O3 -fPIC
+CFLAGS = $(CXXFLAGS) -DCCM_THREADED -DMULTIVIEW_VALUES_OVERLOAD
+
 OBJ = Common.o AuxFunc.o DateTimeUtil.o Parameter.o Embed.o Interface.o\
 	Neighbors.o Simplex.o Eval.o CCM.o Multiview.o SMap.o 
 
 LIB = libEDM.a
-
-CFLAGS = -std=c++11 -DCCM_THREADED -DMULTIVIEW_VALUES_OVERLOAD -O3 -fPIC
-#CFLAGS += -g -DDEBUG -DDEBUG_ALL
-#LFLAGS = -L./ -lstdc++ -lEDM -lpthread # -llapacke -llapack -lblas 
 
 all:	$(LIB)
 	ar -rcs $(LIB) $(OBJ)
@@ -22,40 +23,40 @@ distclean:
 $(LIB): $(OBJ)
 
 AuxFunc.o: AuxFunc.cc
-	$(CC) -c AuxFunc.cc $(CFLAGS)
+	$(CXX) -c AuxFunc.cc $(CFLAGS)
 
 DateTimeUtil.o: DateTimeUtil.cc
-	$(CC) -c DateTimeUtil.cc $(CFLAGS)
+	$(CXX) -c DateTimeUtil.cc $(CFLAGS)
 
 Common.o: Common.cc
-	$(CC) -c Common.cc $(CFLAGS)
+	$(CXX) -c Common.cc $(CFLAGS)
 
 Parameter.o: Parameter.cc
-	$(CC) -c Parameter.cc $(CFLAGS)
+	$(CXX) -c Parameter.cc $(CFLAGS)
 
 Embed.o: Embed.cc
-	$(CC) -c Embed.cc $(CFLAGS)
+	$(CXX) -c Embed.cc $(CFLAGS)
 
 Interface.o: Interface.cc
-	$(CC) -c Interface.cc $(CFLAGS)
+	$(CXX) -c Interface.cc $(CFLAGS)
 
 Neighbors.o: Neighbors.cc
-	$(CC) -c Neighbors.cc $(CFLAGS)
+	$(CXX) -c Neighbors.cc $(CFLAGS)
 
 Simplex.o: Simplex.cc
-	$(CC) -c Simplex.cc $(CFLAGS)
+	$(CXX) -c Simplex.cc $(CFLAGS)
 
 Eval.o: Eval.cc
-	$(CC) -c Eval.cc $(CFLAGS)
+	$(CXX) -c Eval.cc $(CFLAGS)
 
 CCM.o: CCM.cc
-	$(CC) -c CCM.cc $(CFLAGS)
+	$(CXX) -c CCM.cc $(CFLAGS)
 
 Multiview.o: Multiview.cc
-	$(CC) -c Multiview.cc $(CFLAGS)
+	$(CXX) -c Multiview.cc $(CFLAGS)
 
 SMap.o: SMap.cc
-	$(CC) -c SMap.cc $(CFLAGS)
+	$(CXX) -c SMap.cc $(CFLAGS)
 
 SRCS = `echo ${OBJ} | sed -e 's/.o /.cc /g'`
 depend:

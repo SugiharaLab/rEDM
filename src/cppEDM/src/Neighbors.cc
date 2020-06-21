@@ -165,8 +165,8 @@ Neighbors FindNeighbors(
 
             if ( not parameters.noNeighborLimit ) {
                 // Reach exceeding grasp : forecast point is outside library
-                if ( lib_row + parameters.Tp > max_lib_index or
-                     lib_row + parameters.Tp < 0 ) {
+                if ( (int) lib_row + parameters.Tp > (int) max_lib_index or
+                     (int) lib_row + parameters.Tp < 0 ) {
                     lib_row_i++;
                     continue; // keep looking 
                 }
@@ -317,7 +317,7 @@ double Distance( const std::valarray<double> &v1,
     else if ( metric == DistanceMetric::Manhattan ) {
         double sum = 0;
         for ( size_t i = 0; i < v1.size(); i++ ) {
-            sum += abs( v2[i] - v1[i] );
+            sum += fabs( v2[i] - v1[i] );
         }
         distance = sum;
     }

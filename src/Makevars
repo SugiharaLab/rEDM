@@ -1,3 +1,4 @@
+
 LIB_PATH        = ./cppEDM/lib/
 CPPEDM_SRC_PATH = ./cppEDM/src/
 LIBEDM          = $(LIB_PATH)/libEDM.a
@@ -6,7 +7,12 @@ PKG_CPPFLAGS = -I $(CPPEDM_SRC_PATH)
 PKG_LIBS     = -L $(LIB_PATH) -lEDM $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
 CXX_STD      = CXX11
 
+.PHONY: all $(LIBEDM)
+
+all : $(SHLIB)
+
 $(SHLIB): $(LIBEDM)
 
-$(LIBEDM): 
-	(cd $(CPPEDM_SRC_PATH); $(MAKE); $(MAKE) clean)
+$(LIBEDM):
+	@(cd $(CPPEDM_SRC_PATH) && $(MAKE) clean && $(MAKE) \
+	CXX="$(CXX11) $(CXX11STD)" CXXFLAGS="$(CXX11FLAGS) $(CXX11PICFLAGS)")
