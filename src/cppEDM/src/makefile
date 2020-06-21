@@ -11,7 +11,7 @@ OBJ = Common.o AuxFunc.o DateTimeUtil.o Parameter.o Embed.o Interface.o\
 LIB = libEDM.a
 
 all:	$(LIB)
-	ar -rcs $(LIB) $(OBJ)
+	$(AR) -rcs $(LIB) $(OBJ)  # AR passed from Makevars
 	cp $(LIB) ../lib/
 
 clean:
