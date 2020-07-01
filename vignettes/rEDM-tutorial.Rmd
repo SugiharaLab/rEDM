@@ -1,6 +1,5 @@
 ---
-title: "rEDM: An R package for Empirical Dynamic Modeling and 
-Convergent Cross Mapping"
+title: "Empirical Dynamic Modeling"
 author:
 - George Sugihara
 - Joseph Park
@@ -11,12 +10,12 @@ author:
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{"rEDM: an R package for Empirical Dynamic Modeling and Convergent Cross Mapping"}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
-<!--- csl: ecology.csl --->
+    %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteIndexEntry{"Empirical Dynamic Modeling"}
+    %\VignetteEncoding{UTF-8}
 bibliography: References.bib
 header-includes: 
+- \usepackage[utf8]{inputenc}
 - \usepackage{graphicx}
 - \usepackage{float}
 ---

@@ -6,7 +6,14 @@ PKG_CPPFLAGS = -I $(CPPEDM_SRC_PATH)
 PKG_LIBS     = -L $(LIB_PATH) -lEDM $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
 CXX_STD      = CXX11
 
+.PHONY: all $(LIBEDM)
+
+all : $(SHLIB)
+
 $(SHLIB): $(LIBEDM)
 
-$(LIBEDM): 
-	(cd $(CPPEDM_SRC_PATH); $(MAKE); $(MAKE) clean)
+## Pass R compiler variables CXX11... to cppEDM makefile
+$(LIBEDM):
+	@(cd $(CPPEDM_SRC_PATH) && $(MAKE) clean && $(MAKE) \
+	CXX="$(CXX11) $(CXX11STD)" CXXFLAGS="$(CXX11FLAGS) $(CXX11PICFLAGS)" \
+	AR="$(AR)" RANLIB="$(RANLIB)")

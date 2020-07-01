@@ -1,6 +1,6 @@
 
 #include "RcppEDMCommon.h"
-#include "Embed.h"
+#include "API.h"
 
 //---------------------------------------------------------------
 // 
@@ -14,7 +14,7 @@ r::DataFrame Embed_rcpp( std::string  path,
                          bool         verbose ) {
 
     DataFrame< double > embedded;
-    
+
     if ( dataFile.size() ) {
         // dataFile specified, dispatch overloaded Embed, ignore df
         embedded = Embed( path,
@@ -26,7 +26,7 @@ r::DataFrame Embed_rcpp( std::string  path,
     }
     else if ( df.ncol() ) {
         DataFrame< double > dataFrame = DFToDataFrame( df );
-        
+
         embedded = Embed( dataFrame,
                           E,
                           tau,
@@ -46,16 +46,14 @@ r::DataFrame Embed_rcpp( std::string  path,
 r::DataFrame MakeBlock_rcpp( r::DataFrame             dataList,
                              int                      E,
                              int                      tau,
-                             std::vector<std::string> columnNames,
-                             bool                     verbose ) {
-    
+                             std::vector<std::string> columnNames ) {
+
     DataFrame< double > dataFrame = DFToDataFrame( dataList );
-    
+
     DataFrame< double > block = MakeBlock( dataFrame,
                                            E,
                                            tau,
-                                           columnNames,
-                                           verbose );
-    
+                                           columnNames );
+
     return DataFrameToDF( block );
 }

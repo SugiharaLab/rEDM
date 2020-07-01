@@ -11,7 +11,7 @@
 #include <R.h>
 #include <RcppThread.h>
 #include <iostream>
-#include "Common.h"
+#include "API.h"
 
 namespace r = Rcpp;
 
@@ -103,8 +103,7 @@ r::DataFrame Embed_rcpp( std::string  path,
 r::DataFrame MakeBlock_rcpp( r::DataFrame             dataList,
                              int                      E,
                              int                      tau,
-                             std::vector<std::string> columnNames,
-                             bool                     verbose );
+                             std::vector<std::string> columnNames );
 
 r::List ComputeError_rcpp ( std::vector<double> vec1, 
                             std::vector<double> vec2 );

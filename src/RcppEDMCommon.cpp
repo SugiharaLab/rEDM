@@ -24,8 +24,7 @@ auto MakeBlockArgs = r::List::create(
     r::_["pyInput"]     = r::DataFrame(),
     r::_["E"]           = 0,
     r::_["tau"]         = -1,
-    r::_["columnNames"] = std::vector<std::string>(),
-    r::_["verbose"]     = false );
+    r::_["columnNames"] = std::vector<std::string>() );
 
 auto EmbedArgs = r::List::create( 
     r::_["path"]     = std::string(""),
@@ -188,9 +187,9 @@ RCPP_MODULE(EDMInternal) {
     r::function( "RtoCpp_Multiview",     &Multiview_rcpp,  MultiviewArgs     );
     r::function( "RtoCpp_CCM",           &CCM_rcpp,        CCMArgs           );
     r::function( "RtoCpp_EmbedDimension",   &EmbedDimension_rcpp, 
-                                               EmbedDimensionArgs   );
+                                             EmbedDimensionArgs   );
     r::function( "RtoCpp_PredictInterval",  &PredictInterval_rcpp, 
-                                               PredictIntervalArgs  );
+                                             PredictIntervalArgs  );
     r::function( "RtoCpp_PredictNonlinear", &PredictNonlinear_rcpp, 
-                                               PredictNonlinearArgs );
+                                             PredictNonlinearArgs );
 }

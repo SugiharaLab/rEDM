@@ -73,10 +73,10 @@ r::List Multiview_rcpp ( std::string  pathIn,
         Rcpp::warning( "Multiview_rcpp(): Invalid input.\n" );
     }
     
-    // Copy Combo_rho_table into a Rcpp::StringVector
-    r::StringVector comboLines( MV.Combo_rho_table.size() );
-    for ( size_t row = 0; row < MV.Combo_rho_table.size(); row++ ) {
-        comboLines[ row ] = MV.Combo_rho_table[ row ];
+    // Copy ComboRhoTable into a Rcpp::StringVector
+    r::StringVector comboLines( MV.ComboRhoTable.size() );
+    for ( size_t row = 0; row < MV.ComboRhoTable.size(); row++ ) {
+        comboLines[ row ] = MV.ComboRhoTable[ row ];
     }
 
     r::DataFrame predictions = DataFrameToDF( MV.Predictions );

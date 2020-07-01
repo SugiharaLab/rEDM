@@ -3,7 +3,7 @@
 \title{Make embedded data block}
 
 \usage{
-MakeBlock(dataFrame, E = 0, tau = -1, columns = "", verbose = FALSE)  
+MakeBlock(dataFrame, E = 0, tau = -1, columns = "")  
 }
 
 \arguments{
@@ -17,8 +17,6 @@ time column rows.}
 
 \item{columns}{string of whitespace separated column name(s) in the
 input data to be embedded.}
-
-\item{verbose}{logical to produce additional console reporting.}
 }
 
 \description{

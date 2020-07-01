@@ -8,8 +8,7 @@ source("R/EDM_AuxFuncs.R")
 MakeBlock = function( dataFrame,
                       E       = 0, 
                       tau     = -1,
-                      columns = "",
-                      verbose = FALSE ) {
+                      columns = "" ) {
 
   if ( ! isValidDF( dataFrame ) ) {
     stop( "MakeBlock(): dataFrame argument is not a data.frame." )
@@ -21,7 +20,7 @@ MakeBlock = function( dataFrame,
   }
   
   # Mapped to MakeBlock_rcpp() (Embed.cpp) in RcppEDMCommon.cpp
-  block = RtoCpp_MakeBlock( dataFrame, E, tau, columns, verbose )
+  block = RtoCpp_MakeBlock( dataFrame, E, tau, columns )
   
   return ( block )
 }
