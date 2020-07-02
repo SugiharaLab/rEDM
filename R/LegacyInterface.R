@@ -6,7 +6,6 @@ source("R/EDM.R")
 # 
 # NOTES
 #   make_block() : adds columns parameter     # !!! API Change !!!
-#   ccm()        : lib_sizes = c(10, 80, 10), # !!! API Change !!!
 #   norm = 2     : others not supported
 #   epsilon      : not supported
 #   tau          : mathematically correct tau
@@ -96,7 +95,7 @@ ccm = function( block,
     lib = c( 1, nrow(dataFrame) )
   }
   if ( is.null( pred ) ) {
-    pred = lib
+    pred = c( 1, nrow(dataFrame) )
   }
   
   if ( is.null( exclusion_radius ) ) {
@@ -272,7 +271,7 @@ block_lnlp = function(
     lib = c( 1, nrow(dataFrame) )
   }
   if ( is.null( pred ) ) {
-    pred = lib
+    pred = c( 1, nrow(dataFrame) )
   }
   
   if ( is.null( exclusion_radius ) ) {
@@ -465,7 +464,7 @@ s_map = function(
     lib = c( 1, nrow(dataFrame) - abs( tau ) * ( E - 1 ) )
   }
   if ( is.null( pred ) ) {
-    pred = lib
+    pred = c( 1, nrow(dataFrame) )
   }
   
   knn = num_neighbors
@@ -593,7 +592,7 @@ simplex = function(
     lib = c( 1, nrow(dataFrame) - abs( tau ) * ( max( E ) - 1 ) )
   }
   if ( is.null( pred ) ) {
-    pred = lib
+    pred = c( 1, nrow(dataFrame) )
   }
   
   if ( "e+1"   %in% num_neighbors || "E+1"   %in% num_neighbors ||
