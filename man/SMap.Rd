@@ -100,7 +100,7 @@ output. The constant predictor is X(t+1) = X(t).}
 }
 
 \note{
-\code{\link{SMap}} should be called with columns explicity correspondng to
+\code{\link{SMap}} should be called with columns explicitly corresponding to
 dimensions E. In the univariate case (number of \code{columns} = 1) with
 default \code{embedded = FALSE}, the time series will be time-delay
 embedded to dimension E, SMap coefficients correspond to each dimension. 
