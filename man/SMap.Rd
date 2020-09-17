@@ -80,17 +80,20 @@ output. The constant predictor is X(t+1) = X(t).}
 }
 
 \details{
-  If embedded is \code{FALSE}, the data \code{column(s)} are embedded to
-  dimension \code{E} with time lag \code{tau}. This embedding forms an
-  E-dimensional phase space for the \code{\link{SMap}} projection.
+  If \code{embedded} is \code{FALSE}, the data \code{column(s)} are embedded
+  to dimension \code{E} with time lag \code{tau}. This embedding forms an
+  n-columns * E-dimensional phase space for the \code{\link{SMap}} projection.
   If embedded is \code{TRUE}, the data are assumed to contain an
   E-dimensional embedding with E equal to the number of \code{columns}.
+  See the Note below for proper use of multivariate data (number of
+  \code{columns} > 1).
+  
   Predictions are made using leave-one-out cross-validation, i.e.
-  observation vectors are excluded from the prediction regression.
+  observation rows are excluded from the prediction regression.
 
   In contrast to \code{\link{Simplex}}, \code{\link{SMap}} uses all
-  available neighbors and then weights them with an exponential decay
-  in phase space distance with exponent \code{theta}.  \code{theta}=0
+  available neighbors and weights them with an exponential decay
+  in phase space distance with exponent \code{theta}. \code{theta}=0
   uses all neighbors corresponding to a global autoregressive model.
   As \code{theta} increases, neighbors closer in vicinity to the
   observation are considered. 
@@ -98,14 +101,20 @@ output. The constant predictor is X(t+1) = X(t).}
 
 \note{
 \code{\link{SMap}} should be called with columns explicity correspondng to
-dimensions E. This means that if a multivariate data set is used
-(number of \code{columns} > 1) it should Not be an embedding from
-\code{\link{Embed}} since \code{\link{Embed}} will add lagged
-coordinates for each variable. The added columns will not correspond to
-the intended dimensions in the matrix inversion and prediction
-reconstruction. In this case, use the \code{embedded = TRUE} flag so
-that the columns selected and their coefficients correspond to the
-proper dimension.
+dimensions E. In the univariate case (number of \code{columns} = 1) with
+default \code{embedded = FALSE}, the time series will be time-delay
+embedded to dimension E, SMap coefficients correspond to each dimension. 
+
+If a multivariate data set is used (number of \code{columns} > 1) it
+must use \code{embedded = TRUE} with E equal to the number of columns.
+This prevents the function from internally time-delay embedding the
+multiple columns to dimension E.  If the internal time-delay embedding
+is performed, then state-space columns will not correspond to the
+intended dimensions in the matrix inversion, coefficient assignment,
+and prediction. In the multivariate case, the user should first prepare
+the embedding (using \code{\link{Embed}} for time-delay embedding), then
+pass this embedding to \code{\link{SMap}} with appropriately specified
+\code{columns}, \code{E}, and \code{embedded = TRUE}.
 }
 
 \examples{
