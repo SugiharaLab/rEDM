@@ -28,5 +28,5 @@ test_that("CCM errors", {
                        libSizes = "10 70 10", sample = 100 ) )
     expect_error( CCM( dataFrame = sardine_anchovy_sst,
                        E = 3, Tp = 0, columns = "anchovy", target = "np_sst",
-                       libSizes = "10 70", sample = 100 ) )
+                       libSizes = "10 70 80", sample = 100 ) )
 })

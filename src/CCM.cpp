@@ -12,7 +12,8 @@ Rcpp::List CCM_rcpp( std::string  pathIn,
                      int          E,
                      int          Tp,
                      int          knn,
-                     int          tau, 
+                     int          tau,
+                     int          exclusionRadius,
                      std::string  columns,
                      std::string  target,
                      std::string  libSizes,
@@ -35,6 +36,7 @@ Rcpp::List CCM_rcpp( std::string  pathIn,
                          Tp,
                          knn,
                          tau,
+                         exclusionRadius,
                          columns,
                          target, 
                          libSizes,
@@ -55,6 +57,7 @@ Rcpp::List CCM_rcpp( std::string  pathIn,
                          Tp,
                          knn,
                          tau,
+                         exclusionRadius,
                          columns,
                          target, 
                          libSizes,
@@ -70,7 +73,7 @@ Rcpp::List CCM_rcpp( std::string  pathIn,
     }
 
     // Ouput Rcpp DataFrames
-    r::DataFrame allLibStat   = DataFrameToDF( ccmValues.AllLibStats );
+    r::DataFrame allLibStat = DataFrameToDF( ccmValues.AllLibStats );
 
     r::List output;
     if ( includeData ) {
