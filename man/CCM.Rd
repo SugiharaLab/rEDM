@@ -3,7 +3,8 @@
 \title{Convergent cross mapping using simplex projection}
 \usage{
 CCM(pathIn = "./", dataFile = "", dataFrame = NULL, pathOut = "./", 
-  predictFile = "", E = 0, Tp = 0, knn = 0, tau = -1, columns = "", target = "", 
+  predictFile = "", E = 0, Tp = 0, knn = 0, tau = -1,
+  exclusionRadius = 0, columns = "", target = "", 
   libSizes = "", sample = 0, random = TRUE, replacement = FALSE, seed = 0, 
   includeData = FALSE, verbose = FALSE, showPlot = FALSE)  
 }
@@ -28,6 +29,9 @@ index or time values. The columns must be named.}
 
 \item{tau}{lag of time delay embedding specified as number of
 time column rows.}
+
+\item{exclusionRadius}{excludes vectors from the search space of nearest 
+neighbors if their relative time index is within exclusionRadius.}
 
 \item{columns}{string of whitespace separated column name(s) in the
 input data used to create the library.}
