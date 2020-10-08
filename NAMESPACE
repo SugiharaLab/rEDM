@@ -1,4 +1,4 @@
-useDynLib( rEDM, .registration = TRUE )
+useDynLib( EDM, .registration = TRUE )
 
 export( Simplex   )
 export( SMap      )

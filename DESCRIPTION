@@ -1,4 +1,4 @@
-Package: rEDM
+Package: EDM
 Type:    Package
 Title:   Empirical Dynamic Modeling ('EDM')
 Version: 1.6.1

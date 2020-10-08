@@ -128,7 +128,7 @@ In **rEDM**, a sample time series of first-differenced values can be found in da
 
 We begin by loading the **rEDM** package and examining the `TentMap` data:
 ```{r load package}
-library(rEDM)
+library(EDM)
 str(TentMap)
 ```
 
