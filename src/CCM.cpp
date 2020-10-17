@@ -6,7 +6,7 @@
 //-----------------------------------------------------------
 Rcpp::List CCM_rcpp( std::string  pathIn, 
                      std::string  dataFile,
-                     r::DataFrame dataList,
+                     r::DataFrame dataFrame,
                      std::string  pathOut,
                      std::string  predictFile,
                      int          E,
@@ -27,7 +27,7 @@ Rcpp::List CCM_rcpp( std::string  pathIn,
     CCMValues ccmValues;
 
     if ( dataFile.size() ) {
-        // dataFile specified, dispatch overloaded CCM, ignore dataList
+        // dataFile specified, dispatch overloaded CCM, ignore dataFrame
         ccmValues = CCM( pathIn,
                          dataFile,
                          pathOut,
@@ -47,10 +47,10 @@ Rcpp::List CCM_rcpp( std::string  pathIn,
                          includeData,
                          verbose );
     }
-    else if ( dataList.size() ) {
-        DataFrame< double > dataFrame = DFToDataFrame( dataList );
+    else if ( dataFrame.size() ) {
+        DataFrame< double > dataFrame_ = DFToDataFrame( dataFrame );
 
-        ccmValues = CCM( dataFrame,
+        ccmValues = CCM( dataFrame_,
                          pathOut,
                          predictFile,
                          E, 

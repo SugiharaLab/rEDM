@@ -6,7 +6,7 @@
 //--------------------------------------------------------------
 r::List Multiview_rcpp ( std::string  pathIn,
                          std::string  dataFile,
-                         r::DataFrame dataList,
+                         r::DataFrame dataFrame,
                          std::string  pathOut,
                          std::string  predictFile,
                          std::string  lib,
@@ -27,7 +27,7 @@ r::List Multiview_rcpp ( std::string  pathIn,
     MultiviewValues MV;
 
     if ( dataFile.size() ) {
-        // dataFile specified, dispatch overloaded Multiview, ignore dataList
+        // dataFile specified, dispatch overloaded Multiview, ignore dataFrame
         
         MV = Multiview( pathIn,
                         dataFile,
@@ -48,10 +48,10 @@ r::List Multiview_rcpp ( std::string  pathIn,
                         verbose,
                         numThreads );
     }
-    else if ( dataList.size() ) {
-        DataFrame< double > dataFrame = DFToDataFrame( dataList );
+    else if ( dataFrame.size() ) {
+        DataFrame< double > dataFrame_ = DFToDataFrame( dataFrame );
         
-        MV = Multiview( dataFrame,
+        MV = Multiview( dataFrame_,
                         pathOut,
                         predictFile,
                         lib,

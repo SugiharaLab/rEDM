@@ -6,7 +6,7 @@
 //-------------------------------------------------------------
 r::DataFrame Simplex_rcpp( std::string  pathIn,
                            std::string  dataFile,
-                           r::DataFrame dataList,
+                           r::DataFrame dataFrame,
                            std::string  pathOut,
                            std::string  predictFile,
                            std::string  lib,
@@ -25,7 +25,7 @@ r::DataFrame Simplex_rcpp( std::string  pathIn,
     DataFrame< double > S;
     
     if ( dataFile.size() ) {
-        // dataFile specified, dispatch overloaded Simplex, ignore dataList
+        // dataFile specified, dispatch overloaded Simplex, ignore dataFrame
         S = Simplex( pathIn,
                      dataFile,
                      pathOut,
@@ -43,10 +43,10 @@ r::DataFrame Simplex_rcpp( std::string  pathIn,
                      const_predict,
                      verbose );
     }
-    else if ( dataList.size() ) {
-        DataFrame< double > dataFrame = DFToDataFrame( dataList );
+    else if ( dataFrame.size() ) {
+        DataFrame< double > dataFrame_ = DFToDataFrame( dataFrame );
         
-        S = Simplex( dataFrame,
+        S = Simplex( dataFrame_,
                      pathOut,
                      predictFile,
                      lib,

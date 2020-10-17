@@ -6,7 +6,7 @@
 //---------------------------------------------------------------
 r::DataFrame EmbedDimension_rcpp(   std::string  pathIn,
                                     std::string  dataFile,
-                                    r::DataFrame dataList,
+                                    r::DataFrame dataFrame,
                                     std::string  pathOut,
                                     std::string  predictFile,
                                     std::string  lib,
@@ -24,7 +24,7 @@ r::DataFrame EmbedDimension_rcpp(   std::string  pathIn,
 
     if ( dataFile.size() ) {
         // dataFile specified, dispatch overloaded EmbedDimension,
-        // ignore dataList
+        // ignore dataFrame
         EmbedDimDF = EmbedDimension( pathIn,
                                      dataFile,
                                      pathOut,
@@ -40,10 +40,10 @@ r::DataFrame EmbedDimension_rcpp(   std::string  pathIn,
                                      verbose,
                                      numThreads );
     }
-    else if ( dataList.size() ) {
-        DataFrame< double > dataFrame = DFToDataFrame( dataList );
+    else if ( dataFrame.size() ) {
+        DataFrame< double > dataFrame_ = DFToDataFrame( dataFrame );
         
-        EmbedDimDF = EmbedDimension( dataFrame,
+        EmbedDimDF = EmbedDimension( dataFrame_,
                                      pathOut,
                                      predictFile,
                                      lib,

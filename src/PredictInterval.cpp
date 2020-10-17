@@ -6,7 +6,7 @@
 //---------------------------------------------------------------
 r::DataFrame PredictInterval_rcpp( std::string  pathIn,
                                    std::string  dataFile,
-                                   r::DataFrame dataList,
+                                   r::DataFrame dataFrame,
                                    std::string  pathOut,
                                    std::string  predictFile,
                                    std::string  lib,
@@ -24,7 +24,7 @@ r::DataFrame PredictInterval_rcpp( std::string  pathIn,
 
     if ( dataFile.size() ) {
         // dataFile specified, dispatch overloaded PredictInterval,
-        // ignore dataList
+        // ignore dataFrame
         PredictDF = PredictInterval( pathIn,
                                      dataFile,
                                      pathOut,
@@ -40,10 +40,10 @@ r::DataFrame PredictInterval_rcpp( std::string  pathIn,
                                      verbose,
                                      numThreads );
     }
-    else if ( dataList.size() ) {
-        DataFrame< double > dataFrame = DFToDataFrame( dataList );
+    else if ( dataFrame.size() ) {
+        DataFrame< double > dataFrame_ = DFToDataFrame( dataFrame );
 
-        PredictDF = PredictInterval( dataFrame,
+        PredictDF = PredictInterval( dataFrame_,
                                      pathOut,
                                      predictFile,
                                      lib,
