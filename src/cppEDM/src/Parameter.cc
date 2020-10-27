@@ -455,7 +455,7 @@ void Parameters::Validate() {
                 knn = library.size() - abs( Tp ) * (E + 1);
             }
             else {
-                knn = library.size() - 1;
+                knn = library.size() - E;
             }
 
             if ( verbose ) {
