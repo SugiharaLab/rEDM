@@ -4,7 +4,7 @@
 #------------------------------------------------------------------------
 Examples <- function() {
 
-  library( rEDM )
+  library( EDM )
   
   # make sure data is loaded
   tryCatch(
