@@ -41,8 +41,7 @@ Parameters::Parameters(
     bool        randomLib,
     bool        replacement,
     unsigned    seed,
-    bool        includeData,
-    bool        noNeighborLimit
+    bool        includeData
     ) :
     // Variable initialization from Parameters arguments
     method           ( method ),
@@ -82,11 +81,10 @@ Parameters::Parameters(
     replacement      ( replacement ),
     seed             ( seed ),
     includeData      ( includeData ),
-    noNeighborLimit  ( noNeighborLimit ),
 
     // Set validated flag and instantiate Version
     validated        ( false ),
-    version          ( 1, 6, 1, "2020-10-05" )
+    version          ( 1, 6, 2, "2020-10-25" )
 {
     // Constructor code
     if ( method != Method::None ) {
@@ -110,7 +108,8 @@ Parameters::~Parameters() {}
 //----------------------------------------------------------------
 void Parameters::Validate() {
 
-    validated = true;
+    validated       = true;
+    disjointLibrary = false;
 
     if ( not embedded and tau == 0 ) {
         std::string errMsg( "Parameters::Validate(): "
@@ -130,11 +129,14 @@ void Parameters::Validate() {
             throw std::runtime_error( errMsg );
         }
 
-        // Generate vector of start, stop index pairs
-        std::vector< std::pair< size_t, size_t > > libPairs;
+        // Generate libPairs vector of start, stop index pairs
+        std::vector< std::pair< size_t, size_t > > libPairs; // numeric bounds
         for ( size_t i = 0; i < lib_vec.size(); i = i + 2 ) {
             libPairs.emplace_back( std::make_pair( std::stoi( lib_vec[i] ),
                                                    std::stoi( lib_vec[i+1] ) ) );
+        }
+        if ( libPairs.size() > 1 ) {
+            disjointLibrary = true;
         }
 
         size_t nLib = 0; // Count of lib items
@@ -156,6 +158,13 @@ void Parameters::Validate() {
                            << lib_start << " exceeds end " << lib_end << ".\n";
                     throw std::runtime_error( errMsg.str() );
                 }
+            }
+            // Disallow indices < 0, the user may have specified 0 start
+            if ( lib_start < 1 or lib_end < 1 ) {
+                std::stringstream errMsg;
+                errMsg << "Parameters::Validate(): Library indices less than "
+                       << "1 not allowed.\n";
+                throw std::runtime_error( errMsg.str() );
             }
         }
 
@@ -209,6 +218,13 @@ void Parameters::Validate() {
                     throw std::runtime_error( errMsg.str() );
                 }
             }
+            // Disallow indices < 0, the user may have specified 0 start
+            if ( pred_start < 1 or pred_end < 1 ) {
+                std::stringstream errMsg;
+                errMsg << "Parameters::Validate(): Prediction indices less than "
+                       << "1 not allowed.\n";
+                throw std::runtime_error( errMsg.str() );
+            }
         }
 
         // Create prediction vector of indices
@@ -252,10 +268,12 @@ void Parameters::Validate() {
     // Convert multi argument parameters from string to vectors
     //--------------------------------------------------------------
 
+    //--------------------------------------------------------------
     // Columns
-    // If columns are purely integer, then populate vector<size_t> columnIndex
+    // If columns are purely integer, set vector<size_t> columnIndex
     // Otherwise fill in vector<string> columnNames
-    if ( columns_str.size() ) {
+    //--------------------------------------------------------------
+   if ( columns_str.size() ) {
 
         std::vector<std::string> columns_vec = SplitString( columns_str,
                                                             " \t,\n" );
@@ -286,7 +304,9 @@ void Parameters::Validate() {
         throw std::runtime_error( errMsg.str() );
     }
 
+    //--------------------------------------------------------------
     // target
+    //--------------------------------------------------------------
     if ( target_str.size() ) {
         bool onlyDigits = OnlyDigits( target_str, true );
         if ( onlyDigits ) {
@@ -299,6 +319,7 @@ void Parameters::Validate() {
 
     //--------------------------------------------------------------------
     // CCM sample not 0 if random is true
+    //--------------------------------------------------------------
     if ( method == Method::CCM ) {
         if ( randomLib ) {
             if ( subSamples < 1 ) {
@@ -309,7 +330,9 @@ void Parameters::Validate() {
         }
     }
 
+    //--------------------------------------------------------------------
     // CCM librarySizes
+    //--------------------------------------------------------------------
     if ( libSizes_str.size() > 0 ) {
         std::vector<std::string> libsize_vec = SplitString(libSizes_str," \t,");
 
@@ -387,7 +410,7 @@ void Parameters::Validate() {
     //--------------------------------------------------------------------
     // Simplex and knn not specified: not embedded : knn set to E+1
     //                                    embedded : knn set to size( columns )
-    // S-Map require knn > E + 1, default is all neighbors.
+    //--------------------------------------------------------------------
     if ( method == Method::Simplex or method == Method::CCM ) {
         if ( knn < 1 ) {
             if ( not embedded ) {
@@ -422,37 +445,42 @@ void Parameters::Validate() {
             throw std::runtime_error( errMsg.str() );
         }
     }
+    //--------------------------------------------------------------------
+    // SMap and knn not specified: knn set to library.size()
+    // embedded true : E set to size( columns ) for output processing
+    //--------------------------------------------------------------------
     else if ( method == Method::SMap ) {
-        if ( knn > 0 ) {
-            if ( knn < E + 1 ) {
-                std::stringstream errMsg;
-                errMsg << "Parameters::Validate() S-Map knn must be at least "
-                          " E+1 = " << E + 1 << ".\n";
-                throw std::runtime_error( errMsg.str() );
+        if ( embedded and columnNames.size() > 1 ) {
+            if ( columnIndex.size() ) {
+                E = columnIndex.size();
+            }
+            else if ( columnNames.size() ) {
+                E = columnNames.size();
             }
         }
-        else {
-            // default knn = 0, set knn value
-            knn = library.size() - abs( Tp ) * (E + 1);
+
+        if ( knn == 0 ) { // default knn = 0, set knn value
+            knn = library.size() - E;
+
             if ( verbose ) {
                 std::stringstream msg;
                 msg << "Parameters::Validate(): Set knn = " << knn
                     << " for SMap. " << std::endl;
                 std::cout << msg.str();
             }
-            if ( knn < E + 1 ) {
-                std::stringstream errMsg;
-                errMsg << "Parameters::Validate() S-Map knn must be at least "
-                          " E+1 = " << E + 1 << ".\n";
-                throw std::runtime_error( errMsg.str() );
-            }
         }
+        if ( knn < 2 ) {
+            std::stringstream errMsg;
+            errMsg << "Parameters::Validate() S-Map knn must be at least 2.\n";
+            throw std::runtime_error( errMsg.str() );
+        }
+
         if ( not embedded and columnNames.size() > 1 ) {
-            std::string msg( "Parameters::Validate() WARNING:  "
-                             "Multivariable S-Map should use "
-                             "-e (embedded) data input to ensure "
-                             "data/dimension correspondance.\n" );
-            std::cout << msg;
+            std::stringstream errMsg( "Parameters::Validate(): "
+                                      "Multivariable S-Map must use "
+                                      "embedded = true to ensure "
+                                      "data/dimension correspondance.\n" );
+            throw std::runtime_error( errMsg.str() );
         }
     }
     else if ( method == Method::Embed ) {

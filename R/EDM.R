@@ -11,9 +11,9 @@ MakeBlock = function( dataFrame,
                       columns = "" ) {
 
   if ( ! isValidDF( dataFrame ) ) {
-    stop( "MakeBlock(): dataFrame argument is not a data.frame." )
+    stop( "MakeBlock(): dataFrame argument is not valid data.frame." )
   }
-  
+
   # If columns are vectors/list, convert to string for cppEDM
   if ( is.vector( columns ) || is.list( columns ) ) {
     columns = paste( columns, collapse = " " )
@@ -40,7 +40,7 @@ Embed = function( path      = "./",
 
   if ( ! is.null( dataFrame ) ) {
     if ( ! isValidDF( dataFrame ) ) {
-      stop( "Embed(): dataFrame argument is not a data.frame." )
+      stop( "Embed(): dataFrame argument is not valid data.frame." )
     }
   }
 
@@ -83,6 +83,16 @@ Simplex = function( pathIn       = "./",
                     const_pred   = FALSE,
                     showPlot     = FALSE ) {
 
+  if ( ! is.null( dataFrame ) ) {
+    if ( ! isValidDF( dataFrame ) ) {
+      stop( "Simplex(): dataFrame argument is not valid data.frame." )
+    }
+  }
+
+  if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
+    stop( "Simplex(): Failed to find column or target in DataFrame." )
+  }
+
   # If lib, pred, columns are vectors/list, convert to string for cppEDM
   if ( ! is.character( lib ) || length( lib ) > 1 ) {
     lib = FlattenToString( lib )
@@ -92,10 +102,6 @@ Simplex = function( pathIn       = "./",
   }
   if ( ! is.character( columns ) || length( columns ) > 1 ) {
     columns = FlattenToString( columns )
-  }
-
-  if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
-    stop( "Simplex(): Failed to find column or target in DataFrame." )
   }
 
   # Mapped to Simplex_rcpp() (Simplex.cpp) in RcppEDMCommon.cpp
@@ -148,6 +154,12 @@ SMap = function( pathIn       = "./",
                  const_pred   = FALSE,
                  verbose      = FALSE,
                  showPlot     = FALSE ) {
+
+  if ( ! is.null( dataFrame ) ) {
+    if ( ! isValidDF( dataFrame ) ) {
+      stop( "SMap(): dataFrame argument is not valid data.frame." )
+    }
+  }
 
   if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
     stop( "SMap(): Failed to find column or target in DataFrame." )
@@ -218,6 +230,12 @@ Multiview = function( pathIn          = "./",
                       numThreads      = 4,
                       showPlot        = FALSE ) {
 
+  if ( ! is.null( dataFrame ) ) {
+    if ( ! isValidDF( dataFrame ) ) {
+      stop( "Multiview(): dataFrame argument is not valid data.frame." )
+    }
+  }
+  
   if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
     stop( "Multiview(): Failed to find column or target in DataFrame." )
   }
@@ -232,7 +250,7 @@ Multiview = function( pathIn          = "./",
   if ( ! is.character( columns ) || length( columns ) > 1 ) {
     columns = FlattenToString( columns )
   }
-  
+
   # Mapped to Multiview_rcpp() (Multiview.cpp) in RcppEDMCommon.cpp
   # mvList has data.frames "Combo_rho" and  "Predictions" 
   mvList = RtoCpp_Multiview( pathIn,
@@ -322,6 +340,12 @@ CCM = function( pathIn          = "./",
                 verbose         = FALSE,
                 showPlot        = FALSE ) {
   
+  if ( ! is.null( dataFrame ) ) {
+    if ( ! isValidDF( dataFrame ) ) {
+      stop( "CCM(): dataFrame argument is not valid data.frame." )
+    }
+  }
+  
   if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
     stop( "CCM(): Failed to find column or target in DataFrame." )
   }
@@ -333,7 +357,7 @@ CCM = function( pathIn          = "./",
   if ( ! is.character( columns ) || length( columns ) > 1 ) {
     columns = FlattenToString( columns )
   }
-  
+
   # Mapped to CCM_rcpp() (CCM.cpp) in RcppEDMCommon.cpp
   # CCMList has "LibSize" and columns:target target:columns
   CCMList = RtoCpp_CCM( pathIn,
@@ -404,6 +428,12 @@ EmbedDimension = function ( pathIn       = "./",
                             numThreads   = 4,
                             showPlot     = TRUE ) {
 
+  if ( ! is.null( dataFrame ) ) {
+    if ( ! isValidDF( dataFrame ) ) {
+      stop( "EmbedDimension(): dataFrame argument is not valid data.frame." )
+    }
+  }
+  
   if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
     stop( "EmbedDimension(): Failed to find column or target in DataFrame." )
   }
@@ -418,7 +448,7 @@ EmbedDimension = function ( pathIn       = "./",
   if ( ! is.character( columns ) || length( columns ) > 1 ) {
     columns = FlattenToString( columns )
   }
-  
+
   # Mapped to EmbedDimension_rcpp() (EmbedDim.cpp) in RcppEDMCommon.cpp
   df = RtoCpp_EmbedDimension( pathIn,
                               dataFile,
@@ -465,6 +495,12 @@ PredictInterval = function( pathIn      = "./",
                             numThreads  = 4,
                             showPlot    = TRUE ) {
   
+  if ( ! is.null( dataFrame ) ) {
+    if ( ! isValidDF( dataFrame ) ) {
+      stop( "PredictInterval(): dataFrame argument is not valid data.frame." )
+    }
+  }
+  
   if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
     stop( "PredictInterval(): Failed to find column or target in DataFrame." )
   }
@@ -479,7 +515,7 @@ PredictInterval = function( pathIn      = "./",
   if ( ! is.character( columns ) || length( columns ) > 1 ) {
     columns = FlattenToString( columns )
   }
-  
+
   # Mapped to PredictInterval_rcpp() (PredictInterval.cpp) in RcppEDMCommon.cpp
   df = RtoCpp_PredictInterval( pathIn,
                                dataFile,
@@ -527,6 +563,12 @@ PredictNonlinear = function( pathIn      = "./",
                              verbose     = FALSE,
                              numThreads  = 4,
                              showPlot    = TRUE ) {
+
+  if ( ! is.null( dataFrame ) ) {
+    if ( ! isValidDF( dataFrame ) ) {
+      stop( "PredictNonlinear(): dataFrame argument is not valid data.frame." )
+    }
+  }
 
   if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
     stop( "PredictNonlinear(): Failed to find column or target in DataFrame." )

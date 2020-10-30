@@ -1,10 +1,14 @@
 
 .PHONY: all clean distclean depend 
 
-## CC = g++ CXX defined in Makevars from R environment variables
+## CXX defined in Makevars from R environment variables, don't define CC
+## CC = g++
 
-## CXXFLAGS defined in Makevars from R environment variables
-CFLAGS = $(CXXFLAGS) -DCCM_THREADED
+## CXXFLAGS are defined in Makevars from R environment variables
+## JP: Temporary (?) hack for R clang-UBSAN issue in EDM_Neighbors
+##     to not initialise size_t knnLibRows with nanl(), is to define
+##     USING_R. Note: USING_R is an R-defined macro.
+CFLAGS = $(CXXFLAGS) -DCCM_THREADED -DUSING_R
 
 HEADERS = API.h CCM.h Common.h DataFrame.h DateTime.h EDM.h EDM_Neighbors.h\
           Multiview.h Parameter.h Simplex.h SMap.h Version.h

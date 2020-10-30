@@ -5,7 +5,7 @@
 //----------------------------------------------------------
 r::List SMap_rcpp( std::string  pathIn, 
                    std::string  dataFile,
-                   r::DataFrame dataFrameIn,
+                   r::DataFrame dataFrame,
                    std::string  pathOut,
                    std::string  predictFile,
                    std::string  lib,
@@ -27,7 +27,7 @@ r::List SMap_rcpp( std::string  pathIn,
     SMapValues SM;
     
     if ( dataFile.size() ) {
-        // dataFile specified, dispatch overloaded SMap, ignore dataFrameIn
+        // dataFile specified, dispatch overloaded SMap, ignore dataFrame
         
         SM = SMap( pathIn,
                    dataFile,
@@ -49,10 +49,10 @@ r::List SMap_rcpp( std::string  pathIn,
                    const_predict,
                    verbose );
     }
-    else if ( dataFrameIn.size() ) {
-        DataFrame< double > dataFrame = DFToDataFrame( dataFrameIn );
+    else if ( dataFrame.size() ) {
+        DataFrame< double > dataFrame_ = DFToDataFrame( dataFrame );
         
-        SM = SMap( dataFrame,
+        SM = SMap( dataFrame_,
                    pathOut,
                    predictFile,
                    lib,

@@ -6,7 +6,7 @@
 //---------------------------------------------------------------
 r::DataFrame PredictNonlinear_rcpp( std::string  pathIn,
                                     std::string  dataFile,
-                                    r::DataFrame dataList,
+                                    r::DataFrame dataFrame,
                                     std::string  pathOut,
                                     std::string  predictFile,
                                     std::string  lib,
@@ -26,7 +26,7 @@ r::DataFrame PredictNonlinear_rcpp( std::string  pathIn,
 
     if ( dataFile.size() ) {
         // dataFile specified, dispatch overloaded PredictNonlinear,
-        // ignore dataList
+        // ignore dataFrame
         PredictDF  = PredictNonlinear( pathIn,
                                        dataFile,
                                        pathOut,
@@ -44,10 +44,10 @@ r::DataFrame PredictNonlinear_rcpp( std::string  pathIn,
                                        verbose,
                                        numThreads );
     }
-    else if ( dataList.size() ) {
-        DataFrame< double > dataFrame = DFToDataFrame( dataList );
+    else if ( dataFrame.size() ) {
+        DataFrame< double > dataFrame_ = DFToDataFrame( dataFrame );
         
-        PredictDF  = PredictNonlinear( dataFrame,
+        PredictDF  = PredictNonlinear( dataFrame_,
                                        pathOut,
                                        predictFile,
                                        lib,

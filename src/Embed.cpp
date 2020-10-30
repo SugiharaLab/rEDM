@@ -7,7 +7,7 @@
 //---------------------------------------------------------------
 r::DataFrame Embed_rcpp( std::string  path,
                          std::string  dataFile,
-                         r::DataFrame df,
+                         r::DataFrame dataFrame,
                          int          E,
                          int          tau,
                          std::string  columns,
@@ -16,7 +16,7 @@ r::DataFrame Embed_rcpp( std::string  path,
     DataFrame< double > embedded;
 
     if ( dataFile.size() ) {
-        // dataFile specified, dispatch overloaded Embed, ignore df
+        // dataFile specified, dispatch overloaded Embed, ignore dataFrame
         embedded = Embed( path,
                           dataFile,
                           E,
@@ -24,10 +24,10 @@ r::DataFrame Embed_rcpp( std::string  path,
                           columns,
                           verbose );
     }
-    else if ( df.ncol() ) {
-        DataFrame< double > dataFrame = DFToDataFrame( df );
+    else if ( dataFrame.ncol() ) {
+        DataFrame< double > dataFrame_ = DFToDataFrame( dataFrame );
 
-        embedded = Embed( dataFrame,
+        embedded = Embed( dataFrame_,
                           E,
                           tau,
                           columns,
@@ -43,14 +43,14 @@ r::DataFrame Embed_rcpp( std::string  path,
 //---------------------------------------------------------------
 // 
 //---------------------------------------------------------------
-r::DataFrame MakeBlock_rcpp( r::DataFrame             dataList,
+r::DataFrame MakeBlock_rcpp( r::DataFrame             dataFrame,
                              int                      E,
                              int                      tau,
                              std::vector<std::string> columnNames ) {
 
-    DataFrame< double > dataFrame = DFToDataFrame( dataList );
+    DataFrame< double > dataFrame_ = DFToDataFrame( dataFrame );
 
-    DataFrame< double > block = MakeBlock( dataFrame,
+    DataFrame< double > block = MakeBlock( dataFrame_,
                                            E,
                                            tau,
                                            columnNames );

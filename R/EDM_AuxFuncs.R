@@ -97,6 +97,11 @@ isValidDF = function( dataFrame ) {
       print( paste( "isValidDF(): dataFrame is empty." ) )
       return( FALSE )
     }
+    df.class = sapply( dataFrame, class )
+    if ( "character" %in% df.class || "factor" %in% df.class ) {
+      print( "isValidDF(): Non-numeric column detected in dataFrame." )
+      return( FALSE )
+    }
     return( TRUE )
   }
   else {

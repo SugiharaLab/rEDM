@@ -840,8 +840,14 @@ compute_stats = function( observed, predicted ) {
   rmse     = err $ RMSE
   perc     = sum( abs( sign(observed) + sign(predicted) ), na.rm = TRUE ) /
              2 / length( which( ! is.na(observed) ) )
-  p_val    = max(1E-10, pnorm( atanh(rho), 0.0, 1 / sqrt(num_pred),FALSE,FALSE))
 
+  if ( num_pred < 4 ) {
+    p_val = NA
+  }
+  else {
+    p_val = max(1E-10, pnorm( atanh(rho), 0.0, 1 / sqrt(num_pred-3),FALSE,FALSE))
+  }
+  
   stats = data.frame( num_pred = num_pred, rho = rho, mae = mae,
                       rmse = rmse, perc = perc, p_val = p_val )
 
@@ -930,8 +936,13 @@ ComputeStats = function( PredictList, E, tau, tp, knn.E, theta ) {
 PValue = function( df ) {
   N.pred = length( which( !is.na( df $ Predictions ) ) )
   rho    = ComputeError( df $ Observations, df $ Predictions ) $ rho
-  # pnorm( q, mean = 0, sd = 1, lower.tail = TRUE, log.p = FALSE )
-  max( 1E-10, pnorm( atanh(rho), 0.0, 1 / sqrt(N.pred), FALSE, FALSE ) )
+  p_val  = NA
+  if ( N.pred > 3 ) {
+    # pnorm( q, mean = 0, sd = 1, lower.tail = TRUE, log.p = FALSE )
+    p_val = max( 1E-10,
+                 pnorm( atanh(rho), 0.0, 1 / sqrt(N.pred - 3), FALSE, FALSE ) )
+  }
+  return( p_val )
 }
 PValueConst = function( df ) {
   N.pred = length( which( !is.na( df $ Const_Predictions ) ) )
