@@ -226,6 +226,7 @@ Multiview = function( pathIn          = "./",
                       multiview       = 0,
                       exclusionRadius = 0,
                       trainLib        = TRUE,
+                      excludeTarget   = FALSE,
                       verbose         = FALSE,
                       numThreads      = 4,
                       showPlot        = FALSE ) {
@@ -270,6 +271,7 @@ Multiview = function( pathIn          = "./",
                              multiview,
                              exclusionRadius,
                              trainLib,
+                             excludeTarget,
                              verbose,
                              numThreads )
 

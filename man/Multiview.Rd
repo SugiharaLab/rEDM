@@ -52,6 +52,8 @@ nearest neighbors in prediction.}
 \item{trainLib}{logical to use in-sample (lib=pred) projections for the
   ranking of column combinations.}
 
+\item{excludeTarget}{logical to exclude embedded target column from combinations.}
+
 \item{verbose}{logical to produce additional console reporting.}
 
 \item{numThreads}{number of CPU threads to use in multiview processing.}
