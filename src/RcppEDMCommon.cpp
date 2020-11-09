@@ -94,6 +94,7 @@ auto MultiviewArgs = r::List::create(
     r::_["multiview"]       = 0,
     r::_["exlcusionRadius"] = 0,
     r::_["trainLib"]        = true,
+    r::_["excludeTarget"]   = false,
     r::_["verbose"]         = false,
     r::_["numThreads"]      = 4 );
 
