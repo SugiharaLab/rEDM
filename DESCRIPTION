@@ -26,5 +26,5 @@ LazyData: true
 LazyLoad: yes
 Imports: methods, Rcpp (>= 1.0.1)
 LinkingTo: Rcpp, RcppThread
-Suggests: knitr, rmarkdown
-VignetteBuilder: knitr
+Suggests: knitr, rmarkdown, formatR
+VignetteBuilder: knitr, rmarkdown, formatR
