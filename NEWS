@@ -1,8 +1,12 @@
-2020-10-05 version 1.6.1 <JosephPark@IEEE.org>
+2020-11-07 version 1.7.0 <JosephPark@IEEE.org>
+
+Version 1.7 updates nearest neighbors to better align results with legacy code, and, addresses bug fixes in SMap with Tp = 0, and CMM includeData. 
 
 Version 1.6 attempts to label SMap coefficients with names from the columns and target parameters.  Adds exclusionRadius to CCM. 
 
-Version 1.3 was a major rewrite of the 'rEDM' package as an Rcpp wrapper for the 'cppEDM' library.  Version 1.5 implemented an object oriented design providing a unified computation engine for EDM algorithms across C++, Python and R implementations.  The revised package provides improved alignment between observed and forecast data rows, handling of date time vectors, and, strict exclusion of partial data vectors.
+Version 1.5 implemented an object oriented design in the core cppEDM.
+
+Version 1.3 was a major rewrite of the 'rEDM' package as an Rcpp wrapper for the 'cppEDM' library providing a unified computation engine for EDM algorithms across C++, Python and R implementations.  The revised package provides improved alignment between observed and forecast data rows, handling of date time vectors, and, strict exclusion of partial data vectors.
 
 To align with cppEDM and pyEDM, function names and signatures have changed from versions 0.7 and earlier. It is recommended to use the new functions: Simplex, SMap, CCM, Embed, Multiview, EmbedDimension, PredictInterval, PredictNonlinear, ComputeError. See https://sugiharalab.github.io/EDM_Documentation/ or the package documentation. 
 

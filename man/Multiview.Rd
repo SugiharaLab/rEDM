@@ -5,7 +5,8 @@
 Multiview(pathIn = "./", dataFile = "", dataFrame = NULL, pathOut = "./", 
   predictFile = "", lib = "", pred = "", D = 0, E = 1, Tp = 1, knn = 0, 
   tau = -1, columns = "", target = "", multiview = 0, exclusionRadius = 0,
-  trainLib = TRUE, verbose = FALSE, numThreads = 4, showPlot = FALSE)
+  trainLib = TRUE, excludeTarget = FALSE, verbose = FALSE, numThreads = 4,
+  showPlot = FALSE)
 }
 \arguments{
 \item{pathIn}{path to \code{dataFile}.}
