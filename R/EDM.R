@@ -6,21 +6,17 @@ source("R/EDM_AuxFuncs.R")
 # Truncates the timeseries by tau * (E-1) rows.
 #------------------------------------------------------------------------
 MakeBlock = function( dataFrame,
-                      E       = 0, 
-                      tau     = -1,
-                      columns = "" ) {
+                      E             = 0, 
+                      tau           = -1,
+                      columns       = c(),  # vector of strings
+                      deletePartial = FALSE) {
 
   if ( ! isValidDF( dataFrame ) ) {
     stop( "MakeBlock(): dataFrame argument is not valid data.frame." )
   }
-
-  # If columns are vectors/list, convert to string for cppEDM
-  if ( is.vector( columns ) || is.list( columns ) ) {
-    columns = paste( columns, collapse = " " )
-  }
   
   # Mapped to MakeBlock_rcpp() (Embed.cpp) in RcppEDMCommon.cpp
-  block = RtoCpp_MakeBlock( dataFrame, E, tau, columns )
+  block = RtoCpp_MakeBlock( dataFrame, E, tau, columns, deletePartial )
   
   return ( block )
 }

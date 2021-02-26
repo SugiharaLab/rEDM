@@ -21,10 +21,11 @@ auto ReadDataFrameArgs = r::List::create( r::_["path"] = "",
                                           r::_["file"] = "" );
 
 auto MakeBlockArgs = r::List::create( 
-    r::_["dataFrame"]   = r::DataFrame(),
-    r::_["E"]           = 0,
-    r::_["tau"]         = -1,
-    r::_["columnNames"] = std::vector<std::string>() );
+    r::_["dataFrame"]     = r::DataFrame(),
+    r::_["E"]             = 0,
+    r::_["tau"]           = -1,
+    r::_["columnNames"]   = std::vector<std::string>(),
+    r::_["deletePartial"] = false );
 
 auto EmbedArgs = r::List::create( 
     r::_["path"]     = std::string(""),

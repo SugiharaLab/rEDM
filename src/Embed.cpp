@@ -46,14 +46,16 @@ r::DataFrame Embed_rcpp( std::string  path,
 r::DataFrame MakeBlock_rcpp( r::DataFrame             dataFrame,
                              int                      E,
                              int                      tau,
-                             std::vector<std::string> columnNames ) {
+                             std::vector<std::string> columnNames,
+                             bool                     deletePartial ) {
 
     DataFrame< double > dataFrame_ = DFToDataFrame( dataFrame );
 
     DataFrame< double > block = MakeBlock( dataFrame_,
                                            E,
                                            tau,
-                                           columnNames );
+                                           columnNames,
+                                           deletePartial );
 
     return DataFrameToDF( block );
 }

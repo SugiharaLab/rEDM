@@ -3,7 +3,7 @@
 \title{Make embedded data block}
 
 \usage{
-MakeBlock(dataFrame, E = 0, tau = -1, columns = "")  
+MakeBlock(dataFrame, E = 0, tau = -1, columns = "", deletePartial = FALSE)  
 }
 
 \arguments{
@@ -17,6 +17,8 @@ time column rows.}
 
 \item{columns}{string of whitespace separated column name(s) in the
 input data to be embedded.}
+
+\item{deletePartial}{boolean to delete rows with partial data.}
 }
 
 \description{
@@ -36,7 +38,9 @@ in \code{columns}.
   columns X, Y, with E = 2 will have columns named
   \code{X(t-0) X(t-1) Y(t-0) Y(t-1)}.
 
-  The returned data.frame does not have a time column.  The returned
+  The returned data.frame does not have a time column.
+
+  If \code{deletePartial} is \code{TRUE}, the returned
   data.frame is truncated by tau * (E-1) rows to remove state vectors
   with partial data (NaN elements).
 }

@@ -104,7 +104,8 @@ r::DataFrame Embed_rcpp( std::string  path,
 r::DataFrame MakeBlock_rcpp( r::DataFrame             dataList,
                              int                      E,
                              int                      tau,
-                             std::vector<std::string> columnNames );
+                             std::vector<std::string> columnNames,
+                             bool                     deletePartial );
 
 r::List ComputeError_rcpp ( std::vector<double> vec1, 
                             std::vector<double> vec2 );

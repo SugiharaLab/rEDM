@@ -1,4 +1,6 @@
-2020-12-17 version 1.7.3 <JosephPark@IEEE.org>
+2021-02-27 version 1.8.0 <JosephPark@IEEE.org>
+
+Version 1.8 removes the deletion of partial embedding data rows. Adds the deletePartial argument to MakeBlock. Bug fix in disjoint library indexing. 
 
 Version 1.7 updates nearest neighbors to better align results with legacy code, addresses bug fixes in SMap, CMM includeData, and, the use of disjoint libraries.
 
