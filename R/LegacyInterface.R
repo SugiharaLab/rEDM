@@ -309,6 +309,7 @@ block_lnlp = function(
                      embedded        = TRUE,
                      verbose         = verbose,
                      const_pred      = TRUE,
+                     validLib        = vector(),
                      showPlot        = FALSE )
     
     if ( knn == 0 ) {
@@ -370,6 +371,7 @@ block_lnlp = function(
                               embedded     = TRUE,
                               const_pred   = TRUE,
                               verbose      = verbose,
+                              validLib     = vector(),
                               showPlot     = FALSE )
     }  
   
@@ -513,6 +515,7 @@ s_map = function(
                             embedded     = FALSE,
                             const_pred   = TRUE,
                             verbose      = verbose,
+                            validLib     = vector(),
                             showPlot     = FALSE )
   }
   
@@ -645,6 +648,7 @@ simplex = function(
                                   embedded        = FALSE,
                                   verbose         = verbose,
                                   const_pred      = TRUE,
+                                  validLib        = vector(),
                                   showPlot        = FALSE )
   }
   

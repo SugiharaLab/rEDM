@@ -3,29 +3,32 @@
 //----------------------------------------------------------
 // 
 //----------------------------------------------------------
-r::List SMap_rcpp( std::string  pathIn, 
-                   std::string  dataFile,
-                   r::DataFrame dataFrame,
-                   std::string  pathOut,
-                   std::string  predictFile,
-                   std::string  lib,
-                   std::string  pred, 
-                   int          E,
-                   int          Tp,
-                   int          knn,
-                   int          tau,
-                   double       theta,
-                   int          exlusionRadius,
-                   std::string  columns,
-                   std::string  target,
-                   std::string  smapFile,
-                   std::string  jacobians,
-                   bool         embedded,
-                   bool         const_predict,
-                   bool         verbose ) {
-    
+r::List SMap_rcpp( std::string       pathIn,
+                   std::string       dataFile,
+                   r::DataFrame      dataFrame,
+                   std::string       pathOut,
+                   std::string       predictFile,
+                   std::string       lib,
+                   std::string       pred,
+                   int               E,
+                   int               Tp,
+                   int               knn,
+                   int               tau,
+                   double            theta,
+                   int               exlusionRadius,
+                   std::string       columns,
+                   std::string       target,
+                   std::string       smapFile,
+                   // std::string    jacobians, // Rcpp has 20 arg limit
+                   bool              embedded,
+                   bool              const_predict,
+                   bool              verbose,
+                   std::vector<bool> validLib ) {
+
     SMapValues SM;
     
+    std::string jacobians(""); // Rcpp has 20 arg limit
+
     if ( dataFile.size() ) {
         // dataFile specified, dispatch overloaded SMap, ignore dataFrame
         
@@ -47,11 +50,12 @@ r::List SMap_rcpp( std::string  pathIn,
                    jacobians,
                    embedded,
                    const_predict,
-                   verbose );
+                   verbose,
+                   validLib );
     }
     else if ( dataFrame.size() ) {
         DataFrame< double > dataFrame_ = DFToDataFrame( dataFrame );
-        
+
         SM = SMap( dataFrame_,
                    pathOut,
                    predictFile,
@@ -69,7 +73,8 @@ r::List SMap_rcpp( std::string  pathIn,
                    jacobians,
                    embedded,
                    const_predict,
-                   verbose );
+                   verbose,
+                   validLib );
     }
     else {
         Rcpp::warning( "SMap_rcpp(): Invalid input.\n" );

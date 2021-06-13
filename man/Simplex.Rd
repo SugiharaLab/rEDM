@@ -50,6 +50,10 @@ input data used to create the library.}
 \item{const_pred}{logical to add a \emph{constant predictor} column to the
 output. The constant predictor is X(t+1) = X(t).}
 
+\item{validLib}{logical vector the same length as the number of data
+ rows.  Any data row represented in this vector as FALSE, will not be
+ included in the library.}
+
 \item{showPlot}{logical to plot results.}
 }
 

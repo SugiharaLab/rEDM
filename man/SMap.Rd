@@ -58,6 +58,10 @@ output. The constant predictor is X(t+1) = X(t).}
 
 \item{verbose}{logical to produce additional console reporting.}
 
+\item{validLib}{logical vector the same length as the number of data
+ rows. Any data row represented in this vector as FALSE, will not be
+ included in the library.}
+
 \item{showPlot}{logical to plot results.}
 }
 

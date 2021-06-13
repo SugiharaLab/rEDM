@@ -77,6 +77,7 @@ Simplex = function( pathIn       = "./",
                     embedded     = FALSE,
                     verbose      = FALSE,
                     const_pred   = FALSE,
+                    validLib     = vector(),
                     showPlot     = FALSE ) {
 
   if ( ! is.null( dataFrame ) ) {
@@ -117,7 +118,8 @@ Simplex = function( pathIn       = "./",
                           target, 
                           embedded, 
                           const_pred,
-                          verbose )
+                          verbose,
+                          validLib )
 
   if ( showPlot ) {
     PlotObsPred( smplx, dataFile, E, Tp ) 
@@ -145,10 +147,11 @@ SMap = function( pathIn       = "./",
                  columns      = "",
                  target       = "",
                  smapFile     = "",
-                 jacobians    = "",
+                 jacobians    = "",    # Note: not passed: Rcpp 20 arg limit
                  embedded     = FALSE,
                  const_pred   = FALSE,
                  verbose      = FALSE,
+                 validLib     = vector(),
                  showPlot     = FALSE ) {
 
   if ( ! is.null( dataFrame ) ) {
@@ -180,8 +183,8 @@ SMap = function( pathIn       = "./",
                           pathOut,
                           predictFile,
                           lib,
-                          pred,  
-                          E, 
+                          pred,
+                          E,
                           Tp,
                           knn,
                           tau,
@@ -190,10 +193,11 @@ SMap = function( pathIn       = "./",
                           columns,
                           target,
                           smapFile,
-                          jacobians,
+                          # jacobians, # Rcpp 20 arg limit
                           embedded,
                           const_pred,
-                          verbose )
+                          verbose,
+                          validLib )
   
   if ( showPlot ) {
     PlotSmap( smapList, dataFile, E, Tp )

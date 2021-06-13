@@ -36,7 +36,7 @@ auto EmbedArgs = r::List::create(
     r::_["columns"]  = std::string(""),
     r::_["verbose"]  = false );
 
-auto SimplexArgs = r::List::create( 
+auto SimplexArgs = r::List::create(
     r::_["pathIn"]          = std::string("./"),
     r::_["dataFile"]        = std::string(""),
     r::_["dataFrame"]       = r::DataFrame(),
@@ -53,11 +53,12 @@ auto SimplexArgs = r::List::create(
     r::_["target"]          = std::string(""),
     r::_["embedded"]        = false,
     r::_["const_predict"]   = false,
-    r::_["verbose"]         = false );
-    
-auto SMapArgs = r::List::create( 
+    r::_["verbose"]         = false,
+    r::_["validLib"]        = std::vector<bool>() );
+
+auto SMapArgs = r::List::create(
     r::_["pathIn"]          = std::string("./"),
-    r::_["dataFile"]        = std::string("./"),
+    r::_["dataFile"]        = std::string(""),
     r::_["dataFrame"]       = r::DataFrame(),
     r::_["pathOut"]         = std::string("./"),
     r::_["predictFile"]     = std::string(""),
@@ -72,10 +73,11 @@ auto SMapArgs = r::List::create(
     r::_["columns"]         = std::string(""),
     r::_["target"]          = std::string(""),
     r::_["smapFile"]        = std::string(""),
-    r::_["jacobians"]       = std::string(""),
+    //r::_["jacobians"]     = std::string(""), // Rcpp 20 arg limit
     r::_["embedded"]        = false,
     r::_["const_predict"]   = false,
-    r::_["verbose"]         = false );
+    r::_["verbose"]         = false,
+    r::_["validLib"]        = std::vector<bool>() );
 
 auto MultiviewArgs = r::List::create( 
     r::_["pathIn"]          = std::string("./"),

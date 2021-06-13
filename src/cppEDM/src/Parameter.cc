@@ -29,6 +29,8 @@ Parameters::Parameters(
     bool        const_predict,
     bool        verbose,
 
+    std::vector<bool> validLib,
+    
     std::string SmapOutputFile,
     std::string blockOutputFile,
 
@@ -69,6 +71,8 @@ Parameters::Parameters(
     const_predict    ( const_predict ),
     verbose          ( verbose ),
 
+    validLib         ( validLib ),
+
     SmapOutputFile   ( SmapOutputFile ),
     blockOutputFile  ( blockOutputFile ),
 
@@ -86,7 +90,7 @@ Parameters::Parameters(
 
     // Set validated flag and instantiate Version
     validated        ( false ),
-    version          ( 1, 8, 2, "2021-05-02" )
+    version          ( 1, 9, 0, "2021-06-01" )
 {
     // Constructor code
     if ( method != Method::None ) {
