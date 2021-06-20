@@ -1,4 +1,6 @@
-2021-02-27 version 1.8.0 <JosephPark@IEEE.org>
+2021-06-13 version 1.9.0 <JosephPark@IEEE.org>
+
+Version 1.9 adds the validLib parameter to Simplex and SMap. validLib is a boolean vector with the same number of elements as input data rows.  For validLib elements that are false, the correspoding data row will not be included in the state-space library.
 
 Version 1.8 removes the deletion of partial embedding data rows. Adds the deletePartial argument to MakeBlock. Bug fix in disjoint library indexing. 
 
