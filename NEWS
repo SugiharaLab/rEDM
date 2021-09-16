@@ -1,6 +1,6 @@
-2021-08-07 version 1.9.1 <JosephPark@IEEE.org>
+2021-09-17 version 1.9.2 <JosephPark@IEEE.org>
 
-Version 1.9 adds the validLib parameter to Simplex and SMap. validLib is a boolean vector with the same number of elements as input data rows.  For validLib elements that are false, the correspoding data row will not be included in the state-space library. Version 1.9.1 Requires .csv dataFiles to have column names.
+Version 1.9 adds the validLib parameter to Simplex and SMap. validLib is a boolean vector with the same number of elements as input data rows.  For validLib elements that are false, the correspoding data row will not be included in the state-space library. Version 1.9.1 Requires .csv dataFiles to have column names. Version 1.9.2 is a bug fix for CCM parameter validation with tau > 0.
 
 Version 1.8 removes the deletion of partial embedding data rows. Adds the deletePartial argument to MakeBlock. Bug fix in disjoint library indexing. 
 

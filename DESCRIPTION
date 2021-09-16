@@ -1,14 +1,14 @@
 Package: rEDM
 Type:    Package
 Title:   Empirical Dynamic Modeling ('EDM')
-Version: 1.9.1
-Date:    2021-08-07
+Version: 1.9.2
+Date:    2021-09-17
 Authors@R: c( person("Joseph", "Park", role = c("aut", "cre"),
                      email = "JosephPark@IEEE.org",
                      comment = c(ORCID = "0000-0001-5411-1409")),
               person("Cameron", "Smith", role = c("aut"),
                      email = "cos008@ucsd.edu",
-                     comment = "" ),
+                     comment = c(ORCID = "0000-0003-0020-5607")),
               person("George", "Sugihara", role = c("aut", "ccp"), 
                      comment = c(ORCID = "0000-0002-2863-6946")),
               person("Ethan", "Deyle", role = c("aut"),

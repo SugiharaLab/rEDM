@@ -11,11 +11,15 @@ pathOut,Filesystem path for ‘predictFile’ containing output predictions.
 
 predictFile,Observation and Prediction output file name. CSV format.
 
+smapFile,Output file containing S-map coefficients.
+
 lib,String with start and stop indices of input data rows used to create the library of observations.
 ,A single contiguous range is supported.
 
 pred,String with start and stop indices of input data rows used for predictions.
 , A single contiguous range is supported.
+
+D,Multiview dimension.
 
 E,Embedding dimension.
 
@@ -28,45 +32,43 @@ tau,Lag of time delay embedding specified as number of time column rows.
 
 theta,In Smap: S-Map neighbor localisation exponent. Single numeric.
 
-theta,In PredictNonlinear: A whitespace delimeted string with values of S-map localisation
-,parameters to be evaluated.
+theta,In PredictNonlinear: A whitespace delimeted string with values of S-map localisation parameters to be evaluated.
 
-exclusionRadius,Excludes vectors from the search space of nearest neighbors if their relative
-,time index is within exclusionRadius.
+exclusionRadius,Excludes vectors from the search space of nearest neighbors if their relative time index is within exclusionRadius.
 
 columns,String of whitespace separated column name(s) in the input data used to create the library.
 
 target,String of column name in the input data used for prediction.
 
-smapFile,Output file containing S-map coefficients.
-
 embedded,Logical specifying if the input data are embedded.
+
+validLib,Conditional embedding. Boolean vector identifying time series rows to use in state-space library.
 
 libSizes,String of 3 whitespace separated integer values specifying the intial library size;
 ,the final library size; and the library size increment for CCM.
 
-sample,Integer specifying the number of random samples to draw at each library size
-,evaluation for CCM.
+sample,Integer specifying the number of random samples to draw at each library size evaluation for CCM.
 
 random,Logical to specify random (‘TRUE’) or sequential library sampling in CCM.
 
 replacement,Logical to specify sampling with replacement in CCM.
 
-seed,Integer specifying the random sampler seed in CCM.  If ‘seed=0’
-,then a random seed is generated.
+seed,Integer specifying the random sampler seed in CCM.  If ‘seed=0’ a random seed is generated.
 
 multiview,Number of multiview ensembles to average for the final prediction estimate in Multiview.
+
+trainLib,Use in-sample (lib=pred) prediction for multiview ranking.
+
+excludeTarget,Exclude target variable from multiviews.
 
 maxE,Maximum value of E to evalulate in EmbedDimension.
 
 maxTp,Maximum value of Tp to evalulate in PredictInterval.
 
-numThreads,Number of parallel threads for computation in EmbedDimension;
-,PredictInterval and PredictNonlinear.
+numThreads,Number of parallel threads for computation in EmbedDimension; PredictInterval and PredictNonlinear.
 
 verbose,Logical to produce additional console reporting.
 
-const_pred,Logical to add a _constant predictor_ column to the output
-,The constant predictor is X(t+1) = X(t).
+const_pred,Logical to add a _constant predictor_ column to the output. The constant predictor is X(t+1) = X(t).
 
 showPlot,Logical to plot results.
