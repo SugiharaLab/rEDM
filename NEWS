@@ -1,4 +1,4 @@
-2021-09-17 version 1.9.2 <JosephPark@IEEE.org>
+2021-09-25 version 1.9.3 <JosephPark@IEEE.org>
 
 Version 1.9 adds the validLib parameter to Simplex and SMap. validLib is a boolean vector with the same number of elements as input data rows.  For validLib elements that are false, the correspoding data row will not be included in the state-space library. Version 1.9.1 Requires .csv dataFiles to have column names. Version 1.9.2 is a bug fix for CCM parameter validation with tau > 0. Version 1.9.3 is a bug fix for CCM parameter validation with Tp < -1. 
 
