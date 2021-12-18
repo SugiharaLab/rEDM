@@ -5,7 +5,8 @@
 Simplex(pathIn = "./", dataFile = "", dataFrame = NULL, pathOut = "./", 
   predictFile = "", lib = "", pred = "", E = 0, Tp = 1, knn = 0, tau = -1, 
   exclusionRadius = 0, columns = "", target = "", embedded = FALSE,
-  verbose = FALSE, const_pred = FALSE, showPlot = FALSE)
+  const_pred = FALSE, verbose = FALSE, validLib = vector(),
+  generateSteps = 0, parameterList = FALSE, showPlot = FALSE)
 }
 \arguments{
 \item{pathIn}{path to \code{dataFile}.}
@@ -54,13 +55,20 @@ output. The constant predictor is X(t+1) = X(t).}
  rows.  Any data row represented in this vector as FALSE, will not be
  included in the library.}
 
+\item{generateSteps}{number of predictive feedback generative steps.}
+
+\item{parameterList}{logical to add list of invoked parameters.}
+
 \item{showPlot}{logical to plot results.}
 }
 
 \value{
 A data.frame with columns \code{Observations, Predictions}.  If
 \code{const_pred} is TRUE the column \code{Const_Predictions} is added.
-The first column contains the time values. 
+The first column contains the time values.
+
+If \code{parameterList = TRUE}, a named list with "predictions" holding the
+data.frame, "parameters" with a named list of invoked parameters.
 }
 
 \references{Sugihara G. and May R. 1990. Nonlinear forecasting as a way
@@ -88,8 +96,8 @@ described in \cite{Sugihara and May}.
   \code{\link{ComputeError}}.
 }
 \examples{
-data(block_3sp)
-smplx <- Simplex( dataFrame=block_3sp, lib="1 99", pred="105 190",
-E=3, columns="x_t", target="x_t" )
-ComputeError(smplx$Predictions, smplx$Observations)
+data( block_3sp )
+smplx <- Simplex( dataFrame = block_3sp, lib = "1 100", pred = "101 190",
+E = 3, columns = "x_t", target = "x_t" )
+ComputeError( smplx $ Predictions, smplx $ Observations )
 }

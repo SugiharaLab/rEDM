@@ -7,8 +7,8 @@
 r::List Multiview_rcpp ( std::string  pathIn,
                          std::string  dataFile,
                          r::DataFrame dataFrame,
-                         std::string  pathOut,
-                         std::string  predictFile,
+                         //std::string  pathOut,     // Rcpp 20 arg limit
+                         //std::string  predictFile, // Rcpp 20 arg limit
                          std::string  lib,
                          std::string  pred,
                          int          D,
@@ -22,14 +22,18 @@ r::List Multiview_rcpp ( std::string  pathIn,
                          int          exclusionRadius,
                          bool         trainLib,
                          bool         excludeTarget,
+                         bool         parameterList,
                          bool         verbose,
                          unsigned int numThreads ) {
 
     MultiviewValues MV;
 
+    std::string pathOut("./");   // Rcpp has 20 arg limit
+    std::string predictFile(""); // Rcpp has 20 arg limit
+
     if ( dataFile.size() ) {
         // dataFile specified, dispatch overloaded Multiview, ignore dataFrame
-        
+
         MV = Multiview( pathIn,
                         dataFile,
                         pathOut,
@@ -47,12 +51,13 @@ r::List Multiview_rcpp ( std::string  pathIn,
                         exclusionRadius,
                         trainLib,
                         excludeTarget,
+                        parameterList,
                         verbose,
                         numThreads );
     }
     else if ( dataFrame.size() ) {
         DataFrame< double > dataFrame_ = DFToDataFrame( dataFrame );
-        
+
         MV = Multiview( dataFrame_,
                         pathOut,
                         predictFile,
@@ -69,13 +74,14 @@ r::List Multiview_rcpp ( std::string  pathIn,
                         exclusionRadius,
                         trainLib,
                         excludeTarget,
+                        parameterList,
                         verbose,
                         numThreads );
     }
     else {
         Rcpp::warning( "Multiview_rcpp(): Invalid input.\n" );
     }
-    
+
     // Copy ComboRhoTable into a Rcpp::StringVector
     r::StringVector comboLines( MV.ComboRhoTable.size() );
     for ( size_t row = 0; row < MV.ComboRhoTable.size(); row++ ) {
@@ -83,10 +89,20 @@ r::List Multiview_rcpp ( std::string  pathIn,
     }
 
     r::DataFrame predictions = DataFrameToDF( MV.Predictions );
-    
+
     r::List output = r::List::create(
         r::Named("Views")       = comboLines,
         r::Named("Predictions") = predictions );
+
+    if ( parameterList ) {
+        // Have to explicitly build the named list
+        r::List paramList;
+        for ( auto pi =  MV.parameterMap.begin();
+                   pi != MV.parameterMap.end(); ++pi ) {
+            paramList[ pi->first ] = pi->second;
+        }
+        output["parameters"] = paramList;
+    }
 
     // Multiview.R in EDM.R will convert comboLines into an R data.frame
     return output;

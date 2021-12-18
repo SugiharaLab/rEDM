@@ -6,7 +6,8 @@ CCM(pathIn = "./", dataFile = "", dataFrame = NULL, pathOut = "./",
   predictFile = "", E = 0, Tp = 0, knn = 0, tau = -1,
   exclusionRadius = 0, columns = "", target = "", 
   libSizes = "", sample = 0, random = TRUE, replacement = FALSE, seed = 0, 
-  includeData = FALSE, verbose = FALSE, showPlot = FALSE)  
+  includeData = FALSE, parameterList = FALSE, verbose = FALSE,
+  showPlot = FALSE)  
 }
 \arguments{
 \item{pathIn}{path to \code{dataFile}.}
@@ -56,16 +57,31 @@ each library size evaluation.}
 \item{includeData}{logical to include statistics and predictions for
   every prediction in the ensemble.}
 
+\item{parameterList}{logical to add list of invoked parameters.}
+
 \item{verbose}{logical to produce additional console reporting.}
 
 \item{showPlot}{logical to plot results.}
 }
 
 \value{
-  A data.frame with 3 columns.  The first column is \code{LibSize}
+  A data.frame with 3 columns. The first column is \code{LibSize}
   specifying the subsampled library size.  Columns 2 and 3 report
   Pearson correlation coefficients for the prediction of X from Y, and
   Y from X.
+
+  if \code{includeData = TRUE} a named list with the following data.frames
+  data.frame \code{Combo_rho} columns:
+  \tabular{ll}{
+      LibMeans\tab CCM mean correlations for each library size\cr
+      CCM1_PredictStat\tab Forward cross map prediction statistics\cr
+      CCM1_Predictions\tab Forward cross map prediction values\cr
+      CCM2_PredictStat\tab Reverse cross map prediction statistics\cr
+      CCM2_Predictions\tab cross map prediction values\cr
+  }
+
+  If \code{includeData = TRUE} and \code{parameterList = TRUE} a
+  named list "parameters" is added.
 }
 
 \references{Sugihara G., May R., Ye H., Hsieh C., Deyle E., Fogarty M., Munch S., 2012. Detecting Causality in Complex Ecosystems. Science 338:496-500.

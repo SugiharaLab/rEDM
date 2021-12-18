@@ -2,10 +2,11 @@
 \alias{SMap}
 \title{SMap forecasting}
 \usage{
-SMap(pathIn = "./", dataFile = "", dataFrame = NULL, pathOut = "./", 
-  predictFile = "", lib = "", pred = "", E = 0, Tp = 1, knn = 0, tau = -1, 
+SMap(pathIn = "./", dataFile = "", dataFrame = NULL, 
+  lib = "", pred = "", E = 0, Tp = 1, knn = 0, tau = -1, 
   theta = 0, exclusionRadius = 0, columns = "", target = "", smapFile = "", 
-  jacobians = "", embedded = FALSE, const_pred = FALSE, verbose = FALSE,
+  embedded = FALSE, const_pred = FALSE, verbose = FALSE,
+  validLib = vector(), generateSteps = 0, parameterList = FALSE,
   showPlot = FALSE)  
 }
 \arguments{
@@ -16,10 +17,6 @@ index or time values. The first row must be column names.}
 
 \item{dataFrame}{input data.frame. The first column must be a time
 index or time values. The columns must be named.}
-
-\item{pathOut}{path for \code{predictFile} containing output predictions.}
-
-\item{predictFile}{prediction output file name.}
 
 \item{lib}{string with start and stop indices of input data rows used to
 create the library of observations. A single contiguous range is supported.}
@@ -49,8 +46,6 @@ input data used to create the library.}
 
 \item{smapFile}{output file containing SMap coefficients.}
 
-\item{jacobians}{not used.}
-
 \item{embedded}{logical specifying if the input data are embedded.}
 
 \item{const_pred}{logical to add a \emph{constant predictor} column to the
@@ -62,6 +57,10 @@ output. The constant predictor is X(t+1) = X(t).}
  rows. Any data row represented in this vector as FALSE, will not be
  included in the library.}
 
+\item{generateSteps}{number of predictive feedback generative steps.}
+
+\item{parameterList}{logical to add list of invoked parameters.}
+
 \item{showPlot}{logical to plot results.}
 }
 
@@ -72,7 +71,9 @@ output. The constant predictor is X(t+1) = X(t).}
   The first column contains time values.
 
   \code{coefficients} data.frame has time values in the first column.
-  Columns 2 through E+2 (E+1 columns) are the SMap coefficients. 
+  Columns 2 through E+2 (E+1 columns) are the SMap coefficients.
+
+  If \code{parameterList = TRUE} a named list "parameters" is added.
 }
 
 \references{Sugihara G. 1994. Nonlinear forecasting for the classification of natural time series. Philosophical Transactions: Physical Sciences and Engineering, 348 (1688):477-495.}
@@ -123,7 +124,6 @@ pass this embedding to \code{\link{SMap}} with appropriately specified
 
 \examples{
 data(circle)
-L = SMap( dataFrame=circle,lib="1 100", pred="110 190", theta=4, E=2,
-embedded=TRUE,columns="x y", target="x")
-
+L = SMap( dataFrame = circle,lib="1 100", pred="110 190", theta = 4,
+E = 2, embedded = TRUE, columns = "x y", target = "x" )
 }

@@ -22,8 +22,9 @@ Rcpp::List CCM_rcpp( std::string  pathIn,
                      bool         replacement,
                      unsigned     seed,
                      bool         includeData,
+                     bool         parameterList,
                      bool         verbose ) {
-    
+
     CCMValues ccmValues;
 
     if ( dataFile.size() ) {
@@ -45,6 +46,7 @@ Rcpp::List CCM_rcpp( std::string  pathIn,
                          replacement,
                          seed,
                          includeData,
+                         parameterList,
                          verbose );
     }
     else if ( dataFrame.size() ) {
@@ -66,6 +68,7 @@ Rcpp::List CCM_rcpp( std::string  pathIn,
                          replacement,
                          seed,
                          includeData,
+                         parameterList,
                          verbose );
     }
     else {
@@ -89,18 +92,28 @@ Rcpp::List CCM_rcpp( std::string  pathIn,
               pi != ccmValues.CrossMap2.Predictions.end(); ++pi ) {
             PredictionsList2.push_back( DataFrameToDF( *pi ) );
         }
-        
+
         r::DataFrame cm1_PredStat =
             DataFrameToDF( ccmValues.CrossMap1.PredictStats );
         r::DataFrame cm2_PredStat =
             DataFrameToDF( ccmValues.CrossMap2.PredictStats );
-        
+
         output =
             r::List::create(r::Named( "LibMeans"         ) = allLibStat,
                             r::Named( "CCM1_PredictStat" ) = cm1_PredStat,
                             r::Named( "CCM1_Predictions" ) = PredictionsList1,
                             r::Named( "CCM2_PredictStat" ) = cm2_PredStat,
                             r::Named( "CCM2_Predictions" ) = PredictionsList2);
+
+        if ( parameterList ) {
+            // Have to explicitly build the named list
+            r::List paramList;
+            for ( auto pi =  ccmValues.parameterMap.begin();
+                       pi != ccmValues.parameterMap.end(); ++pi ) {
+                paramList[ pi->first ] = pi->second;
+            }
+            output["parameters"] = paramList;
+        }
     }
     else {
         output = r::List::create( r::Named( "LibMeans" ) = allLibStat);

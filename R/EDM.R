@@ -60,25 +60,27 @@ Embed = function( path      = "./",
 #------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------
-Simplex = function( pathIn       = "./",
-                    dataFile     = "",
-                    dataFrame    = NULL,
-                    pathOut      = "./",
-                    predictFile  = "",
-                    lib          = "",
-                    pred         = "",
-                    E            = 0, 
-                    Tp           = 1,
-                    knn          = 0,
-                    tau          = -1,
+Simplex = function( pathIn          = "./",
+                    dataFile        = "",
+                    dataFrame       = NULL,
+                    pathOut         = "./",
+                    predictFile     = "",
+                    lib             = "",
+                    pred            = "",
+                    E               = 0, 
+                    Tp              = 1,
+                    knn             = 0,
+                    tau             = -1,
                     exclusionRadius = 0,
-                    columns      = "",
-                    target       = "", 
-                    embedded     = FALSE,
-                    verbose      = FALSE,
-                    const_pred   = FALSE,
-                    validLib     = vector(),
-                    showPlot     = FALSE ) {
+                    columns         = "",
+                    target          = "", 
+                    embedded        = FALSE,
+                    const_pred      = FALSE,
+                    verbose         = FALSE,
+                    validLib        = vector(),
+                    generateSteps   = 0,
+                    parameterList   = FALSE,
+                    showPlot        = FALSE ) {
 
   if ( ! is.null( dataFrame ) ) {
     if ( ! isValidDF( dataFrame ) ) {
@@ -101,58 +103,69 @@ Simplex = function( pathIn       = "./",
     columns = FlattenToString( columns )
   }
 
+  # NOTE: Rcpp has a 20 argument limit!
   # Mapped to Simplex_rcpp() (Simplex.cpp) in RcppEDMCommon.cpp
-  smplx = RtoCpp_Simplex( pathIn, 
-                          dataFile, 
-                          dataFrame, 
-                          pathOut, 
-                          predictFile, 
-                          lib, 
-                          pred, 
-                          E, 
-                          Tp, 
-                          knn, 
-                          tau, 
+  smplx = RtoCpp_Simplex( pathIn,
+                          dataFile,
+                          dataFrame,
+                          pathOut,
+                          predictFile,
+                          lib,
+                          pred,
+                          E,
+                          Tp,
+                          knn,
+                          tau,
                           exclusionRadius,
-                          columns, 
-                          target, 
-                          embedded, 
+                          columns,
+                          target,
+                          embedded,
                           const_pred,
                           verbose,
-                          validLib )
+                          validLib,
+                          generateSteps,
+                          parameterList )
 
   if ( showPlot ) {
-    PlotObsPred( smplx, dataFile, E, Tp ) 
+    PlotObsPred( smplx[['predictions']], dataFile, E, Tp )
   }
-  
-  return ( smplx )
+
+  if ( parameterList ) {
+    return( smplx )
+  }
+  else {
+    # Return the exposed dataFrame
+    return( smplx[['predictions']] )
+  }
 }
 
 #------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------
-SMap = function( pathIn       = "./",
-                 dataFile     = "",
-                 dataFrame    = NULL,
-                 pathOut      = "./",
-                 predictFile  = "",
-                 lib          = "",
-                 pred         = "",
-                 E            = 0, 
-                 Tp           = 1,
-                 knn          = 0,
-                 tau          = -1,
-                 theta        = 0,
+SMap = function( pathIn          = "./",
+                 dataFile        = "",
+                 dataFrame       = NULL,
+                 # pathOut       = "./", # Rcpp 20 arg limit
+                 # predictFile   = "",   # Rcpp 20 arg limit
+                 lib             = "",
+                 pred            = "",
+                 E               = 0, 
+                 Tp              = 1,
+                 knn             = 0,
+                 tau             = -1,
+                 theta           = 0,
                  exclusionRadius = 0,
-                 columns      = "",
-                 target       = "",
-                 smapFile     = "",
-                 jacobians    = "",    # Note: not passed: Rcpp 20 arg limit
-                 embedded     = FALSE,
-                 const_pred   = FALSE,
-                 verbose      = FALSE,
-                 validLib     = vector(),
-                 showPlot     = FALSE ) {
+                 columns         = "",
+                 target          = "",
+                 smapFile        = "",
+                 # jacobians     = "",   # Rcpp 20 arg limit
+                 embedded        = FALSE,
+                 const_pred      = FALSE,
+                 verbose         = FALSE,
+                 validLib        = vector(),
+                 generateSteps   = 0,
+                 parameterList   = FALSE,
+                 showPlot        = FALSE ) {
 
   if ( ! is.null( dataFrame ) ) {
     if ( ! isValidDF( dataFrame ) ) {
@@ -175,13 +188,14 @@ SMap = function( pathIn       = "./",
     columns = FlattenToString( columns )
   }
 
+  # NOTE: Rcpp has a 20 argument limit!
   # Mapped to SMap_rcpp() (SMap.cpp) in RcppEDMCommon.cpp
   # smapList has data.frames of "predictions" and "coefficients"
   smapList = RtoCpp_SMap( pathIn,
                           dataFile,
                           dataFrame,
-                          pathOut,
-                          predictFile,
+                          # pathOut,     # Rcpp 20 arg limit
+                          # predictFile, # Rcpp 20 arg limit
                           lib,
                           pred,
                           E,
@@ -197,7 +211,9 @@ SMap = function( pathIn       = "./",
                           embedded,
                           const_pred,
                           verbose,
-                          validLib )
+                          validLib,
+                          generateSteps,
+                          parameterList )
   
   if ( showPlot ) {
     PlotSmap( smapList, dataFile, E, Tp )
@@ -212,8 +228,8 @@ SMap = function( pathIn       = "./",
 Multiview = function( pathIn          = "./",
                       dataFile        = "",
                       dataFrame       = NULL,
-                      pathOut         = "./",
-                      predictFile     = "",
+                      # pathOut       = "./", # Rcpp 20 arg limit
+                      # predictFile   = "",   # Rcpp 20 arg limit
                       lib             = "",
                       pred            = "",
                       D               = 0,
@@ -227,6 +243,7 @@ Multiview = function( pathIn          = "./",
                       exclusionRadius = 0,
                       trainLib        = TRUE,
                       excludeTarget   = FALSE,
+                      parameterList   = FALSE,
                       verbose         = FALSE,
                       numThreads      = 4,
                       showPlot        = FALSE ) {
@@ -252,13 +269,14 @@ Multiview = function( pathIn          = "./",
     columns = FlattenToString( columns )
   }
 
+  # NOTE: Rcpp has a 20 argument limit!
   # Mapped to Multiview_rcpp() (Multiview.cpp) in RcppEDMCommon.cpp
   # mvList has data.frames "Combo_rho" and  "Predictions" 
   mvList = RtoCpp_Multiview( pathIn,
                              dataFile,
                              dataFrame,
-                             pathOut,
-                             predictFile,
+                             # pathOut,     # Rcpp 20 arg limit
+                             # predictFile, # Rcpp 20 arg limit
                              lib,
                              pred,
                              D,
@@ -272,6 +290,7 @@ Multiview = function( pathIn          = "./",
                              exclusionRadius,
                              trainLib,
                              excludeTarget,
+                             parameterList,
                              verbose,
                              numThreads )
 
@@ -314,6 +333,10 @@ Multiview = function( pathIn          = "./",
   }
 
   MV = list( "View" = combos, "Predictions" = mvList $ Predictions )
+
+  if ( parameterList ) {
+    MV[['parameters']] = mvList $ parameters
+  }
   
   return( MV )
 }
@@ -339,6 +362,7 @@ CCM = function( pathIn          = "./",
                 replacement     = FALSE,
                 seed            = 0,
                 includeData     = FALSE,
+                parameterList   = FALSE,
                 verbose         = FALSE,
                 showPlot        = FALSE ) {
   
@@ -360,6 +384,7 @@ CCM = function( pathIn          = "./",
     columns = FlattenToString( columns )
   }
 
+  # NOTE: Rcpp has a 20 argument limit!
   # Mapped to CCM_rcpp() (CCM.cpp) in RcppEDMCommon.cpp
   # CCMList has "LibSize" and columns:target target:columns
   CCMList = RtoCpp_CCM( pathIn,
@@ -380,6 +405,7 @@ CCM = function( pathIn          = "./",
                         replacement,
                         seed,
                         includeData,
+                        parameterList,
                         verbose )
 
   if ( showPlot ) {

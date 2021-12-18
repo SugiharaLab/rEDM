@@ -4,26 +4,28 @@
 //-------------------------------------------------------------
 // 
 //-------------------------------------------------------------
-r::DataFrame Simplex_rcpp( std::string       pathIn,
-                           std::string       dataFile,
-                           r::DataFrame      dataFrame,
-                           std::string       pathOut,
-                           std::string       predictFile,
-                           std::string       lib,
-                           std::string       pred,
-                           int               E,
-                           int               Tp,
-                           int               knn,
-                           int               tau,
-                           int               exclusionRadius,
-                           std::string       columns,
-                           std::string       target,
-                           bool              embedded,
-                           bool              const_predict,
-                           bool              verbose,
-                           std::vector<bool> validLib ) {
+r::List Simplex_rcpp( std::string       pathIn,
+                      std::string       dataFile,
+                      r::DataFrame      dataFrame,
+                      std::string       pathOut,
+                      std::string       predictFile,
+                      std::string       lib,
+                      std::string       pred,
+                      int               E,
+                      int               Tp,
+                      int               knn,
+                      int               tau,
+                      int               exclusionRadius,
+                      std::string       columns,
+                      std::string       target,
+                      bool              embedded,
+                      bool              const_predict,
+                      bool              verbose,
+                      std::vector<bool> validLib,
+                      int               generateSteps,
+                      bool              parameterList ) {
 
-    DataFrame< double > S;
+    SimplexValues S;
 
     if ( dataFile.size() ) {
         // dataFile specified, dispatch overloaded Simplex, ignore dataFrame
@@ -43,7 +45,9 @@ r::DataFrame Simplex_rcpp( std::string       pathIn,
                      embedded,
                      const_predict,
                      verbose,
-                     validLib );
+                     validLib,
+                     generateSteps,
+                     parameterList );
     }
     else if ( dataFrame.size() ) {
         DataFrame< double > dataFrame_ = DFToDataFrame( dataFrame );
@@ -63,11 +67,26 @@ r::DataFrame Simplex_rcpp( std::string       pathIn,
                      embedded,
                      const_predict,
                      verbose,
-                     validLib );
+                     validLib,
+                     generateSteps,
+                     parameterList );
     }
     else {
         Rcpp::warning( "Simplex_rcpp(): Invalid input.\n" );
     }
 
-    return DataFrameToDF( S );
+    r::DataFrame df_pred = DataFrameToDF( S.predictions );
+    r::List output = r::List::create( r::Named("predictions")  = df_pred );
+
+    if ( parameterList ) {
+        // Have to explicitly build the named list
+        r::List paramList;
+        for ( auto pi =  S.parameterMap.begin();
+                   pi != S.parameterMap.end(); ++pi ) {
+            paramList[ pi->first ] = pi->second;
+        }
+        output["parameters"] = paramList;
+    }
+
+    return output;
 }

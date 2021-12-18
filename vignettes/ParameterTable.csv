@@ -25,8 +25,7 @@ E,Embedding dimension.
 
 Tp,Prediction horizon (number of time column rows).
 
-knn,Number of nearest neighbors. If knn=0; knn is set to E+1 for Simplex();
-,set to number of data rows for SMap().
+knn,Number of nearest neighbors. If knn=0; knn is set to E+1 for Simplex(); set to number of data rows for SMap().
 
 tau,Lag of time delay embedding specified as number of time column rows.
 
@@ -44,14 +43,19 @@ embedded,Logical specifying if the input data are embedded.
 
 validLib,Conditional embedding. Boolean vector identifying time series rows to use in state-space library.
 
-libSizes,String of 3 whitespace separated integer values specifying the intial library size;
-,the final library size; and the library size increment for CCM.
+generateSteps,Generative feedback predictions in Simplex or SMap.
+
+parameterList,Add parameter dictionary to return objects in Simplex; SMap; CCM; Multiview.
+
+libSizes,String of 3 whitespace separated integer values specifying the intial library size; the final library size; and the library size increment for CCM.
 
 sample,Integer specifying the number of random samples to draw at each library size evaluation for CCM.
 
 random,Logical to specify random (‘TRUE’) or sequential library sampling in CCM.
 
 replacement,Logical to specify sampling with replacement in CCM.
+
+includeData,Logical to return all CCM projection data frames.
 
 seed,Integer specifying the random sampler seed in CCM.  If ‘seed=0’ a random seed is generated.
 

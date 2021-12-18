@@ -2,11 +2,11 @@
 \alias{Multiview}
 \title{Forecasting using multiview embedding}
 \usage{
-Multiview(pathIn = "./", dataFile = "", dataFrame = NULL, pathOut = "./", 
-  predictFile = "", lib = "", pred = "", D = 0, E = 1, Tp = 1, knn = 0, 
+Multiview(pathIn = "./", dataFile = "", dataFrame = NULL,
+  lib = "", pred = "", D = 0, E = 1, Tp = 1, knn = 0, 
   tau = -1, columns = "", target = "", multiview = 0, exclusionRadius = 0,
-  trainLib = TRUE, excludeTarget = FALSE, verbose = FALSE, numThreads = 4,
-  showPlot = FALSE)
+  trainLib = TRUE, excludeTarget = FALSE, parameterList = FALSE,
+  verbose = FALSE, numThreads = 4, showPlot = FALSE)
 }
 \arguments{
 \item{pathIn}{path to \code{dataFile}.}
@@ -16,10 +16,6 @@ index or time values. The first row must be column names.}
 
 \item{dataFrame}{input data.frame. The first column must be a time
 index or time values. The columns must be named.}
-
-\item{pathOut}{path for \code{predictFile} containing output predictions.}
-
-\item{predictFile}{prediction output file name.}
 
 \item{lib}{a 2-column matrix, data.frame, 2-element vector or string of 
   row indice pairs, where each pair specifies the first and last *rows* of
@@ -55,6 +51,8 @@ nearest neighbors in prediction.}
 
 \item{excludeTarget}{logical to exclude embedded target column from combinations.}
 
+\item{parameterList}{logical to add list of invoked parameters.}
+
 \item{verbose}{logical to produce additional console reporting.}
 
 \item{numThreads}{number of CPU threads to use in multiview processing.}
@@ -74,6 +72,8 @@ data.frame \code{Combo_rho} columns:
   MAE   \tab mean absolute error\cr
   RMSE  \tab root mean square error\cr
 }
+
+  If \code{parameterList = TRUE} a named list "parameters" is added.
 }
 
 \references{Ye H., and G. Sugihara, 2016. Information leverage in 
@@ -108,6 +108,6 @@ dynamics.
 
 \examples{
 data(block_3sp)
-L = Multiview( dataFrame = block_3sp, lib = "1 99", pred = "105 190",
+L = Multiview( dataFrame = block_3sp, lib = "1 100", pred = "101 190",
 E = 2, columns = "x_t y_t z_t", target = "x_t" )
 }

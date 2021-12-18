@@ -138,6 +138,7 @@ ccm = function( block,
                    replacement     = replace,
                    seed            = seed,
                    includeData     = includeData,
+                   parameterList   = FALSE,
                    verbose         = verbose,
                    showPlot        = FALSE )
   
@@ -307,9 +308,11 @@ block_lnlp = function(
                      columns         = columns,
                      target          = target, 
                      embedded        = TRUE,
-                     verbose         = verbose,
                      const_pred      = TRUE,
+                     verbose         = verbose,
                      validLib        = vector(),
+                     generateSteps   = 0,
+                     parameterList   = FALSE,
                      showPlot        = FALSE )
     
     if ( knn == 0 ) {
@@ -351,28 +354,30 @@ block_lnlp = function(
     for ( i in 1:length(theta) ) {
       theta.i = theta[ i ]
       
-      smapList[[ i ]] = SMap( pathIn       = "./",
-                              dataFile     = "",
-                              dataFrame    = dataFrame,
-                              pathOut      = "./",
-                              predictFile  = "",
-                              lib          = lib,
-                              pred         = pred,
-                              E            = E, 
-                              Tp           = tp,
-                              knn          = knn,
-                              tau          = -1,
-                              theta        = theta.i,
+      smapList[[ i ]] = SMap( pathIn        = "./",
+                              dataFile      = "",
+                              dataFrame     = dataFrame,
+                              # pathOut     = "./", # Rcpp 20 arg limit
+                              # predictFile = "",   # Rcpp 20 arg limit
+                              lib           = lib,
+                              pred          = pred,
+                              E             = E, 
+                              Tp            = tp,
+                              knn           = knn,
+                              tau           = -1,
+                              theta         = theta.i,
                               exclusionRadius = exclusionRadius,
-                              columns      = columns,
-                              target       = target,
-                              smapFile     = "",
-                              jacobians    = "",
-                              embedded     = TRUE,
-                              const_pred   = TRUE,
-                              verbose      = verbose,
-                              validLib     = vector(),
-                              showPlot     = FALSE )
+                              columns       = columns,
+                              target        = target,
+                              smapFile      = "",
+                              # jacobians   = "",   # Rcpp 20 arg limit
+                              embedded      = TRUE,
+                              const_pred    = TRUE,
+                              verbose       = verbose,
+                              validLib      = vector(),
+                              generateSteps = 0,
+                              parameterList = FALSE,
+                              showPlot      = FALSE )
     }  
   
     names( smapList ) = paste0( "theta", theta )
@@ -495,28 +500,30 @@ s_map = function(
     # SMap() : list [[ "predictions",  "coefficients" ]]
     # predictions: "Index" "Observations" "Predictions" "Const_Predictions"
     # coefficients: Index" "C0" "C1"...
-    smapList[[ i ]] = SMap( pathIn       = "./",
-                            dataFile     = "",
-                            dataFrame    = dataFrame,
-                            pathOut      = "./",
-                            predictFile  = "",
-                            lib          = lib,
-                            pred         = pred,
-                            E            = E, 
-                            Tp           = tp,
-                            knn          = knn,
-                            tau          = tau,
-                            theta        = theta.i,
+    smapList[[ i ]] = SMap( pathIn        = "./",
+                            dataFile      = "",
+                            dataFrame     = dataFrame,
+                            # pathOut     = "./",      # Rcpp 20 arg limit
+                            # predictFile = "",        # Rcpp 20 arg limit
+                            lib           = lib,
+                            pred          = pred,
+                            E             = E, 
+                            Tp            = tp,
+                            knn           = knn,
+                            tau           = tau,
+                            theta         = theta.i,
                             exclusionRadius = exclusionRadius,
-                            columns      = columns,
-                            target       = target,
-                            smapFile     = "",
-                            jacobians    = "",
-                            embedded     = FALSE,
-                            const_pred   = TRUE,
-                            verbose      = verbose,
-                            validLib     = vector(),
-                            showPlot     = FALSE )
+                            columns       = columns,
+                            target        = target,
+                            smapFile      = "",
+                            # jacobians   = "",        # Rcpp 20 arg limit   
+                            embedded      = FALSE,
+                            const_pred    = TRUE,
+                            verbose       = verbose,
+                            validLib      = vector(),
+                            generateSteps = 0,
+                            parameterList = FALSE,
+                            showPlot      = FALSE )
   }
   
   names( smapList ) = paste0( "theta", theta )
@@ -646,9 +653,11 @@ simplex = function(
                                   columns         = columns,
                                   target          = target, 
                                   embedded        = FALSE,
-                                  verbose         = verbose,
                                   const_pred      = TRUE,
+                                  verbose         = verbose,
                                   validLib        = vector(),
+                                  generateSteps   = 0,
+                                  parameterList   = FALSE,
                                   showPlot        = FALSE )
   }
   
@@ -775,8 +784,8 @@ multiview = function( block,
   mv = Multiview( pathIn          = "./",
                   dataFile        = "",
                   dataFrame       = dataFrame,
-                  pathOut         = "./",
-                  predictFile     = "",
+                  # pathOut       = "./",       # Rcpp 20 arg limit
+                  # predictFile   = "",         # Rcpp 20 arg limit
                   lib             = lib,
                   pred            = pred,
                   D               = E,       # Nice: E is not embedding dim
@@ -790,6 +799,7 @@ multiview = function( block,
                   exclusionRadius = exclusionRadius,
                   trainLib        = TRUE,    # Not available in legacy
                   excludeTarget   = FALSE,   # Not available in legacy
+                  parameterList   = FALSE,
                   verbose         = FALSE,
                   numThreads      = 4,
                   showPlot        = FALSE )
@@ -996,63 +1006,4 @@ make_surrogate_data = function( ts,
                         T_period = T_period,
                         alpha    = alpha )
   return( data )
-}
-
-#--------------------------------------------------------------------------
-# ccm_means()  
-#--------------------------------------------------------------------------
-ccm_means = function( df, FUN = mean, ... ) {
-  stop( "ccm_means() deprecated. ccm() returns lib_sizes means." )
-}
-
-#--------------------------------------------------------------------------
-# tde_gp()  
-#--------------------------------------------------------------------------
-tde_gp = function( time_series,
-                   lib = c(1, NROW(time_series)),
-                   pred = lib, 
-                   E = 1:10,
-                   tau = 1,
-                   tp = 1,
-                   phi = 0,
-                   v_e = 0,
-                   eta = 0,
-                   fit_params = TRUE, 
-                   stats_only = TRUE,
-                   save_covariance_matrix = FALSE,
-                   silent = FALSE, 
-                  ... ) {
-  stop( "tde_gp() not implemented." )
-}
-
-#--------------------------------------------------------------------------
-# block_gp()  
-#--------------------------------------------------------------------------
-block_gp = function( block,
-                     lib = c(1, NROW(block)),
-                     pred = lib,
-                     tp = 1, 
-                     phi = 0,
-                     v_e = 0,
-                     eta = 0,
-                     fit_params = TRUE,
-                     columns = NULL, 
-                     target_column = 1,
-                     stats_only = TRUE,
-                     save_covariance_matrix = FALSE, 
-                     first_column_time = FALSE,
-                     silent = FALSE, ...) {
-  stop( "block_gp() not implemented." )
-}
-
-#--------------------------------------------------------------------------
-# test_nonlinearity()  
-#--------------------------------------------------------------------------
-test_nonlinearity = function( ts,
-                              method = "ebisuzaki",
-                              num_surr = 200,
-                              T_period = 1, 
-                              E = 1,
-                              ... ) {
-  stop( "test_nonlinearity() not implemented." )
 }
