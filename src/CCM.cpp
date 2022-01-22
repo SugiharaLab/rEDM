@@ -106,12 +106,7 @@ Rcpp::List CCM_rcpp( std::string  pathIn,
                             r::Named( "CCM2_Predictions" ) = PredictionsList2);
 
         if ( parameterList ) {
-            // Have to explicitly build the named list
-            r::List paramList;
-            for ( auto pi =  ccmValues.parameterMap.begin();
-                       pi != ccmValues.parameterMap.end(); ++pi ) {
-                paramList[ pi->first ] = pi->second;
-            }
+            r::List paramList = ParamMaptoList( ccmValues.parameterMap );
             output["parameters"] = paramList;
         }
     }

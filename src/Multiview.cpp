@@ -95,12 +95,7 @@ r::List Multiview_rcpp ( std::string  pathIn,
         r::Named("Predictions") = predictions );
 
     if ( parameterList ) {
-        // Have to explicitly build the named list
-        r::List paramList;
-        for ( auto pi =  MV.parameterMap.begin();
-                   pi != MV.parameterMap.end(); ++pi ) {
-            paramList[ pi->first ] = pi->second;
-        }
+        r::List paramList = ParamMaptoList( MV.parameterMap );
         output["parameters"] = paramList;
     }
 

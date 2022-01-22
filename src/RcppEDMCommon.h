@@ -22,6 +22,8 @@ r::DataFrame DataFrameToDF ( DataFrame< double > dataFrame );
 
 r::DataFrame ReadDataFrame ( std::string path, std::string file );
 
+r::List ParamMaptoList( std::map< std::string, std::string > m );
+
 r::List Simplex_rcpp( std::string       pathIn,
                       std::string       dataFile,
                       r::DataFrame      dataList,

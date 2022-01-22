@@ -79,12 +79,7 @@ r::List Simplex_rcpp( std::string       pathIn,
     r::List output = r::List::create( r::Named("predictions")  = df_pred );
 
     if ( parameterList ) {
-        // Have to explicitly build the named list
-        r::List paramList;
-        for ( auto pi =  S.parameterMap.begin();
-                   pi != S.parameterMap.end(); ++pi ) {
-            paramList[ pi->first ] = pi->second;
-        }
+        r::List paramList = ParamMaptoList( S.parameterMap );
         output["parameters"] = paramList;
     }
 

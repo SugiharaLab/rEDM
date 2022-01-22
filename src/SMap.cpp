@@ -94,12 +94,7 @@ r::List SMap_rcpp( std::string       pathIn,
                                       r::Named("coefficients") = df_coef );
 
     if ( parameterList ) {
-        // Have to explicitly build the named list
-        r::List paramList;
-        for ( auto pi =  SM.parameterMap.begin();
-                   pi != SM.parameterMap.end(); ++pi ) {
-            paramList[ pi->first ] = pi->second;
-        }
+        r::List paramList = ParamMaptoList( SM.parameterMap );
         output["parameters"] = paramList;
     }
 
