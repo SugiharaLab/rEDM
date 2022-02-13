@@ -8,7 +8,11 @@ author:
 - Cameron Smith
 - Hao Ye
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output:
+  pdf_document:
+    latex_engine: xelatex
+  html_document:
+    rmarkdown::html_vignette
 vignette: >
     %\VignetteEngine{knitr::rmarkdown}
     %\VignetteIndexEntry{"Empirical Dynamic Modeling"}
