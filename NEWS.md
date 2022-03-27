@@ -17,6 +17,7 @@
 - Parameters `pathOut`, `predictFile` are removed from `SMap`, `Multiview` to accomodate the Rcpp 20 parameter limit.
 - Version 1.10.1 converts `parameterList` values to numerics.
 - Version 1.10.2 is a bug fix for `Tp < 1` in generative mode.
+- Version 1.10.3 `SMap` `dgelss` error message. `CCM` `libSize` limits `Tp < 0`.
 
 ##### Version 1.9
 - Adds the `validLib` parameter to `Simplex` and `SMap`. `validLib` is a boolean vector with the same number of elements as input data rows.  For `validLib` elements that are `false`, the correspoding data row will not be included in the state-space library.

@@ -79,7 +79,7 @@ Consequently, it is possible to project the system state onto one of the coordin
 <!------------
    Figure 1 
 ------------->
-```{r, LorenzProjection, echo = FALSE, fig.cap = "Time Series Projection from the Lorenz Attractor.", out.width = 250, fig.align = 'center'}
+```{r, LorenzProjection, echo = FALSE, fig.cap = "Time Series Projection from the Lorenz Attractor.", out.width = "50%", fig.align = 'center'}
 knitr::include_graphics("Lorenz_Projection.png")
 ```
 
@@ -96,7 +96,7 @@ $$ \vec{x}_t = \langle x_t, x_{t-\tau}, \dots, x_{t-(E-1)\tau} \rangle $$
 <!------------
    Figure 2
 ------------->
-```{r fig_attractor_reconstruction, echo = FALSE, fig.cap = "Attractor Reconstruction from 3 Lagged Coordinates", out.width = 250, fig.align = 'center'}
+```{r fig_attractor_reconstruction, echo = FALSE, fig.cap = "Attractor Reconstruction from 3 Lagged Coordinates", out.width = "50%", fig.align = 'center'}
 knitr::include_graphics("Lorenz_Reconstruct.png")
 ```
 
@@ -339,7 +339,7 @@ par(mfrow = c(4, 1), mar = c(2, 4, 0.5, 1), oma = c(0, 0, 0, 0),
     mgp = c(2.1, 1, 0) )
 ```
 
-```{r smap_Lorenz_plot, out.width = 300, fig.cap = "S-map prediction and coefficients of Lorenz'96 5-D system."}
+```{r smap_Lorenz_plot, out.width = "70%", fig.cap = "S-map prediction and coefficients of Lorenz'96 5-D system."}
 predictions = smap_Lorenz $ predictions
 coefficients = smap_Lorenz $ coefficients
 Time = predictions $ Time
