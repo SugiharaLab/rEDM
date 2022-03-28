@@ -8,26 +8,27 @@ author:
 - Cameron Smith
 - Hao Ye
 date: "`r Sys.Date()`"
-output:
-  pdf_document:
-    latex_engine: xelatex
-  html_document:
-    rmarkdown::html_vignette
+output: html_document
+#output:
+#  pdf_document:
+#    latex_engine: xelatex
+#  html_document:
+#    rmarkdown::html_vignette
 vignette: >
     %\VignetteEngine{knitr::rmarkdown}
     %\VignetteIndexEntry{"Empirical Dynamic Modeling"}
     %\VignetteEncoding{UTF-8}
 bibliography: References.bib
 header-includes: 
-- \usepackage[utf8]{inputenc}
 - \usepackage{graphicx}
 - \usepackage{float}
+- \usepackage[utf8]{inputenc}
 ---
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, tidy = TRUE,
                       fig.pos = 'h', fig.align = 'center',
-                      fig.width = 4, fig.height = 3.3)
+                      fig.width = 4, fig.height = 3.3 )
 knitr::opts_knit$set(global.par = TRUE, progress = FALSE)
 options(digits = 2)
 par.orig = par()
@@ -351,11 +352,14 @@ legend("topright", legend = c("observed", "predicted"),
 fill = c( 'blue', 'red' ), bty = "n", cex = 1.3 )
 
 plot( Time, coefficients[, 6], type = "l", col = "brown",
-ylab = "∂V4/∂V1", xlab = "", lwd = 2, cex.lab = 1.3, cex.axis = 1.3 )
+ylab = paste( "\U2202", "V4/", "\U2202", "V1" , sep = '' ), 
+xlab = "", lwd = 2, cex.lab = 1.3, cex.axis = 1.3 )
 plot( Time, coefficients[, 5], type = "l", col = "darkgreen",
-ylab = "∂V3/∂V1", xlab = "", lwd = 2, cex.lab = 1.3, cex.axis = 1.3 )
+ylab = paste( "\U2202", "V3/", "\U2202", "V1" , sep = '' ),
+xlab = "", lwd = 2, cex.lab = 1.3, cex.axis = 1.3 )
 plot( Time, coefficients[, 4], type = "l", col = "blue",
-ylab = "∂V2/∂V1", xlab = "", lwd = 2, cex.lab = 1.3, cex.axis = 1.3 )
+ylab = paste( "\U2202", "V2/", "\U2202", "V1" , sep = '' ),
+xlab = "", lwd = 2, cex.lab = 1.3, cex.axis = 1.3 )
 ```
 
 ```{r, echo = FALSE}
