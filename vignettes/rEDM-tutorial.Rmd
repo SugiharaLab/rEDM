@@ -51,7 +51,7 @@ The **rEDM** package can be obtained in two main ways. The standard version of t
 install.packages("rEDM")
 ```
 
-The development version is available on GitHub at [SugiharaLab](github.com/SugiharaLab/rEDM), and can be installed using R **devtools**.
+Also available on GitHub at [SugiharaLab](https://github.com/SugiharaLab/rEDM), and can be installed using R **devtools**.
 
 ```{r GitHub installation instructions, eval = FALSE}
 devtools::install_github("SugiharaLab/rEDM")
@@ -632,7 +632,7 @@ par( par.orig )
 <!------------------------------------------------------------------------->
 # Package Core
 <!------------------------------------------------------------------------->
-The **rEDM** package is implemented as a wrapper to the [`cppEDM`](github.com/SugiharaLab/cppEDM) library. All EDM algorithms are executed in the core `cppEDM` library and interfaced through the [`Rcpp`](cran.r-project.org/web/packages/Rcpp/index.html) package. 
+The **rEDM** package is implemented as a wrapper to the [`cppEDM`](https://github.com/SugiharaLab/cppEDM) library. All EDM algorithms are executed in the core `cppEDM` library and interfaced through the [`Rcpp`](https://cran.r-project.org/packages=Rcpp) package.
 
 <!------------------------------------------------------------------------->
 ## Data Input
@@ -647,7 +647,7 @@ Data can be input as an R `data.frame`, or read from a `.csv` file. In either ca
 <!------------------------------------------------------------------------->
 # Parameters
 <!------------------------------------------------------------------------->
-Since **rEDM** is a wrapper for the [`cppEDM`](github.com/SugiharaLab/cppEDM) library, parameters largely correspond to function parameters of [`cppEDM`](github.com/SugiharaLab/cppEDM).  Primary parameters are tabulated here.
+Since **rEDM** is a wrapper for the [`cppEDM`](https://github.com/SugiharaLab/cppEDM) library, parameters largely correspond to function parameters of [`cppEDM`](https://github.com/SugiharaLab/cppEDM).  Primary parameters are tabulated here.
 
 ```{r parameter-table, echo = FALSE}
 paramTable = read.csv( "ParameterTable.csv", as.is = TRUE )
