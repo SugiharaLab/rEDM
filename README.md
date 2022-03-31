@@ -8,18 +8,18 @@ The `rEDM` package is a collection of methods for Empirical Dynamic
 Modeling (EDM). EDM is based on the mathematical theory of
 reconstructing attractor manifolds from time series data, with
 applications to forecasting, causal inference, and more. It is based on
-research software developed for the [Sugihara Lab](http://deepeco.ucsd.edu/)
+research software developed for the [Sugihara Lab](https://deepeco.ucsd.edu/)
 (University of California San Diego, Scripps Institution of Oceanography).
 
 ## Empirical Dynamic Modeling (EDM)
 -------------------------------------
 
 This package implements an R wrapper of
-[EDM](http://deepeco.ucsd.edu/nonlinear-dynamics-research/edm/) tools from
+[EDM](https://deepeco.ucsd.edu/nonlinear-dynamics-research/edm/) tools from
 the [cppEDM](https://github.com/SugiharaLab/cppEDM) library.
 Introduction and documentation are are avilable
 [online](https://sugiharalab.github.io/EDM_Documentation/ "EDM Docs"), or
-in the package [tutorial](https://github.com/SugiharaLab/rEDM/blob/master/vignettes/rEDM-tutorial.pdf "rEDM turorial").
+in the package [tutorial](https://github.com/SugiharaLab/rEDM/blob/d5aafe06573be73f603488f6ee4ae68a73da5e12/doc/rEDM-tutorial.pdf "rEDM turorial").
 
 Functionality includes:
 
@@ -31,7 +31,7 @@ Functionality includes:
 
 Installation
 ------------
-To install from CRAN:
+To install from CRAN [rEDM](https://CRAN.R-project.org/package=rEDM):
 
     install.packages(rEDM)
 

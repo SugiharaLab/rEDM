@@ -632,7 +632,7 @@ par( par.orig )
 <!------------------------------------------------------------------------->
 # Package Core
 <!------------------------------------------------------------------------->
-The **rEDM** package is implemented as a wrapper to the [`cppEDM`](https://github.com/SugiharaLab/cppEDM) library. All EDM algorithms are executed in the core `cppEDM` library and interfaced through the [`Rcpp`](https://cran.r-project.org/packages=Rcpp) package.
+The **rEDM** package is implemented as a wrapper to the [`cppEDM`](https://github.com/SugiharaLab/cppEDM) library. All EDM algorithms are executed in the core `cppEDM` library and interfaced through the [`Rcpp`](https://cran.r-project.org/package=Rcpp) package.
 
 <!------------------------------------------------------------------------->
 ## Data Input
