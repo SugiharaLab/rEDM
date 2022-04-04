@@ -1,15 +1,18 @@
 #### rEDM NEWS
 
-2022-02-10 version 1.10.2 <JosephPark@IEEE.org>
+2022-04-01 version 1.11.0 <JosephPark@IEEE.org>
 
 ---
 
 ##### NOTES:
 - It is recommended to use functions: `Simplex`, `SMap`, `CCM`, `Embed`, `Multiview`, `EmbedDimension`, `PredictInterval`, `PredictNonlinear`, `ComputeError` instead of the legacy version 0.7 signatures. See Version 1.3 notes.
 - Rcpp imposes a 20 parameter limit on functions. The rEDM wrapper of [cppEDM](https://github.com/SugiharaLab/cppEDM#empirical-dynamic-modeling-edm) therefore does not invoke the full cppEDM API. Users requiring the full API are referred to the [pyEDM](https://pypi.org/project/pyEDM/) wrapper.
-- `SMap` linear system solver regularization: The R [glmnet](https://CRAN.R-project.org/package=glmnet) package does not seperate the model from the data. This prevents use in rEDM. Users requiring `SMap` regularization are referred to the [pyEDM](https://pypi.org/project/pyEDM/) wrapper.
+- `SMap` linear system solver regularization: The R [glmnet](https://CRAN.R-project.org/package=glmnet) package does not seperate the model from the data. This prevents integration in rEDM. Users requiring `SMap` regularization are referred to the [pyEDM](https://pypi.org/project/pyEDM/) wrapper.
 
 ---
+
+##### Version 1.11
+- Removes `nan` from `SMap` `columns` and `target`. Warning generated.
 
 ##### Version 1.10
 - Adds the `generateSteps` parameter to `Simplex` and `SMap` implementing generative feedback prediction.
