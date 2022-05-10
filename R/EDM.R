@@ -14,10 +14,10 @@ MakeBlock = function( dataFrame,
   if ( ! isValidDF( dataFrame ) ) {
     stop( "MakeBlock(): dataFrame argument is not valid data.frame." )
   }
-  
+
   # Mapped to MakeBlock_rcpp() (Embed.cpp) in RcppEDMCommon.cpp
   block = RtoCpp_MakeBlock( dataFrame, E, tau, columns, deletePartial )
-  
+
   return ( block )
 }
 
@@ -44,7 +44,7 @@ Embed = function( path      = "./",
   if ( is.vector( columns ) || is.list( columns ) ) {
     columns = paste( columns, collapse = " " )
   }
-  
+
   # Mapped to Embed_rcpp() (Embed.cpp) in RcppEDMCommon.cpp
   df = RtoCpp_Embed( path,
                      dataFile,
@@ -176,7 +176,7 @@ SMap = function( pathIn          = "./",
   if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
     stop( "SMap(): Failed to find column or target in DataFrame." )
   }
-  
+
   # If lib, pred, columns are vectors/list, convert to string for cppEDM
   if ( ! is.character( lib ) || length( lib ) > 1 ) {
     lib = FlattenToString( lib )
@@ -214,11 +214,11 @@ SMap = function( pathIn          = "./",
                           validLib,
                           generateSteps,
                           parameterList )
-  
+
   if ( showPlot ) {
     PlotSmap( smapList, dataFile, E, Tp )
   }
-  
+
   return( smapList )
 }
 
@@ -253,11 +253,11 @@ Multiview = function( pathIn          = "./",
       stop( "Multiview(): dataFrame argument is not valid data.frame." )
     }
   }
-  
+
   if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
     stop( "Multiview(): Failed to find column or target in DataFrame." )
   }
-  
+
   # If lib, pred, columns are vectors/list, convert to string for cppEDM
   if ( ! is.character( lib ) || length( lib ) > 1 ) {
     lib = FlattenToString( lib )
@@ -312,11 +312,11 @@ Multiview = function( pathIn          = "./",
   combos = as.data.frame( matrix( 0, ncol = length( headerVec ),
                                      nrow = length( mvList $ Views ) - 1 ) )
   names( combos ) = headerVec
-  
+
   # Process each data row, in the most inelegant way possible...
   for ( row in 2 : length( mvList $ Views ) ) {
     rowVec = strsplit( mvList $ Views[ row ], ', ' )[[1]]
-    
+
     col.i     = as.integer( rowVec[ 1 : Ncol ] )
     col.names = rowVec[ (Ncol + 1) : (2 * Ncol) ]
     rho       = as.numeric( rowVec[ (2 * Ncol + 1) ] )
@@ -337,7 +337,7 @@ Multiview = function( pathIn          = "./",
   if ( parameterList ) {
     MV[['parameters']] = mvList $ parameters
   }
-  
+
   return( MV )
 }
 
@@ -365,17 +365,17 @@ CCM = function( pathIn          = "./",
                 parameterList   = FALSE,
                 verbose         = FALSE,
                 showPlot        = FALSE ) {
-  
+
   if ( ! is.null( dataFrame ) ) {
     if ( ! isValidDF( dataFrame ) ) {
       stop( "CCM(): dataFrame argument is not valid data.frame." )
     }
   }
-  
+
   if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
     stop( "CCM(): Failed to find column or target in DataFrame." )
   }
-  
+
   # If libSizes, columns are vectors/list, convert to string for cppEDM
   if ( ! is.character( libSizes ) || length( libSizes ) > 1 ) {
     libSizes = FlattenToString( libSizes )
@@ -432,40 +432,42 @@ CCM = function( pathIn          = "./",
   else {
     output = CCMList $ LibMeans # return data.frame LibMeans
   }
-  
+
   return( output )
 }
 
 #------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------
-EmbedDimension = function ( pathIn       = "./",
-                            dataFile     = "",
-                            dataFrame    = NULL,
-                            pathOut      = "",
-                            predictFile  = "",
-                            lib          = "",
-                            pred         = "",
-                            maxE         = 10,
-                            Tp           = 1,
-                            tau          = -1,
-                            columns      = "",
-                            target       = "",
-                            embedded     = FALSE,
-                            verbose      = FALSE,
-                            numThreads   = 4,
-                            showPlot     = TRUE ) {
+EmbedDimension = function ( pathIn          = "./",
+                            dataFile        = "",
+                            dataFrame       = NULL,
+                            pathOut         = "",
+                            predictFile     = "",
+                            lib             = "",
+                            pred            = "",
+                            maxE            = 10,
+                            Tp              = 1,
+                            tau             = -1,
+                            exclusionRadius = 0,
+                            columns         = "",
+                            target          = "",
+                            embedded        = FALSE,
+                            verbose         = FALSE,
+                            validLib        = vector(),
+                            numThreads      = 4,
+                            showPlot        = TRUE ) {
 
   if ( ! is.null( dataFrame ) ) {
     if ( ! isValidDF( dataFrame ) ) {
       stop( "EmbedDimension(): dataFrame argument is not valid data.frame." )
     }
   }
-  
+
   if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
     stop( "EmbedDimension(): Failed to find column or target in DataFrame." )
   }
-  
+
   # If lib, pred, columns are vectors/list, convert to string for cppEDM
   if ( ! is.character( lib ) || length( lib ) > 1 ) {
     lib = FlattenToString( lib )
@@ -485,13 +487,15 @@ EmbedDimension = function ( pathIn       = "./",
                               predictFile,
                               lib,
                               pred, 
-                              maxE, 
+                              maxE,
                               Tp,
                               tau,
+                              exclusionRadius,
                               columns,
                               target,
                               embedded,
                               verbose,
+                              validLib,
                               numThreads )
 
   if ( showPlot ) {
@@ -499,40 +503,42 @@ EmbedDimension = function ( pathIn       = "./",
     plot( df $ E, df $ rho, main = title, xlab = "Embedding Dimension",
           ylab = "Prediction Skill (\U03C1)", type = "l", lwd = 3 )
   }
-  
+
   return ( df )
 }
 
 #------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------
-PredictInterval = function( pathIn      = "./",
-                            dataFile    = "",
-                            dataFrame   = NULL,
-                            pathOut     = "./",
-                            predictFile = "",
-                            lib         = "",
-                            pred        = "",
-                            maxTp       = 10,
-                            E           = 1,
-                            tau         = -1,
-                            columns     = "",
-                            target      = "",
-                            embedded    = FALSE,
-                            verbose     = FALSE,
-                            numThreads  = 4,
-                            showPlot    = TRUE ) {
-  
+PredictInterval = function( pathIn          = "./",
+                            dataFile        = "",
+                            dataFrame       = NULL,
+                            pathOut         = "./",
+                            predictFile     = "",
+                            lib             = "",
+                            pred            = "",
+                            maxTp           = 10,
+                            E               = 1,
+                            tau             = -1,
+                            exclusionRadius = 0,
+                            columns         = "",
+                            target          = "",
+                            embedded        = FALSE,
+                            verbose         = FALSE,
+                            validLib        = vector(),
+                            numThreads      = 4,
+                            showPlot        = TRUE ) {
+
   if ( ! is.null( dataFrame ) ) {
     if ( ! isValidDF( dataFrame ) ) {
       stop( "PredictInterval(): dataFrame argument is not valid data.frame." )
     }
   }
-  
+
   if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
     stop( "PredictInterval(): Failed to find column or target in DataFrame." )
   }
-  
+
   # If lib, pred, columns are vectors/list, convert to string for cppEDM
   if ( ! is.character( lib ) || length( lib ) > 1 ) {
     lib = FlattenToString( lib )
@@ -555,10 +561,12 @@ PredictInterval = function( pathIn      = "./",
                                maxTp,
                                E,
                                tau,
+                               exclusionRadius,
                                columns,
                                target,
                                embedded,
                                verbose,
+                               validLib,
                                numThreads )
 
   if ( showPlot ) {
@@ -566,31 +574,33 @@ PredictInterval = function( pathIn      = "./",
     plot( df $ Tp, df $ rho, main = title, xlab = "Forecast Interval",
           ylab = "Prediction Skill (\U03C1)", type = "l", lwd = 3 )
   }
-  
+
   return( df )
 }
 
 #------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------
-PredictNonlinear = function( pathIn      = "./",
-                             dataFile    = "",
-                             dataFrame   = NULL,
-                             pathOut     = "./",
-                             predictFile = "",
-                             lib         = "",
-                             pred        = "",
-                             theta       = "",
-                             E           = 1,
-                             Tp          = 1,
-                             knn         = 0,
-                             tau         = -1,
-                             columns     = "",
-                             target      = "",
-                             embedded    = FALSE,
-                             verbose     = FALSE,
-                             numThreads  = 4,
-                             showPlot    = TRUE ) {
+PredictNonlinear = function( pathIn          = "./",
+                             dataFile        = "",
+                             dataFrame       = NULL,
+                             pathOut         = "./",
+                             predictFile     = "",
+                             lib             = "",
+                             pred            = "",
+                             theta           = "",
+                             E               = 1,
+                             Tp              = 1,
+                             knn             = 0,
+                             tau             = -1,
+                             exclusionRadius = 0,
+                             columns         = "",
+                             target          = "",
+                             embedded        = FALSE,
+                             verbose         = FALSE,
+                             validLib        = vector(),
+                             numThreads      = 4,
+                             showPlot        = TRUE ) {
 
   if ( ! is.null( dataFrame ) ) {
     if ( ! isValidDF( dataFrame ) ) {
@@ -601,7 +611,7 @@ PredictNonlinear = function( pathIn      = "./",
   if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
     stop( "PredictNonlinear(): Failed to find column or target in DataFrame." )
   }
-  
+
   # If lib, pred, theta, columns are vectors/list, convert to string for cppEDM
   if ( ! is.character( lib ) || length( lib ) > 1 ) {
     lib = FlattenToString( lib )
@@ -629,18 +639,20 @@ PredictNonlinear = function( pathIn      = "./",
                                 Tp,
                                 knn,
                                 tau,
+                                exclusionRadius,
                                 columns,
                                 target,
                                 embedded,
                                 verbose,
+                                validLib,
                                 numThreads )
-  
+
   if ( showPlot ) {
     title = paste(dataFile , "\nE=", E )
     plot( df $ Theta, df $ rho, main=title, 
           xlab = "S-map Localisation", ylab = "Prediction Skill (\U03C1)",
           type = "l", lwd = 3 )
   }
-  
+
   return( df )
 }

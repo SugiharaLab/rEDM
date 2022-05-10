@@ -3,9 +3,9 @@
 \title{Forecast interval accuracy}
 \usage{
 PredictInterval(pathIn = "./", dataFile = "", dataFrame = NULL, pathOut = "./", 
-  predictFile = "", lib = "", pred = "", maxTp = 10, E = 1, tau = -1, 
-  columns = "", target = "", embedded = FALSE, verbose = FALSE,
-  numThreads = 4, showPlot = TRUE)  
+  predictFile = "", lib = "", pred = "", maxTp = 10, E = 1, tau = -1,
+  exclusionRadius = 0, columns = "", target = "", embedded = FALSE,
+  verbose = FALSE, validLib = vector(), numThreads = 4, showPlot = TRUE)  
 }
 \arguments{
 \item{pathIn}{path to \code{dataFile}.}
@@ -33,6 +33,9 @@ predictions. A single contiguous range is supported.}
 \item{tau}{lag of time delay embedding specified as number of
 time column rows.}
 
+\item{exclusionRadius}{excludes vectors from the search space of nearest 
+neighbors if their relative time index is within exclusionRadius.}
+
 \item{columns}{string of whitespace separated column name(s) in the
 input data used to create the library.}
 
@@ -41,6 +44,10 @@ input data used to create the library.}
 \item{embedded}{logical specifying if the input data are embedded.}
 
 \item{verbose}{logical to produce additional console reporting.}
+
+\item{validLib}{logical vector the same length as the number of data
+ rows.  Any data row represented in this vector as FALSE, will not be
+ included in the library.}
 
 \item{numThreads}{number of parallel threads for computation.}
 
@@ -61,6 +68,7 @@ prediction accuracy as a function of forecast interval Tp.
 
 \examples{
 data(TentMap)
-Tp.rho <- PredictInterval( dataFrame=TentMap, lib="1 100",
-pred="201 500", E=2, columns="TentMap", target="TentMap", showPlot = FALSE)
+Tp.rho = PredictInterval( dataFrame = TentMap, lib = "1 100",
+pred = "201 500", E = 2, columns = "TentMap", target = "TentMap",
+showPlot = FALSE )
 }

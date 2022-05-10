@@ -22,6 +22,7 @@ export( make_block    )
 export( compute_stats )
 export( make_surrogate_data )
 
+importFrom("grDevices", "dev.cur", "dev.new", "dev.list")
 importFrom("graphics", "abline", "legend", "lines", "mtext", "par", "plot")
 importFrom("utils", "data", "read.csv")
 importFrom("stats", "fft", "predict", "rnorm", "runif", "sd", "smooth.spline", "cov", "pnorm")

@@ -1,6 +1,6 @@
 #### rEDM NEWS
 
-2022-04-01 version 1.11.0 <JosephPark@IEEE.org>
+2022-05-07 version 1.12.0 <JosephPark@IEEE.org>
 
 ---
 
@@ -10,6 +10,9 @@
 - `SMap` linear system solver regularization: The R [glmnet](https://CRAN.R-project.org/package=glmnet) package does not seperate the model from the data. This prevents integration in rEDM. Users requiring `SMap` regularization are referred to the [pyEDM](https://pypi.org/project/pyEDM/) wrapper.
 
 ---
+
+##### Version 1.12
+- Adds `exclusionRadius` and `validLib` to `EmbedDimension()`, `PredictInterval()` and `PredictNonlinear()`. 
 
 ##### Version 1.11
 - Removes `nan` from `SMap` `columns` and `target`. Warning generated.

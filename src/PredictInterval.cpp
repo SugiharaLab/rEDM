@@ -14,10 +14,12 @@ r::DataFrame PredictInterval_rcpp( std::string  pathIn,
                                    int          maxTp,
                                    int          E,
                                    int          tau,
+                                   int          exclusionRadius,
                                    std::string  columns,
                                    std::string  target,
                                    bool         embedded,
                                    bool         verbose,
+                                   std::vector<bool> validLib,
                                    unsigned     numThreads ) {
 
     DataFrame< double > PredictDF;
@@ -34,10 +36,12 @@ r::DataFrame PredictInterval_rcpp( std::string  pathIn,
                                      maxTp,
                                      E,
                                      tau,
+                                     exclusionRadius,
                                      columns,
                                      target,
                                      embedded,
                                      verbose,
+                                     validLib,
                                      numThreads );
     }
     else if ( dataFrame.size() ) {
@@ -51,15 +55,17 @@ r::DataFrame PredictInterval_rcpp( std::string  pathIn,
                                      maxTp,
                                      E,
                                      tau,
+                                     exclusionRadius,
                                      columns,
                                      target,
                                      embedded,
                                      verbose,
+                                     validLib,
                                      numThreads );
     }
     else {
         Rcpp::warning("PredictInterval_rcpp(): Invalid input.\n");
     }
-    
+
     return DataFrameToDF( PredictDF );
 }

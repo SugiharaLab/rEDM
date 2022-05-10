@@ -3,9 +3,9 @@
 \title{Optimal embedding dimension}
 \usage{
 EmbedDimension(pathIn = "./", dataFile = "", dataFrame = NULL, pathOut = "", 
-  predictFile = "", lib = "", pred = "", maxE = 10, Tp = 1, tau = -1, 
-  columns = "", target = "", embedded = FALSE, verbose = FALSE, numThreads = 4, 
-  showPlot = TRUE)  
+  predictFile = "", lib = "", pred = "", maxE = 10, Tp = 1, tau = -1,
+  exclusionRadius = 0, columns = "", target = "", embedded = FALSE,
+  verbose = FALSE, validLib = vector(), numThreads = 4, showPlot = TRUE)  
 }
 \arguments{
 \item{pathIn}{path to \code{dataFile}.}
@@ -33,6 +33,9 @@ predictions. A single contiguous range is supported.}
 \item{tau}{lag of time delay embedding specified as number of
 time column rows.}
 
+\item{exclusionRadius}{excludes vectors from the search space of nearest 
+neighbors if their relative time index is within exclusionRadius.}
+
 \item{columns}{string of whitespace separated column name(s) in the
 input data used to create the library.}
 
@@ -41,6 +44,10 @@ input data used to create the library.}
 \item{embedded}{logical specifying if the input data are embedded.}
 
 \item{verbose}{logical to produce additional console reporting.}
+
+\item{validLib}{logical vector the same length as the number of data
+ rows.  Any data row represented in this vector as FALSE, will not be
+ included in the library.}
 
 \item{numThreads}{number of parallel threads for computation.}
 
@@ -61,6 +68,6 @@ prediction accuracy as a function of embedding dimension.
 
 \examples{
 data(TentMap)
-E.rho <- EmbedDimension( dataFrame=TentMap, lib="1 100", pred="201 500",
-columns="TentMap", target="TentMap", showPlot=FALSE)
+E.rho = EmbedDimension( dataFrame = TentMap, lib = "1 100", pred = "201 500",
+columns = "TentMap", target = "TentMap", showPlot = FALSE )
 }
