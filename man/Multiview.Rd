@@ -61,16 +61,19 @@ nearest neighbors in prediction.}
 }
 
 \value{
-Named list with data.frames \code{[[Combo_rho, Predictions]]}.
+Named list with data.frames \code{[[View, Predictions]]}.
 
-data.frame \code{Combo_rho} columns:
+data.frame \code{View} columns:
 \tabular{ll}{
   Col_1 \tab column index\cr
   ...   \tab column index\cr
-  Col_E \tab column index\cr
+  Col_D \tab column index\cr
   rho   \tab Pearson correlation\cr
   MAE   \tab mean absolute error\cr
   RMSE  \tab root mean square error\cr
+  name_1 \tab column name\cr
+  ...    \tab column name\cr
+  name_D \tab column name\cr
 }
 
   If \code{parameterList = TRUE} a named list "parameters" is added.

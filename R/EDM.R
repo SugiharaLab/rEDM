@@ -298,41 +298,16 @@ Multiview = function( pathIn          = "./",
     PlotObsPred( mvList $ Predictions, dataFile, E, Tp )
   }
 
-  # mvList: [[ "Views" = Rcpp::StringVector, "Predictions" = data.frame ]]
-
-  # Convert mvList "Views" StringVector into data.frame
-  headerVec = strsplit( mvList $ Views[1], ', ' )[[1]]
-
-  # headerVec has 2 * N + 3 elements (columns)
-  # The first N are column indices (integer)
-  # Second N are column names
-  # The last 3 are rho, MAE, RMSE
-  Ncol = ( length( headerVec ) - 3 ) / 2
-
-  combos = as.data.frame( matrix( 0, ncol = length( headerVec ),
-                                     nrow = length( mvList $ Views ) - 1 ) )
-  names( combos ) = headerVec
-
-  # Process each data row, in the most inelegant way possible...
-  for ( row in 2 : length( mvList $ Views ) ) {
-    rowVec = strsplit( mvList $ Views[ row ], ', ' )[[1]]
-
-    col.i     = as.integer( rowVec[ 1 : Ncol ] )
-    col.names = rowVec[ (Ncol + 1) : (2 * Ncol) ]
-    rho       = as.numeric( rowVec[ (2 * Ncol + 1) ] )
-    MAE       = as.numeric( rowVec[ (2 * Ncol + 2) ] )
-    RMSE      = as.numeric( rowVec[ (2 * Ncol + 3) ] )
-
-    # "manually" insert to preserve types
-    combos[ (row - 1), 1 : Ncol ] = col.i
-    combos[ (row - 1), (Ncol + 1) : (2 * Ncol) ] = col.names
-    combos[ (row - 1), (2 * Ncol + 1) ] = rho
-    combos[ (row - 1), (2 * Ncol + 2) ] = MAE 
-    combos[ (row - 1), (2 * Ncol + 3) ] = RMSE
-    
+  # mvList: [[ "ComboRho" : data.frame, "Predictions" : data.frame,
+  #            "ColumnNames" : List, "parameters" : List ]]
+  # Append ColumnNames to ComboRho to create View
+  colNames = names( mvList $ ColumnNames )  # dict keys
+  for ( i in 1 : length( mvList $ ColumnNames ) ) {
+    mvList $ ComboRho[[ colNames[i] ]] = mvList $ ColumnNames[[ i ]]
   }
 
-  MV = list( "View" = combos, "Predictions" = mvList $ Predictions )
+  MV = list( "View"        = mvList $ ComboRho,
+             "Predictions" = mvList $ Predictions )
 
   if ( parameterList ) {
     MV[['parameters']] = mvList $ parameters

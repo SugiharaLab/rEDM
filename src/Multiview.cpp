@@ -82,16 +82,24 @@ r::List Multiview_rcpp ( std::string  pathIn,
         Rcpp::warning( "Multiview_rcpp(): Invalid input.\n" );
     }
 
-    // Copy ComboRhoTable into a Rcpp::StringVector
-    r::StringVector comboLines( MV.ComboRhoTable.size() );
-    for ( size_t row = 0; row < MV.ComboRhoTable.size(); row++ ) {
-        comboLines[ row ] = MV.ComboRhoTable[ row ];
-    }
-
+    r::DataFrame comboRho    = DataFrameToDF( MV.ComboRho    );
     r::DataFrame predictions = DataFrameToDF( MV.Predictions );
 
+    // ColumnNames are: map< string, vector<string> >, convert to List
+    r::List columnNames;
+    for ( auto cni  = MV.ColumnNames.begin();
+               cni != MV.ColumnNames.end(); cni++ ) {
+        r::StringVector strVec;
+        std::vector< std::string > names = cni->second;
+        for ( auto ni = names.begin(); ni != names.end(); ni++ ) {
+            strVec.push_back( *ni );
+        }
+        columnNames[ cni->first ] = strVec;
+    }
+
     r::List output = r::List::create(
-        r::Named("Views")       = comboLines,
+        r::Named("ComboRho")    = comboRho,
+        r::Named("ColumnNames") = columnNames,
         r::Named("Predictions") = predictions );
 
     if ( parameterList ) {

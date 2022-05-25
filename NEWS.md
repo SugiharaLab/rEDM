@@ -1,6 +1,6 @@
 #### rEDM NEWS
 
-2022-05-07 version 1.12.0 <JosephPark@IEEE.org>
+2022-05-25 version 1.12.2 <JosephPark@IEEE.org>
 
 ---
 
@@ -13,6 +13,7 @@
 
 ##### Version 1.12
 - Adds `exclusionRadius` and `validLib` to `EmbedDimension()`, `PredictInterval()` and `PredictNonlinear()`. 
+- Version 1.12.2 Multiview return data.frame, correct SMap coefficient labels. 
 
 ##### Version 1.11
 - Removes `nan` from `SMap` `columns` and `target`. Warning generated.
