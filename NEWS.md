@@ -15,6 +15,7 @@
 - Adds `exclusionRadius` and `validLib` to `EmbedDimension()`, `PredictInterval()` and `PredictNonlinear()`. 
 - Version 1.12.2 Multiview return data.frame, correct SMap coefficient labels. 
 - Version 1.12.2.1 Rcpp character encoding workaround on Windows for DataFrame column names.
+- Version 1.12.3 cppEDM DateTime regex removed to avoid UTF-8 gcc issue in Windows.
 
 ##### Version 1.11
 - Removes `nan` from `SMap` `columns` and `target`. Warning generated.

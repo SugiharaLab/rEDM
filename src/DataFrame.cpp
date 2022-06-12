@@ -58,11 +58,7 @@ r::DataFrame DataFrameToDF ( DataFrame< double > dataFrame ) {
     // NOTE: cppEDM DataFrame columnNames are data only, not time
     std::vector<std::string> columnNamesIn = dataFrame.ColumnNames();
 
-#ifdef _WIN32 // Rcpp UTF8 encoding fails on Windows
-    r::StringVector columnNames; 
-#else
     std::vector<std::string> columnNames;
-#endif
 
     bool hasTime = false;
 
@@ -70,12 +66,7 @@ r::DataFrame DataFrameToDF ( DataFrame< double > dataFrame ) {
     if ( dataFrame.Time().size() ) {
         hasTime = true; // Skip time column in dataFrame.VectorColumnName()
 
-#ifdef _WIN32 // Rcpp UTF8 encoding fails on Windows
-        r::String timeName( dataFrame.TimeName() );
-        columnNames.push_back( timeName );
-#else
         columnNames.push_back( dataFrame.TimeName() );
-#endif
 
         // Probe dataFrame.Time() to see if we can convert it to
         // a numeric, Date, or Datetime...
@@ -147,15 +138,7 @@ r::DataFrame DataFrameToDF ( DataFrame< double > dataFrame ) {
         std::valarray<double> col_val = dataFrame.VectorColumnName( *ci );
         std::vector<double> col_vec(std::begin(col_val), std::end(col_val));
         columnList.push_back( col_vec );
-
-#ifdef _WIN32 // Rcpp UTF8 encoding fails on Windows
-        r::String colName( *ci );
-        colName.replace_all( "∂", "d" ); // ∂ set in cppEDM/src/SMap.cc
-        // colName.set_encoding( cetype_t::CE_UTF8 );
-        columnNames.push_back( colName );
-#else
         columnNames.push_back( *ci );
-#endif
     }
 
     r::DataFrame df ( columnList );
