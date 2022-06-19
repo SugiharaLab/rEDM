@@ -1,6 +1,6 @@
 #### rEDM NEWS
 
-2022-06-12 version 1.12.3 <JosephPark@IEEE.org>
+2022-06-17 version 1.13.0 <JosephPark@IEEE.org>
 
 ---
 
@@ -10,6 +10,10 @@
 - `SMap` linear system solver regularization: The R [glmnet](https://CRAN.R-project.org/package=glmnet) package does not seperate the model from the data. This prevents integration in rEDM. Users requiring `SMap` regularization are referred to the [pyEDM](https://pypi.org/project/pyEDM/) wrapper.
 
 ---
+
+##### Version 1.13
+- Adds `embedded` and multivariate embedding to `CCM()`.
+- Parameters `pathOut`, `predictFile` are removed from `CCM` to accomodate the Rcpp 20 parameter limit.
 
 ##### Version 1.12
 - Adds `exclusionRadius` and `validLib` to `EmbedDimension()`, `PredictInterval()` and `PredictNonlinear()`. 

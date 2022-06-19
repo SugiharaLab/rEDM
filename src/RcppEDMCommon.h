@@ -72,8 +72,8 @@ r::List SMap_rcpp( std::string       pathIn,
 r::List CCM_rcpp( std::string  pathIn,
                   std::string  dataFile,
                   r::DataFrame dataList,
-                  std::string  pathOut,
-                  std::string  predictFile,
+                  //std::string  pathOut,     // Rcpp 20 arg limit
+                  //std::string  predictFile, // Rcpp 20 arg limit
                   int          E,
                   int          Tp,
                   int          knn,
@@ -86,6 +86,7 @@ r::List CCM_rcpp( std::string  pathIn,
                   bool         random,
                   bool         replacement,
                   unsigned     seed,
+                  bool         embedded,
                   bool         includeData,
                   bool         parameterList,
                   bool         verbose );

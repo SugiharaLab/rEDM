@@ -2,12 +2,12 @@
 \alias{CCM}
 \title{Convergent cross mapping using simplex projection}
 \usage{
-CCM(pathIn = "./", dataFile = "", dataFrame = NULL, pathOut = "./", 
-  predictFile = "", E = 0, Tp = 0, knn = 0, tau = -1,
-  exclusionRadius = 0, columns = "", target = "", 
-  libSizes = "", sample = 0, random = TRUE, replacement = FALSE, seed = 0, 
-  includeData = FALSE, parameterList = FALSE, verbose = FALSE,
-  showPlot = FALSE)  
+CCM(pathIn = "./", dataFile = "", dataFrame = NULL,
+  E = 0, Tp = 0, knn = 0, tau = -1,
+  exclusionRadius = 0, columns = "", target = "", libSizes = "",
+  sample = 0, random = TRUE, replacement = FALSE, seed = 0, 
+  embedded = FALSE, includeData = FALSE, parameterList = FALSE,
+  verbose = FALSE, showPlot = FALSE)  
 }
 \arguments{
 \item{pathIn}{path to \code{dataFile}.}
@@ -17,10 +17,6 @@ index or time values. The first row must be column names.}
 
 \item{dataFrame}{input data.frame. The first column must be a time
 index or time values. The columns must be named.}
-
-\item{pathOut}{path for \code{predictFile} containing output predictions.}
-
-\item{predictFile}{output file name.}
 
 \item{E}{embedding dimension.}
 
@@ -47,12 +43,16 @@ input data used to create the library.}
 each library size evaluation.}
 
 \item{random}{logical to specify random (\code{TRUE}) or sequential
-  library sampling.}
+  library sampling. Note \code{random = FALSE} is not convergent
+  cross mapping.}
 
-\item{replacement}{logical to specify sampling with replacement.}
+\item{replacement}{logical to specify sampling with replacement.
+  Note \code{replacement = TRUE} is not convergent cross mapping.}
 
 \item{seed}{integer specifying the random sampler seed.  If
   \code{seed=0} then a random seed is generated.}
+
+\item{embedded}{logical specifying if the input data are embedded.}
 
 \item{includeData}{logical to include statistics and predictions for
   every prediction in the ensemble.}
@@ -77,7 +77,7 @@ each library size evaluation.}
       CCM1_PredictStat\tab Forward cross map prediction statistics\cr
       CCM1_Predictions\tab Forward cross map prediction values\cr
       CCM2_PredictStat\tab Reverse cross map prediction statistics\cr
-      CCM2_Predictions\tab cross map prediction values\cr
+      CCM2_Predictions\tab Reverse cross map prediction values\cr
   }
 
   If \code{includeData = TRUE} and \code{parameterList = TRUE} a
@@ -93,8 +93,8 @@ each library size evaluation.}
   enough information is available, one can infer the presence or absence
   of cross-variable interactions associated with causal links between
   variables. \code{\link{CCM}} measures the extent to which states of
-  variable Y can reliably estimate states of variable X. This happens
-  only if X is causally influencing Y. 
+  variable Y can reliably estimate states of variable X. This can happen
+  if X is causally influencing Y. 
 
   If cross-variable state predictability converges as more state-space
   information is provided, this indicates a causal link. \code{\link{CCM}}
@@ -110,7 +110,7 @@ each library size evaluation.}
 
 \examples{
 data(sardine_anchovy_sst)
-df <- CCM( dataFrame=sardine_anchovy_sst, E=3, Tp=0, columns="anchovy",
-target="np_sst", libSizes="10 70 10", sample=100 )
+df = CCM( dataFrame = sardine_anchovy_sst, E = 3, Tp = 0, columns = "anchovy",
+target = "np_sst", libSizes = "10 70 10", sample = 100 )
 
 }

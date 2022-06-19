@@ -7,8 +7,8 @@
 Rcpp::List CCM_rcpp( std::string  pathIn, 
                      std::string  dataFile,
                      r::DataFrame dataFrame,
-                     std::string  pathOut,
-                     std::string  predictFile,
+                     // std::string  pathOut,     // Rcpp 20 param limit
+                     // std::string  predictFile, // Rcpp 20 param limit
                      int          E,
                      int          Tp,
                      int          knn,
@@ -21,6 +21,7 @@ Rcpp::List CCM_rcpp( std::string  pathIn,
                      bool         random,
                      bool         replacement,
                      unsigned     seed,
+                     bool         embedded,
                      bool         includeData,
                      bool         parameterList,
                      bool         verbose ) {
@@ -31,8 +32,8 @@ Rcpp::List CCM_rcpp( std::string  pathIn,
         // dataFile specified, dispatch overloaded CCM, ignore dataFrame
         ccmValues = CCM( pathIn,
                          dataFile,
-                         pathOut,
-                         predictFile,
+                         "./", // pathOut,     // Rcpp 20 param limit
+                         "",   // predictFile, // Rcpp 20 param limit
                          E, 
                          Tp,
                          knn,
@@ -45,6 +46,7 @@ Rcpp::List CCM_rcpp( std::string  pathIn,
                          random,
                          replacement,
                          seed,
+                         embedded,
                          includeData,
                          parameterList,
                          verbose );
@@ -53,8 +55,8 @@ Rcpp::List CCM_rcpp( std::string  pathIn,
         DataFrame< double > dataFrame_ = DFToDataFrame( dataFrame );
 
         ccmValues = CCM( dataFrame_,
-                         pathOut,
-                         predictFile,
+                         "./", // pathOut,      // Rcpp 20 param limit
+                         "",   // predictFile,  // Rcpp 20 param limit
                          E, 
                          Tp,
                          knn,
@@ -67,6 +69,7 @@ Rcpp::List CCM_rcpp( std::string  pathIn,
                          random,
                          replacement,
                          seed,
+                         embedded,
                          includeData,
                          parameterList,
                          verbose );

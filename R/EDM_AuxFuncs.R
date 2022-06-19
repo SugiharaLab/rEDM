@@ -43,12 +43,12 @@ FlattenToString = function( x ) {
 ColumnsInDataFrame = function( pathIn, dataFile, dataFrame, columns, target ) {
 
   if ( nchar( dataFile ) ) {
-    # Shame to have to read the data just for this...
+    # Shame to read the data just for this... anti Big Data. R fails anyway.
     # Perhaps pass the df back ?  Gets messy.
     #
     # R data.frame names are presumed to be valid variable names.
     #   Numeric fist character or hyphen/dash/minus "-" are not valid.
-    #   So we disable check.names that calls make.names() on column names.
+    #   Disable check.names that calls make.names() on column names.
     df = read.csv( paste( pathIn, dataFile, sep = '/' ),
                    as.is = TRUE, check.names = FALSE )
   }
@@ -63,12 +63,20 @@ ColumnsInDataFrame = function( pathIn, dataFile, dataFrame, columns, target ) {
 
   columnNames = names( df )
   columnVec   = strsplit( trimws( columns ), "\\s+" )[[1]] # split on whitespace
+  targetVec   = strsplit( trimws( target ),  "\\s+" )[[1]] # split on whitespace
 
-  if ( ! (target %in% columnNames) ) {
-    print( paste( "Error: ColumnsInDataFrame(): Target", target,
-                  "not found in dataFrame columns:" ) )
-    print( columnNames )
-    return( FALSE )
+  for ( target in targetVec ) {
+    if ( length( df[,target] ) == 0 ) {
+      print( paste("Error: ColumnsInDataFrame(): Target", target, "is empty."))
+      return( FALSE )
+    }
+
+    if ( ! (target %in% columnNames) ) {
+      print( paste( "Error: ColumnsInDataFrame(): Target", target,
+                    "not found in dataFrame columns:" ) )
+      print( columnNames )
+      return( FALSE )
+    }
   }
   
   for ( column in columnVec ) {
