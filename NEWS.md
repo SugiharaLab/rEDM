@@ -14,6 +14,7 @@
 ##### Version 1.13
 - Adds `embedded` and multivariate embedding to `CCM()`.
 - Parameters `pathOut`, `predictFile` are removed from `CCM` to accomodate the Rcpp 20 parameter limit.
+- Version 1.13.1 cppEDM DateTime H:M:S fix. Allow first column data.frame characters. Set target to columns[0] if empty.
 
 ##### Version 1.12
 - Adds `exclusionRadius` and `validLib` to `EmbedDimension()`, `PredictInterval()` and `PredictNonlinear()`. 

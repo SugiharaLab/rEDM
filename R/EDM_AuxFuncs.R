@@ -97,7 +97,8 @@ ColumnsInDataFrame = function( pathIn, dataFile, dataFrame, columns, target ) {
 }
 
 #------------------------------------------------------------------------
-# Is dataFrame a non-empty data.frame?  TRUE : FALSE
+# Is dataFrame a non-empty data.frame?
+# Does columns 2:ncol(df) have character or factors? TRUE : FALSE
 #------------------------------------------------------------------------
 isValidDF = function( dataFrame ) {
   if ( inherits( dataFrame, "data.frame" ) ) {
@@ -105,7 +106,7 @@ isValidDF = function( dataFrame ) {
       print( paste( "isValidDF(): dataFrame is empty." ) )
       return( FALSE )
     }
-    df.class = sapply( dataFrame, class )
+    df.class = sapply( dataFrame[ , 2:ncol(dataFrame) ], class )
     if ( "character" %in% df.class || "factor" %in% df.class ) {
       print( "isValidDF(): Non-numeric column detected in dataFrame." )
       return( FALSE )
@@ -113,6 +114,7 @@ isValidDF = function( dataFrame ) {
     return( TRUE )
   }
   else {
+    print( "isValidDF(): dataFrame is not an R data.frame." )
     return( FALSE )
   }
 }

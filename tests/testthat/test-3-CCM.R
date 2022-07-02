@@ -18,10 +18,10 @@ test_that("CCM works", {
 test_that("CCM errors", {
     expect_error( CCM() )
     expect_error( CCM( dataFrame = sardine_anchovy_sst,
-                       E = 3, Tp = 0, columns = "anchovy", target = "",
+                       E = 3, Tp = 0, columns = "", target = "np_sst",
                        libSizes = "10 70 10", sample = 100 ) )
     expect_error( CCM( dataFrame = sardine_anchovy_sst,
-                       E = 3, Tp = 0, columns = "", target = "np_sst",
+                       E = 3, Tp = 0, columns = "anchovy", target = "X",
                        libSizes = "10 70 10", sample = 100 ) )
     expect_error( CCM( dataFrame = sardine_anchovy_sst,
                        E = 3, Tp = 0, columns = "X", target = "np_sst",
