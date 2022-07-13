@@ -1,6 +1,6 @@
 #### rEDM NEWS
 
-2022-06-17 version 1.13.0 <JosephPark@IEEE.org>
+2022-07-01 version 1.13.1 <JosephPark@IEEE.org>
 
 ---
 

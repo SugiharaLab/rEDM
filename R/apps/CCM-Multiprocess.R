@@ -1,6 +1,5 @@
 
 library( rEDM )
-
 library( foreach )
 library( doParallel )
 
@@ -35,6 +34,8 @@ CCM_MP_Columns = function(
          libSizes  = libSizes,
          sample    = sample )
   }
+
+  stopImplicitCluster()
 
   # Get names for the returned list L from the CCM data.frame
   keys = c()
@@ -77,6 +78,8 @@ CCM_MP_LibSizes = function(
          libSizes  = libSize,
          sample    = sample )
   }
+
+  stopImplicitCluster()
 
   # Set names
   names( L ) = libSizesList
