@@ -23,10 +23,13 @@ r::List Simplex_rcpp( std::string       pathIn,
                       bool              verbose,
                       std::vector<bool> validLib,
                       int               generateSteps,
+                      //bool            generateLibrary, // Rcpp has 20 arg limit
                       bool              parameterList ) {
 
     SimplexValues S;
 
+    bool generateLibrary = false; // Rcpp has 20 arg limit
+    
     if ( dataFile.size() ) {
         // dataFile specified, dispatch overloaded Simplex, ignore dataFrame
         S = Simplex( pathIn,
@@ -47,6 +50,7 @@ r::List Simplex_rcpp( std::string       pathIn,
                      verbose,
                      validLib,
                      generateSteps,
+                     generateLibrary,
                      parameterList );
     }
     else if ( dataFrame.size() ) {
@@ -69,6 +73,7 @@ r::List Simplex_rcpp( std::string       pathIn,
                      verbose,
                      validLib,
                      generateSteps,
+                     generateLibrary,
                      parameterList );
     }
     else {

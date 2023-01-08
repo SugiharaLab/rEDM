@@ -56,6 +56,7 @@ auto SimplexArgs = r::List::create(
     r::_["verbose"]         = false,
     r::_["validLib"]        = std::vector<bool>(),
     r::_["generateSteps"]   = 0,
+    //r::_["generateLibrary"] = false, // Rcpp 20 arg limit
     r::_["parameterList"]   = false );
 
 auto SMapArgs = r::List::create(
@@ -81,6 +82,7 @@ auto SMapArgs = r::List::create(
     r::_["verbose"]         = false,
     r::_["validLib"]        = std::vector<bool>(),
     r::_["generateSteps"]   = 0,
+    //r::_["generateLibrary"] = false, // Rcpp 20 arg limit
     r::_["parameterList"]   = false );
 
 auto MultiviewArgs = r::List::create( 

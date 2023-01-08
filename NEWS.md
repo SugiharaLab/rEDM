@@ -1,6 +1,6 @@
 #### rEDM NEWS
 
-2022-07-01 version 1.13.1 <JosephPark@IEEE.org>
+2023-01-07 version 1.14.0 <JosephPark@IEEE.org>
 
 ---
 
@@ -10,6 +10,9 @@
 - `SMap` linear system solver regularization: The R [glmnet](https://CRAN.R-project.org/package=glmnet) package does not seperate the model from the data. This prevents integration in rEDM. Users requiring `SMap` regularization are referred to the [pyEDM](https://pypi.org/project/pyEDM/) wrapper.
 
 ---
+
+##### Version 1.14
+- cppEDM core added `generateLibrary` parameter to `Simplex()` and `SMap()`.  If `TRUE` the state-space library has newly generated points added. Not available due to Rcpp 20 parameter limit. 
 
 ##### Version 1.13
 - Adds `embedded` and multivariate embedding to `CCM()`.

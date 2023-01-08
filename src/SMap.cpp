@@ -25,13 +25,15 @@ r::List SMap_rcpp( std::string       pathIn,
                    bool              verbose,
                    std::vector<bool> validLib,
                    int               generateSteps,
+                   //bool            generateLibrary, // Rcpp has 20 arg limit
                    bool              parameterList ) {
 
     SMapValues SM;
     
-    std::string pathOut("./");   // Rcpp has 20 arg limit
-    std::string predictFile(""); // Rcpp has 20 arg limit
-    std::string jacobians("");   // Rcpp has 20 arg limit
+    std::string pathOut("./");    // Rcpp has 20 arg limit
+    std::string predictFile("");  // Rcpp has 20 arg limit
+    std::string jacobians("");    // Rcpp has 20 arg limit
+    bool generateLibrary = false; // Rcpp has 20 arg limit
 
     if ( dataFile.size() ) {
         // dataFile specified, dispatch overloaded SMap, ignore dataFrame
@@ -57,6 +59,7 @@ r::List SMap_rcpp( std::string       pathIn,
                    verbose,
                    validLib,
                    generateSteps,
+                   generateLibrary,
                    parameterList );
     }
     else if ( dataFrame.size() ) {
@@ -82,6 +85,7 @@ r::List SMap_rcpp( std::string       pathIn,
                    verbose,
                    validLib,
                    generateSteps,
+                   generateLibrary,
                    parameterList );
     }
     else {
