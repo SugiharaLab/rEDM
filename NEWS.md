@@ -1,6 +1,6 @@
 #### rEDM NEWS
 
-2023-01-07 version 1.14.0 <JosephPark@IEEE.org>
+2023-07-03 version 1.14.2 <JosephPark@IEEE.org>
 
 ---
 
@@ -13,6 +13,7 @@
 
 ##### Version 1.14
 - cppEDM core added `generateLibrary` parameter to `Simplex()` and `SMap()`.  If `TRUE` the state-space library has newly generated points added. Not available due to Rcpp 20 parameter limit. 
+- Version 1.14.2 Remove CCM multivariable warning, positive tau warning. Add Embedding application. 
 
 ##### Version 1.13
 - Adds `embedded` and multivariate embedding to `CCM()`.
