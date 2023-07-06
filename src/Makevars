@@ -1,10 +1,14 @@
+# NOTE : Do not put comments on a non-comment line.
 LIB_PATH        = ./cppEDM/lib/
 CPPEDM_SRC_PATH = ./cppEDM/src/
 LIBEDM          = $(LIB_PATH)/libEDM.a
 
 PKG_CPPFLAGS = -I $(CPPEDM_SRC_PATH)
 PKG_LIBS     = -L $(LIB_PATH) -lEDM $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
-CXX_STD      = CXX11
+
+# CXX_STD required for RcppThread on GCC ASAN/UBSAN ?
+# R 4.3 and above uses default CXX17. Will change with R version?
+CXX_STD = CXX17
 
 .PHONY: all $(LIBEDM)
 
@@ -12,8 +16,8 @@ all : $(SHLIB)
 
 $(SHLIB): $(LIBEDM)
 
-## Pass R compiler variables CXX11... to cppEDM makefile
+# Pass R compiler variables CXX17... to cppEDM makefile
 $(LIBEDM):
 	@(cd $(CPPEDM_SRC_PATH) && $(MAKE) clean && $(MAKE) \
-	CXX="$(CXX11) $(CXX11STD)" CXXFLAGS="$(CXX11FLAGS) $(CXX11PICFLAGS)" \
+	CXX="$(CXX17) $(CXX17STD)" CXXFLAGS="$(CXX17FLAGS) $(CXX17PICFLAGS)" \
 	AR="$(AR)" RANLIB="$(RANLIB)")

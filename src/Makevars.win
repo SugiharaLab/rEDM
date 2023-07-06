@@ -8,10 +8,10 @@
 
 PKG_CPPFLAGS = -I./cppEDM/src -I../
 PKG_LIBS     = -L./cppEDM/src/ -lEDM $(LAPACK_LIBS)
-CXX_STD      = CXX11
+## CXX_STD   = CXX11
 
 $(SHLIB): cppEDM/src/libEDM.a
 
 cppEDM/src/libEDM.a:
 	@(cd cppEDM/src && $(MAKE) -f makefile.mingw \
-          CC="$(CC)" CFLAGS="-std=c++11 -DCCM_THREADED -DMULTIVIEW_VALUES_OVERLOAD -I../ $(CPICFLAGS)" AR="$(AR)" RANLIB="$(RANLIB)")
+          CC="$(CC)" CFLAGS="-DCCM_THREADED -DMULTIVIEW_VALUES_OVERLOAD -I../ $(CPICFLAGS)" AR="$(AR)" RANLIB="$(RANLIB)")
