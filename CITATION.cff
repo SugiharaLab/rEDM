@@ -1,0 +1,38 @@
+cff-version: 1.2.0
+title: rEDM
+message: >-
+  If you use this software please cite. Licensed by the
+  University of California for educational, research and
+  non-profit purposes.
+type: software
+authors:
+  - given-names: Joseph
+    family-names: Park
+    email: josephpark@ieee.org
+    orcid: 'https://orcid.org/0000-0001-5411-1409'
+  - given-names: Cameron
+    family-names: Smith
+    orcid: 'https://orcid.org/0000-0003-0020-5607'
+    email: omid.smith.cameron@gmail.com
+  - given-names: George
+    family-names: Sugihara
+    orcid: 'https://orcid.org/0000-0002-2863-6946'
+  - given-names: Ethan
+    family-names: Deyle
+    orcid: 'https://orcid.org/0000-0001-8704-8434'
+  - given-names: Erik
+    family-names: Saberski
+    orcid: 'https://orcid.org/0000-0002-6475-6187'
+  - given-names: Hao
+    family-names: Ye
+    orcid: 'https://orcid.org/0000-0002-8630-1458'
+  - {}
+identifiers:
+  - type: url
+    value: 'https://github.com/SugiharaLab/rEDM'
+repository-code: 'https://github.com/SugiharaLab/rEDM'
+url: 'https://github.com/SugiharaLab/rEDM#readme'
+repository: 'https://CRAN.R-project.org/package=rEDM'
+abstract: >-
+  R wrapper of C++ EDM tools. UCSD Scripps Institution of
+  Oceanography, Sugihara Lab.
