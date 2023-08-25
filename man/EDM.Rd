@@ -2,7 +2,9 @@
 \name{EDM}
 \alias{EDM}
 \alias{EDM-package}
+\alias{rEDM-package}
 \title{Empirical dynamic modeling}
+\docType{package}
 \description{
   \pkg{EDM} provides tools for data-driven time series analyses. It is
   based on reconstructing multivariate state (or phase) space
@@ -59,7 +61,7 @@
   }
 }
 \author{
-\strong{Maintainer}: Joseph Park & Cameron Smith
+\strong{Maintainer}: Joseph Park
 
 \strong{Authors}: Joseph Park, Cameron Smith, Ethan Deyle, Erik
 Saberski, George Sugihara
