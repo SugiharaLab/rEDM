@@ -11,7 +11,7 @@ MakeBlock = function( dataFrame,
                       columns       = c(),  # vector of strings
                       deletePartial = FALSE) {
 
-  if ( ! isValidDF( dataFrame ) ) {
+  if ( ! isValidDataFrame( dataFrame ) ) {
     stop( "MakeBlock(): dataFrame argument is not valid data.frame." )
   }
 
@@ -35,7 +35,7 @@ Embed = function( path      = "./",
                   verbose   = FALSE ) {
 
   if ( ! is.null( dataFrame ) ) {
-    if ( ! isValidDF( dataFrame ) ) {
+    if ( ! isValidDataFrame( dataFrame ) ) {
       stop( "Embed(): dataFrame argument is not valid data.frame." )
     }
   }
@@ -75,21 +75,30 @@ Simplex = function( pathIn          = "./",
                     columns         = "",
                     target          = "", 
                     embedded        = FALSE,
-                    const_pred      = FALSE,
                     verbose         = FALSE,
                     validLib        = vector(),
                     generateSteps   = 0,
                     parameterList   = FALSE,
-                    showPlot        = FALSE ) {
+                    showPlot        = FALSE,
+                    noTime          = FALSE ) {
 
-  if ( ! is.null( dataFrame ) ) {
-    if ( ! isValidDF( dataFrame ) ) {
-      stop( "Simplex(): dataFrame argument is not valid data.frame." )
+  if ( noTime ) {
+    if ( nchar( dataFile ) ) {
+      # Read the dataFile into a data.frame, insert index
+      # Override dataFile argument to "", assign dataFrame with index column
+      #   Disable check.names that calls make.names() on column names.
+      dataFrame = read.csv( paste( pathIn, dataFile, sep = '/' ),
+                            as.is = TRUE, check.names = FALSE )
+      dataFile  = ""
     }
+    # Insert an index column as first column for cppEDM
+    index     = seq( 1, nrow( dataFrame ) )
+    dataFrame = cbind( index, dataFrame )
   }
 
-  if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
-    stop( "Simplex(): Failed to find column or target in DataFrame." )
+  if ( ! ValidateDataFrame( pathIn, dataFile, dataFrame,
+                            columns, target, noTime ) ) {
+    stop( "Simplex(): dataFrame validation failed." )
   }
 
   # If lib, pred, columns are vectors/list, convert to string for cppEDM
@@ -120,7 +129,6 @@ Simplex = function( pathIn          = "./",
                           columns,
                           target,
                           embedded,
-                          const_pred,
                           verbose,
                           validLib,
                           generateSteps,
@@ -157,26 +165,36 @@ SMap = function( pathIn          = "./",
                  exclusionRadius = 0,
                  columns         = "",
                  target          = "",
-                 smapFile        = "",
-                 # jacobians     = "",   # Rcpp 20 arg limit
+                 # smapCoefFile  = "",   # Rcpp 20 arg limit
+                 # smapSVFile    = "",   # Rcpp 20 arg limit
                  embedded        = FALSE,
-                 const_pred      = FALSE,
+                 # const_pred    = FALSE,# Rcpp 20 arg limit
                  verbose         = FALSE,
                  validLib        = vector(),
+                 ignoreNan       = TRUE,
                  generateSteps   = 0,
                  parameterList   = FALSE,
-                 showPlot        = FALSE ) {
+                 showPlot        = FALSE,
+                 noTime          = FALSE ) {
 
-  if ( ! is.null( dataFrame ) ) {
-    if ( ! isValidDF( dataFrame ) ) {
-      stop( "SMap(): dataFrame argument is not valid data.frame." )
+  if ( noTime ) {
+    if ( nchar( dataFile ) ) {
+      # Read the dataFile into a data.frame, insert index
+      # Override dataFile argument to "", assign dataFrame with index column
+      dataFrame = read.csv( paste( pathIn, dataFile, sep = '/' ),
+                            as.is = TRUE, check.names = FALSE )
+      dataFile  = ""
     }
+    # Insert an index column as first column for cppEDM
+    index     = seq( 1, nrow( dataFrame ) )
+    dataFrame = cbind( index, dataFrame )
   }
 
-  if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
-    stop( "SMap(): Failed to find column or target in DataFrame." )
+  if ( ! ValidateDataFrame( pathIn, dataFile, dataFrame,
+                            columns, target, noTime ) ) {
+    stop( "SMap(): dataFrame validation failed." )
   }
-
+  
   # If lib, pred, columns are vectors/list, convert to string for cppEDM
   if ( ! is.character( lib ) || length( lib ) > 1 ) {
     lib = FlattenToString( lib )
@@ -190,7 +208,7 @@ SMap = function( pathIn          = "./",
 
   # NOTE: Rcpp has a 20 argument limit!
   # Mapped to SMap_rcpp() (SMap.cpp) in RcppEDMCommon.cpp
-  # smapList has data.frames of "predictions" and "coefficients"
+  # smapList has data.frames of: predictions, coefficients, singularValues
   smapList = RtoCpp_SMap( pathIn,
                           dataFile,
                           dataFrame,
@@ -206,12 +224,13 @@ SMap = function( pathIn          = "./",
                           exclusionRadius,
                           columns,
                           target,
-                          smapFile,
-                          # jacobians, # Rcpp 20 arg limit
+                          # smapCoefFile, # Rcpp 20 arg limit
+                          # smapSVFile,   # Rcpp 20 arg limit
                           embedded,
-                          const_pred,
+                          # const_pred,   # Rcpp 20 arg limit
                           verbose,
                           validLib,
+                          ignoreNan,
                           generateSteps,
                           parameterList )
 
@@ -246,16 +265,25 @@ Multiview = function( pathIn          = "./",
                       parameterList   = FALSE,
                       verbose         = FALSE,
                       numThreads      = 4,
-                      showPlot        = FALSE ) {
+                      showPlot        = FALSE,
+                      noTime          = FALSE ) {
 
-  if ( ! is.null( dataFrame ) ) {
-    if ( ! isValidDF( dataFrame ) ) {
-      stop( "Multiview(): dataFrame argument is not valid data.frame." )
+  if ( noTime ) {
+    if ( nchar( dataFile ) ) {
+      # Read the dataFile into a data.frame, insert index
+      # Override dataFile argument to "", assign dataFrame with index column
+      dataFrame = read.csv( paste( pathIn, dataFile, sep = '/' ),
+                            as.is = TRUE, check.names = FALSE )
+      dataFile  = ""
     }
+    # Insert an index column as first column for cppEDM
+    index     = seq( 1, nrow( dataFrame ) )
+    dataFrame = cbind( index, dataFrame )
   }
 
-  if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
-    stop( "Multiview(): Failed to find column or target in DataFrame." )
+  if ( ! ValidateDataFrame( pathIn, dataFile, dataFrame,
+                            columns, target, noTime ) ) {
+    stop( "Multiview(): dataFrame validation failed." )
   }
 
   # If lib, pred, columns are vectors/list, convert to string for cppEDM
@@ -334,22 +362,31 @@ CCM = function( pathIn          = "./",
                 libSizes        = "",
                 sample          = 0,
                 random          = TRUE,
-                replacement     = FALSE,
+                # replacement   = FALSE,  # Rcpp 20 param limit
                 seed            = 0,
                 embedded        = FALSE,
                 includeData     = FALSE,
                 parameterList   = FALSE,
                 verbose         = FALSE,
-                showPlot        = FALSE ) {
+                showPlot        = FALSE,
+                noTime          = FALSE ) {
 
-  if ( ! is.null( dataFrame ) ) {
-    if ( ! isValidDF( dataFrame ) ) {
-      stop( "CCM(): dataFrame argument is not valid data.frame." )
+  if ( noTime ) {
+    if ( nchar( dataFile ) ) {
+      # Read the dataFile into a data.frame, insert index
+      # Override dataFile argument to "", assign dataFrame with index column
+      dataFrame = read.csv( paste( pathIn, dataFile, sep = '/' ),
+                            as.is = TRUE, check.names = FALSE )
+      dataFile  = ""
     }
+    # Insert an index column as first column for cppEDM
+    index     = seq( 1, nrow( dataFrame ) )
+    dataFrame = cbind( index, dataFrame )
   }
 
-  if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
-    stop( "CCM(): Failed to find column or target in DataFrame." )
+  if ( ! ValidateDataFrame( pathIn, dataFile, dataFrame,
+                            columns, target, noTime ) ) {
+    stop( "CCM(): dataFrame validation failed." )
   }
 
   # If libSizes, columns are vectors/list, convert to string for cppEDM
@@ -378,7 +415,7 @@ CCM = function( pathIn          = "./",
                         libSizes,
                         sample,
                         random,
-                        replacement,
+                        # replacement, # Rcpp 20 param limit
                         seed,
                         embedded,
                         includeData,
@@ -433,16 +470,25 @@ EmbedDimension = function ( pathIn          = "./",
                             verbose         = FALSE,
                             validLib        = vector(),
                             numThreads      = 4,
-                            showPlot        = TRUE ) {
+                            showPlot        = TRUE,
+                            noTime          = FALSE ) {
 
-  if ( ! is.null( dataFrame ) ) {
-    if ( ! isValidDF( dataFrame ) ) {
-      stop( "EmbedDimension(): dataFrame argument is not valid data.frame." )
+  if ( noTime ) {
+    if ( nchar( dataFile ) ) {
+      # Read the dataFile into a data.frame, insert index
+      # Override dataFile argument to "", assign dataFrame with index column
+      dataFrame = read.csv( paste( pathIn, dataFile, sep = '/' ),
+                            as.is = TRUE, check.names = FALSE )
+      dataFile  = ""
     }
+    # Insert an index column as first column for cppEDM
+    index     = seq( 1, nrow( dataFrame ) )
+    dataFrame = cbind( index, dataFrame )
   }
 
-  if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
-    stop( "EmbedDimension(): Failed to find column or target in DataFrame." )
+  if ( ! ValidateDataFrame( pathIn, dataFile, dataFrame,
+                            columns, target, noTime ) ) {
+    stop( "EmbedDimension(): dataFrame validation failed." )
   }
 
   # If lib, pred, columns are vectors/list, convert to string for cppEDM
@@ -504,16 +550,25 @@ PredictInterval = function( pathIn          = "./",
                             verbose         = FALSE,
                             validLib        = vector(),
                             numThreads      = 4,
-                            showPlot        = TRUE ) {
+                            showPlot        = TRUE,
+                            noTime          = FALSE ) {
 
-  if ( ! is.null( dataFrame ) ) {
-    if ( ! isValidDF( dataFrame ) ) {
-      stop( "PredictInterval(): dataFrame argument is not valid data.frame." )
+  if ( noTime ) {
+    if ( nchar( dataFile ) ) {
+      # Read the dataFile into a data.frame, insert index
+      # Override dataFile argument to "", assign dataFrame with index column
+      dataFrame = read.csv( paste( pathIn, dataFile, sep = '/' ),
+                            as.is = TRUE, check.names = FALSE )
+      dataFile  = ""
     }
+    # Insert an index column as first column for cppEDM
+    index     = seq( 1, nrow( dataFrame ) )
+    dataFrame = cbind( index, dataFrame )
   }
 
-  if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
-    stop( "PredictInterval(): Failed to find column or target in DataFrame." )
+  if ( ! ValidateDataFrame( pathIn, dataFile, dataFrame,
+                            columns, target, noTime ) ) {
+    stop( "PredictInterval(): dataFrame validation failed." )
   }
 
   # If lib, pred, columns are vectors/list, convert to string for cppEDM
@@ -577,16 +632,25 @@ PredictNonlinear = function( pathIn          = "./",
                              verbose         = FALSE,
                              validLib        = vector(),
                              numThreads      = 4,
-                             showPlot        = TRUE ) {
+                             showPlot        = TRUE,
+                             noTime          = FALSE ) {
 
-  if ( ! is.null( dataFrame ) ) {
-    if ( ! isValidDF( dataFrame ) ) {
-      stop( "PredictNonlinear(): dataFrame argument is not valid data.frame." )
+  if ( noTime ) {
+    if ( nchar( dataFile ) ) {
+      # Read the dataFile into a data.frame, insert index
+      # Override dataFile argument to "", assign dataFrame with index column
+      dataFrame = read.csv( paste( pathIn, dataFile, sep = '/' ),
+                            as.is = TRUE, check.names = FALSE )
+      dataFile  = ""
     }
+    # Insert an index column as first column for cppEDM
+    index     = seq( 1, nrow( dataFrame ) )
+    dataFrame = cbind( index, dataFrame )
   }
 
-  if ( ! ColumnsInDataFrame( pathIn, dataFile, dataFrame, columns, target ) ) {
-    stop( "PredictNonlinear(): Failed to find column or target in DataFrame." )
+  if ( ! ValidateDataFrame( pathIn, dataFile, dataFrame,
+                            columns, target, noTime ) ) {
+    stop( "PredictNonlinear(): dataFrame validation failed." )
   }
 
   # If lib, pred, theta, columns are vectors/list, convert to string for cppEDM

@@ -38,9 +38,10 @@ FlattenToString = function( x ) {
 }
 
 #------------------------------------------------------------------------
-# Validate columns are present
+# Validate dataFrame, or load dataFile and create dataFrame to validate
 #------------------------------------------------------------------------
-ColumnsInDataFrame = function( pathIn, dataFile, dataFrame, columns, target ) {
+ValidateDataFrame = function( pathIn, dataFile, dataFrame,
+                              columns, target, noTime ) {
 
   if ( nchar( dataFile ) ) {
     # Shame to read the data just for this... anti Big Data. R fails anyway.
@@ -56,8 +57,8 @@ ColumnsInDataFrame = function( pathIn, dataFile, dataFrame, columns, target ) {
     df = dataFrame
   }
 
-  if ( ! isValidDF( df ) ) {
-    print( "Error: ColumnsInDataFrame(): dataFrame is not valid." )
+  if ( ! isValidDataFrame( df ) ) {
+    print( "Error: ValidateDataFrame(): dataFrame is not valid." )
     return( FALSE )
   }
 
@@ -67,12 +68,12 @@ ColumnsInDataFrame = function( pathIn, dataFile, dataFrame, columns, target ) {
 
   for ( target in targetVec ) {
     if ( length( df[,target] ) == 0 ) {
-      print( paste("Error: ColumnsInDataFrame(): Target", target, "is empty."))
+      print( paste("Error: ValidateDataFrame(): Target", target, "is empty."))
       return( FALSE )
     }
 
     if ( ! (target %in% columnNames) ) {
-      print( paste( "Error: ColumnsInDataFrame(): Target", target,
+      print( paste( "Error: ValidateDataFrame(): Target", target,
                     "not found in dataFrame columns:" ) )
       print( columnNames )
       return( FALSE )
@@ -81,12 +82,12 @@ ColumnsInDataFrame = function( pathIn, dataFile, dataFrame, columns, target ) {
   
   for ( column in columnVec ) {
     if ( length( df[,column] ) == 0 ) {
-      print( paste("Error: ColumnsInDataFrame(): Column", column, "is empty."))
+      print( paste("Error: ValidateDataFrame(): Column", column, "is empty."))
       return( FALSE )
     }
 
     if ( ! (column %in% columnNames) ) {
-      print( paste( "Error: ColumnsInDataFrame(): Column", column,
+      print( paste( "Error: ValidateDataFrame(): Column", column,
                     "not found in dataFrame columns:" ) )
       print( columnNames )
       return( FALSE )
@@ -98,23 +99,24 @@ ColumnsInDataFrame = function( pathIn, dataFile, dataFrame, columns, target ) {
 
 #------------------------------------------------------------------------
 # Is dataFrame a non-empty data.frame?
-# Does columns 2:ncol(df) have character or factors? TRUE : FALSE
+# Do columns 2:ncol(dataFrame) have character or factors? TRUE : FALSE
 #------------------------------------------------------------------------
-isValidDF = function( dataFrame ) {
+isValidDataFrame = function( dataFrame ) {
   if ( inherits( dataFrame, "data.frame" ) ) {
     if ( nrow( dataFrame ) == 0 || ncol( dataFrame ) == 0 ) { 
-      print( paste( "isValidDF(): dataFrame is empty." ) )
+      print( paste( "isValidDataFrame(): dataFrame is empty." ) )
       return( FALSE )
     }
     df.class = sapply( dataFrame[ , 2:ncol(dataFrame) ], class )
+
     if ( "character" %in% df.class || "factor" %in% df.class ) {
-      print( "isValidDF(): Non-numeric column detected in dataFrame." )
+      print( "isValidDataFrame(): Non-numeric column detected in dataFrame." )
       return( FALSE )
     }
     return( TRUE )
   }
   else {
-    print( "isValidDF(): dataFrame is not an R data.frame." )
+    print( "isValidDataFrame(): dataFrame is not an R data.frame." )
     return( FALSE )
   }
 }

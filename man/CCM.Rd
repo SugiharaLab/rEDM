@@ -5,9 +5,9 @@
 CCM(pathIn = "./", dataFile = "", dataFrame = NULL,
   E = 0, Tp = 0, knn = 0, tau = -1,
   exclusionRadius = 0, columns = "", target = "", libSizes = "",
-  sample = 0, random = TRUE, replacement = FALSE, seed = 0, 
+  sample = 0, random = TRUE, seed = 0, 
   embedded = FALSE, includeData = FALSE, parameterList = FALSE,
-  verbose = FALSE, showPlot = FALSE)  
+  verbose = FALSE, showPlot = FALSE, noTime = FALSE)
 }
 \arguments{
 \item{pathIn}{path to \code{dataFile}.}
@@ -46,9 +46,6 @@ each library size evaluation.}
   library sampling. Note \code{random = FALSE} is not convergent
   cross mapping.}
 
-\item{replacement}{logical to specify sampling with replacement.
-  Note \code{replacement = TRUE} is not convergent cross mapping.}
-
 \item{seed}{integer specifying the random sampler seed.  If
   \code{seed=0} then a random seed is generated.}
 
@@ -62,6 +59,8 @@ each library size evaluation.}
 \item{verbose}{logical to produce additional console reporting.}
 
 \item{showPlot}{logical to plot results.}
+
+\item{noTime}{logical to allow input data with no time column.}
 }
 
 \value{

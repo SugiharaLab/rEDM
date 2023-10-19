@@ -6,7 +6,7 @@ Multiview(pathIn = "./", dataFile = "", dataFrame = NULL,
   lib = "", pred = "", D = 0, E = 1, Tp = 1, knn = 0, 
   tau = -1, columns = "", target = "", multiview = 0, exclusionRadius = 0,
   trainLib = TRUE, excludeTarget = FALSE, parameterList = FALSE,
-  verbose = FALSE, numThreads = 4, showPlot = FALSE)
+  verbose = FALSE, numThreads = 4, showPlot = FALSE, noTime = FALSE)
 }
 \arguments{
 \item{pathIn}{path to \code{dataFile}.}
@@ -58,6 +58,8 @@ nearest neighbors in prediction.}
 \item{numThreads}{number of CPU threads to use in multiview processing.}
 
 \item{showPlot}{logical to plot results.}
+
+\item{noTime}{logical to allow input data with no time column.}
 }
 
 \value{

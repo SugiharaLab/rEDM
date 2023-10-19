@@ -5,8 +5,8 @@
 Simplex(pathIn = "./", dataFile = "", dataFrame = NULL, pathOut = "./", 
   predictFile = "", lib = "", pred = "", E = 0, Tp = 1, knn = 0, tau = -1, 
   exclusionRadius = 0, columns = "", target = "", embedded = FALSE,
-  const_pred = FALSE, verbose = FALSE, validLib = vector(),
-  generateSteps = 0, parameterList = FALSE, showPlot = FALSE)
+  verbose = FALSE, validLib = vector(), generateSteps = 0,
+  parameterList = FALSE, showPlot = FALSE, noTime = FALSE)
 }
 \arguments{
 \item{pathIn}{path to \code{dataFile}.}
@@ -48,9 +48,6 @@ input data used to create the library.}
 
 \item{verbose}{logical to produce additional console reporting.}
 
-\item{const_pred}{logical to add a \emph{constant predictor} column to the
-output. The constant predictor is X(t+1) = X(t).}
-
 \item{validLib}{logical vector the same length as the number of data
  rows.  Any data row represented in this vector as FALSE, will not be
  included in the library.}
@@ -60,11 +57,12 @@ output. The constant predictor is X(t+1) = X(t).}
 \item{parameterList}{logical to add list of invoked parameters.}
 
 \item{showPlot}{logical to plot results.}
+
+\item{noTime}{logical to allow input data with no time column.}
 }
 
 \value{
-A data.frame with columns \code{Observations, Predictions}.  If
-\code{const_pred} is TRUE the column \code{Const_Predictions} is added.
+A data.frame with columns \code{Observations, Predictions}.
 The first column contains the time values.
 
 If \code{parameterList = TRUE}, a named list with "predictions" holding the
@@ -97,7 +95,7 @@ described in \cite{Sugihara and May}.
 }
 \examples{
 data( block_3sp )
-smplx <- Simplex( dataFrame = block_3sp, lib = "1 100", pred = "101 190",
+smplx = Simplex( dataFrame = block_3sp, lib = "1 100", pred = "101 190",
 E = 3, columns = "x_t", target = "x_t" )
 ComputeError( smplx $ Predictions, smplx $ Observations )
 }

@@ -19,7 +19,7 @@ Rcpp::List CCM_rcpp( std::string  pathIn,
                      std::string  libSizes,
                      int          sample,
                      bool         random,
-                     bool         replacement,
+                     // bool      replacement,  // Rcpp 20 param limit
                      unsigned     seed,
                      bool         embedded,
                      bool         includeData,
@@ -28,6 +28,8 @@ Rcpp::List CCM_rcpp( std::string  pathIn,
 
     CCMValues ccmValues;
 
+    bool replacement = false; // Rcpp 20 param limit
+    
     if ( dataFile.size() ) {
         // dataFile specified, dispatch overloaded CCM, ignore dataFrame
         ccmValues = CCM( pathIn,

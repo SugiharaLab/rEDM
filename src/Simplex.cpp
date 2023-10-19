@@ -19,15 +19,16 @@ r::List Simplex_rcpp( std::string       pathIn,
                       std::string       columns,
                       std::string       target,
                       bool              embedded,
-                      bool              const_predict,
+                      //bool            const_predict,   // Rcpp 20 arg limit
                       bool              verbose,
                       std::vector<bool> validLib,
                       int               generateSteps,
-                      //bool            generateLibrary, // Rcpp has 20 arg limit
+                      //bool            generateLibrary, // Rcpp 20 arg limit
                       bool              parameterList ) {
 
     SimplexValues S;
 
+    bool const_predict   = false; // Rcpp has 20 arg limit
     bool generateLibrary = false; // Rcpp has 20 arg limit
     
     if ( dataFile.size() ) {

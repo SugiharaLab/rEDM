@@ -6,8 +6,8 @@
 r::List SMap_rcpp( std::string       pathIn,
                    std::string       dataFile,
                    r::DataFrame      dataFrame,
-                   //std::string       pathOut,     // Rcpp has 20 arg limit
-                   //std::string       predictFile, // Rcpp has 20 arg limit
+                   //std::string     pathOut,       // Rcpp 20 arg limit
+                   //std::string     predictFile,   // Rcpp 20 arg limit
                    std::string       lib,
                    std::string       pred,
                    int               E,
@@ -18,26 +18,29 @@ r::List SMap_rcpp( std::string       pathIn,
                    int               exlusionRadius,
                    std::string       columns,
                    std::string       target,
-                   std::string       smapFile,
-                   // std::string    jacobians, // Rcpp has 20 arg limit
+                   //std::string     smapCoefFile,  // Rcpp 20 arg limit
+                   //std::string     smapSVFile,    // Rcpp 20 arg limit
                    bool              embedded,
-                   bool              const_predict,
+                   //bool            const_predict, // Rcpp 20 arg limit
                    bool              verbose,
                    std::vector<bool> validLib,
+                   bool              ignoreNan,
                    int               generateSteps,
-                   //bool            generateLibrary, // Rcpp has 20 arg limit
+                   //bool            generateLibrary, // Rcpp 20 arg limit
                    bool              parameterList ) {
 
     SMapValues SM;
-    
-    std::string pathOut("./");    // Rcpp has 20 arg limit
-    std::string predictFile("");  // Rcpp has 20 arg limit
-    std::string jacobians("");    // Rcpp has 20 arg limit
-    bool generateLibrary = false; // Rcpp has 20 arg limit
+
+    std::string pathOut("./");    // Rcpp 20 arg limit
+    std::string predictFile("");  // Rcpp 20 arg limit
+    std::string smapCoefFile(""); // Rcpp 20 arg limit
+    std::string smapSVFile("");   // Rcpp 20 arg limit
+    bool generateLibrary = false; // Rcpp 20 arg limit
+    bool const_predict   = false; // Rcpp 20 arg limit
 
     if ( dataFile.size() ) {
         // dataFile specified, dispatch overloaded SMap, ignore dataFrame
-        
+
         SM = SMap( pathIn,
                    dataFile,
                    pathOut,
@@ -52,12 +55,13 @@ r::List SMap_rcpp( std::string       pathIn,
                    exlusionRadius,
                    columns, 
                    target,
-                   smapFile,
-                   jacobians,
+                   smapCoefFile,
+                   smapSVFile,
                    embedded,
                    const_predict,
                    verbose,
                    validLib,
+                   ignoreNan,
                    generateSteps,
                    generateLibrary,
                    parameterList );
@@ -78,12 +82,13 @@ r::List SMap_rcpp( std::string       pathIn,
                    exlusionRadius,
                    columns, 
                    target,
-                   smapFile,
-                   jacobians,
+                   smapCoefFile,
+                   smapSVFile,
                    embedded,
                    const_predict,
                    verbose,
                    validLib,
+                   ignoreNan,
                    generateSteps,
                    generateLibrary,
                    parameterList );
@@ -92,10 +97,12 @@ r::List SMap_rcpp( std::string       pathIn,
         Rcpp::warning( "SMap_rcpp(): Invalid input.\n" );
     }
 
-    r::DataFrame df_pred = DataFrameToDF( SM.predictions  );
-    r::DataFrame df_coef = DataFrameToDF( SM.coefficients );
+    r::DataFrame df_pred = DataFrameToDF( SM.predictions    );
+    r::DataFrame df_coef = DataFrameToDF( SM.coefficients   );
+    r::DataFrame df_SV   = DataFrameToDF( SM.singularValues );
     r::List output = r::List::create( r::Named("predictions")  = df_pred,
-                                      r::Named("coefficients") = df_coef );
+                                      r::Named("coefficients") = df_coef,
+                                      r::Named("singularValues") = df_SV );
 
     if ( parameterList ) {
         r::List paramList = ParamMaptoList( SM.parameterMap );

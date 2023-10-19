@@ -50,7 +50,7 @@ Examples = function() {
   # Tent map : specify multivariable columns embedded = TRUE
   cmd = paste0('Simplex( dataFrame = block_3sp,',
                ' lib = "1 99", pred = "100 195", ',
-               ' E = 3, embedded = TRUE, showPlot = TRUE, const_pred = TRUE,',
+               ' E = 3, embedded = TRUE, showPlot = TRUE,',
                ' columns = "x_t y_t z_t", target = "x_t") ')
   df = eval( parse( text = cmd ) )
 
@@ -58,7 +58,7 @@ Examples = function() {
   # Tent map : Embed column x_t to E = 3, embedded  =  False
   cmd = paste0('Simplex( dataFrame = block_3sp,',
                ' lib = "1 99", pred = "105 190", ',
-               ' E = 3, showPlot = TRUE, const_pred = TRUE,',
+               ' E = 3, showPlot = TRUE,',
                ' columns = "x_t", target = "x_t") ')
   df = eval( parse( text = cmd ) )
 

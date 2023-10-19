@@ -5,7 +5,8 @@
 EmbedDimension(pathIn = "./", dataFile = "", dataFrame = NULL, pathOut = "", 
   predictFile = "", lib = "", pred = "", maxE = 10, Tp = 1, tau = -1,
   exclusionRadius = 0, columns = "", target = "", embedded = FALSE,
-  verbose = FALSE, validLib = vector(), numThreads = 4, showPlot = TRUE)  
+  verbose = FALSE, validLib = vector(), numThreads = 4, showPlot = TRUE,
+  noTime = FALSE)  
 }
 \arguments{
 \item{pathIn}{path to \code{dataFile}.}
@@ -52,6 +53,8 @@ input data used to create the library.}
 \item{numThreads}{number of parallel threads for computation.}
 
 \item{showPlot}{logical to plot results.}
+
+\item{noTime}{logical to allow input data with no time column.}
 }
 
 \value{

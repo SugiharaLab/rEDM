@@ -39,10 +39,11 @@ r::List Simplex_rcpp( std::string       pathIn,
                       std::string       columns,
                       std::string       target,
                       bool              embedded,
-                      bool              const_predict,
+                      // bool           const_predict, // Rcpp 20 arg limit
                       bool              verbose,
                       std::vector<bool> validLib,
                       int               generateSteps,
+                      // bool           generateLibrary, // Rcpp 20 arg limit
                       bool              parameterList );
 
 r::List SMap_rcpp( std::string       pathIn,
@@ -60,13 +61,16 @@ r::List SMap_rcpp( std::string       pathIn,
                    int               exclusionRadius,
                    std::string       columns,
                    std::string       target,
-                   std::string       smapFile,
-                   //std::string     jacobians, // Rcpp 20 arg limit
+                   //std::string     smapCoefFile,  // Rcpp 20 arg limit
+                   //std::string     smapSVFile,    // Rcpp 20 arg limit
+                   //SVDValues       (*solver)      // Not supported by glmnet
                    bool              embedded,
-                   bool              const_predict,
+                   //bool            const_predict, // Rcpp 20 arg limit
                    bool              verbose,
                    std::vector<bool> validLib,
+                   bool              ignoreNan,
                    int               generateSteps,
+                   //bool            generateLibrary, // Rcpp 20 arg limit
                    bool              parameterList );
 
 r::List CCM_rcpp( std::string  pathIn,
@@ -84,7 +88,7 @@ r::List CCM_rcpp( std::string  pathIn,
                   std::string  libSizes,
                   int          sample,
                   bool         random,
-                  bool         replacement,
+                  // bool      replacement,  // Rcpp 20 arg limit
                   unsigned     seed,
                   bool         embedded,
                   bool         includeData,
