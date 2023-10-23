@@ -14,4 +14,4 @@ $(SHLIB): cppEDM/src/libEDM.a
 
 cppEDM/src/libEDM.a:
 	@(cd cppEDM/src && $(MAKE) -f makefile.mingw \
-          CC="$(CC)" CFLAGS="-DCCM_THREADED -DMULTIVIEW_VALUES_OVERLOAD -I../ $(CPICFLAGS)" AR="$(AR)" RANLIB="$(RANLIB)")
+          CC="$(CC)" CFLAGS="-DCCM_THREADED -DUSING_R -I../ $(CPICFLAGS)" AR="$(AR)" RANLIB="$(RANLIB)")

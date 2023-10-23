@@ -13,10 +13,10 @@ CCM(pathIn = "./", dataFile = "", dataFrame = NULL,
 \item{pathIn}{path to \code{dataFile}.}
 
 \item{dataFile}{.csv format data file name. The first column must be a time
-index or time values. The first row must be column names.}
+index or time values unless noTime is TRUE. The first row must be column names.}
 
 \item{dataFrame}{input data.frame. The first column must be a time
-index or time values. The columns must be named.}
+index or time values unless noTime is TRUE. The columns must be named.}
 
 \item{E}{embedding dimension.}
 
@@ -37,7 +37,8 @@ input data used to create the library.}
 
 \item{libSizes}{string of 3 whitespace separated integer values
   specifying the intial library size, the final library size,
-  and the library size increment.}
+  and the library size increment. Can also be a list of strictly
+  increasing library sizes.}
 
 \item{sample}{integer specifying the number of random samples to draw at
 each library size evaluation.}

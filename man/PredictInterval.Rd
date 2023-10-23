@@ -12,17 +12,19 @@ PredictInterval(pathIn = "./", dataFile = "", dataFrame = NULL, pathOut = "./",
 \item{pathIn}{path to \code{dataFile}.}
 
 \item{dataFile}{.csv format data file name. The first column must be a time
-index or time values. The first row must be column names.}
+index or time values unless noTime is TRUE. The first row must be column names.}
 
 \item{dataFrame}{input data.frame. The first column must be a time
-index or time values. The columns must be named.}
+index or time values unless noTime is TRUE. The columns must be named.}
 
 \item{pathOut}{path for \code{predictFile} containing output predictions.}
 
 \item{predictFile}{output file name.}
 
-\item{lib}{string with start and stop indices of input data rows used to
-create the library of observations. A single contiguous range is supported.}
+\item{lib}{string or vector with start and stop indices of input data
+  rows used to create the library from observations. Mulitple row index
+  pairs can be specified with each pair defining the first and last
+  rows of time series observation segments used to create the library.}
 
 \item{pred}{string with start and stop indices of input data rows used for
 predictions. A single contiguous range is supported.}

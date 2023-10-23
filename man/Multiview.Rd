@@ -12,10 +12,10 @@ Multiview(pathIn = "./", dataFile = "", dataFrame = NULL,
 \item{pathIn}{path to \code{dataFile}.}
 
 \item{dataFile}{.csv format data file name. The first column must be a time
-index or time values. The first row must be column names.}
+index or time values. The first row must be column names unless noTime is TRUE.}
 
 \item{dataFrame}{input data.frame. The first column must be a time
-index or time values. The columns must be named.}
+index or time values unless noTime is TRUE. The columns must be named.}
 
 \item{lib}{a 2-column matrix, data.frame, 2-element vector or string of 
   row indice pairs, where each pair specifies the first and last *rows* of

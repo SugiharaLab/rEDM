@@ -1,15 +1,23 @@
 #### rEDM NEWS
 
-2023-07-03 version 1.14.2 <JosephPark@IEEE.org>
+2023-10-21 version 1.15.0 <JosephPark@IEEE.org>
 
 ---
 
 ##### NOTES:
-- It is recommended to use functions: `Simplex`, `SMap`, `CCM`, `Embed`, `Multiview`, `EmbedDimension`, `PredictInterval`, `PredictNonlinear`, `ComputeError` instead of the legacy version 0.7 signatures. See Version 1.3 notes.
+- It is required as of version 1.15 to use functions: `Simplex`, `SMap`, `CCM`, `Embed`, `Multiview`, `EmbedDimension`, `PredictInterval`, `PredictNonlinear`, `ComputeError` instead of the legacy version 0.7 signatures. See Version 1.3 notes.
 - Rcpp imposes a 20 parameter limit on functions. The rEDM wrapper of [cppEDM](https://github.com/SugiharaLab/cppEDM#empirical-dynamic-modeling-edm) therefore does not invoke the full cppEDM API. Users requiring the full API are referred to the [pyEDM](https://pypi.org/project/pyEDM/) wrapper.
 - `SMap` linear system solver regularization: The R [glmnet](https://CRAN.R-project.org/package=glmnet) package does not seperate the model from the data. This prevents integration in rEDM. Users requiring `SMap` regularization are referred to the [pyEDM](https://pypi.org/project/pyEDM/) wrapper.
 
 ---
+
+##### Version 1.15
+- `SMap()` `ignoreNan` parameter added. If `ignoreNan` is `TRUE` (default) the library is redefined to ignore embedding vectors with nan. If `ignoreNan` is `FALSE` no change is made, the user can manually specify library segments in `lib`.
+- `SMap()` return list includes data.frame of SVD singular values.
+- `noTime` parameter added, default `FALSE`. If `noTime` is `TRUE` the first column of the data is not required to be a time vector. A row index vector will be inserted and passed to cppEDM. 
+- `const_pred` parameter removed due to Rcpp 20 parameter limit.
+- `CCM()` `replacement` parameter removed.
+- Legacy overload functions removed.
 
 ##### Version 1.14
 - cppEDM core added `generateLibrary` parameter to `Simplex()` and `SMap()`.  If `TRUE` the state-space library has newly generated points added. Not available due to Rcpp 20 parameter limit. 
