@@ -135,6 +135,7 @@ r::DataFrame PredictNonlinear_rcpp( std::string  pathIn,
                                     bool         embedded,
                                     bool         verbose,
                                     std::vector<bool> validLib,
+                                    bool         ignoreNan,
                                     unsigned     numThreads );
 
 r::DataFrame PredictInterval_rcpp( std::string  pathIn,

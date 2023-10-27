@@ -190,6 +190,7 @@ auto PredictNonlinearArgs = r::List::create(
     r::_["embedded"]        = false,
     r::_["verbose"]         = false,
     r::_["validLib"]        = std::vector<bool>(),
+    r::_["ignoreNan"]       = true,
     r::_["numThreads"]      = 4 );
 
 //-------------------------------------------------------------------------

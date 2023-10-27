@@ -102,7 +102,7 @@ Parameters::Parameters(
     validated        ( false ),
 
     // Instantiate Version
-    version( 1, 15, 0, "2023-10-21" )
+    version( 1, 15, 1, "2023-10-27" )
 {
     // Constructor code
     if ( method != Method::None ) {
@@ -184,14 +184,15 @@ void Parameters::Validate() {
         if ( randomLib ) {
             if ( subSamples < 1 ) {
                 std::string errMsg( "Parameters::Validate(): "
-                                    "CCM samples must be > 0.\n" );
+                                    "CCM sample must be > 0.\n" );
                 throw std::runtime_error( errMsg );
             }
         }
 
         // CCM librarySizes        
         if ( not libSizes_str.size() )  {
-            std::string errMsg( "Parameters::Validate(): CCM libSize empty.\n" );
+            std::string errMsg( "Parameters::Validate(): "
+                                "CCM libSizes empty.\n" );
             throw std::runtime_error( errMsg );
         }
 

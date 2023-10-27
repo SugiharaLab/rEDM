@@ -6,7 +6,8 @@ PredictNonlinear(pathIn = "./", dataFile = "", dataFrame = NULL,
   pathOut = "./",  predictFile = "", lib = "", pred = "", theta = "",
   E = 1, Tp = 1, knn = 0, tau = -1, exclusionRadius = 0,
   columns = "", target = "", embedded = FALSE, verbose = FALSE,
-  validLib = vector(), numThreads = 4, showPlot = TRUE, noTime = FALSE )  
+  validLib = vector(), ignoreNan = TRUE, numThreads = 4,
+  showPlot = TRUE, noTime = FALSE )  
 }
 \arguments{
 \item{pathIn}{path to \code{dataFile}.}
@@ -58,6 +59,8 @@ input data used to create the library.}
 \item{validLib}{logical vector the same length as the number of data
  rows.  Any data row represented in this vector as FALSE, will not be
  included in the library.}
+
+\item{ignoreNan}{logical to internally redefine library to avoid nan.}
 
 \item{numThreads}{number of parallel threads for computation.}
 

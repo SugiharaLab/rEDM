@@ -22,6 +22,7 @@ r::DataFrame PredictNonlinear_rcpp( std::string  pathIn,
                                     bool         embedded,
                                     bool         verbose,
                                     std::vector<bool> validLib,
+                                    bool         ignoreNan,
                                     unsigned     numThreads ) {
 
     DataFrame< double > PredictDF;
@@ -46,6 +47,7 @@ r::DataFrame PredictNonlinear_rcpp( std::string  pathIn,
                                       embedded,
                                       verbose,
                                       validLib,
+                                      ignoreNan,
                                       numThreads );
     }
     else if ( dataFrame.size() ) {
@@ -67,6 +69,7 @@ r::DataFrame PredictNonlinear_rcpp( std::string  pathIn,
                                       embedded,
                                       verbose,
                                       validLib,
+                                      ignoreNan,
                                       numThreads );
     }
     else {

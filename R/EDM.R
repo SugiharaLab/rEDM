@@ -433,7 +433,8 @@ CCM = function( pathIn          = "./",
     plot( libSize, ccm.df[ , V1 ],
           ylim = range( ccm.df[ , V1 ], ccm.df[ , V2 ] ),
           main = title, col = "blue", type = "l", lwd = 3,
-          xlab = 'Library Size', ylab = 'Prediction Skill (\U03C1)' )
+          xlab = 'Library Size',
+          ylab = expression( "Prediction Skill (" * rho * ")" ) )
     lines( libSize, ccm.df[ , V2 ], col = "red", lwd = 3 )
     abline( h = 0 )
     legend( 'topright', c( V1, V2 ), 
@@ -524,7 +525,8 @@ EmbedDimension = function ( pathIn          = "./",
   if ( showPlot ) {
     title = paste(dataFile , "\nTp=" , Tp )
     plot( df $ E, df $ rho, main = title, xlab = "Embedding Dimension",
-          ylab = "Prediction Skill (\U03C1)", type = "l", lwd = 3 )
+          ylab = expression( "Prediction Skill (" * rho * ")" ),
+          type = "l", lwd = 3 )
   }
 
   return ( df )
@@ -604,7 +606,8 @@ PredictInterval = function( pathIn          = "./",
   if ( showPlot ) {
     title = paste( dataFile , "\nE=" , E )
     plot( df $ Tp, df $ rho, main = title, xlab = "Forecast Interval",
-          ylab = "Prediction Skill (\U03C1)", type = "l", lwd = 3 )
+          ylab = expression( "Prediction Skill (" * rho * ")" ),
+          type = "l", lwd = 3 )
   }
 
   return( df )
@@ -631,6 +634,7 @@ PredictNonlinear = function( pathIn          = "./",
                              embedded        = FALSE,
                              verbose         = FALSE,
                              validLib        = vector(),
+                             ignoreNan       = TRUE,
                              numThreads      = 4,
                              showPlot        = TRUE,
                              noTime          = FALSE ) {
@@ -686,12 +690,14 @@ PredictNonlinear = function( pathIn          = "./",
                                 embedded,
                                 verbose,
                                 validLib,
+                                ignoreNan,
                                 numThreads )
 
   if ( showPlot ) {
     title = paste(dataFile , "\nE=", E )
     plot( df $ Theta, df $ rho, main=title, 
-          xlab = "S-map Localisation", ylab = "Prediction Skill (\U03C1)",
+          xlab = "S-map Localisation",
+          ylab = expression( "Prediction Skill (" * rho * ")" ),
           type = "l", lwd = 3 )
   }
 
