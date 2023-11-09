@@ -6,7 +6,7 @@
 
 ##### NOTES:
 - It is required as of version 1.15 to use functions: `Simplex`, `SMap`, `CCM`, `Embed`, `Multiview`, `EmbedDimension`, `PredictInterval`, `PredictNonlinear`, `ComputeError` instead of the legacy version 0.7 signatures. See Version 1.3 notes.
-- [Rcpp](https://cran.r-project.org/web/packages/Rcpp/index.html) imposes a 20 parameter limit on functions. The rEDM wrapper of [cppEDM](https://github.com/SugiharaLab/cppEDM#empirical-dynamic-modeling-edm) therefore does not invoke the full cppEDM API. Users requiring the full API are referred to the [pyEDM](https://pypi.org/project/pyEDM/) wrapper.
+- [Rcpp](https://CRAN.R-project.org/package=Rcpp) imposes a 20 parameter limit on functions. The rEDM wrapper of [cppEDM](https://github.com/SugiharaLab/cppEDM#empirical-dynamic-modeling-edm) therefore does not invoke the full cppEDM API. Users requiring the full API are referred to the [pyEDM](https://pypi.org/project/pyEDM/) wrapper.
 - `SMap` linear system solver regularization: The R [glmnet](https://CRAN.R-project.org/package=glmnet) package does not seperate the model from the data. This prevents integration in rEDM. Users requiring `SMap` regularization are referred to the [pyEDM](https://pypi.org/project/pyEDM/) wrapper.
 
 ---
