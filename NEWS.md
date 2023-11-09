@@ -1,12 +1,12 @@
 #### rEDM NEWS
 
-2023-10-21 version 1.15.0 <JosephPark@IEEE.org>
+2023-10-27 version 1.15.1 <JosephPark@IEEE.org>
 
 ---
 
 ##### NOTES:
 - It is required as of version 1.15 to use functions: `Simplex`, `SMap`, `CCM`, `Embed`, `Multiview`, `EmbedDimension`, `PredictInterval`, `PredictNonlinear`, `ComputeError` instead of the legacy version 0.7 signatures. See Version 1.3 notes.
-- Rcpp imposes a 20 parameter limit on functions. The rEDM wrapper of [cppEDM](https://github.com/SugiharaLab/cppEDM#empirical-dynamic-modeling-edm) therefore does not invoke the full cppEDM API. Users requiring the full API are referred to the [pyEDM](https://pypi.org/project/pyEDM/) wrapper.
+- [Rcpp](https://cran.r-project.org/web/packages/Rcpp/index.html) imposes a 20 parameter limit on functions. The rEDM wrapper of [cppEDM](https://github.com/SugiharaLab/cppEDM#empirical-dynamic-modeling-edm) therefore does not invoke the full cppEDM API. Users requiring the full API are referred to the [pyEDM](https://pypi.org/project/pyEDM/) wrapper.
 - `SMap` linear system solver regularization: The R [glmnet](https://CRAN.R-project.org/package=glmnet) package does not seperate the model from the data. This prevents integration in rEDM. Users requiring `SMap` regularization are referred to the [pyEDM](https://pypi.org/project/pyEDM/) wrapper.
 
 ---
@@ -18,6 +18,7 @@
 - `const_pred` parameter removed due to Rcpp 20 parameter limit.
 - `CCM()` `replacement` parameter removed.
 - Legacy overload functions removed.
+- Version 1.15.1 `ignoreNan` added in `PredictNonlinear()`. Replace unicode in pLot labels with mathplot expression. cppEDM initialize `nanFound` in DataFrame.h for UBSAN. Sync with cppEDM 1.15.1.
 
 ##### Version 1.14
 - cppEDM core added `generateLibrary` parameter to `Simplex()` and `SMap()`.  If `TRUE` the state-space library has newly generated points added. Not available due to Rcpp 20 parameter limit. 
