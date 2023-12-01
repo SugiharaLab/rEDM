@@ -42,10 +42,11 @@ time column rows.}
 \item{exclusionRadius}{excludes vectors from the search space of nearest 
 neighbors if their relative time index is within exclusionRadius.}
 
-\item{columns}{string of whitespace separated column name(s) in the
-input data used to create the library.}
+\item{columns}{string of whitespace separated column name(s), or vector
+of column names used to create the library. If individual column names
+contain whitespace place names in a vector, or, append ',' to the name.}
 
-\item{target}{column name in the input data used for prediction.}
+\item{target}{column name used for prediction.}
 
 \item{embedded}{logical specifying if the input data are embedded.}
 

@@ -19,6 +19,8 @@
 - `CCM()` `replacement` parameter removed.
 - Legacy overload functions removed.
 - Version 1.15.1 `ignoreNan` added in `PredictNonlinear()`. Replace unicode in pLot labels with mathplot expression. cppEDM initialize `nanFound` in DataFrame.h for UBSAN. Sync with cppEDM 1.15.1.
+- Version 1.15.2 Allow `columns` names with spaces. If the `columns` argument is a string use the "," delimiter to separate names. Remove `SMap` warning for disjoint library.
+- Version 1.15.3 Allow `columns` and `target` names with spaces in CCM.
 
 ##### Version 1.14
 - cppEDM core added `generateLibrary` parameter to `Simplex()` and `SMap()`.  If `TRUE` the state-space library has newly generated points added. Not available due to Rcpp 20 parameter limit. 

@@ -41,8 +41,9 @@ Embed = function( path      = "./",
   }
 
   # If columns are vectors/list, convert to string for cppEDM
-  if ( is.vector( columns ) || is.list( columns ) ) {
-    columns = paste( columns, collapse = " " )
+  # NOTE: columns joined on ',' to enable names with whitespace in cppEDM
+  if ( ! is.character( columns ) || length( columns ) > 1 ) {
+    columns = FlattenToString( columns, "," )
   }
 
   # Mapped to Embed_rcpp() (Embed.cpp) in RcppEDMCommon.cpp
@@ -102,6 +103,7 @@ Simplex = function( pathIn          = "./",
   }
 
   # If lib, pred, columns are vectors/list, convert to string for cppEDM
+  # NOTE: columns joined on ',' to enable names with whitespace in cppEDM
   if ( ! is.character( lib ) || length( lib ) > 1 ) {
     lib = FlattenToString( lib )
   }
@@ -109,7 +111,10 @@ Simplex = function( pathIn          = "./",
     pred = FlattenToString( pred )
   }
   if ( ! is.character( columns ) || length( columns ) > 1 ) {
-    columns = FlattenToString( columns )
+    columns = FlattenToString( columns, "," )
+  }
+  if ( length( strsplit( target, ' ' )[[1]] ) > 1 ) {
+    target = paste0( target, ',' ) # space in target: add , for cppEDM
   }
 
   # NOTE: Rcpp has a 20 argument limit!
@@ -196,6 +201,7 @@ SMap = function( pathIn          = "./",
   }
   
   # If lib, pred, columns are vectors/list, convert to string for cppEDM
+  # NOTE: columns joined on ',' to enable names with whitespace in cppEDM
   if ( ! is.character( lib ) || length( lib ) > 1 ) {
     lib = FlattenToString( lib )
   }
@@ -203,7 +209,10 @@ SMap = function( pathIn          = "./",
     pred = FlattenToString( pred )
   }
   if ( ! is.character( columns ) || length( columns ) > 1 ) {
-    columns = FlattenToString( columns )
+    columns = FlattenToString( columns, "," )
+  }
+  if ( length( strsplit( target, ' ' )[[1]] ) > 1 ) {
+    target = paste0( target, ',' ) # space in target: add , for cppEDM
   }
 
   # NOTE: Rcpp has a 20 argument limit!
@@ -287,6 +296,7 @@ Multiview = function( pathIn          = "./",
   }
 
   # If lib, pred, columns are vectors/list, convert to string for cppEDM
+  # NOTE: columns joined on ',' to enable names with whitespace in cppEDM
   if ( ! is.character( lib ) || length( lib ) > 1 ) {
     lib = FlattenToString( lib )
   }
@@ -294,7 +304,10 @@ Multiview = function( pathIn          = "./",
     pred = FlattenToString( pred )
   }
   if ( ! is.character( columns ) || length( columns ) > 1 ) {
-    columns = FlattenToString( columns )
+    columns = FlattenToString( columns, "," )
+  }
+  if ( length( strsplit( target, ' ' )[[1]] ) > 1 ) {
+    target = paste0( target, ',' ) # space in target: add , for cppEDM
   }
 
   # NOTE: Rcpp has a 20 argument limit!
@@ -390,11 +403,21 @@ CCM = function( pathIn          = "./",
   }
 
   # If libSizes, columns are vectors/list, convert to string for cppEDM
+  # NOTE: columns joined on ',' to enable names with whitespace in cppEDM
+  # NOTE: CCM can have multiple target
   if ( ! is.character( libSizes ) || length( libSizes ) > 1 ) {
     libSizes = FlattenToString( libSizes )
   }
   if ( ! is.character( columns ) || length( columns ) > 1 ) {
-    columns = FlattenToString( columns )
+    columns = FlattenToString( columns, "," )
+  }
+  if ( ! is.character( target ) || length( target ) > 1 ) {
+    columns = FlattenToString( target, "," )
+  }
+  else {
+    if ( length( strsplit( target, ' ' )[[1]] ) > 1 ) {
+      target = paste0( target, ',' ) # space in target: add , for cppEDM
+    }
   }
 
   # NOTE: Rcpp has a 20 argument limit!
@@ -493,6 +516,7 @@ EmbedDimension = function ( pathIn          = "./",
   }
 
   # If lib, pred, columns are vectors/list, convert to string for cppEDM
+  # NOTE: columns joined on ',' to enable names with whitespace in cppEDM
   if ( ! is.character( lib ) || length( lib ) > 1 ) {
     lib = FlattenToString( lib )
   }
@@ -500,7 +524,10 @@ EmbedDimension = function ( pathIn          = "./",
     pred = FlattenToString( pred )
   }
   if ( ! is.character( columns ) || length( columns ) > 1 ) {
-    columns = FlattenToString( columns )
+    columns = FlattenToString( columns, "," )
+  }
+  if ( length( strsplit( target, ' ' )[[1]] ) > 1 ) {
+    target = paste0( target, ',' ) # space in target: add , for cppEDM
   }
 
   # Mapped to EmbedDimension_rcpp() (EmbedDim.cpp) in RcppEDMCommon.cpp
@@ -574,6 +601,7 @@ PredictInterval = function( pathIn          = "./",
   }
 
   # If lib, pred, columns are vectors/list, convert to string for cppEDM
+  # NOTE: columns joined on ',' to enable names with whitespace in cppEDM
   if ( ! is.character( lib ) || length( lib ) > 1 ) {
     lib = FlattenToString( lib )
   }
@@ -581,7 +609,10 @@ PredictInterval = function( pathIn          = "./",
     pred = FlattenToString( pred )
   }
   if ( ! is.character( columns ) || length( columns ) > 1 ) {
-    columns = FlattenToString( columns )
+    columns = FlattenToString( columns, "," )
+  }
+  if ( length( strsplit( target, ' ' )[[1]] ) > 1 ) {
+    target = paste0( target, ',' ) # space in target: add , for cppEDM
   }
 
   # Mapped to PredictInterval_rcpp() (PredictInterval.cpp) in RcppEDMCommon.cpp
@@ -658,6 +689,7 @@ PredictNonlinear = function( pathIn          = "./",
   }
 
   # If lib, pred, theta, columns are vectors/list, convert to string for cppEDM
+  # NOTE: columns joined on ',' to enable names with whitespace in cppEDM
   if ( ! is.character( lib ) || length( lib ) > 1 ) {
     lib = FlattenToString( lib )
   }
@@ -668,7 +700,10 @@ PredictNonlinear = function( pathIn          = "./",
     theta = FlattenToString( theta )
   }
   if ( ! is.character( columns ) || length( columns ) > 1 ) {
-    columns = FlattenToString( columns )
+    columns = FlattenToString( columns, "," )
+  }
+  if ( length( strsplit( target, ' ' )[[1]] ) > 1 ) {
+    target = paste0( target, ',' ) # space in target: add , for cppEDM
   }
 
   # Mapped to PredictNonlinear_rcpp() (PredictNL.cpp) in RcppEDMCommon.cpp

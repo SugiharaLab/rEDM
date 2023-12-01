@@ -14,26 +14,29 @@ ComputeError = function( obs, pred ) {
 #------------------------------------------------------------------------
 # 
 #------------------------------------------------------------------------
-FlattenToString = function( x ) {
-  # R is wonderful... is.vector( list() ) is TRUE is.list( data.frame ) TRUE
+FlattenToString = function( x, delimiter = " " ) {
+  # R is Bizarre... does not have a consistent type system
+  #   is.vector( list() ) is TRUE; is.list( data.frame() ) is TRUE
+  #   length( 'xxx' ) is 1; length( c('xxx' ) ) is 1
+  #   nchar ( 'xxx' ) is 3; nchar ( c('xxx' ) ) is 3
   # Test for data.frame or matrix first, then list, then vector
   # or, use class string as selector
   if ( is.data.frame( x ) || is.matrix( x ) ) {
     s = ""
     for( row in 1:nrow( x ) ) {
-      s = paste( s, paste( x[row,], collapse = " " ), collapse = " " )
+      s = paste( s, paste( x[row,], collapse = delimiter ),
+                 collapse = delimiter )
     }
   }
   else if ( is.list( x ) ) {
-    s = paste( unlist( x ),  collapse = " " )
+    s = paste( unlist( x ), collapse = delimiter )
   }
   else if ( is.vector( x ) ) {
-    s = paste( x,  collapse = " " )
+    s = paste( x,  collapse = delimiter )
   }
   else {
     s = x
   }
-
   return ( s )
 }
 
@@ -41,7 +44,8 @@ FlattenToString = function( x ) {
 # Validate dataFrame, or load dataFile and create dataFrame to validate
 #------------------------------------------------------------------------
 ValidateDataFrame = function( pathIn, dataFile, dataFrame,
-                              columns, target, noTime ) {
+                              columns, target, noTime,
+                              verbose = FALSE ) {
 
   if ( nchar( dataFile ) ) {
     # Shame to read the data just for this... anti Big Data. R fails anyway.
@@ -61,10 +65,35 @@ ValidateDataFrame = function( pathIn, dataFile, dataFrame,
     print( "Error: ValidateDataFrame(): dataFrame is not valid." )
     return( FALSE )
   }
+  if ( verbose ) {
+    print( "ValidateDataFrame(): dataFrame is valid." )
+  }
 
-  columnNames = names( df )
-  columnVec   = strsplit( trimws( columns ), "\\s+" )[[1]] # split on whitespace
-  targetVec   = strsplit( trimws( target ),  "\\s+" )[[1]] # split on whitespace
+  columnNames = names( df ) # Names from data.frame itself
+
+  # Names from API input columns and target
+  # Is there ',' in API string for name with whitespace?
+  # regex for multiple whitespace : "\\s+"
+  if ( length( columns ) > 1 ) {
+    columnVec = columns # Vector of strings passed in columns, use as-is
+  }
+  else {
+    if ( TRUE %in% grepl( ",", columns ) ) { regex_delimiters = ",+"   }
+    else                                   { regex_delimiters = "\\s+" }
+    columnVec = strsplit( trimws( columns ), regex_delimiters )[[1]]
+  }
+
+  if ( length( target ) > 1 ) {
+    columnVec = columns # Vector of strings passed in target, use as-is
+  }
+  else {
+    if ( TRUE %in% grepl( ",", target ) ) {
+      targetVec = strsplit( trimws( columns ), ",+" ) # CCM can have multiple
+    }
+    else {
+      targetVec = c( target ) # No ',' in target string, take as-is
+    }
+  }
 
   for ( target in targetVec ) {
     if ( length( df[,target] ) == 0 ) {
@@ -79,7 +108,7 @@ ValidateDataFrame = function( pathIn, dataFile, dataFrame,
       return( FALSE )
     }
   }
-  
+
   for ( column in columnVec ) {
     if ( length( df[,column] ) == 0 ) {
       print( paste("Error: ValidateDataFrame(): Column", column, "is empty."))
@@ -94,6 +123,9 @@ ValidateDataFrame = function( pathIn, dataFile, dataFrame,
     }
   }
 
+  if ( verbose ) {
+    print( "ValidateDataFrame(): dataFrame validated." )
+  }
   return( TRUE )
 }
 
@@ -164,18 +196,18 @@ PlotObsPred = function( df,
   # stats: {'MAE': 0., 'RMSE': 0., 'rho': 0. }
   stats = ComputeError( df $ Observations,
                         df $ Predictions )
-  
+
   title = paste( "\nE=", E, " Tp=", Tp,
                  " rho=",  round( stats[['rho']],  2 ),    
                  " RMSE=", round( stats[['RMSE']], 2 ) )
-  
+
   plot( time, df $ Observations, main = title,
         xlab = names(df)[1], ylab = "",
         type = "l", col = "blue", lwd = 3,
         cex.axis = 1.3, cex.lab = 1.3 )
-  
+
   lines( time, df $ Predictions, col = "red", lwd = 3 )
-  
+
   legend( 'topright', c( "Predictions", "Observations" ), 
           fill = c('red', 'blue' ), bty = 'n', cex = 1.2 )
 }
@@ -204,7 +236,7 @@ PlotSmap = function( SmapList,
     print( "PlotSmap: expected at least 3 columns in predictions." )
     return( 0 )
   }
-  
+
   # Try to convert first column to Date or POSIXlt or numeric
   time = NULL
   if ( is.numeric( p[,1] ) ) {
@@ -225,18 +257,18 @@ PlotSmap = function( SmapList,
   }
 
   numCoeff = ncol( c ) - 1 
-  
+
   old.par = par( no.readonly = TRUE )
-  
+
   par( mfrow = c( numCoeff + 1, 1 ), mar = c( 3.5, 4, 0.5, 1 ),
        mgp = c( 1.5, 0.5, 0 ), cex.axis = 1.3, cex.lab = 1.3 )
-  
+
   # Observations & Predictions
   plot( time, p $ Observations,
         xlab = names(p)[1], ylab = "",
         type = "l", col = "blue", lwd = 3,
         cex.axis = 1.3, cex.lab = 1.3 )
-  
+
   lines( time, p $ Predictions, col = "red", lwd = 3 )
   legend( 'topright', c( "Predictions", "Observations" ), 
           fill = c('red', 'blue' ), bty = 'n', cex = 1.5 )
@@ -273,7 +305,7 @@ SurrogateData = function(
   method = c("random_shuffle", "ebisuzaki", "seasonal"), 
   num_surr = 100, T_period = 1, alpha = 0 )
 {
-  
+
   method = match.arg(method)
   if( method == "random_shuffle" ) {
     return( sapply( 1:num_surr, function(i) {
@@ -284,16 +316,16 @@ SurrogateData = function(
     if( any( ! is.finite(ts) ) ) {
       stop("SurrogateData(): input time series contained invalid values")
     }
-    
+
     n  = length(ts)
     n2 = floor(n/2)
-    
+
     mu    = mean(ts)
     sigma = sd(ts)
     a     = fft(ts)
     amplitudes    = abs(a)
     amplitudes[1] = 0
-    
+
     return( sapply(1:num_surr, function(i) {
       if(n %% 2 == 0) # even length
       {
@@ -318,7 +350,7 @@ SurrogateData = function(
     if( any(!is.finite(ts)) ) {
       stop("SurrogateData(): input time series contained invalid values")
     }
-    
+
     n = length(ts)
     I_season = suppressWarnings( matrix( 1:T_period, nrow = n, ncol = 1 ) )
     

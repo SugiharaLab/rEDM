@@ -23,8 +23,9 @@ index or time values. The columns must be named. One of
 \item{tau}{integer time delay embedding lag specified as number of
 time column rows.}
 
-\item{columns}{string of whitespace separated column name(s) in the
-input data to be embedded.}
+\item{columns}{string of whitespace separated column name(s), or vector
+of column names used to create the library. If individual column names
+contain whitespace place names in a vector, or, append ',' to the name.}
 
 \item{verbose}{logical to produce additional console reporting.}
 }
