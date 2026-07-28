@@ -4,14 +4,12 @@
 \alias{rEDM-package}
 \title{Empirical dynamic modeling}
 \description{
-  \pkg{rEDM} provides tools for data-driven time series analyses. It is
-  based on reconstructing multivariate state space
-  representations from uni or multivariate time series, then projecting
+  \pkg{rEDM} provides tools for Empirical Dynamic Modeling time series
+  analyses. It is based on reconstructing multivariate state space
+  representations from uni- or multivariate time series, then projecting
   state changes using various metrics applied to nearest neighbors.
   
-  \pkg{rEDM} is a \pkg{Rcpp} interface to the
-  \href{https://github.com/SugiharaLab/cppEDM}{cppEDM} library of
-  Empirical Dynamic Modeling tools. Functionality includes:
+  Functionality includes:
   \itemize{
     \item Simplex projection (Sugihara and May 1990)
     \item Sequential Locally Weighted Global Linear Maps (S-map) (Sugihara 1994)
@@ -61,8 +59,7 @@
 \author{
 \strong{Maintainer}: Joseph Park
 
-\strong{Authors}: Joseph Park, Cameron Smith, Ethan Deyle, Erik
-Saberski, George Sugihara
+\strong{Authors}: Joseph Park, Ethan Deyle, George Sugihara
 
 % \strong{Contributors}: 
 }

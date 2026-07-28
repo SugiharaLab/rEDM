@@ -1,72 +1,54 @@
 \name{SMap}
 \alias{SMap}
-\title{SMap forecasting}
+\title{Sequential locally weighted global linear map (S-map)}
+\description{
+  \code{\link{SMap}} performs time series forecasting based on localised
+  (or global) nearest neighbor projection in the time series phase space as
+  described in \cite{Sugihara 1994}. 
+}
 \usage{
-SMap(pathIn = "./", dataFile = "", dataFrame = NULL, 
-  lib = "", pred = "", E = 0, Tp = 1, knn = 0, tau = -1, 
-  theta = 0, exclusionRadius = 0, columns = "", target = "", 
-  embedded = FALSE, verbose = FALSE,
-  validLib = vector(), ignoreNan = TRUE,
-  generateSteps = 0, parameterList = FALSE,
-  showPlot = FALSE, noTime = FALSE)  
+SMap(dataFrame = NULL, columns, target, lib, pred, E = 0, Tp = 1, knn = 0,
+     tau = -1, theta = 0, exclusionRadius = 0, embedded = FALSE,
+     validLib = logical(0), noTime = FALSE, ignoreNan = TRUE,
+     backend = "RANN", pathIn = "./", dataFile = "", pathOut = "./",
+     predictFile = "", parameterList = FALSE, verbose = FALSE, showPlot = FALSE)
 }
 \arguments{
-\item{pathIn}{path to \code{dataFile}.}
-
-\item{dataFile}{.csv format data file name. The first column must be a time
-index or time values unless noTime is TRUE. The first row must be column names.}
-
-\item{dataFrame}{input data.frame. The first column must be a time
-index or time values unless noTime is TRUE. The columns must be named.}
-
+\item{dataFrame}{A data.frame of input data. The first column must be a time
+index or time values unless \code{noTime = TRUE}. The columns must be named.}
+\item{columns}{Column name(s) to build the embedding: character vector
+or space-separated string, or vector
+of column names used to create the library. If individual column names
+contain whitespace place names in a vector, or, append ',' to the name.}
+\item{target}{Target column name to predict.}
 \item{lib}{string or vector with start and stop indices of input data
 rows used to create the library from observations. Mulitple row index
 pairs can be specified with each pair defining the first and last
 rows of time series observation segments used to create the library.}
-
 \item{pred}{string with start and stop indices of input data rows used for
 predictions. A single contiguous range is supported.}
-
-\item{E}{embedding dimension.}
-
-\item{Tp}{prediction horizon (number of time column rows).}
-
-\item{knn}{number of nearest neighbors. If knn=0, knn is set to the
-library size.} 
-
-\item{tau}{lag of time delay embedding specified as number of
-time column rows.}
-
-\item{theta}{neighbor localisation exponent.}
-
-\item{exclusionRadius}{excludes vectors from the search space of nearest 
+\item{E}{Embedding dimension.}
+\item{Tp}{Forecast interval (prediction horizon).}
+\item{knn}{Number of nearest neighbours. \code{0} selects the method default.}
+\item{tau}{Embedding delay (negative selects past lags).}
+\item{theta}{S-map localisation parameter (\code{0} = global linear map).}
+\item{exclusionRadius}{Temporal (Theiler) exclusion radius around each
+prediction point. Excludes vectors from the search space of nearest 
 neighbors if their relative time index is within exclusionRadius.}
-
-\item{columns}{string of whitespace separated column name(s), or vector
-of column names used to create the library. If individual column names
-contain whitespace place names in a vector, or, append ',' to the name.}
-
-\item{target}{column name used for prediction.}
-
-\item{embedded}{logical specifying if the input data are embedded.}
-
-\item{verbose}{logical to produce additional console reporting.}
-
-\item{validLib}{logical vector the same length as the number of data
- rows. Any data row represented in this vector as FALSE, will not be
- included in the library.}
-
-\item{ignoreNan}{logical to internally redefine library to avoid nan.}
-
-\item{generateSteps}{number of predictive feedback generative steps.}
-
-\item{parameterList}{logical to add list of invoked parameters.}
-
-\item{showPlot}{logical to plot results.}
-
-\item{noTime}{logical to allow input data with no time column.}
+\item{embedded}{If \code{TRUE}, \code{columns} already form the embedding.}
+\item{validLib}{Logical vector marking admissible library rows (or length 0 for all).}
+\item{noTime}{If \code{TRUE}, synthesise a 1..N time index instead of using column 1.}
+\item{ignoreNan}{Remove rows with NaN in the embedding from the library and prediction sets.}
+\item{pathIn}{File path for input \code{dataFile}.}
+\item{dataFile}{Input dataFile, .csv format. The first column must be a time
+index or time values unless noTime is TRUE. The first row must be column names.}
+\item{pathOut}{Output file path for \code{predictFile}}
+\item{predictFile}{Output file name, .csv format.}
+\item{backend}{Nearest-neighbour backend: \code{"RANN"} (default) or \code{"brute"}.}
+\item{parameterList}{Append named list of parameters/values to return.}
+\item{verbose}{Emit diagnostic messages.}
+\item{showPlot}{If \code{TRUE}, draw a base-graphics plot of the result.}
 }
-
 \value{
   A named list with three data.frames
   \code{[[predictions, coefficients, singularValues]]}.
@@ -84,12 +66,6 @@ contain whitespace place names in a vector, or, append ',' to the name.}
 }
 
 \references{Sugihara G. 1994. Nonlinear forecasting for the classification of natural time series. Philosophical Transactions: Physical Sciences and Engineering, 348 (1688):477-495.}
-
-\description{
-  \code{\link{SMap}} performs time series forecasting based on localised
-  (or global) nearest neighbor projection in the time series phase space as
-  described in \cite{Sugihara 1994}. 
-}
 
 \details{
   If \code{embedded} is \code{FALSE}, the data \code{column(s)} are embedded
@@ -134,8 +110,4 @@ pass this embedding to \code{\link{SMap}} with appropriately specified
 \code{columns}, \code{E}, and \code{embedded = TRUE}.
 }
 
-\examples{
-data(circle)
-L = SMap( dataFrame = circle, lib="1 100", pred="110 190", theta = 4,
-E = 2, embedded = TRUE, columns = "x y", target = "x" )
-}
+\keyword{nonlinear,ts}

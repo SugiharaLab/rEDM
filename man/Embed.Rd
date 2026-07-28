@@ -1,44 +1,21 @@
 \name{Embed}
 \alias{Embed}
-\title{Embed data with time lags}
-
+\title{Time-delay embedding}
+\description{Takens time-delay embedding of one or more columns.}
 \usage{
-Embed(path = "./", dataFile = "", dataFrame = NULL, E = 0, tau = -1, 
-columns = "", verbose = FALSE)  
+Embed(dataFrame, E, tau, columns)
 }
-
 \arguments{
-\item{path}{path to \code{dataFile}.}
-
-\item{dataFile}{.csv format data file name. The first column must be a time
-index or time values. The first row must be column names. One of
-\code{dataFile} or \code{dataFrame} are required.}
-
-\item{dataFrame}{input data.frame. The first column must be a time
-index or time values. The columns must be named. One of
-\code{dataFile} or \code{dataFrame} are required.}
-
-\item{E}{embedding dimension.}
-
-\item{tau}{integer time delay embedding lag specified as number of
-time column rows.}
-
-\item{columns}{string of whitespace separated column name(s), or vector
+\item{dataFrame}{A data.frame of input data. The first column is time unless \code{noTime = TRUE}.}
+\item{E}{Embedding dimension.}
+\item{tau}{Embedding delay specified as number of
+time column rows. (negative selects past lags).}
+\item{columns}{Column name(s) to build the embedding: string of
+whitespace separated column name(s), or vector
 of column names used to create the library. If individual column names
 contain whitespace place names in a vector, or, append ',' to the name.}
-
-\item{verbose}{logical to produce additional console reporting.}
 }
-
-\description{
-\code{\link{Embed}} performs Takens time-delay embedding on \code{columns}.
-}
-
-\value{
-A data.frame with lagged columns. E columns for each variable specified
-in \code{columns}.
-}
-
+\value{A numeric matrix of the embedding (NA in the first/last |tau|*(E-1) rows).}
 \details{
   Each \code{columns} item will have E-1 time-lagged vectors created.
   The column name is appended with \code{(t-n)}.  For example, data
@@ -49,8 +26,7 @@ in \code{columns}.
   data.frame is truncated by tau * (E-1) rows to remove state vectors
   with partial data (NaN elements).
 }
-
 \examples{
-data(circle)
-embed <- Embed( dataFrame = circle, E = 2, tau = -1, columns = "x y" ) 
+Embed(data.frame(x = 1:10), E = 3, tau = -1, columns = "x")
 }
+\keyword{nonlinear,ts}

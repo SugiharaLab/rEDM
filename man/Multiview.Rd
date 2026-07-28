@@ -1,68 +1,44 @@
 \name{Multiview}
 \alias{Multiview}
-\title{Forecasting using multiview embedding}
+\title{Multiview embedding forecast}
+\description{Multiview embedding forecast (Ye & Sugihara 2016): rank
+D-column views and average the best to find optimal combinations of
+variables that best represent the dynamics.}
 \usage{
-Multiview(pathIn = "./", dataFile = "", dataFrame = NULL,
-  lib = "", pred = "", D = 0, E = 1, Tp = 1, knn = 0, 
-  tau = -1, columns = "", target = "", multiview = 0, exclusionRadius = 0,
-  trainLib = TRUE, excludeTarget = FALSE, parameterList = FALSE,
-  verbose = FALSE, numThreads = 4, showPlot = FALSE, noTime = FALSE)
+Multiview(dataFrame = NULL, columns, target, lib = numeric(0), pred = numeric(0),
+          D = 0, E = 1, Tp = 1, knn = 0, tau = -1, multiview = 0,
+          exclusionRadius = 0, trainLib = TRUE, excludeTarget = FALSE,
+          ignoreNan = TRUE, numProcess = 4, backend = "RANN",
+          pathIn = "./", dataFile = "", pathOut = "./", predictFile = "",
+          parameterList = FALSE, showPlot = FALSE)
 }
 \arguments{
-\item{pathIn}{path to \code{dataFile}.}
-
-\item{dataFile}{.csv format data file name. The first column must be a time
-index or time values. The first row must be column names unless noTime is TRUE.}
-
-\item{dataFrame}{input data.frame. The first column must be a time
-index or time values unless noTime is TRUE. The columns must be named.}
-
-\item{lib}{a 2-column matrix, data.frame, 2-element vector or string of 
-  row indice pairs, where each pair specifies the first and last *rows* of
-  the time series to create the library.}
-
-\item{pred}{(same format as lib), but specifying the sections of the time 
-series to forecast.}
-
-\item{D}{multivariate dimension.}
-
-\item{E}{embedding dimension.}
-
-\item{Tp}{prediction horizon (number of time column rows).}
-
-\item{knn}{number of nearest neighbors. If knn=0, knn is set to E+1.}
-
-\item{tau}{lag of time delay embedding specified as number of
-time column rows.}
-
-\item{columns}{string of whitespace separated column name(s), or vector
-of column names used to create the library. If individual column names
+\item{dataFrame}{A data.frame of input data. The first column is time unless \code{noTime = TRUE}.}
+\item{columns}{Column name(s) to build the embedding: character vector
+or space-separated string. If individual column names
 contain whitespace place names in a vector, or, append ',' to the name.}
-
-\item{target}{column name used for prediction.}
-
-\item{multiview}{number of multiview ensembles to average for the final
-prediction estimate.}
-
-\item{exclusionRadius}{number of adjacent observation vector rows to exclude as
-nearest neighbors in prediction.}
-
-\item{trainLib}{logical to use in-sample (lib=pred) projections for the
-  ranking of column combinations.}
-
-\item{excludeTarget}{logical to exclude embedded target column from combinations.}
-
-\item{parameterList}{logical to add list of invoked parameters.}
-
-\item{verbose}{logical to produce additional console reporting.}
-
-\item{numThreads}{number of CPU threads to use in multiview processing.}
-
-\item{showPlot}{logical to plot results.}
-
-\item{noTime}{logical to allow input data with no time column.}
+\item{target}{Target column name to predict.}
+\item{lib}{Library (training) index range as (start end) pairs.}
+\item{pred}{Prediction index range as (start end) pairs.}
+\item{D}{View dimension for Multiview (number of embedding columns combined).}
+\item{E}{Embedding dimension.}
+\item{Tp}{Forecast interval (prediction horizon).}
+\item{knn}{Number of nearest neighbours. \code{0} selects the method default.}
+\item{tau}{Embedding delay (negative selects past lags).}
+\item{multiview}{Number of top-ranked views to average (default \code{floor(sqrt(nCombo))}).}
+\item{exclusionRadius}{Temporal (Theiler) exclusion radius around each prediction point.}
+\item{trainLib}{Rank views on the library (in-sample) rather than the prediction set.}
+\item{excludeTarget}{Exclude the target variable from candidate views.}
+\item{ignoreNan}{Remove rows with NaN in the embedding from the library and prediction sets.}
+\item{numProcess}{Number of worker processes for the parameter sweep or task grid.}
+\item{backend}{Nearest-neighbour backend: \code{"RANN"} (default) or \code{"brute"}.}
+\item{pathIn}{File path for input \code{dataFile}.}
+\item{dataFile}{Input dataFile, .csv format.}
+\item{pathOut}{Output file path for \code{predictFile}}
+\item{predictFile}{Output file name, .csv format.}
+\item{parameterList}{Append named list of parameters/values to return.}
+\item{showPlot}{If \code{TRUE}, draw a base-graphics plot of the result.}
 }
-
 \value{
 Named list with data.frames \code{[[View, Predictions]]}.
 
@@ -85,12 +61,6 @@ data.frame \code{View} columns:
 \references{Ye H., and G. Sugihara, 2016. Information leverage in 
 interconnected ecosystems: Overcoming the curse of dimensionality.
 Science 353:922-925.
-}
-
-\description{
-\code{\link{Multiview}} applies the method of \cite{Ye & Sugihara}
-to find optimal combinations of variables that best represent the
-dynamics.
 }
 
 \details{Multiview embedding is a method to identify variables in a
@@ -117,3 +87,5 @@ data(block_3sp)
 L = Multiview( dataFrame = block_3sp, lib = "1 100", pred = "101 190",
 E = 2, columns = "x_t y_t z_t", target = "x_t" )
 }
+
+\keyword{nonlinear,ts}

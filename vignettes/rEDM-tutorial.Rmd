@@ -1,25 +1,18 @@
 ---
 title: "Empirical Dynamic Modeling"
 author:
+- Joseph Park
 - George Sugihara
 - Ethan Deyle
-- Joseph Park
-- Erik Saberski
-- Cameron Smith
-- Hao Ye
 date: "`r Sys.Date()`"
-output: html_document
-#output:
-#  pdf_document:
-#    latex_engine: xelatex
-#  html_document:
-#    rmarkdown::html_vignette
-vignette: >
-    %\VignetteEngine{knitr::rmarkdown}
-    %\VignetteIndexEntry{"Empirical Dynamic Modeling"}
-    %\VignetteEncoding{UTF-8}
+output:
+  pdf_document:
+    latex_engine: xelatex
+  html_document: default
+vignette: "%\\VignetteEngine{knitr::rmarkdown} %\\VignetteIndexEntry{\"Empirical Dynamic
+  Modeling\"} %\\VignetteEncoding{UTF-8}\n"
 bibliography: References.bib
-header-includes: 
+header-includes:
 - \usepackage{graphicx}
 - \usepackage{float}
 - \usepackage[utf8]{inputenc}
@@ -27,12 +20,12 @@ header-includes:
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, tidy = TRUE,
-                      fig.pos = 'h', fig.align = 'center',
-                      fig.width = 4, fig.height = 3.3 )
+                      fig.pos = 'h', fig.align = 'center' )
+                      #fig.width = 4.5, fig.height = 4 )
 knitr::opts_knit$set(global.par = TRUE, progress = FALSE)
 options(digits = 2)
 par.orig = par()
-par(mar = c(4, 4, 2, 1), mgp = c(2.5, 1, 0))
+par(mar = c(3, 3, 2, 1), mgp = c(2.5, 1, 0))
 ```
 
 <!------------------------------------------------------------------------->
@@ -134,10 +127,15 @@ In **rEDM**, a sample time series of first-differenced values can be found in da
 We begin by loading the **rEDM** package and examining the `TentMap` data:
 ```{r load package}
 library(rEDM)
+paste('rEDM version:', packageVersion('rEDM'))
+```
+
+Now examine the *TentMap* dataset:
+```{r examine TentMap dataset}
 str(TentMap)
 ```
 
-We can see that the data consists of a data.frame with two columns: `Time` and `TentMap`. All rEDM input data files or data.frames are assumed to have a time vector in the first column.  Data files are expected to be in .csv format with the first line a header of column names, data.frames are also expected to have column names.
+The data is a data.frame with two columns: `Time` and `TentMap`. All rEDM input data files or data.frames are assumed to have a time vector in the first column.  Data files are expected to be in .csv format with the first line a header of column names, data.frames are also expected to have column names. If no time column is present in the first column set `noTime = TRUE`.
 
 The `Simplex` function has 5 required parameters:
 
@@ -146,24 +144,24 @@ The `Simplex` function has 5 required parameters:
 1.| `columns`|  `TentMap`   | name of column(s) of embedding library
 2.| `target` |  `TentMap`   | name of column for prediction
 3.| `lib`    |  `"1 100"`   | start stop indices of embedding library
-4.| `pred`   |  `"201 500"` | start stop indices of predictions
+4.| `pred`   |  `"950 999"` | start stop indices of predictions
 5.| `E`      |  `3`         | embedding dimension
 
 `columns` specifies the timeseries vector(s) that form the library, `target` is the column on which predictions will be made. `lib` defines row indices of the "training" portion of data, `pred` corresponds to row indices of the "test" portion, and `E` defines the embedding dimension.
 
-*Note that if any overlap in the lib and pred is found, it will enable leave-one-out cross-validation. If `verbose = TRUE`, a warning message will be raised.*
+*Note that if any overlap in the lib and pred is found, it will enable leave-one-out cross-validation.*
 
-In this univariate case, we specify the "TentMap" column of the data frame for both `columns` and `target`, and select the first 100 points (indices 1 to 100) in the time series to constitute the "library set", and a separate 300 point span (indices 201 to 500) as the "prediction set".  
+In this univariate case, we specify the "TentMap" column of the data frame for both `columns` and `target`, and select the first 100 points (indices 1 to 100) in the time series to constitute the "library set", and a separate 100 point span (indices 900 to 999) as the "prediction set".  
 
 Default parameters of `knn` (k-nearest neighbors) and `Tp` (time-to-prediction) are assumed. The default `knn = 0` sets the number of nearest neighbors to `E + 1`, and default `Tp` is 1 timestep (observation row).  With these parameters we demonstrate the `Simplex()` function:
 
 ```{r simplex on tentmap}
-simplex_out <- Simplex( dataFrame = TentMap, lib = "1 100", pred = "201 500",
+simplex_out <- Simplex( dataFrame = TentMap, lib = "1 100", pred = "900 999",
 columns = 'TentMap', target = 'TentMap', E = 3 )
-simplex_out[ c(1:2, 300:301), ]
+simplex_out[ c(1:3, 99:101), ]
 ```
 
-Note that the returned data.frame has 1 `NaN` as the first `Predictions` point since `Tp = 1`, and, the last `Observations` will likewise be `NaN` with the time vector adjusted to accommodate `Tp` rows beyond the data as needed.
+Note the returned data.frame has 1 `NA` as the first `Predictions` point since `Tp = 1`, and, the last `Observations` will likewise be `NA` with the time vector adjusted to accommodate `Tp` rows beyond the data as needed.
 
 Computation of Pearson correlation, MAE and RMSE errors between the forecast `Observations` and `Predictions` can be performed with the `ComputeError()` function.
 
@@ -177,12 +175,13 @@ ComputeError( simplex_out $ Observations, simplex_out $ Predictions )
 
 As noted earlier, identification of the optimal embedding dimension to best "unfold" the dynamics can be assessed with simplex prediction skill. **rEDM** provides the `EmbedDimension()` function to automate this task. `EmbedDimension()` parallelises function calls to `Simplex()`, which automatically sets values of `E` from 1 to `maxE`=10.  Continuing with the previous example, we invoke `EmbedDimension()`:
 
-```{r Embed_Dim_TentMap, fig.cap="TentMap data prediction skill vs. embedding dimension." }
+```{r Embed_Dim_TentMap, fig.cap="TentMap data prediction skill vs. embedding dimension.", fig.width=5, fig.height=4.5}
 rho_E <- EmbedDimension( dataFrame = TentMap, lib = "1 100", pred = "201 500",
-columns = 'TentMap', target = 'TentMap' )
+columns = 'TentMap', target = 'TentMap', showPlot = TRUE )
+rho_E
 ```
 
-The output is a data.frame with columns `E` and `rho` detailing the embedding dimension and Pearson correlation coefficient between the simplex projected forecast at `Tp = 1` timesteps ahead, and the observed data over the `pred` indices. Here, we observe that forecast skill peaks at `E = 2`, indicating that the dynamics of our data are unfolded best in 2 dimensions. *Note that this optimal value does not have to correspond to the dimensionality of the original system.*  The forecast skill will be affected by factors such as observational noise, process error, and time series length, and so it is more useful to think of the embedding dimension as a practical measure that is dependent on properties of the data.
+The output is a data.frame with columns `E` and `rho` : the embedding dimension and Pearson correlation coefficient between the simplex projections at `Tp = 1` timesteps ahead and the observed data. Here, we observe that forecast skill peaks at `E = 2`, indicating that the dynamics of our data are unfolded best in 2 dimensions. *Note that this optimal value does not have to correspond to the dimensionality of the original system.*  The forecast skill will be affected by factors such as observational noise, process error, time series length, and so it is more useful to think of the embedding dimension as a practical measure that is dependent on properties of the data.
 
 <!------------------------------------------------------------------------->
 ## Prediction Decay
@@ -199,18 +198,18 @@ Using the same data with the `PredictInterval()` function, we supply the embeddi
 ```{r Prediction_interval_on_TentMap, fig.cap = "Tent map first differences simplex prediction skill as a function of forecast interval." }
 rho_Tp <- PredictInterval( dataFrame = TentMap, lib = "1 100",
 pred = "201 500", target = 'TentMap', columns = 'TentMap', E = 2 )
+rho_Tp
 ```
 
-As above, the returned object is a data.frame with forecast skill `rho` and time to prediction `Tp`.  As expected (because the parameters chosen for the tent map fall in the region for chaotic behavior), the decline in forecast skill (`rho` $\rightarrow 0$) as the forecast interval `Tp` increases, indicates that the system may be chaotic.
-
+As above, the returned object is a data.frame with forecast skill `rho` and time to prediction `Tp`.  As expected because the parameters chosen for the tent map fall in the region of chaotic behavior the decline in forecast skill as the forecast interval `Tp` increases (`rho` $\rightarrow 0$) indicates the system may be chaotic.
 
 <!------------------------------------------------------------------------->
 ## Identifying Nonlinearity
 <!------------------------------------------------------------------------->
 
-One concern is that time series may show predictability even if they are purely stochastic, they behave similarly to autocorrelated red noise. Fortunately, we can distinguish between red noise and nonlinear deterministic behavior by using S-maps as described in [@Sugihara_1994].
+One concern is that time series may show predictability even if they are purely stochastic, they behave similarly to autocorrelated red noise. Fortunately, we can distinguish between red noise and nonlinear deterministic behavior by using Sequential locally weighted global linear maps: *S-maps* as described in [@Sugihara_1994].
 
-In contrast to the nearest-neighbor interpolation of simplex projection, the S-map forecasting method [@Sugihara_1994] fits local linear maps to describe the dynamics. In addition to the standard set of parameters for a lagged-coordinate reconstruction as in simplex, S-maps contain a nonlinear localisation parameter, $\theta$, that determines the degree to which points are weighted when fitting the local linear map. For example, when $\theta = 0$, all points are equally weighted, such that the local linear map is identical for different points in the reconstructed state-space. As such, the S-map will be identical to a global linear map (i.e. an autoregressive model). When values of $\theta$ are greater than $0$, nearby points in the state space receive larger weight, and the local linear map can vary in state-space to accommodate nonlinear behavior. 
+In contrast to the nearest-neighbor interpolation of simplex projection, the S-map forecasting method fits local linear maps to describe the dynamics. In addition to the standard set of parameters for a lagged-coordinate reconstruction as in simplex, S-maps contain a nonlinear localization parameter, $\theta$, that determines the degree to which points are weighted when fitting the local linear map. For example, when $\theta = 0$, all points are equally weighted, such that the local linear map is identical for different points in the reconstructed state-space. As such, the S-map will be identical to a global linear map (i.e. an autoregressive model). When values of $\theta$ are greater than $0$, nearby points in the state space receive larger weight, and the local linear map can vary in state-space to accommodate nonlinear behavior. 
 
 Consequently, if the time series are sampled from autoregressive red noise, then the linear model ($\theta = 0$) should produce better forecasts, because the global linear map (which will, in effect, be fitted to more data points) will reduce the effects of observation error compared to local linear maps. In contrast, if forecast skill increases for $\theta > 0$, then the results are suggestive of nonlinear dynamics wherein better forecasts are achieved when the local linear map can change depending on the location in state-space: it is a better description of state-dependent behavior.
 
@@ -227,15 +226,16 @@ Here we use an embedding dimension of `E = 2` and the same parameters as in the 
 ```{r Predict_nonlinear_on_TentMap, fig.cap = "Tent map first differences S-map prediction skill as a function of S-map localisation parameter."}
 rho_theta <- PredictNonlinear( dataFrame = TentMapNoise, lib = "1 100",
 pred = "201 500", target = 'TentMap', columns = 'TentMap', E = 2 )
+rho_theta[c(1:5,11:15),]
 ```
 
-The result is a data.frame with columns `Theta` and `rho`. Here, we see that forecast skill substantially improves as `theta` increases, indicating the presence of nonlinear dynamics. We also observe a degradation in forecast skill at high values of `theta` as the local linear map overfits to insufficient nearest neighbors.
+The result is a data.frame with columns `Theta` and `rho`. Here, we see that forecast skill improves as `theta` increases, indicating the presence of nonlinear dynamics. We also observe degradation in forecast skill at high values of `theta` as the local linear map overfits to insufficient nearest neighbors.
 
 <!------------------------------------------------------------------------->
 ## `Simplex()` and `SMap()` functions
 <!------------------------------------------------------------------------->
 
-The functions `EmbedDimension()`, `PredictInterval()` and `PredictNonlinear()` are multithreaded wrapper functions for the `Simplex()` and `SMap()` algorithms. `EmbedDimension()` and `PredictInterval()` parallelise calls to `Simplex()` to evaluate forecast skill as a function of embedding dimension and prediction interval respectively.  `PredictNonlinear()` parallelises calls to `SMap()` to assess predictive skill as a function of the nearest neighbor localisation parameter. However, one can equivalently call the underlying `Simplex()` and `SMap()` functions directly.
+The functions `EmbedDimension()`, `PredictInterval()` and `PredictNonlinear()` are parallelized wrapper functions for the `Simplex()` and `SMap()` algorithms. `EmbedDimension()` and `PredictInterval()` parallelize calls to `Simplex()` to evaluate forecast skill as a function of embedding dimension and prediction interval respectively.  `PredictNonlinear()` parallelizes calls to `SMap()` to assess predictive skill as a function of the nearest neighbor localization parameter. However, one can equivalently call the underlying `Simplex()` and `SMap()` functions directly.
 
 <!------------------------------------------------------------------------->
 ### `Simplex()`
@@ -296,7 +296,7 @@ embedded = TRUE )
 
 A plot of the predictions vs. observations can be examined with:
 
-```{r plot_3_species, fig.cap="Scatter plot of simplex forecast of $x_t$ vs. observations."}
+```{r plot_3_species, fig.cap="Scatter plot of simplex forecast of $x_t$ vs. observations.", fig.width=5, fig.height=4.5}
 err = ComputeError( smplx_3species $ Observations,
                     smplx_3species $ Predictions )
 plot( smplx_3species $ Observations, smplx_3species $ Predictions,
@@ -340,7 +340,7 @@ par(mfrow = c(4, 1), mar = c(2, 4, 0.5, 1), oma = c(0, 0, 0, 0),
     mgp = c(2.1, 1, 0) )
 ```
 
-```{r smap_Lorenz_plot, out.width = "70%", fig.cap = "S-map prediction and coefficients of Lorenz'96 5-D system."}
+```{r smap_Lorenz_plot, out.width = "70%", fig.height = 4.5, fig.cap = "S-map prediction and coefficients of Lorenz'96 5-D system."}
 predictions = smap_Lorenz $ predictions
 coefficients = smap_Lorenz $ coefficients
 Time = predictions $ Time
@@ -412,7 +412,7 @@ In **rEDM**, convergent cross mapping is implemented as the `CCM()` function, wh
 
 To quantify convergence, we compute the cross map skill over many random subsamples of the time series. The `libSizes` argument specifies the size of the library set, and `sample` specifies the number of subsamples generated at each library size. `random` and `replacement` specify how the subsamples will be generated.  The default is random sampling without replacement.
 
-```{r sardine_anchovy_ccm, fig.cap = "Convergent cross mapping of Newport sea surface temperature with anchovy landings."}
+```{r sardine_anchovy_ccm, fig.cap = "Convergent cross mapping of Newport sea surface temperature with anchovy landings.", fig.width=5, fig.height=4.5}
 cmap <- CCM( dataFrame = sardine_anchovy_sst, E = 3, Tp = 0, columns = "anchovy", target = "np_sst", libSizes = "10 70 5", sample = 100, showPlot = TRUE )
 ```
 
@@ -437,7 +437,7 @@ The data column `Thrips_imaginis` contains counts of *Thrips imaginis* obtained 
 
 First, we plot the data. Note that all the time-series variables, particularly the mean maximum daily temperature, show marked seasonality.
 
-```{r thrips plot, echo = FALSE, fig.width = 3, fig.height = 3.5, fig.cap = "Thrips abundance and environmental variables."}
+```{r thrips plot, echo = FALSE, fig.width = 6, fig.height = 5, fig.cap = "Thrips abundance and environmental variables."}
 par(mfrow = c(4, 1), mar = c(2, 4, 0, 1), mgp = c(2., 0.5, 0))
 time_dec <- Thrips $ Year + (Thrips $ Month)/12
 plot(time_dec, Thrips $ Thrips_imaginis, type = "l", lwd = 2, col = "darkgreen", ylab = "Thrips", xlab = "")
@@ -457,7 +457,7 @@ par(mfrow = c(1, 1), mar = c(4, 4, 2, 1), mgp = c(2.5, 1, 0))
 
 We first examine the dependence of simplex predictability on the embedding dimension.
 
-```{r univariate thrips, fig.cap = "Simplex embedding dimension for Thrips abundance.", fig.width = 4, fig.height = 3. }
+```{r univariate thrips, fig.cap = "Simplex embedding dimension for Thrips abundance.", fig.width=5, fig.height=4.5}
 rho_E <- EmbedDimension( dataFrame = Thrips, columns = "Thrips_imaginis", target = "Thrips_imaginis", lib = "1 72", pred = "1 72", showPlot = TRUE )
 ```
 
@@ -465,9 +465,9 @@ While there is an initial peak in the simplex prediction at `E = 3`, the global 
 
 To test for nonlinearity we use the S-map `PredictNonlinear()` function.
 
-```{r smap for thrips, fig.cap = "SMap localisation parameter for Thrips abundance.", fig.width = 4, fig.height = 3.}
+```{r smap for thrips, fig.cap = "SMap localisation parameter for Thrips abundance.", fig.width = 5, fig.height = 4.5}
 E = 8
-rho_theta_e3 = PredictNonlinear(dataFrame = Thrips, columns = "Thrips_imaginis", target = "Thrips_imaginis", lib = "1 73", pred = "1 73", E = E )
+rho_theta_e3 = PredictNonlinear(dataFrame = Thrips, columns = "Thrips_imaginis", target = "Thrips_imaginis", lib = "1 73", pred = "1 73", E = E, showPlot = TRUE )
 ```
 
 The S-map results demonstrate clear nonlinearity in the Thrips time series, as nonlinear models `theta > 0` give substantially better predictions than the linear model `theta = 0`. This suggests that *Thrips*, despite the strong seasonal dynamics, do not simply track the environment passively, but have some intrinsic dynamics. To look more closely at the issue of seasonal drivers, however, we turn to convergent cross-mapping (CCM).
@@ -560,7 +560,7 @@ CCMPlot = function( ccm.df, E, ylim = c( 0.2, 1 ) ) {
 }
 ```
 
-```{r ccm thrips, fig.cap = "Thrips cross mapped to climatic variables. Vertical axis is cross map prediction skill (rho).", fig.width = 7.5}
+```{r ccm thrips, fig.cap = "Thrips cross mapped to climatic variables. Vertical axis is cross map prediction skill (rho).", fig.width = 6.5, fig.height=5}
 thrips_xmap_maxT <- CCM(dataFrame = Thrips, E = E, Tp = 0,
                         columns = "Thrips_imaginis", target = "maxT_degC",
                         libSizes = "13 73 3", sample = 300, showPlot = FALSE)
@@ -588,7 +588,7 @@ The results show evidence of convergence for *Thrips* cross mapping to temperatu
 
 In addition, we are still left with the conundrum that temperature and to a lesser extent, rainfall, are easily predicted from the seasonal cycle, and so we cannot immediately ignore the possibility that the cross map results are an artifact of shared seasonal forcing.
 
-To reframe, we wish to reject the null hypothesis that the level of cross mapping we obtain for `maxT_degC` and `Rain_mm` can be solely explained by shared seasonality. This hypothesis can be tested using randomization tests based on surrogate data. The idea here is to generate surrogate time series with the same level of shared seasonality. Cross mapping between the real time series and these surrogates thus generates a null distribution for $\rho$, against which the actual cross map $\rho$ value can be compared.
+To reframe, we wish to reject the null hypothesis that the level of cross mapping we obtain for `maxT_degC` and `Rain_mm` can be solely explained by shared seasonality. This hypothesis can be tested using randomization tests based on surrogate data. The idea is to generate surrogate time series with the same level of shared seasonality. Cross mapping between the real time series and these surrogates thus generates a null distribution for $\rho$, against which the actual cross map $\rho$ value can be compared.
 
 <!------------------------------------------------------------------------->
 #### Seasonal Surrogate Test
@@ -616,9 +616,10 @@ names( rain_data ) = c( 'time', 'Thrips_imaginis', paste( 'R', as.character( seq
 for (i in 1:1000) {
   targetCol = paste( 'T', i, sep = '' ) # as in maxT_data
   
+  # Note this is a single sample CCM at full library size
   ccm_out = CCM( dataFrame = maxT_data, E = E, Tp = 0,
                  columns = 'Thrips_imaginis', target = targetCol,
-                 libSizes = "73 73 5", sample = 1 )
+                 libSizes = "73", sample = 1 )
                  
   col = paste( 'Thrips_imaginis', ':', targetCol, sep = '' )
    
@@ -628,9 +629,10 @@ for (i in 1:1000) {
 for (i in 1:1000) {
   targetCol = paste( 'R', i, sep = '' ) # as in rain_data
   
+  # Note this is a single sample CCM at full library size
   ccm_out = CCM( dataFrame = rain_data, E = E, Tp = 0,
                  columns = 'Thrips_imaginis', target = targetCol,
-                 libSizes = "73 73 5", sample = 1 )
+                 libSizes = "73", sample = 1 )
                  
   col = paste( 'Thrips_imaginis', ':', targetCol, sep = '' )
    
@@ -645,7 +647,7 @@ We now have a null distribution, and can estimate a $p$-value for rejecting the 
 1 - ecdf( rho_surr $ Rain )( ccm_matrix["Rain_mm",   "Thrips_imaginis" ] )
 ```
 
-In the case of temperature, the CCM influence we estimated (`r ccm_matrix["maxT_degC", "Thrips_imaginis" ]`) is higher than the linear correlation (`r corr_matrix["maxT_degC", "Thrips_imaginis" ]`), and is highly significant in relation to a surrogate null distribution.  Regarding rainfall, the CCM influence (`r ccm_matrix["Rain_mm", "Thrips_imaginis" ]`) is higher than the linear correlate (`r corr_matrix["Rain_mm", "Thrips_imaginis" ]`), but not significant at the 95th percentile of the surrogate null distribution.  We note that the original Thrips data collections were at a much higher frequency than those available through the GPDD, and that monthly accumulated rainfall may be inadequate to resolve lifecycle influences on a species with a lifecycle of approximately one month. With more highly resolved data, it may well be possible to establish significance.
+In the case of temperature, the CCM influence we estimated (`r ccm_matrix["maxT_degC", "Thrips_imaginis" ]`) is higher than the linear correlation (`r corr_matrix["maxT_degC", "Thrips_imaginis" ]`), and is highly significant in relation to a surrogate null distribution.  Regarding rainfall, the CCM influence (`r ccm_matrix["Rain_mm", "Thrips_imaginis" ]`) is higher than the linear correlate (`r corr_matrix["Rain_mm", "Thrips_imaginis" ]`), but not significant at the 96th percentile of the surrogate null distribution.  We note that the original Thrips data collections were at a much higher frequency than those available through the GPDD, and that monthly accumulated rainfall may be inadequate to resolve lifecycle influences on a species with a lifecycle of approximately one month. With more highly resolved data, it may well be possible to establish significance.
 
 ```{r reset par, include = FALSE}
 par( par.orig )
@@ -665,16 +667,6 @@ Data can be input as an R `data.frame`, or read from a `.csv` file. In either ca
 ### S-Map coefficients and embedded data
 <!------------------------------------------------------------------------->
 `SMap()` should be called with a DataFrame that has columns explicity corresponding to dimensions `E`.  This means that if a multivariate data set is used, it should not be called with an embedding from `Embed()` since `Embed()` will add lagged coordinates for each variable.  These extra columns will then not correspond to the intended dimensions in the matrix inversion and prediction reconstruction and subsequent S-map coefficients. In this case, use the `embedded = TRUE` parameter with the multivariate data so that columns selected correspond to the proper dimension.
-
-<!------------------------------------------------------------------------->
-# Parameters
-<!------------------------------------------------------------------------->
-Since **rEDM** is a wrapper for the [`cppEDM`](https://github.com/SugiharaLab/cppEDM) library, parameters largely correspond to function parameters of [`cppEDM`](https://github.com/SugiharaLab/cppEDM).  Primary parameters are tabulated here.
-
-```{r parameter-table, echo = FALSE}
-paramTable = read.csv( "ParameterTable.csv", as.is = TRUE )
-knitr::kable( paramTable, caption = '' )
-```
 
 <!------------------------------------------------------------------------->
 # Acknowledgements

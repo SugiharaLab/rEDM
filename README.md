@@ -4,19 +4,16 @@ rEDM
 Overview
 --------
 
-The `rEDM` package is a collection of methods for Empirical Dynamic
-Modeling (EDM). EDM is based on the mathematical theory of
-reconstructing attractor manifolds from time series data, with
-applications to forecasting, causal inference, and more. It is based on
-research software developed for the [Sugihara Lab](https://deepeco.ucsd.edu/)
+`rEDM` is a collection of methods for Empirical Dynamic Modeling (EDM).
+EDM is based on the mathematical theory of reconstructing attractor manifolds
+from time series data with applications to forecasting, causal inference, 
+and more. It is based on research software developed at the 
+[Sugihara Lab](https://deepeco.ucsd.edu/)
 (University of California San Diego, Scripps Institution of Oceanography).
 
 Empirical Dynamic Modeling (EDM)
 -------------------------------------
 
-This package implements an R wrapper of
-[EDM](https://deepeco.ucsd.edu/nonlinear-dynamics-research/edm/) tools from
-the [cppEDM](https://github.com/SugiharaLab/cppEDM/#empirical-dynamic-modeling-edm) library.
 Introduction and documentation are are avilable
 [online](https://sugiharalab.github.io/EDM_Documentation/ "EDM Docs"), or
 in the package [tutorial](https://github.com/SugiharaLab/rEDM/blob/d5aafe06573be73f603488f6ee4ae68a73da5e12/doc/rEDM-tutorial.pdf "rEDM turorial").
@@ -25,7 +22,7 @@ Functionality includes:
 
 * Simplex projection (Sugihara and May 1990)
 * Sequential Locally Weighted Global Linear Maps (S-map) (Sugihara 1994)
-* Multivariate embeddings (Dixon et. al. 1999)
+* Multivariate embeddings (Deyle and Sugihara 2011)
 * Convergent cross mapping (Sugihara et. al. 2012)
 * Multiview embedding (Ye and Sugihara 2016)
 
@@ -76,25 +73,24 @@ dimension, E:
 
     E.opt
     #     E    rho
-    # 1   1 0.7397
-    # 2   2 0.8930
-    # 3   3 0.9126
-    # 4   4 0.9133
-    # 5   5 0.9179
-    # 6   6 0.9146
-    # 7   7 0.9098
-    # 8   8 0.9065
-    # 9   9 0.8878
-    # 10 10 0.8773
+    # 1   1 0.7413
+    # 2   2 0.8954
+    # 3   3 0.9156
+    # 4   4 0.9169
+    # 5   5 0.9207
+    # 6   6 0.9167
+    # 7   7 0.9109
+    # 8   8 0.9078
+    # 9   9 0.8890
+    # 10 10 0.8787
 
-Highest predictive skill is found between `E = 3` and `E = 6`. Since we
-generally want a simpler model, if possible, we use `E = 3` to forecast
-the last 1/3 of data based on training (attractor reconstruction) from
-the first 2/3.
+`E = 3` represents convergence of predictive skill as a function of `E`
+and we use `E = 3` to forecast the last 1/3 of data based on training 
+(attractor reconstruction) from the first 2/3.
 
     simplex = Simplex( dataFrame = df, 
                        lib     = "1   190", # portion of data to train
-                       pred    = "191 287", # portion of data to predict
+                       pred    = "191 289", # portion of data to predict
                        columns = "sunspot_count",
                        target  = "sunspot_count",
                        E       = 3 )
@@ -124,8 +120,8 @@ Sugihara G. 1994. Nonlinear forecasting for the classification of
 natural time series. Philosophical Transactions: Physical Sciences and
 Engineering, 348 (1688) : 477–495.
 
-Dixon, P. A., M. Milicich, and G. Sugihara, 1999. Episodic fluctuations
-in larval supply. Science 283:1528–1530.
+Deyle E. R. and Sugihara G. 2011. Generalized theorems for nonlinear
+state space reconstruction, PLoS One, 6(3) : e18295. 
 
 Sugihara G., May R., Ye H., Hsieh C., Deyle E., Fogarty M., Munch S.,
 2012. Detecting Causality in Complex Ecosystems. Science 338:496-500.

@@ -1,15 +1,19 @@
 #### rEDM NEWS
 
-2024-04-05 version 1.15.4 <JosephPark@IEEE.org>
+2026-07-27 version 2.0.1 <JosephPark@IEEE.org>
 
 ---
 
-##### NOTES:
+##### Version 2.0.1:
+- Version 2.0.1 is a complete refactor of rEDM. Version 1.x dependence on [cppEDM](https://github.com/SugiharaLab/cppEDM#empirical-dynamic-modeling-edm) has been removed, the package is now pure-R. The refactor is based on the reference [pyEDM](https://pypi.org/project/pyEDM/) package. The API remains the same as version 1.
+
+---
+
+##### Version 1.15.4
+
 - It is required as of version 1.15 to use functions: `Simplex`, `SMap`, `CCM`, `Embed`, `Multiview`, `EmbedDimension`, `PredictInterval`, `PredictNonlinear`, `ComputeError` instead of the legacy version 0.7 signatures. See Version 1.3 notes.
 - [Rcpp](https://CRAN.R-project.org/package=Rcpp) imposes a 20 parameter limit on functions. The rEDM wrapper of [cppEDM](https://github.com/SugiharaLab/cppEDM#empirical-dynamic-modeling-edm) therefore does not invoke the full cppEDM API. Users requiring the full API are referred to the [pyEDM](https://pypi.org/project/pyEDM/) wrapper.
 - `SMap` linear system solver regularization: The R [glmnet](https://CRAN.R-project.org/package=glmnet) package does not seperate the model from the data. This prevents integration in rEDM. Users requiring `SMap` regularization are referred to the [pyEDM](https://pypi.org/project/pyEDM/) wrapper.
-
----
 
 ##### Version 1.15
 - `SMap()` `ignoreNan` parameter added. If `ignoreNan` is `TRUE` (default) the library is redefined to ignore embedding vectors with nan. If `ignoreNan` is `FALSE` no change is made, the user can manually specify library segments in `lib`.
