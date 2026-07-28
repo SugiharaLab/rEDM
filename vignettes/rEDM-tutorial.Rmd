@@ -9,8 +9,10 @@ output:
   pdf_document:
     latex_engine: xelatex
   html_document: default
-vignette: "%\\VignetteEngine{knitr::rmarkdown} %\\VignetteIndexEntry{\"Empirical Dynamic
-  Modeling\"} %\\VignetteEncoding{UTF-8}\n"
+vignette: >
+  %\VignetteIndexEntry{Empirical Dynamic Modeling}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 bibliography: References.bib
 header-includes:
 - \usepackage{graphicx}
