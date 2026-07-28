@@ -165,7 +165,7 @@ PredictNonlinear <- function(dataFrame = NULL, columns, target, lib, pred,
 
   if (showPlot) {
     title = paste( columns, ":", target, "\nE=", E, ' Tp=', Tp) 
-    PlotSweep(out, "S-map Localization (\u03B8)", title)
+    PlotSweep(out, expression(paste("S-map Localization",~(theta))), title)
   }
   out = EdmFinalize( out, out, pathOut, predictFile, parameterList, parameters )
 }

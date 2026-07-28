@@ -354,13 +354,13 @@ legend("topright", legend = c("observed", "predicted"),
 fill = c( 'blue', 'red' ), bty = "n", cex = 1.3 )
 
 plot( Time, coefficients[, 6], type = "l", col = "brown",
-ylab = paste( "\U2202", "V4/", "\U2202", "V1" , sep = '' ), 
+ylab = expression(partialdiff * V4 / partialdiff * V1),
 xlab = "", lwd = 2, cex.lab = 1.3, cex.axis = 1.3 )
 plot( Time, coefficients[, 5], type = "l", col = "darkgreen",
-ylab = paste( "\U2202", "V3/", "\U2202", "V1" , sep = '' ),
+ylab = expression(partialdiff * V3 / partialdiff * V1),
 xlab = "", lwd = 2, cex.lab = 1.3, cex.axis = 1.3 )
 plot( Time, coefficients[, 4], type = "l", col = "blue",
-ylab = paste( "\U2202", "V2/", "\U2202", "V1" , sep = '' ),
+ylab = expression(partialdiff * V2 / partialdiff * V1),
 xlab = "", lwd = 2, cex.lab = 1.3, cex.axis = 1.3 )
 ```
 
@@ -554,7 +554,7 @@ CCMPlot = function( ccm.df, E, ylim = c( 0.2, 1 ) ) {
 
     plot( libSize, ccm.df[ , V1 ],
           ylim = ylim, main = title, col = "blue", type = "l", lwd = 3,
-          xlab = 'Library Size', ylab = 'Prediction Skill (\U03C1)' )
+          xlab = 'Library Size', ylab = expression(Prediction~Skill~(rho)) )
     lines( libSize, ccm.df[ , V2 ], col = "red", lwd = 3 )
     abline( h = 0 )
     legend( 'topright', c( V1, V2 ), 

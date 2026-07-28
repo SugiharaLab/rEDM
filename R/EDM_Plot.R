@@ -69,8 +69,13 @@ PlotSmap <- function(SmapList, dataName = "", E = NULL, Tp = NULL) {
   coefName <- names(co)
   title = paste( dataName, 'S-Map Coefficients', '\nE=' , E, ' Tp=', Tp )
   for (j in 2:ncol(co)) {
-    plot(time, co[,j], type = "l", lwd = 3, col = "blue", xlab = names(p)[1],
-         ylab = gsub("\u2202", "d", coefName[j]))  # ASCII-safe label (any locale)
+    # coefName[j] is "∂<target>/∂<emb>"; recover the two operands
+    ops <- strsplit(sub("\u2202", "", coefName[j], fixed = TRUE),
+                    "/\u2202", fixed = TRUE)[[1]]
+    # replace the explicit ∂ with plotmath partialdiff for any device
+    ylab = bquote(paste(partialdiff, .(ops[1]), "/", partialdiff, .(ops[2])))
+    plot(time, co[,j], type = "l", lwd = 3, col = "blue",
+         xlab = names(p)[1], ylab = ylab)
     graphics::mtext( title, side = 3, line = -1.5, cex = 1.2 )
   }
 
