@@ -1,7 +1,7 @@
 ..Rcheck
 ^README.Rmd
 ^tests
-^cppEDM/lib
+^\.github$
 ^.*\.o
 ^.*\.a
 ^doc$
