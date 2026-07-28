@@ -6,8 +6,7 @@ author:
 - Ethan Deyle
 date: "`r Sys.Date()`"
 output:
-  pdf_document:
-    latex_engine: xelatex
+  pdf_document: default
   html_document: default
 vignette: >
   %\VignetteIndexEntry{Empirical Dynamic Modeling}
@@ -18,6 +17,7 @@ header-includes:
 - \usepackage{graphicx}
 - \usepackage{float}
 - \usepackage[utf8]{inputenc}
+- \DeclareUnicodeCharacter{2202}{\ensuremath{\partial}} # SMap coef names
 ---
 
 ```{r setup, include = FALSE}
