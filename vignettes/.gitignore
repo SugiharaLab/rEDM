@@ -1,5 +1,6 @@
-rEDM-tutorial_cache
-rEDM-tutorial_files
+*_cache/
+*_files/
 *.log
 *.pdf
 *.tex
+*.html

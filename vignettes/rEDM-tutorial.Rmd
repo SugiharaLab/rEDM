@@ -42,13 +42,13 @@ Empirical dynamic modeling (EDM) is an emerging non-parametric framework for mod
 
 The **rEDM** package can be obtained in two main ways. The standard version of the package can be obtained through CRAN (the Comprehensive R Archive Network): https://cran.r-project.org/package=rEDM:
 
-```{r CRAN installation instructions, eval = FALSE}
+```{r CRAN_installation_instructions, eval = FALSE}
 install.packages("rEDM")
 ```
 
 Also available on GitHub at [SugiharaLab](https://github.com/SugiharaLab/rEDM), and can be installed using R **devtools**.
 
-```{r GitHub installation instructions, eval = FALSE}
+```{r GitHub_installation_instructions, eval = FALSE}
 devtools::install_github("SugiharaLab/rEDM")
 ```
 
@@ -127,13 +127,13 @@ In this example, time series come from a simulation of the tent map that exhibit
 In **rEDM**, a sample time series of first-differenced values can be found in dataset `TentMap`.
 
 We begin by loading the **rEDM** package and examining the `TentMap` data:
-```{r load package}
+```{r load_package}
 library(rEDM)
 paste('rEDM version:', packageVersion('rEDM'))
 ```
 
 Now examine the *TentMap* dataset:
-```{r examine TentMap dataset}
+```{r examine_TentMap_dataset}
 str(TentMap)
 ```
 
@@ -157,7 +157,7 @@ In this univariate case, we specify the "TentMap" column of the data frame for b
 
 Default parameters of `knn` (k-nearest neighbors) and `Tp` (time-to-prediction) are assumed. The default `knn = 0` sets the number of nearest neighbors to `E + 1`, and default `Tp` is 1 timestep (observation row).  With these parameters we demonstrate the `Simplex()` function:
 
-```{r simplex on tentmap}
+```{r simplex_tentmap}
 simplex_out <- Simplex( dataFrame = TentMap, lib = "1 100", pred = "900 999",
 columns = 'TentMap', target = 'TentMap', E = 3 )
 simplex_out[ c(1:3, 99:101), ]
@@ -167,7 +167,7 @@ Note the returned data.frame has 1 `NA` as the first `Predictions` point since `
 
 Computation of Pearson correlation, MAE and RMSE errors between the forecast `Observations` and `Predictions` can be performed with the `ComputeError()` function.
 
-```{r tentmap simplex stats}
+```{r tentmap_simplex_stats}
 ComputeError( simplex_out $ Observations, simplex_out $ Predictions )
 ```
 
@@ -327,7 +327,7 @@ E = 4, theta = 3, columns = "V1 V2 V3 V4", target = "V1", embedded = TRUE )
 
 As noted earlier, `SMap()` returns a named list with two data frames, `predictions` and `coefficients`:
 
-```{r set precision, echo = FALSE}
+```{r set_precision, echo = FALSE}
 options(digits=4)
 ```
 
@@ -439,7 +439,7 @@ The data column `Thrips_imaginis` contains counts of *Thrips imaginis* obtained 
 
 First, we plot the data. Note that all the time-series variables, particularly the mean maximum daily temperature, show marked seasonality.
 
-```{r thrips plot, echo = FALSE, fig.width = 6, fig.height = 5, fig.cap = "Thrips abundance and environmental variables."}
+```{r thrips_plot, echo = FALSE, fig.width = 6, fig.height = 5, fig.cap = "Thrips abundance and environmental variables."}
 par(mfrow = c(4, 1), mar = c(2, 4, 0, 1), mgp = c(2., 0.5, 0))
 time_dec <- Thrips $ Year + (Thrips $ Month)/12
 plot(time_dec, Thrips $ Thrips_imaginis, type = "l", lwd = 2, col = "darkgreen", ylab = "Thrips", xlab = "")
@@ -459,7 +459,7 @@ par(mfrow = c(1, 1), mar = c(4, 4, 2, 1), mgp = c(2.5, 1, 0))
 
 We first examine the dependence of simplex predictability on the embedding dimension.
 
-```{r univariate thrips, fig.cap = "Simplex embedding dimension for Thrips abundance.", fig.width=5, fig.height=4.5}
+```{r univariate_thrips, fig.cap = "Simplex embedding dimension for Thrips abundance.", fig.width=5, fig.height=4.5}
 rho_E <- EmbedDimension( dataFrame = Thrips, columns = "Thrips_imaginis", target = "Thrips_imaginis", lib = "1 72", pred = "1 72", showPlot = TRUE )
 ```
 
@@ -467,7 +467,7 @@ While there is an initial peak in the simplex prediction at `E = 3`, the global 
 
 To test for nonlinearity we use the S-map `PredictNonlinear()` function.
 
-```{r smap for thrips, fig.cap = "SMap localisation parameter for Thrips abundance.", fig.width = 5, fig.height = 4.5}
+```{r smap_thrips, fig.cap = "SMap localisation parameter for Thrips abundance.", fig.width = 5, fig.height = 4.5}
 E = 8
 rho_theta_e3 = PredictNonlinear(dataFrame = Thrips, columns = "Thrips_imaginis", target = "Thrips_imaginis", lib = "1 73", pred = "1 73", E = E, showPlot = TRUE )
 ```
@@ -485,7 +485,7 @@ Recall that there is a two-part criterion for CCM to be a rigorous test of causa
 
 For an initial summary, we first compute the cross map skill (measured with Pearsons $\rho$) for each variable pair. Note that `CCM()` computes the cross map in both "directions". 
 
-```{r compute ccm matrix for thrips, results='hold', cache = TRUE}
+```{r compute_ccm_matrix_thrips, results='hold', cache = TRUE}
 vars       = colnames(Thrips[3:6])
 var_pairs  = combn( vars, 2 )  # Combinations of vars, 2 at a time
 libSize    = paste( NROW(Thrips) - E, NROW(Thrips) - E, 10, collapse = " " )
@@ -511,7 +511,7 @@ We note that `ccm_matrix` rows are the second of the `CCM()` returned variables,
 
 For comparison we also compute the lagged cross-correlation, allowing lags of up to $\pm 6$ months.
 
-```{r compute corr matrix for thrips, cache = TRUE}
+```{r compute_corr_matrix_thrips, cache = TRUE}
 corr_matrix <- array(NA, dim = c(length(vars), length(vars)), 
                      dimnames = list(vars, vars))
 
@@ -526,7 +526,7 @@ for(ccm_from in vars) {
 
 We compare the two matrices.
 
-```{r xmap vs. corr matrix for thrips}
+```{r xmap_vs_corr_matrix_thrips}
 ccm_matrix
 corr_matrix
 ```
@@ -539,7 +539,7 @@ We can see that the cross map strengths are not symmetric.  In general CCM(X1 : 
 
 With this in mind, we examine convergence in cross-map predictability, i.e. we compute `rho` as a function of library size `L`. The magnitude of the cross-correlation between *Thrips* and the cross mapped variable is shown as a black dashed line for comparison. 
 
-```{r thrips setup, echo = FALSE}
+```{r thrips_setup, echo = FALSE}
 par( mfrow = c( 1, 3 ), mar = c( 3.5, 1.3, 2.3, 0.2 ), mgp = c(1.5, 0.5, 0) )
 
 CCMPlot = function( ccm.df, E, ylim = c( 0.2, 1 ) ) {
@@ -562,7 +562,7 @@ CCMPlot = function( ccm.df, E, ylim = c( 0.2, 1 ) ) {
 }
 ```
 
-```{r ccm thrips, fig.cap = "Thrips cross mapped to climatic variables. Vertical axis is cross map prediction skill (rho).", fig.width = 6.5, fig.height=5}
+```{r ccm_thrips, fig.cap = "Thrips cross mapped to climatic variables. Vertical axis is cross map prediction skill (rho).", fig.width = 6.5, fig.height=5}
 thrips_xmap_maxT <- CCM(dataFrame = Thrips, E = E, Tp = 0,
                         columns = "Thrips_imaginis", target = "maxT_degC",
                         libSizes = "13 73 3", sample = 300, showPlot = FALSE)
@@ -582,7 +582,7 @@ CCMPlot( thrips_xmap_Season, E )
 abline(h = corr_matrix['Thrips_imaginis', 'Season'], col = "black", lty = 2)
 ```
 
-```{r thrips setdown, echo = FALSE}
+```{r thrips_setdown, echo = FALSE}
 par(mar = c(4, 4, 2, 1), mgp = c(2.5, 1, 0))
 ```
 
@@ -596,7 +596,7 @@ To reframe, we wish to reject the null hypothesis that the level of cross mappin
 #### Seasonal Surrogate Test
 <!------------------------------------------------------------------------->
 
-```{r seasonal surrogates thrips, cache = TRUE}
+```{r seasonal_surrogates_thrips, cache = TRUE}
 # Create matrix with temperature and rain surrogates (1000 time series vectors)
 surr_maxT = SurrogateData( Thrips $ maxT_degC, method = "seasonal", T_period = 12, num_surr = 1000, alpha = 3)
 surr_rain = SurrogateData( Thrips $ Rain_mm, method = "seasonal", T_period = 12, num_surr = 1000, alpha = 3)
@@ -644,14 +644,14 @@ for (i in 1:1000) {
 
 We now have a null distribution, and can estimate a $p$-value for rejecting the null hypothesis of mutual seasonality.
 
-```{r significance of randomization test}
+```{r significance_randomization_test}
 1 - ecdf( rho_surr $ maxT )( ccm_matrix["maxT_degC", "Thrips_imaginis" ] )
 1 - ecdf( rho_surr $ Rain )( ccm_matrix["Rain_mm",   "Thrips_imaginis" ] )
 ```
 
 In the case of temperature, the CCM influence we estimated (`r ccm_matrix["maxT_degC", "Thrips_imaginis" ]`) is higher than the linear correlation (`r corr_matrix["maxT_degC", "Thrips_imaginis" ]`), and is highly significant in relation to a surrogate null distribution.  Regarding rainfall, the CCM influence (`r ccm_matrix["Rain_mm", "Thrips_imaginis" ]`) is higher than the linear correlate (`r corr_matrix["Rain_mm", "Thrips_imaginis" ]`), but not significant at the 96th percentile of the surrogate null distribution.  We note that the original Thrips data collections were at a much higher frequency than those available through the GPDD, and that monthly accumulated rainfall may be inadequate to resolve lifecycle influences on a species with a lifecycle of approximately one month. With more highly resolved data, it may well be possible to establish significance.
 
-```{r reset par, include = FALSE}
+```{r reset_par, include = FALSE}
 par( par.orig )
 ```
 
