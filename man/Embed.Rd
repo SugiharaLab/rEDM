@@ -29,4 +29,4 @@ contain whitespace place names in a vector, or, append ',' to the name.}
 \examples{
 Embed(data.frame(x = 1:10), E = 3, tau = -1, columns = "x")
 }
-\keyword{nonlinear,ts}
+\keyword{nonlinear}

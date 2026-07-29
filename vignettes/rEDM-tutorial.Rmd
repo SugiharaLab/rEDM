@@ -6,9 +6,9 @@ author:
 - Ethan Deyle
 date: "`r Sys.Date()`"
 output:
-  rmarkdown::html_vignette: default # 1st entry -> R CMD build
   pdf_document:
     latex_engine: xelatex # Select RStudio knitr dropdown -> pdf
+  rmarkdown::html_vignette: default # 1st entry -> R CMD build
 vignette: >
   %\VignetteIndexEntry{Empirical Dynamic Modeling}
   %\VignetteEncoding{UTF-8}

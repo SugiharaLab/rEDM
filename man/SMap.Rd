@@ -110,4 +110,4 @@ pass this embedding to \code{\link{SMap}} with appropriately specified
 \code{columns}, \code{E}, and \code{embedded = TRUE}.
 }
 
-\keyword{nonlinear,ts}
+\keyword{nonlinear}

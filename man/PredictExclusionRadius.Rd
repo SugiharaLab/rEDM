@@ -37,4 +37,4 @@ index or time values unless \code{noTime = TRUE}.}
 }
 \value{A data.frame with columns ExclusionRadius and rho.}
 
-\keyword{nonlinear,ts}
+\keyword{nonlinear}

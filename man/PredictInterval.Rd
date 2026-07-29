@@ -45,4 +45,4 @@ pred = "201 500", E = 2, columns = "TentMap", target = "TentMap",
 showPlot = FALSE )
 }
 
-\keyword{nonlinear,ts}
+\keyword{nonlinear}

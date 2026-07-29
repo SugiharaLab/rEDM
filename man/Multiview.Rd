@@ -88,4 +88,4 @@ L = Multiview( dataFrame = block_3sp, lib = "1 100", pred = "101 190",
 E = 2, columns = "x_t y_t z_t", target = "x_t" )
 }
 
-\keyword{nonlinear,ts}
+\keyword{nonlinear}

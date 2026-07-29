@@ -74,4 +74,4 @@ data(sardine_anchovy_sst)
 df = CCM( dataFrame = sardine_anchovy_sst, E = 3, Tp = 0, columns = "anchovy",
 target = "np_sst", libSizes = "10 70 10", sample = 100 )
 }
-\keyword{nonlinear,ts}
+\keyword{nonlinear}

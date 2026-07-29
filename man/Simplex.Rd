@@ -78,5 +78,4 @@ of distinguishing chaos from measurement error in time series.
 Nature, 344:734-741.
 }
 
-\keyword{nonlinear,ts}
-
+\keyword{nonlinear}

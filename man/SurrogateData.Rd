@@ -17,4 +17,4 @@ SurrogateData(ts, method = c("random_shuffle", "ebisuzaki", "seasonal"),
 \examples{
 SurrogateData(sin(1:100), method = "ebisuzaki", num_surr = 5)
 }
-\keyword{datagen,ts}
+\keyword{datagen}
