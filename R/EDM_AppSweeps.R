@@ -145,7 +145,8 @@ PredictNonlinear <- function(dataFrame = NULL, columns, target, lib, pred,
                              ignoreNan = TRUE, numProcess = 4,
                              backend = "RANN", pathIn = "./", dataFile = "",
                              pathOut = "./", predictFile = "",
-                             parameterList = FALSE, showPlot = FALSE) {
+                             parameterList = FALSE, showPlot = FALSE,
+                             verbose = FALSE) {
 
   parameters <- as.list(environment())
   parameters[c("dataFrame")] <- NULL

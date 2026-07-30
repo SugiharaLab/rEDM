@@ -12,7 +12,7 @@ PredictNonlinear(dataFrame = NULL, columns, target, lib, pred, theta = NULL, E =
                  embedded = FALSE, validLib = logical(0), noTime = FALSE,
                  ignoreNan = TRUE, numProcess = 4, backend = "RANN",
                  pathIn = "./", dataFile = "", pathOut = "./", predictFile = "",
-                 parameterList = FALSE, showPlot = FALSE)
+                 parameterList = FALSE, showPlot = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{dataFrame}{A data.frame of input data. The first column must be a time
@@ -39,6 +39,7 @@ index or time values unless \code{noTime = TRUE}. The columns must be named.}
 \item{predictFile}{Output file name, .csv format.}
 \item{parameterList}{Append named list of parameters/values to return.}
 \item{showPlot}{If \code{TRUE}, draw a base-graphics plot of the result.}
+\item{verbose}{Not used.}
 }
 \value{A data.frame with columns Theta and rho.}
 
