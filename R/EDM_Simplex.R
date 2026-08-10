@@ -52,7 +52,7 @@ Simplex <- function(dataFrame = NULL, columns, target, lib, pred,
   timeVec   <- if (noTime) seq_len(nRows) else dataFrame[[1]]
 
   embedding <- if (embedded) as.matrix(dataFrame[, columns, drop = FALSE])
-               else Embed(dataFrame, E, tau, columns)
+               else MakeBlock(dataFrame, E, tau, columns)
 
   rn        <- RemoveNan(embedding, idx$lib_i, idx$pred_i, ignoreNan)
   lib_i     <- rn$lib_i

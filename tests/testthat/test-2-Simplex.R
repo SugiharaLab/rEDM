@@ -75,10 +75,32 @@ test_that("DateTime index reproduces fixture except exact-distance ties", {
   expect_lte(SimplexDiffs(df, "Smplx_DateTime", 1, 200), 2)
 })
 
-test_that("Embed builds the delay structure", {
-  em <- Embed(data.frame(x = 1:5), E = 3, tau = -1, columns = "x")
-  expect_equal(em[3, ], c(3, 2, 1))
-  expect_true(is.na(em[1, 2]) && is.na(em[2, 3]))
+test_that("MakeBlock builds the delay matrix", {
+  mb <- MakeBlock(data.frame(x = 1:5), E = 3, tau = -1, columns = "x")
+  expect_true(is.matrix(mb))
+  expect_equal(mb[3, ], c(3, 2, 1))
+  expect_true(is.na(mb[1, 2]) && is.na(mb[2, 3]))
+})
+
+test_that("Embed returns a named data.frame (pyEDM convention)", {
+  e <- Embed(data.frame(x = 1:5), E = 3, tau = -1, columns = "x")
+  expect_s3_class(e, "data.frame")
+  expect_equal(names(e), c("x(t-0)", "x(t-1)", "x(t-2)"))
+  expect_equal(e[[1]], as.numeric(1:5))
+  # lag scales with |tau|
+  expect_equal(names(Embed(data.frame(x = 1:8), E = 3, tau = -2, columns = "x")),
+               c("x(t-0)", "x(t-2)", "x(t-4)"))
+  # includeTime prepends the time column with its original name
+  et <- Embed(data.frame(Date = 101:105, x = 1:5), E = 2, tau = -1,
+              columns = "x", includeTime = TRUE)
+  expect_equal(names(et), c("Date", "x(t-0)", "x(t-1)"))
+  expect_equal(et[[1]], 101:105)
+  # dataFile input matches in-memory input (round trip)
+  d  <- data.frame(Time = 1:6, x = c(2, 4, 6, 8, 10, 12))
+  tf <- tempfile(fileext = ".csv"); write.csv(d, tf, row.names = FALSE)
+  expect_equal(
+    Embed(dataFile = basename(tf), pathIn = dirname(tf), columns = "x", E = 3),
+    Embed(d, E = 3, tau = -1, columns = "x"))
 })
 
 test_that("ComputeError matches pyEDM reductions", {

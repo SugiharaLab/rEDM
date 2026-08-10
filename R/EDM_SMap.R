@@ -47,7 +47,7 @@ SMap <- function(dataFrame = NULL, columns, target, lib, pred,
   timeVec   <- if (noTime) seq_len(nRows) else dataFrame[[1]]
 
   embedding <- if (embedded) as.matrix(dataFrame[, columns, drop = FALSE])
-               else Embed(dataFrame, E, tau, columns)
+               else MakeBlock(dataFrame, E, tau, columns)
 
   rn <- RemoveNan(embedding, lib_i, pred_i, ignoreNan)
   if (ignoreNan && length(rn$lib_i) < originalLibLen &&
@@ -117,18 +117,6 @@ SMapSolve <- function(A, b) {
   dInv <- ifelse(d > cutoff, 1 / d, 0)
   C <- s$v %*% (dInv * crossprod(s$u, b))       # v diag(dInv) t(u) b
   list(C = as.numeric(C), SV = d)
-}
-
-#------------------------------------------------------------------------
-#' Column names of the embedding (for SMap coefficient labelling).
-#' @keywords internal
-#' @noRd
-#------------------------------------------------------------------------
-EmbedColumnNames <- function(columns, E, tau, embedded) {
-  if (embedded) return(columns)
-  sign <- if (tau < 0) "t-" else "t+"
-  unlist(lapply(columns, function(c)
-    vapply(0:(E - 1), function(e) sprintf("%s(%s%d)", c, sign, e), character(1))))
 }
 
 #------------------------------------------------------------------------

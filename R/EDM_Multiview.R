@@ -57,7 +57,7 @@ Multiview <- function(dataFrame = NULL, columns, target, lib = numeric(0),
   comboCols <- if (excludeTarget) setdiff(columns, target) else columns
 
   # Multivariate delay embedding as a named, time-less data.frame
-  emb      <- Embed(dataFrame, E, tau, comboCols)
+  emb      <- MakeBlock(dataFrame, E, tau, comboCols)
   embNames <- EmbedColumnNames(comboCols, E, tau, embedded = FALSE)
   embDf    <- as.data.frame(emb, stringsAsFactors = FALSE)
   names(embDf) <- embNames
