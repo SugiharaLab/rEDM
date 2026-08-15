@@ -31,7 +31,8 @@ Simplex <- function(dataFrame = NULL, columns, target, lib, pred,
                     embedded = FALSE, validLib = logical(0), noTime = FALSE,
                     ignoreNan = TRUE, backend = "RANN", pathIn = "./",
                     dataFile = "", pathOut = "./", predictFile = "",
-                    parameterList = FALSE, verbose = FALSE, showPlot = FALSE) {
+                    parameterList = FALSE, verbose = FALSE, showPlot = FALSE,
+                    .tieBreak = TRUE) {
 
   parameters <- as.list(environment())
   parameters[c("dataFrame")] <- NULL
@@ -61,7 +62,7 @@ Simplex <- function(dataFrame = NULL, columns, target, lib, pred,
   nb <- FindNeighbors(embedding, lib_i, pred_i, knn,
                       exclusionRadius = exclusionRadius, validLib = validLib,
                       libOverlap = idx$libOverlap, backend = backend,
-                      verbose = verbose)
+                      tieBreak = .tieBreak, verbose = verbose)
 
   pr <- SimplexProject(nb$neighbors, nb$distances, targetVec, Tp)
 

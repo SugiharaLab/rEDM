@@ -70,7 +70,8 @@ Multiview <- function(dataFrame = NULL, columns, target, lib = numeric(0),
     Simplex(embDf, columns = combo, target = target1, lib = lib,
             pred = predRange, E = D, Tp = Tp, tau = tau,
             exclusionRadius = exclusionRadius, embedded = TRUE,
-            noTime = TRUE, ignoreNan = ignoreNan, backend = backend)
+            noTime = TRUE, ignoreNan = ignoreNan, backend = backend,
+            .tieBreak = FALSE)   # Multiview ranking keeps 2.0.2 neighbour order
 
   # ---- Rank views by Simplex rho ----
   rankPred <- if (trainLib) lib else pred

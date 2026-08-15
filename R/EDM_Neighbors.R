@@ -4,8 +4,6 @@
 # Port of pyEDM/src/pyEDM/Neighbors.py::FindNeighbors (2.5.0).
 # See spec: rEDM_Neighbors_spec.md.
 #
-# Naming follows rEDM convention: functions/constants uppercase-first,
-# variables lowercase-first.
 #------------------------------------------------------------------------
 
 #------------------------------------------------------------------------
@@ -32,7 +30,8 @@
 FindNeighbors <- function(embedding, libRows, predRows, knn,
                           exclusionRadius = 0, validLib = logical(0),
                           libOverlap = FALSE, xRadKnnFactor = 5,
-                          backend = c("RANN", "brute"), verbose = FALSE) {
+                          backend = c("RANN", "brute"), tieBreak = FALSE,
+                          verbose = FALSE) {
   backend <- match.arg(backend)
   nPred   <- length(predRows)
 
@@ -47,9 +46,9 @@ FindNeighbors <- function(embedding, libRows, predRows, knn,
       excludeRow <- 0
       nLibCur    <- length(libRows)
       if (predRows[1] > libRows[nLibCur]) {
-        excludeRow <- predRows[1] - libRows[nLibCur]    # pred start beyond lib end
+        excludeRow <- predRows[1] - libRows[nLibCur] # pred start beyond lib end
       } else if (libRows[1] > predRows[nPred]) {
-        excludeRow <- libRows[1] - predRows[nPred]      # lib start beyond pred end
+        excludeRow <- libRows[1] - predRows[nPred]   # lib start beyond pred end
       }
       if (exclusionRadius >= excludeRow) exclusionRadiusKnn <- TRUE
     }
@@ -65,7 +64,7 @@ FindNeighbors <- function(embedding, libRows, predRows, knn,
       stop("FindNeighbors: no valid library points; all excluded by validLib.")
     }
     if (length(libRows) < knn && verbose) {
-      warning(sprintf("FindNeighbors: only %d valid library points, but knn = %d.",
+      warning(sprintf("FindNeighbors: %d valid library points, but knn = %d.",
                       length(libRows), knn))
     }
   }
@@ -81,9 +80,14 @@ FindNeighbors <- function(embedding, libRows, predRows, knn,
     kQuery <- knn + 1L
   }
   if (length(validLib)) {
-    kQuery <- nLib                                            # examine all
+    kQuery <- nLib                    # examine all
   }
-  kQuery <- max(1L, min(kQuery, nLib))                        # never exceed nLib
+  if (tieBreak && nLib > knn) {
+    # tieBreak needs a lookahead column even in the plain (disjoint) case
+    # so a boundary tie can be detected and completed via full scan.
+    kQuery <- min(max(kQuery, knn + 1L), nLib)
+  }
+  kQuery <- max(1L, min(kQuery, nLib)) # never exceed nLib
 
   #-----------------------------------------------
   # (3.4) Query
@@ -91,7 +95,7 @@ FindNeighbors <- function(embedding, libRows, predRows, knn,
   libData  <- embedding[libRows,  , drop = FALSE]
   predData <- embedding[predRows, , drop = FALSE]
   q        <- KNNQuery(libData, predData, kQuery, backend = backend)
-  nnIdx    <- q$nnIdx       # (nPred x kQuery) 1-based into libRows, 0 = sentinel
+  nnIdx    <- q$nnIdx  # (nPred x kQuery) 1-based into libRows, 0 = sentinel
   nnDist   <- q$nnDist
 
   #-----------------------------------------------
@@ -100,7 +104,7 @@ FindNeighbors <- function(embedding, libRows, predRows, knn,
   sentinel  <- nnIdx == 0L
   neighbors <- matrix(0L, nrow(nnIdx), ncol(nnIdx))
   if (any(!sentinel)) {
-    neighbors[!sentinel] <- libRows[nnIdx[!sentinel]]        # 1-based, no offset
+    neighbors[!sentinel] <- libRows[nnIdx[!sentinel]] # 1-based, no offset
   }
   distances <- nnDist
   distances[sentinel] <- Inf
@@ -109,22 +113,38 @@ FindNeighbors <- function(embedding, libRows, predRows, knn,
   # (3.7) Exclusion mask + compaction
   #-----------------------------------------------
   needsFiltering <- libOverlap || exclusionRadiusKnn ||
-                    kQuery > knn || any(sentinel)
+                    kQuery > knn || any(sentinel) || tieBreak
 
   if (!needsFiltering) {
     return(list(neighbors = neighbors, distances = distances))
   }
 
-  predCol <- matrix(predRows, nPred, kQuery)               # broadcast down columns
+  predCol <- matrix(predRows, nPred, kQuery)            # broadcast down columns
 
   if (exclusionRadiusKnn) {
-    mask <- abs(predCol - neighbors) <= exclusionRadius    # subsumes self-match
+    mask <- abs(predCol - neighbors) <= exclusionRadius # subsumes self-match
   } else if (libOverlap) {
-    mask <- predCol == neighbors                           # self-match only
+    mask <- predCol == neighbors                        # self-match only
   } else {
-    mask <- matrix(FALSE, nPred, kQuery)                   # validLib trim only
+    mask <- matrix(FALSE, nPred, kQuery)                # validLib trim only
   }
-  mask <- mask | sentinel                                  # always exclude sentinels
+  mask <- mask | sentinel                               # always exclude sentinel
+
+  #-----------------------------------------------
+  # (3.7t) Deterministic tie-braking (Simplex only).
+  # Backend-independent: ordering rules:
+  #    1. distance
+  #    2. |predRow-libRow| (proximity to prediction)
+  #    3. libRow           (preceeding proximal)
+  # applied to eligible candidates, with full-scan completion for rows whose
+  # knn-th distance reaches the over-query boundary. Shared with pyEDM so the
+  # two packages agree on degenerate (tied) data.
+  #-----------------------------------------------
+  if (tieBreak) {
+    return(TieBreakSelect(embedding, libRows, predRows, neighbors, distances,
+                          mask, knn, exclusionRadius, exclusionRadiusKnn,
+                          libOverlap, kQuery, verbose))
+  }
 
   valid   <- !mask
   cs      <- RowCumsum(valid)
@@ -135,14 +155,16 @@ FindNeighbors <- function(embedding, libRows, predRows, knn,
   deficient   <- validCounts < knn
   if (any(deficient)) {
     if (verbose) {
-      warning(sprintf(
-        "FindNeighbors: failed to find knn=%d outside exclusionRadius=%d for %d prediction(s); consider reducing knn.",
-        knn, exclusionRadius, sum(deficient)))
+        warning(sprintf(
+            paste("FindNeighbors: failed to find knn=%d outside",
+                  "exclusionRadius=%d for %d prediction(s);",
+                  "consider reducing knn."),
+            knn, exclusionRadius, sum(deficient)))
     }
     fallbackCols <- seq_len(min(knn, kQuery))
     for (i in which(deficient)) {
       firstK[i, ]            <- FALSE
-      firstK[i, fallbackCols] <- TRUE                        # raw nearest knn
+      firstK[i, fallbackCols] <- TRUE     # raw nearest knn
     }
   }
 
@@ -161,6 +183,116 @@ FindNeighbors <- function(embedding, libRows, predRows, knn,
   }
 
   list(neighbors = outNeighbors, distances = outDist)
+}
+
+
+#------------------------------------------------------------------------
+#' Deterministic tie-broken knn selection (Simplex only).
+#'
+#' Applied only when tieBreak = TRUE (the Simplex path). Selects knn
+#' neighbours per prediction row by the ordering key
+#'   (distance asc, |predRow - libRow| asc, libRow asc)
+#' on original 1-based data-row indices. A full-library scan (FullScanRow)
+#' completes only rows whose knn-th distance reaches the over-query
+#' boundary (a possible straddling tie) or that are deficient; all other
+#' rows are resolved from the queried candidates. Backend-independent by
+#' construction, so RANN and brute agree, and match pyEDM.
+#' @keywords internal
+#' @noRd
+#------------------------------------------------------------------------
+TieBreakSelect <- function(embedding, libRows, predRows, neighbors, distances,
+                           mask, knn, exclusionRadius, exclusionRadiusKnn,
+                           libOverlap, kQuery, verbose) {
+  nPred        <- length(predRows)
+  nLib         <- length(libRows)
+  kOut         <- min(knn, kQuery)
+  outNeighbors <- matrix(0L,  nPred, kOut)
+  outDist      <- matrix(Inf, nPred, kOut)
+  canComplete  <- kQuery < nLib
+  embLib       <- NULL
+  warnedDef    <- FALSE
+
+  for (i in seq_len(nPred)) {
+    p        <- predRows[i]
+    elig     <- which(!mask[i, ])
+    needScan <- FALSE
+    nbrO     <- integer(0)
+    dstO     <- numeric(0)
+
+    if (length(elig) >= knn) {
+      nbr  <- neighbors[i, elig]
+      dst  <- distances[i, elig]
+      ord  <- order(dst, abs(p - nbr), nbr)     # distance, proximity, index
+      nbrO <- nbr[ord]
+      dstO <- dst[ord]
+      if (canComplete) {
+        finite <- distances[i, is.finite(distances[i, ])]
+        if (length(finite) && dstO[knn] >= max(finite)) needScan <- TRUE
+      }
+    } else {
+      needScan <- canComplete                   # too few eligible in query
+    }
+
+    if (needScan) {
+      if (is.null(embLib)) embLib <- embedding[libRows, , drop = FALSE]
+      fs <- FullScanRow(embLib, libRows, embedding[p, ], p, knn,
+                        exclusionRadius, exclusionRadiusKnn, libOverlap,
+                        ignoreExclusion = FALSE)
+      if (is.null(fs) || length(fs$nbr) < knn) {
+        fs <- FullScanRow(embLib, libRows, embedding[p, ], p, knn,
+                          exclusionRadius, exclusionRadiusKnn, libOverlap,
+                          ignoreExclusion = TRUE)
+        warnedDef <- TRUE
+      }
+      nbrO <- fs$nbr
+      dstO <- fs$dst
+    }
+
+    m <- min(kOut, length(nbrO))
+    if (m) {
+      outNeighbors[i, seq_len(m)] <- nbrO[seq_len(m)]
+      outDist[i,      seq_len(m)] <- dstO[seq_len(m)]
+    }
+  }
+
+  if (warnedDef && verbose) {
+    warning(sprintf( paste("FindNeighbors: failed to find knn=%d outside",
+                           "exclusionRadius=%d for some prediction(s);",
+                           "consider reducing knn.",
+                           knn, exclusionRadius)))
+  }
+
+  list(neighbors = outNeighbors, distances = outDist)
+}
+
+#------------------------------------------------------------------------
+#' Exact full-library scan for one prediction row, ordered by the key.
+#'
+#' Returns list(nbr, dst) of the knn nearest library rows under
+#' (distance, |p - libRow|, libRow), or NULL when no rows remain.
+#' @keywords internal
+#' @noRd
+#------------------------------------------------------------------------
+FullScanRow <- function(embLib, libRows, predVec, p, knn,
+                        exclusionRadius, exclusionRadiusKnn, libOverlap,
+                        ignoreExclusion) {
+  diff <- sweep(embLib, 2L, predVec, "-")
+  d    <- sqrt(rowSums(diff * diff))
+  if (ignoreExclusion) {
+    keep <- rep(TRUE, length(libRows))
+  } else if (exclusionRadiusKnn) {
+    keep <- abs(p - libRows) > exclusionRadius   # subsumes self-match
+  } else if (libOverlap) {
+    keep <- libRows != p                         # self-match only
+  } else {
+    keep <- rep(TRUE, length(libRows))
+  }
+  nbr <- libRows[keep]
+  dd  <- d[keep]
+  if (length(nbr) == 0L) return(NULL)
+  ord <- order(dd, abs(p - nbr), nbr)
+  sel <- ord[seq_len(min(knn, length(ord)))]
+  list(nbr = nbr[sel], dst = dd[sel])
 }
 
 #------------------------------------------------------------------------
@@ -221,6 +353,6 @@ KNNQuery <- function(libData, predData, k, backend = c("RANN", "brute")) {
 #------------------------------------------------------------------------
 RowCumsum <- function(m) {
   k <- ncol(m)
-  upper <- upper.tri(matrix(0, k, k), diag = TRUE) * 1   # k x k, U[a,b]=1 if a<=b
+  upper <- upper.tri(matrix(0, k, k), diag = TRUE) * 1 # k x k, U[a,b]=1 if a<=b
   (m + 0) %*% upper
 }

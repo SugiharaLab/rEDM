@@ -13,7 +13,8 @@ Simplex(dataFrame = NULL, columns, target, lib, pred, E = 0, Tp = 1, knn = 0,
         tau = -1, exclusionRadius = 0, embedded = FALSE,
         validLib = logical(0), noTime = FALSE, ignoreNan = TRUE,
         backend = "RANN", pathIn = "./", dataFile = "", pathOut = "./",
-        predictFile = "", parameterList = FALSE, verbose = FALSE, showPlot = FALSE)
+        predictFile = "", parameterList = FALSE, verbose = FALSE,
+        showPlot = FALSE, .tieBreak = TRUE)
 }
 
 \arguments{
@@ -34,9 +35,9 @@ rows of time series observation segments used to create the library.}
 \item{exclusionRadius}{Temporal (Theiler) exclusion radius around each
   prediction point excludes vectors from the search space of nearest 
 neighbors if their relative time index is within \code{exclusionRadius}.}
-\item{embedded}{If \code{TRUE}, \code{columns} already form the embedding.}
+\item{embedded}{If \code{TRUE} \code{columns} already form the embedding.}
 \item{validLib}{Logical vector marking admissible library rows (or length 0 for all).}
-\item{noTime}{If \code{TRUE}, synthesise a 1..N time index instead of using column 1.}
+\item{noTime}{If \code{TRUE} synthesise a 1..N time index instead of using column 1.}
 \item{ignoreNan}{Remove rows with NaN in the embedding from the library
   and prediction sets.}
 \item{backend}{Nearest-neighbour backend: \code{"RANN"} (default) or \code{"brute"}.}
@@ -47,7 +48,8 @@ index or time values unless noTime is TRUE. The first row must be column names.}
 \item{predictFile}{Output file name, .csv format.}
 \item{parameterList}{Append named list of parameters/values to return.}
 \item{verbose}{Emit diagnostic messages.}
-\item{showPlot}{If \code{TRUE}, draw a base-graphics plot of the result.}
+\item{showPlot}{If \code{TRUE} draw a base-graphics plot of the result.}
+\item{.tieBreak}{If \code{TRUE} implement nearest neighbor tie breaking.}
 }
 
 \value{A data.frame with columns Time, Observations, Predictions and

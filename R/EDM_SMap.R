@@ -61,7 +61,7 @@ SMap <- function(dataFrame = NULL, columns, target, lib, pred,
   nb <- FindNeighbors(embedding, lib_i, pred_i, knn,
                       exclusionRadius = exclusionRadius, validLib = validLib,
                       libOverlap = idx$libOverlap, backend = backend,
-                      verbose = verbose)
+                      tieBreak = FALSE, verbose = verbose)   # SMap: no tie-break
 
   pr <- SMapProject(nb$neighbors, nb$distances, embedding, targetVec,
                     pred_i, E, Tp, theta, knn, targetVecNan)
