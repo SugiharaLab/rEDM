@@ -134,7 +134,13 @@ SMapProject <- function(knnNeighbors, knnDistances, embedding, targetVec,
   coefficients   <- matrix(NA_real_, nPred, nDim)
   singularValues <- matrix(NA_real_, nPred, nDim)
 
-  distRowMean <- rowMeans(knnDistances)
+  # Mean neighbour distance per row over FINITE (valid) neighbours only;
+  # Inf padding slots are excluded. Rows with no finite neighbour give NaN,
+  # which flags an empty (skipped) row below (issue #74).
+  finiteD     <- is.finite(knnDistances)
+  finiteCnt   <- rowSums(finiteD)
+  distSum     <- rowSums(ifelse(finiteD, knnDistances, 0))
+  distRowMean <- ifelse(finiteCnt > 0, distSum / finiteCnt, NaN)
   if (theta == 0) {
     W <- matrix(1, nrow(knnDistances), ncol(knnDistances))
   } else {
@@ -150,18 +156,26 @@ SMapProject <- function(knnNeighbors, knnDistances, embedding, targetVec,
   wB <- W * B
 
   for (row in seq_len(nPred)) {
-    libRows <- knnNeighbors[row, ]
-    A <- matrix(NA_real_, knn, nDim)
-    A[, 1] <- W[row, ]
-    for (j in 2:nDim) A[, j] <- W[row, ] * embedding[libRows, j - 1]
-    wBrow <- wB[row, ]
+    # Empty row : no finite-distance neighbour survived exclusion / validLib.
+    # Leave projection / coefficients / variance at their NA defaults.
+    if (is.nan(distRowMean[row])) next
 
-    valid <- rep(TRUE, knn)
-    if (targetVecNan) {
-      valid <- is.finite(B[row, ])
-      A     <- A[valid, , drop = FALSE]
-      wBrow <- wB[row, valid]
-    }
+    # Valid slots : finite distance (exclude Inf padding) and, when the
+    # target has NA, finite target. Gating on distance finiteness (not the
+    # weight) makes padding inert for all theta, so theta == 0 needs no
+    # special case (issue #74).
+    valid <- is.finite(knnDistances[row, ])
+    if (targetVecNan) valid <- valid & is.finite(B[row, ])
+    if (!any(valid)) next
+
+    # Build A over valid slots only : knnNeighbors padding carries the 0
+    # sentinel index, which must never index the embedding.
+    libRows <- knnNeighbors[row, valid]
+    m       <- sum(valid)
+    A <- matrix(NA_real_, m, nDim)
+    A[, 1] <- W[row, valid]
+    for (j in 2:nDim) A[, j] <- W[row, valid] * embedding[libRows, j - 1]
+    wBrow <- wB[row, valid]
 
     sol <- SMapSolve(A, wBrow)
     C   <- sol$C

@@ -38,12 +38,31 @@ test_that("validLib restricts the library, order preserved", {
   expect_equal(fn$distances[1, ], c(2, 3))
 })
 
-test_that("deficiency falls back to raw knn without error", {
+test_that("deficiency yields Inf-padded neighbours without leakage", {
+  # pred = 2, lib = 1:4, exclusionRadius = 5 excludes the whole library:
+  # the row is fully excluded and must be Inf-padded (issue #74), not
+  # back-filled with the raw nearest (which would reinstate the self-match).
   expect_warning(
     fn <- FindNeighbors(embed, 1:4, 2, knn = 3, exclusionRadius = 5,
                         libOverlap = TRUE, backend = BR, verbose = TRUE))
-  expect_equal(ncol(fn$neighbors), 3L)
-  expect_true(all(fn$neighbors[1, ] %in% 1:4))
+  expect_equal(ncol(fn$neighbors), 3L)                 # shape preserved
+  expect_true(all(is.infinite(fn$distances[1, ])))     # fully excluded -> Inf
+  # no finite-distance neighbour lies within the exclusion radius (no leak)
+  fin <- is.finite(fn$distances[1, ])
+  expect_false(any(fin & abs(2 - fn$neighbors[1, ]) <= 5))
+})
+
+test_that("partial deficiency keeps valid neighbours, Inf-pads the rest", {
+  # pred = 2, lib = 1:6, exclusionRadius = 2 leaves only rows 5,6 valid for
+  # knn = 5 : two finite neighbours followed by three Inf-padded slots.
+  fn <- FindNeighbors(embed, 1:6, 2, knn = 5, exclusionRadius = 2,
+                      libOverlap = TRUE, backend = BR)
+  fin <- is.finite(fn$distances[1, ])
+  expect_equal(sum(fin), 2L)                           # only 2 valid
+  expect_true(all(is.finite(fn$distances[1, 1:2])))    # finite prefix
+  expect_true(all(is.infinite(fn$distances[1, 3:5])))  # Inf padding trails
+  expect_identical(sort(fn$neighbors[1, fin]), c(5L, 6L))
+  expect_false(any(fin & abs(2 - fn$neighbors[1, ]) <= 2))  # no leak
 })
 
 test_that("KNNQuery emits sentinels when k > nLib", {

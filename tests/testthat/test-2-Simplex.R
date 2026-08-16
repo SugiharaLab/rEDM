@@ -8,8 +8,8 @@ SimplexDiffs <- function(df, fixture, a, b, digits = 6, exclude = integer(0)) {
   ref  <- LoadFixture(fixture)
   b    <- min(b, nrow(df), nrow(ref))
   rows <- setdiff((a + 1):b, exclude)
-  r1 <- round(df$Predictions[rows], digits)
-  r2 <- round(ref$Predictions[rows], digits)
+  r1   <- round(df$Predictions[rows], digits)
+  r2   <- round(ref$Predictions[rows], digits)
   sum(abs(r1 - r2) > 10^-digits | (is.na(r1) != is.na(r2)), na.rm = TRUE)
 }
 
@@ -65,14 +65,13 @@ test_that("NaN propagation reproduces fixtures (both directions)", {
   expect_equal(SimplexDiffs(df2, "Smplx_nan2", 1, 190), 0)
 })
 
-test_that("DateTime index reproduces fixture except exact-distance ties", {
-  # Rows 184-185 are a 64-way exact (0,0,0) tie where scipy/RANN pick
-  # different tied neighbours: a documented NN tie-breaking limitation.
+test_that("DateTime index reproduces fixture (deterministic tie-break)", {
   s12 <- LoadSampleData("S12CD-S333-SumFlow_1980-2005.csv")
-  df <- Simplex(s12, "S12.C.D.S333", "S12.C.D.S333", c(1,800), c(801,1001),
-                E=3, Tp=1, backend=BK)
-  expect_equal(SimplexDiffs(df, "Smplx_DateTime", 1, 200, exclude=c(184,185)), 0)
-  expect_lte(SimplexDiffs(df, "Smplx_DateTime", 1, 200), 2)
+  df  <- Simplex(s12, "S12.C.D.S333", "S12.C.D.S333", c(1, 800), c(801, 1001),
+                 E = 3, Tp = 1, backend = BK)
+  # Formerly excluded rows 184-185 (a large exact-distance tie); now resolved
+  # deterministically and equal to the regenerated reference fixture.
+  expect_equal(SimplexDiffs(df, "Smplx_DateTime", 1, 200), 0)
 })
 
 test_that("MakeBlock builds the delay matrix", {
@@ -107,4 +106,33 @@ test_that("ComputeError matches pyEDM reductions", {
   ce <- ComputeError(as.numeric(1:10), as.numeric(1:10))
   expect_equal(ce$rho, 1); expect_equal(ce$RMSE, 0)
   expect_true(is.na(ComputeError(1:3, 1:3)$rho))     # < 5 pairs
+})
+
+test_that("neighbour ties (E=1 PSF salmon) reproduce fixture: RANN backend", {
+  d  <- LoadSampleData("Smplx_NeighborTies.csv")
+  df <- Simplex(d, "1137", "1135", c(1, 96), c(1, 96),
+                E = 1, Tp = 0, tau = -1, exclusionRadius = 1,
+                noTime = TRUE, backend = BK)
+
+  expect_equal(names(df),
+               c("Time", "Observations", "Predictions", "Pred_Variance"))
+  # Full Predictions column, deterministic tie-break; no excluded rows.
+  expect_equal(SimplexDiffs(df, "Smplx_NeighborTies", 0, 96, digits = 5), 0)
+})
+
+test_that("neighbour ties: brute reproduces fixture and equals RANN", {
+  d <- LoadSampleData("Smplx_NeighborTies.csv")
+
+  rann  <- Simplex(d, "1137", "1135", c(1, 96), c(1, 96),
+                   E = 1, Tp = 0, tau = -1, exclusionRadius = 1,
+                   noTime = TRUE, backend = "RANN")
+  brute <- Simplex(d, "1137", "1135", c(1, 96), c(1, 96),
+                   E = 1, Tp = 0, tau = -1, exclusionRadius = 1,
+                   noTime = TRUE, backend = "brute")
+
+  # brute reproduces the pyEDM-generated fixture ...
+  expect_equal(SimplexDiffs(brute, "Smplx_NeighborTies", 0, 96, digits = 5), 0)
+
+  # ... and both backends agree (tie-break is backend-independent by design).
+  expect_equal(round(rann$Predictions, 5), round(brute$Predictions, 5))
 })

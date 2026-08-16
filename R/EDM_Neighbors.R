@@ -150,25 +150,33 @@ FindNeighbors <- function(embedding, libRows, predRows, knn,
   cs      <- RowCumsum(valid)
   firstK  <- valid & (cs <= knn)
 
-  # Deficiency: fewer than knn valid neighbours in a row
+  # Deficiency: fewer than knn valid neighbours in a row. Such rows are NOT
+  # back-filled with excluded / self neighbours (that reinstates the
+  # self-match at distance 0 and leaks the target; issue #74 / pyEDM PR #74).
+  # Their surplus slots are left as Inf / 0 padding by the compaction below.
   validCounts <- cs[, kQuery]
-  deficient   <- validCounts < knn
-  if (any(deficient)) {
-    if (verbose) {
-        warning(sprintf(
-            paste("FindNeighbors: failed to find knn=%d outside",
-                  "exclusionRadius=%d for %d prediction(s);",
-                  "consider reducing knn."),
-            knn, exclusionRadius, sum(deficient)))
+  if (verbose) {
+    nDeficient <- sum(validCounts < knn & validCounts > 0)
+    nEmpty     <- sum(validCounts == 0)
+    if (nDeficient > 0) {
+      warning(sprintf(
+        paste("FindNeighbors: fewer than knn=%d neighbours outside",
+              "exclusionRadius=%d for %d prediction(s); those rows use",
+              "fewer neighbours. Consider reducing knn or exclusionRadius."),
+        knn, exclusionRadius, nDeficient))
     }
-    fallbackCols <- seq_len(min(knn, kQuery))
-    for (i in which(deficient)) {
-      firstK[i, ]            <- FALSE
-      firstK[i, fallbackCols] <- TRUE     # raw nearest knn
+    if (nEmpty > 0) {
+      warning(sprintf(
+        paste("FindNeighbors: %d prediction(s) have no valid neighbours",
+              "outside exclusionRadius=%d; those predictions are NA."),
+        nEmpty, exclusionRadius))
     }
   }
 
-  # Compact: leftmost selected columns per row (stable), take first kOut
+  # Compact: leftmost selected columns per row (stable), take first kOut.
+  # Rows with fewer than kOut selected keep their Inf / 0 padding in the
+  # surplus slots; every consumer treats a non-finite distance as
+  # "no neighbour" (issue #74).
   kOut         <- min(knn, kQuery)
   outNeighbors <- matrix(0L,  nPred, kOut)
   outDist      <- matrix(Inf, nPred, kOut)
@@ -235,17 +243,15 @@ TieBreakSelect <- function(embedding, libRows, predRows, neighbors, distances,
 
     if (needScan) {
       if (is.null(embLib)) embLib <- embedding[libRows, , drop = FALSE]
+      # Exclusion-respecting scan only : never ignore the exclusion radius
+      # to complete a deficient row (that reinstates the self-match at
+      # distance 0 and leaks the target; issue #74). Deficient rows keep
+      # their Inf padding.
       fs <- FullScanRow(embLib, libRows, embedding[p, ], p, knn,
-                        exclusionRadius, exclusionRadiusKnn, libOverlap,
-                        ignoreExclusion = FALSE)
-      if (is.null(fs) || length(fs$nbr) < knn) {
-        fs <- FullScanRow(embLib, libRows, embedding[p, ], p, knn,
-                          exclusionRadius, exclusionRadiusKnn, libOverlap,
-                          ignoreExclusion = TRUE)
-        warnedDef <- TRUE
-      }
-      nbrO <- fs$nbr
-      dstO <- fs$dst
+                        exclusionRadius, exclusionRadiusKnn, libOverlap)
+      if (is.null(fs) || length(fs$nbr) < knn) warnedDef <- TRUE
+      nbrO <- if (is.null(fs)) integer(0) else fs$nbr
+      dstO <- if (is.null(fs)) numeric(0) else fs$dst
     }
 
     m <- min(kOut, length(nbrO))
@@ -256,10 +262,11 @@ TieBreakSelect <- function(embedding, libRows, predRows, neighbors, distances,
   }
 
   if (warnedDef && verbose) {
-    warning(sprintf( paste("FindNeighbors: failed to find knn=%d outside",
-                           "exclusionRadius=%d for some prediction(s);",
-                           "consider reducing knn.",
-                           knn, exclusionRadius)))
+    warning(sprintf(
+      paste("FindNeighbors: fewer than knn=%d neighbours outside",
+            "exclusionRadius=%d for some prediction(s); those rows use",
+            "fewer neighbours. Consider reducing knn or exclusionRadius."),
+      knn, exclusionRadius))
   }
 
   list(neighbors = outNeighbors, distances = outDist)
@@ -274,13 +281,10 @@ TieBreakSelect <- function(embedding, libRows, predRows, neighbors, distances,
 #' @noRd
 #------------------------------------------------------------------------
 FullScanRow <- function(embLib, libRows, predVec, p, knn,
-                        exclusionRadius, exclusionRadiusKnn, libOverlap,
-                        ignoreExclusion) {
+                        exclusionRadius, exclusionRadiusKnn, libOverlap) {
   diff <- sweep(embLib, 2L, predVec, "-")
   d    <- sqrt(rowSums(diff * diff))
-  if (ignoreExclusion) {
-    keep <- rep(TRUE, length(libRows))
-  } else if (exclusionRadiusKnn) {
+  if (exclusionRadiusKnn) {
     keep <- abs(p - libRows) > exclusionRadius   # subsumes self-match
   } else if (libOverlap) {
     keep <- libRows != p                         # self-match only

@@ -83,19 +83,36 @@ Simplex <- function(dataFrame = NULL, columns, target, lib, pred,
 #' @noRd
 #------------------------------------------------------------------------
 SimplexProject <- function(knnNeighbors, knnDistances, targetVec, Tp) {
-  minDistances    <- pmax(knnDistances[, 1], 1e-6)
-  scaledDistances <- knnDistances / minDistances
-  weights         <- exp(-scaledDistances)
-  weightRowSum    <- rowSums(weights)
+  # Finite (valid) slots : Inf-distance slots are exclusion padding (issue #74)
+  finiteD <- is.finite(knnDistances)
+
+  # Minimum distance per row over FINITE neighbours only. Empty rows (no
+  # finite neighbour) get a placeholder and resolve to NA below.
+  dForMin      <- ifelse(finiteD, knnDistances, Inf)
+  minDistances <- apply(dForMin, 1L, min)
+  empty        <- !is.finite(minDistances)
+  minDistances <- pmax(ifelse(empty, 1, minDistances), 1e-6)
+
+  scaledDistances   <- knnDistances / minDistances
+  weights           <- exp(-scaledDistances)
+  weights[!finiteD] <- 0            # padding slots carry zero weight
+  weightRowSum      <- rowSums(weights)
 
   neighborsTp <- knnNeighbors + Tp
   n <- length(targetVec)
   libTargets  <- matrix(NA_real_, nrow(knnNeighbors), ncol(knnNeighbors))
   inRange     <- neighborsTp >= 1 & neighborsTp <= n & knnNeighbors >= 1
-  libTargets[inRange] <- targetVec[neighborsTp[inRange]]
+  libTargets[inRange]  <- targetVec[neighborsTp[inRange]]
+  libTargets[!finiteD] <- 0         # zero padding targets (avoid 0 * NA)
 
-  projection <- rowSums(weights * libTargets) / weightRowSum
-  delta      <- libTargets - projection
-  variance   <- rowSums(weights * delta^2) / weightRowSum
+  # Guard division for rows whose neighbours are all excluded
+  wRowSumSafe <- ifelse(weightRowSum > 0, weightRowSum, 1)
+  projection  <- rowSums(weights * libTargets) / wRowSumSafe
+  delta       <- libTargets - projection
+  variance    <- rowSums(weights * delta^2) / wRowSumSafe
+
+  # Empty rows (no valid neighbour) -> NA projection & variance
+  projection[empty] <- NA_real_
+  variance[empty]   <- NA_real_
   list(projection = projection, variance = variance)
 }
