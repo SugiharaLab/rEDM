@@ -61,7 +61,7 @@ EmbedDimension <- function(dataFrame = NULL, columns, target, lib, pred,
 #' @keywords internal
 #------------------------------------------------------------------------
 PredictInterval <- function(dataFrame = NULL, columns, target, lib, pred,
-                            maxTp = 10, E = 1, tau = -1, exclusionRadius = 0,
+                            maxTp = 10, E = NULL, tau = -1, exclusionRadius = 0,
                             embedded = FALSE, validLib = logical(0),
                             noTime = FALSE, ignoreNan = TRUE, numProcess = 4,
                             backend = "RANN", pathIn = "./", dataFile = "",
@@ -72,6 +72,7 @@ PredictInterval <- function(dataFrame = NULL, columns, target, lib, pred,
   parameters[c("dataFrame")] <- NULL
 
   dataFrame <- ResolveInput(pathIn, dataFile, dataFrame)
+  E         <- RequireE("PredictInterval", E, embedded, SplitColumns(columns))
   Evals     <- seq_len(maxTp)
 
   worker <- function(Tp) SweepRho(
@@ -139,7 +140,7 @@ PredictExclusionRadius <- function(dataFrame = NULL, columns, target, lib, pred,
 #' @keywords internal
 #------------------------------------------------------------------------
 PredictNonlinear <- function(dataFrame = NULL, columns, target, lib, pred,
-                             theta = NULL, E = 1, Tp = 1, knn = 0, tau = -1,
+                             theta = NULL, E = NULL, Tp = 1, knn = 0, tau = -1,
                              exclusionRadius = 0, embedded = FALSE,
                              validLib = logical(0), noTime = FALSE,
                              ignoreNan = TRUE, numProcess = 4,
@@ -152,6 +153,7 @@ PredictNonlinear <- function(dataFrame = NULL, columns, target, lib, pred,
   parameters[c("dataFrame")] <- NULL
 
   dataFrame <- ResolveInput(pathIn, dataFile, dataFrame)
+  E         <- RequireE("PredictNonlinear", E, embedded, SplitColumns(columns))
   if (is.null(theta))
     theta <- c(0.01, 0.1, 0.3, 0.5, 0.75, 1, 1.5, 2, 3, 4, 5, 6, 7, 8, 9)
 

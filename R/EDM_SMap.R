@@ -20,21 +20,24 @@
 #' @keywords internal
 #------------------------------------------------------------------------
 SMap <- function(dataFrame = NULL, columns, target, lib, pred,
-                 E = 0, Tp = 1, knn = 0, tau = -1, theta = 0,
+                 E = NULL, Tp = 1, knn = 0, tau = -1, theta = 0,
                  exclusionRadius = 0, embedded = FALSE, validLib = logical(0),
                  noTime = FALSE, ignoreNan = TRUE, backend = "RANN",
                  pathIn = "./", dataFile = "", pathOut = "./", predictFile = "",
-                 parameterList = FALSE, verbose = FALSE, showPlot = FALSE) {
+                 parameterList = FALSE, includeState = FALSE,
+                 verbose = FALSE, showPlot = FALSE) {
 
   parameters <- as.list(environment())
-  parameters[c("dataFrame")] <- NULL
+  parameters[c("dataFrame", "includeState", "pathIn", "dataFile",
+               "pathOut", "predictFile", "parameterList", "showPlot",
+               "verbose", "backend")] <- NULL
 
   dataFrame <- ResolveInput(pathIn, dataFile, dataFrame)
   columns   <- SplitColumns(columns)
   target    <- SplitColumns(target)
   nRows     <- nrow(dataFrame)
 
-  if (embedded) E <- length(columns)  # Any user supplied E ignored
+  E <- RequireE("SMap", E, embedded, columns)  # required unless embedded
   idx    <- CreateIndices(lib, pred, E, tau, Tp, embedded, nRows, "SMap")
   lib_i  <- idx$lib_i
   pred_i <- idx$pred_i
@@ -97,8 +100,13 @@ SMap <- function(dataFrame = NULL, columns, target, lib, pred,
   result <- list(predictions = predictions, coefficients = coefDf,
                  singularValues = svDf)
   if (showPlot) PlotSmap(result, "", E, Tp)
+  internal <- if (isTRUE(includeState))
+    list(knn_neighbors = nb$neighbors, knn_distances = nb$distances,
+         lib_i = lib_i, pred_i = pred_i, targetVec = targetVec,
+         embedding = embedding) else NULL
     result = EdmFinalize(result, result $ predictions,
-                         pathOut, predictFile, parameterList, parameters)
+                         pathOut, predictFile, parameterList, parameters,
+                         includeState = includeState, internal = internal)
 }
 
 #------------------------------------------------------------------------

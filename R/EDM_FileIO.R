@@ -41,15 +41,32 @@ ResolveInput <- function(pathIn, dataFile, dataFrame) {
 #' @noRd
 #------------------------------------------------------------------------
 EdmFinalize <- function(result, primaryFrame, pathOut, predictFile,
-                        parameterList, parameters) {
+                        parameterList, parameters,
+                        includeState = FALSE, internal = NULL) {
   if (nzchar(predictFile))
     utils::write.csv(primaryFrame, file.path(pathOut, predictFile),
                      row.names = FALSE)
-  if (isTRUE(parameterList)) {
+  if (isTRUE(parameterList) || isTRUE(includeState)) {
     if (is.data.frame(result))
-      return(list(predictions = result, parameters = parameters))
-    result$parameters <- parameters
+      result <- list(predictions = result)
+    if (isTRUE(parameterList)) result$parameters <- parameters
+    if (isTRUE(includeState))  result$internal   <- internal
     return(result)
   }
   result
+}
+
+#------------------------------------------------------------------------
+#' Resolve / require the embedding dimension E.
+#'
+#' pyEDM makes E a required argument for Simplex, SMap, PredictInterval and
+#' PredictNonlinear. When embedded, E is inferred as length(columns) and any
+#' user value is ignored; otherwise E must be supplied (non-NULL, >= 1).
+#' @keywords internal
+#------------------------------------------------------------------------
+RequireE <- function(fn, E, embedded, columns) {
+  if (isTRUE(embedded)) return(length(columns))
+  if (is.null(E) || length(E) == 0L || E < 1L)
+    stop(sprintf("%s(): E is required (integer >= 1).", fn), call. = FALSE)
+  E
 }

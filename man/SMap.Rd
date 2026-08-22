@@ -7,11 +7,12 @@
   described in \cite{Sugihara 1994}. 
 }
 \usage{
-SMap(dataFrame = NULL, columns, target, lib, pred, E = 0, Tp = 1, knn = 0,
+SMap(dataFrame = NULL, columns, target, lib, pred, E = NULL, Tp = 1, knn = 0,
      tau = -1, theta = 0, exclusionRadius = 0, embedded = FALSE,
      validLib = logical(0), noTime = FALSE, ignoreNan = TRUE,
      backend = "RANN", pathIn = "./", dataFile = "", pathOut = "./",
-     predictFile = "", parameterList = FALSE, verbose = FALSE, showPlot = FALSE)
+     predictFile = "", parameterList = FALSE, includeState = FALSE,
+     verbose = FALSE, showPlot = FALSE)
 }
 \arguments{
 \item{dataFrame}{A data.frame of input data. The first column must be a time
@@ -27,7 +28,7 @@ pairs can be specified with each pair defining the first and last
 rows of time series observation segments used to create the library.}
 \item{pred}{string with start and stop indices of input data rows used for
 predictions. A single contiguous range is supported.}
-\item{E}{Embedding dimension.}
+\item{E}{Embedding dimension. Required (no default); must be a positive integer unless \code{embedded = TRUE}, in which case it is inferred as the number of \code{columns}.}
 \item{Tp}{Forecast interval (prediction horizon).}
 \item{knn}{Number of nearest neighbours. \code{0} selects the method default.}
 \item{tau}{Embedding delay (negative selects past lags).}
@@ -46,6 +47,7 @@ index or time values unless noTime is TRUE. The first row must be column names.}
 \item{predictFile}{Output file name, .csv format.}
 \item{backend}{Nearest-neighbour backend: \code{"RANN"} (default) or \code{"brute"}.}
 \item{parameterList}{Append named list of parameters/values to return.}
+\item{includeState}{If \code{TRUE}, also return an \code{internal} list of engine state: \code{knn_neighbors}, \code{knn_distances}, \code{lib_i}, \code{pred_i}, \code{targetVec}, \code{embedding} (1-based row indices; 0 = neighbour sentinel).}
 \item{verbose}{Emit diagnostic messages.}
 \item{showPlot}{If \code{TRUE}, draw a base-graphics plot of the result.}
 }
@@ -63,6 +65,8 @@ index or time values unless noTime is TRUE. The first row must be column names.}
   first value corresponds to the SVD bias (intercept) term.
 
   If \code{parameterList = TRUE} a named list "parameters" is added.
+
+  If \code{includeState = TRUE} a named list "internal" is added.
 }
 
 \references{Sugihara G. 1994. Nonlinear forecasting for the classification of natural time series. Philosophical Transactions: Physical Sciences and Engineering, 348 (1688):477-495.}

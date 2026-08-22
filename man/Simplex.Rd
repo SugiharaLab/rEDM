@@ -9,12 +9,12 @@ described in \cite{Sugihara and May}.
 }
 
 \usage{
-Simplex(dataFrame = NULL, columns, target, lib, pred, E = 0, Tp = 1, knn = 0,
+Simplex(dataFrame = NULL, columns, target, lib, pred, E = NULL, Tp = 1, knn = 0,
         tau = -1, exclusionRadius = 0, embedded = FALSE,
         validLib = logical(0), noTime = FALSE, ignoreNan = TRUE,
         backend = "RANN", pathIn = "./", dataFile = "", pathOut = "./",
-        predictFile = "", parameterList = FALSE, verbose = FALSE,
-        showPlot = FALSE, .tieBreak = TRUE)
+        predictFile = "", parameterList = FALSE, includeState = FALSE,
+        verbose = FALSE, showPlot = FALSE, .tieBreak = TRUE)
 }
 
 \arguments{
@@ -28,7 +28,7 @@ contain whitespace place names in a vector, or, append ',' to the name.}
 pairs can be specified with each pair defining the first and last
 rows of time series observation segments used to create the library.}
 \item{pred}{Prediction index range as (start end) pairs. A single contiguous range is supported.}
-\item{E}{Embedding dimension.}
+\item{E}{Embedding dimension. Required (no default); must be a positive integer unless \code{embedded = TRUE}, in which case it is inferred as the number of \code{columns}.}
 \item{Tp}{Forecast interval (prediction horizon, number of time column rows).}
 \item{knn}{Number of nearest neighbours. If \code{knn=0} knn is set to E+1..}
 \item{tau}{Embedding delay (negative selects past lags).}
@@ -47,13 +47,17 @@ index or time values unless noTime is TRUE. The first row must be column names.}
 \item{pathOut}{Output file path for \code{predictFile}}
 \item{predictFile}{Output file name, .csv format.}
 \item{parameterList}{Append named list of parameters/values to return.}
+\item{includeState}{If \code{TRUE}, also return an \code{internal} list of engine state: \code{knn_neighbors}, \code{knn_distances}, \code{lib_i}, \code{pred_i}, \code{targetVec}, \code{embedding} (1-based row indices; 0 = neighbour sentinel).}
 \item{verbose}{Emit diagnostic messages.}
 \item{showPlot}{If \code{TRUE} draw a base-graphics plot of the result.}
 \item{.tieBreak}{If \code{TRUE} implement nearest neighbor tie breaking.}
 }
 
 \value{A data.frame with columns Time, Observations, Predictions and
-  Pred_Variance.}
+  Pred_Variance.
+
+  If \code{includeState = TRUE} a named list "internal" is added.
+}
 
 \examples{
 data( block_3sp )

@@ -27,15 +27,18 @@
 #' @keywords internal
 #------------------------------------------------------------------------
 Simplex <- function(dataFrame = NULL, columns, target, lib, pred,
-                    E = 0, Tp = 1, knn = 0, tau = -1, exclusionRadius = 0,
+                    E = NULL, Tp = 1, knn = 0, tau = -1, exclusionRadius = 0,
                     embedded = FALSE, validLib = logical(0), noTime = FALSE,
                     ignoreNan = TRUE, backend = "RANN", pathIn = "./",
                     dataFile = "", pathOut = "./", predictFile = "",
-                    parameterList = FALSE, verbose = FALSE, showPlot = FALSE,
+                    parameterList = FALSE, includeState = FALSE,
+                    verbose = FALSE, showPlot = FALSE,
                     .tieBreak = TRUE) {
 
   parameters <- as.list(environment())
-  parameters[c("dataFrame")] <- NULL
+  parameters[c("dataFrame", "includeState", "pathIn", "dataFile",
+               "pathOut", "predictFile", "parameterList", "showPlot",
+               "verbose", "backend")] <- NULL
 
   dataFrame <- ResolveInput(pathIn, dataFile, dataFrame)
   columns   <- SplitColumns(columns)
@@ -44,7 +47,7 @@ Simplex <- function(dataFrame = NULL, columns, target, lib, pred,
   nRows     <- nrow(dataFrame)
 
 
-  if (embedded) E  <- length(columns)  # Any user supplied E ignored
+  E <- RequireE("Simplex", E, embedded, columns)  # required unless embedded
   if (knn < 1) knn <- E + 1            # Simplex default
 
   idx <- CreateIndices(lib, pred, E, tau, Tp, embedded, nRows, "Simplex")
@@ -74,7 +77,12 @@ Simplex <- function(dataFrame = NULL, columns, target, lib, pred,
                           tau, timeName)
   if (showPlot) PlotObsPred(out, "", E, Tp)
 
-  out = EdmFinalize(out, out, pathOut, predictFile, parameterList, parameters)
+  internal <- if (isTRUE(includeState))
+    list(knn_neighbors = nb$neighbors, knn_distances = nb$distances,
+         lib_i = lib_i, pred_i = pred_i, targetVec = targetVec,
+         embedding = embedding) else NULL
+  out = EdmFinalize(out, out, pathOut, predictFile, parameterList, parameters,
+                    includeState = includeState, internal = internal)
 }
 
 #------------------------------------------------------------------------

@@ -6,7 +6,7 @@
 prediction accuracy as a function of forecast interval Tp.
 }
 \usage{
-PredictInterval(dataFrame = NULL, columns, target, lib, pred, maxTp = 10, E = 1,
+PredictInterval(dataFrame = NULL, columns, target, lib, pred, maxTp = 10, E = NULL,
                 tau = -1, exclusionRadius = 0, embedded = FALSE,
                 validLib = logical(0), noTime = FALSE, ignoreNan = TRUE,
                 numProcess = 4, backend = "RANN", pathIn = "./",
@@ -21,7 +21,7 @@ index or time values unless \code{noTime = TRUE}. The columns must be named.}
 \item{lib}{Library (training) index range as (start end) pairs.}
 \item{pred}{Prediction index range as (start end) pairs.}
 \item{maxTp}{Largest forecast interval to evaluate.}
-\item{E}{Embedding dimension.}
+\item{E}{Embedding dimension. Required (no default); must be a positive integer unless \code{embedded = TRUE}, in which case it is inferred as the number of \code{columns}.}
 \item{tau}{Embedding delay (negative selects past lags).}
 \item{exclusionRadius}{Temporal (Theiler) exclusion radius around each prediction point.}
 \item{embedded}{If \code{TRUE}, \code{columns} already form the embedding.}

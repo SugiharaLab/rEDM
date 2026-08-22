@@ -7,7 +7,7 @@ prediction accuracy as a function of the state-space localization parameter
 \code{theta}.
 }
 \usage{
-PredictNonlinear(dataFrame = NULL, columns, target, lib, pred, theta = NULL, E = 1,
+PredictNonlinear(dataFrame = NULL, columns, target, lib, pred, theta = NULL, E = NULL,
                  Tp = 1, knn = 0, tau = -1, exclusionRadius = 0,
                  embedded = FALSE, validLib = logical(0), noTime = FALSE,
                  ignoreNan = TRUE, numProcess = 4, backend = "RANN",
@@ -22,7 +22,7 @@ index or time values unless \code{noTime = TRUE}. The columns must be named.}
 \item{lib}{Library (training) index range as (start end) pairs.}
 \item{pred}{Prediction index range as (start end) pairs.}
 \item{theta}{S-map localisation parameter (\code{0} = global linear map).}
-\item{E}{Embedding dimension.}
+\item{E}{Embedding dimension. Required (no default); must be a positive integer unless \code{embedded = TRUE}, in which case it is inferred as the number of \code{columns}.}
 \item{Tp}{Forecast interval (prediction horizon).}
 \item{knn}{Number of nearest neighbours. \code{0} selects the method default.}
 \item{tau}{Embedding delay (negative selects past lags).}
