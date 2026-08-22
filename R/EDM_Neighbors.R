@@ -42,15 +42,17 @@ FindNeighbors <- function(embedding, libRows, predRows, knn,
   if (exclusionRadius > 0) {
     if (libOverlap) {
       exclusionRadiusKnn <- TRUE
-    } else {
+    }
+    else {
       excludeRow <- 0
       nLibCur    <- length(libRows)
       if (predRows[1] > libRows[nLibCur]) {
         excludeRow <- predRows[1] - libRows[nLibCur] # pred start beyond lib end
-      } else if (libRows[1] > predRows[nPred]) {
+      }
+      else if (libRows[1] > predRows[nPred]) {
         excludeRow <- libRows[1] - predRows[nPred]   # lib start beyond pred end
       }
-      if (exclusionRadius >= excludeRow) exclusionRadiusKnn <- TRUE
+      if (exclusionRadius >= excludeRow) { exclusionRadiusKnn <- TRUE }
     }
   }
 
@@ -76,12 +78,15 @@ FindNeighbors <- function(embedding, libRows, predRows, knn,
   kQuery <- knn
   if (exclusionRadiusKnn) {
     kQuery <- min(knn * xRadKnnFactor, nLib)
-  } else if (libOverlap) {
+  }
+  else if (libOverlap) {
     kQuery <- knn + 1L
   }
+  
   if (length(validLib)) {
     kQuery <- nLib                    # examine all
   }
+  
   if (tieBreak && nLib > knn) {
     # tieBreak needs a lookahead column even in the plain (disjoint) case
     # so a boundary tie can be detected and completed via full scan.
@@ -123,9 +128,11 @@ FindNeighbors <- function(embedding, libRows, predRows, knn,
 
   if (exclusionRadiusKnn) {
     mask <- abs(predCol - neighbors) <= exclusionRadius # subsumes self-match
-  } else if (libOverlap) {
+  }
+  else if (libOverlap) {
     mask <- predCol == neighbors                        # self-match only
-  } else {
+  }
+  else {
     mask <- matrix(FALSE, nPred, kQuery)                # validLib trim only
   }
   mask <- mask | sentinel                               # always exclude sentinel
@@ -180,9 +187,10 @@ FindNeighbors <- function(embedding, libRows, predRows, knn,
   kOut         <- min(knn, kQuery)
   outNeighbors <- matrix(0L,  nPred, kOut)
   outDist      <- matrix(Inf, nPred, kOut)
+
   for (i in seq_len(nPred)) {
     sel <- which(firstK[i, ])
-    if (length(sel) > kOut) sel <- sel[seq_len(kOut)]
+    if (length(sel) > kOut) { sel <- sel[seq_len(kOut)] }
     m <- length(sel)
     if (m) {
       outNeighbors[i, seq_len(m)] <- neighbors[i, sel]
@@ -237,7 +245,8 @@ TieBreakSelect <- function(embedding, libRows, predRows, neighbors, distances,
         finite <- distances[i, is.finite(distances[i, ])]
         if (length(finite) && dstO[knn] >= max(finite)) needScan <- TRUE
       }
-    } else {
+    }
+    else {
       needScan <- canComplete                   # too few eligible in query
     }
 
@@ -286,14 +295,17 @@ FullScanRow <- function(embLib, libRows, predVec, p, knn,
   d    <- sqrt(rowSums(diff * diff))
   if (exclusionRadiusKnn) {
     keep <- abs(p - libRows) > exclusionRadius   # subsumes self-match
-  } else if (libOverlap) {
+  }
+  else if (libOverlap) {
     keep <- libRows != p                         # self-match only
-  } else {
+  }
+  else {
     keep <- rep(TRUE, length(libRows))
   }
   nbr <- libRows[keep]
   dd  <- d[keep]
-  if (length(nbr) == 0L) return(NULL)
+  if (length(nbr) == 0L) { return(NULL) }
+
   ord <- order(dd, abs(p - nbr), nbr)
   sel <- ord[seq_len(min(knn, length(ord)))]
   list(nbr = nbr[sel], dst = dd[sel])
@@ -332,7 +344,8 @@ KNNQuery <- function(libData, predData, k, backend = c("RANN", "brute")) {
                      treetype = "kd", searchtype = "standard", eps = 0)
     nnIdx[,  seq_len(kEff)] <- res$nn.idx
     nnDist[, seq_len(kEff)] <- res$nn.dists
-  } else {
+  }
+  else {
     # Vectorised exact brute force: d^2 = |p|^2 + |l|^2 - 2 p.l
     libSq  <- rowSums(libData  * libData)          # nLib
     predSq <- rowSums(predData * predData)          # nPred

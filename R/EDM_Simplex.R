@@ -48,19 +48,24 @@ Simplex <- function(dataFrame = NULL, columns, target, lib, pred,
 
 
   E <- RequireE("Simplex", E, embedded, columns)  # required unless embedded
-  if (knn < 1) knn <- E + 1            # Simplex default
+  if (knn < 1) { knn <- E + 1 }   # Simplex default
 
   idx <- CreateIndices(lib, pred, E, tau, Tp, embedded, nRows, "Simplex")
 
   targetVec <- dataFrame[[target[1]]]
-  timeVec   <- if (noTime) seq_len(nRows) else dataFrame[[1]]
+  timeVec   <- if (noTime) { seq_len(nRows) }
+               else        { dataFrame[[1]] }
 
-  embedding <- if (embedded) as.matrix(dataFrame[, columns, drop = FALSE])
-               else MakeBlock(dataFrame, E, tau, columns)
+  embedding <- if (embedded) {
+                 as.matrix(dataFrame[, columns, drop = FALSE])
+               }
+               else {
+                 MakeBlock(dataFrame, E, tau, columns)
+               }
 
-  rn        <- RemoveNan(embedding, idx$lib_i, idx$pred_i, ignoreNan)
-  lib_i     <- rn$lib_i
-  pred_i    <- rn$pred_i
+  rn     <- RemoveNan(embedding, idx$lib_i, idx$pred_i, ignoreNan)
+  lib_i  <- rn$lib_i
+  pred_i <- rn$pred_i
 
   nb <- FindNeighbors(embedding, lib_i, pred_i, knn,
                       exclusionRadius = exclusionRadius, validLib = validLib,
@@ -70,17 +75,24 @@ Simplex <- function(dataFrame = NULL, columns, target, lib, pred,
   pr <- SimplexProject(nb$neighbors, nb$distances, targetVec, Tp)
 
   timeName = "Time"
-  if (!noTime && !is.null(names(dataFrame))) timeName <- names(dataFrame)[1]
+  if (!noTime && !is.null(names(dataFrame))) {
+    timeName <- names(dataFrame)[1]
+  }
 
   out <- FormatProjection(idx$predList, pred_i, idx$pred_i_all, targetVec,
                           timeVec, pr$projection, pr$variance, Tp, nRows,
                           tau, timeName)
-  if (showPlot) PlotObsPred(out, "", E, Tp)
 
-  internal <- if (isTRUE(includeState))
-    list(knn_neighbors = nb$neighbors, knn_distances = nb$distances,
-         lib_i = lib_i, pred_i = pred_i, targetVec = targetVec,
-         embedding = embedding) else NULL
+  if (showPlot) { PlotObsPred(out, "", E, Tp) }
+
+  internal <- if (isTRUE(includeState)) {
+                  list(knn_neighbors = nb$neighbors,
+                       knn_distances = nb$distances,
+                       lib_i = lib_i, pred_i = pred_i,
+                       targetVec = targetVec,
+                       embedding = embedding) }
+              else { NULL }
+
   out = EdmFinalize(out, out, pathOut, predictFile, parameterList, parameters,
                     includeState = includeState, internal = internal)
 }

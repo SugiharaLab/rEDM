@@ -106,16 +106,17 @@ PredictExclusionRadius <- function(dataFrame = NULL, columns, target, lib, pred,
                                    validLib = logical(0), noTime = FALSE,
                                    ignoreNan = TRUE, numProcess = 4,
                                    backend = "RANN", pathIn = "./", 
-                                   dataFile = "", pathOut = "./", predictFile = "", 
+                                   dataFile = "", pathOut = "./",
+                                   predictFile = "", 
                                    parameterList = FALSE, showPlot = FALSE) {
 
   parameters <- as.list(environment())
   parameters[c("dataFrame")] <- NULL
 
   dataFrame <- ResolveInput(pathIn, dataFile, dataFrame)
-  if (is.null(exclusionRadius))
+  if (is.null(exclusionRadius)) {
     exclusionRadius <- c(0,1,2,3,4,5,6,7,8,9,10,12,14,16,18,20,25,30)
-
+  }
   worker <- function(er) SweepRho(
     Simplex(dataFrame, columns, target, lib, pred, E = E, Tp = Tp, tau = tau,
             exclusionRadius = er, embedded = embedded, validLib = validLib,
@@ -154,8 +155,10 @@ PredictNonlinear <- function(dataFrame = NULL, columns, target, lib, pred,
 
   dataFrame <- ResolveInput(pathIn, dataFile, dataFrame)
   E         <- RequireE("PredictNonlinear", E, embedded, SplitColumns(columns))
-  if (is.null(theta))
+    
+  if (is.null(theta)) {
     theta <- c(0.01, 0.1, 0.3, 0.5, 0.75, 1, 1.5, 2, 3, 4, 5, 6, 7, 8, 9)
+  }
 
   worker <- function(th) SweepRho(
     SMap(dataFrame, columns, target, lib, pred, E = E, Tp = Tp, knn = knn,
@@ -182,24 +185,30 @@ PredictNonlinear <- function(dataFrame = NULL, columns, target, lib, pred,
 #' @noRd
 #------------------------------------------------------------------------
 SweepApply <- function(values, worker, numProcess = 4) {
-  useParallel <- numProcess > 1 && .Platform$OS.type == "unix" && length(values) > 1
+  useParallel <- numProcess>1 && .Platform$OS.type == "unix" && length(values)>1
   if (useParallel) {
     # Respect the R CMD check core limit (_R_CHECK_LIMIT_CORES_ caps at 2);
     # otherwise use the machine core count.
     limited  <- isTRUE(as.logical(Sys.getenv("_R_CHECK_LIMIT_CORES_", "false")))
     maxCores <- if (limited) 2L else parallel::detectCores()
-    if (is.na(maxCores) || maxCores < 1L) maxCores <- 1L
+      
+    if (is.na(maxCores) || maxCores < 1L) { maxCores <- 1L }
+
     cores <- max(1L, min(numProcess, length(values), maxCores))
+
     if (cores > 1L) {
       out <- tryCatch(
-        parallel::mclapply(values, worker, mc.cores = cores, mc.preschedule = TRUE),
+        parallel::mclapply(values, worker, mc.cores = cores,
+                           mc.preschedule = TRUE),
         error = function(e) NULL)
+      
       if (!is.null(out) &&
-          !any(vapply(out, function(x) inherits(x, "try-error"), logical(1))))
+          !any(vapply(out, function(x) inherits(x, "try-error"), logical(1)))) {
         return(out)
+      }
     }
   }
-  lapply(values, worker)                       # sequential fallback
+  lapply(values, worker) # sequential fallback
 }
 
 #------------------------------------------------------------------------

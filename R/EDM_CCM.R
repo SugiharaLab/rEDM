@@ -57,8 +57,8 @@ CCM <- function(dataFrame = NULL, columns, target, E, Tp = 0, knn = 0, tau = -1,
   RequireValidData("CCM", dataFrame, columns, target)
   nRows     <- nrow(dataFrame)
 
-  if (embedded) E   <- length(columns)
-  if (knn < 1)  knn <- E + 1L
+  if (embedded) { E   <- length(columns) }
+  if (knn < 1)  { knn <- E + 1L }
 
   libSizes <- CcmLibSizes(libSizes, E, nRows)
   shifts   <- (0:(E - 1)) * tau
@@ -72,11 +72,14 @@ CCM <- function(dataFrame = NULL, columns, target, E, Tp = 0, knn = 0, tau = -1,
     embTgt   <- as.matrix(dataFrame[, target,  drop = FALSE])
     validCol <- !apply(embCol, 1, function(r) any(is.na(r)))
     validTgt <- !apply(embTgt, 1, function(r) any(is.na(r)))
-  } else {
+  }
+  else {
     colVecs <- lapply(columns, function(c) as.numeric(dataFrame[[c]]))
     tgtVecs <- lapply(target,  function(c) as.numeric(dataFrame[[c]]))
-    bc <- CcmBuildEmbedding(colVecs, shifts); embCol <- bc$emb; validCol <- bc$valid
-    bt <- CcmBuildEmbedding(tgtVecs, shifts); embTgt <- bt$emb; validTgt <- bt$valid
+    bc      <- CcmBuildEmbedding(colVecs, shifts)
+    embCol  <- bc$emb; validCol <- bc$valid
+    bt      <- CcmBuildEmbedding(tgtVecs, shifts)
+    embTgt  <- bt$emb; validTgt <- bt$valid
   }
 
   if (length(validLib)) {
@@ -108,23 +111,32 @@ CCM <- function(dataFrame = NULL, columns, target, E, Tp = 0, knn = 0, tau = -1,
 
   tasks <- vector("list", nTasks)
   for (i in seq_len(nLib)) {
-      tasks[[2L * i - 1L]] <- list(dir = "fwd",
-                                   L = libSizes[i], stream = streams[[2L * i - 1L]])
+      tasks[[2L * i - 1L]] <- list(dir = "fwd", L = libSizes[i],
+                                   stream = streams[[2L * i - 1L]])
       tasks[[2L * i]]      <- list(dir = "rev",
                                    L = libSizes[i], stream = streams[[2L * i]])
   }
 
   worker <- function(task) {
     assign(".Random.seed", task$stream, envir = .GlobalEnv)
-    if (task$dir == "fwd")
+    if (task$dir == "fwd") {
       rhos <- CcmForLibSize(embedValidCol, predValsCol, idxCol, task$L,
                             sample, knn, exclusionRadius, backend)
-    else
+    }
+    else {
       rhos <- CcmForLibSize(embedValidTgt, predValsTgt, idxTgt, task$L,
                             sample, knn, exclusionRadius, backend)
+    }
+    
     c(mean = mean(rhos, na.rm = TRUE),
-      var  = if (includeData) stats::var(rhos[!is.na(rhos)]) * (sum(!is.na(rhos))-1) /
-                              sum(!is.na(rhos)) else NA_real_)   # population var
+      var  = if (includeData) {
+                stats::var(rhos[!is.na(rhos)]) * (sum(!is.na(rhos))-1) /
+                sum(!is.na(rhos)) # population var
+             }
+             else {
+               NA_real_
+             }
+      ) 
   }
 
   results <- SweepApply(tasks, worker, numProcess)
@@ -142,13 +154,13 @@ CCM <- function(dataFrame = NULL, columns, target, E, Tp = 0, knn = 0, tau = -1,
 
   if (includeData) {
     out[[paste0(cn, "_var")]] <- vapply(seq_len(nLib),
-                                        function(i) results[[2L * i - 1L]]["var"],
+                                        function(i) results[[2L*i - 1L]]["var"],
                                         numeric(1))
     out[[paste0(tn, "_var")]] <- vapply(seq_len(nLib),
                                         function(i) results[[2L * i]]["var"],
                                         numeric(1))
   }
-  if (showPlot) PlotCCM(out, E)
+  if (showPlot) { PlotCCM(out, E) }
   out = EdmFinalize(out, out, pathOut, predictFile, parameterList, parameters)
 }
 
@@ -162,8 +174,8 @@ CcmSingleEmbed <- function(vec, shifts) {
   emb <- matrix(NA_real_, N, E)
   for (dim in seq_len(E)) {
     s <- shifts[dim]
-    if (s <= 0) emb[(1 - s):N, dim] <- vec[1:(N + s)]
-    else        emb[1:(N - s), dim] <- vec[(s + 1):N]
+    if (s <= 0) { emb[(1 - s):N, dim] <- vec[1:(N + s)] }
+    else        { emb[1:(N - s), dim] <- vec[(s + 1):N] }
   }
   emb
 }
@@ -176,8 +188,8 @@ CcmSingleEmbed <- function(vec, shifts) {
 #------------------------------------------------------------------------
 CcmBuildEmbedding <- function(vectors, shifts) {
   blocks <- lapply(vectors, CcmSingleEmbed, shifts = shifts)
-  emb <- do.call(cbind, blocks)
-  valid <- !apply(emb, 1, function(r) any(is.na(r)))
+  emb    <- do.call(cbind, blocks)
+  valid  <- !apply(emb, 1, function(r) any(is.na(r)))
   list(emb = emb, valid = valid)
 }
 
@@ -187,9 +199,9 @@ CcmBuildEmbedding <- function(vectors, shifts) {
 #' @noRd
 #------------------------------------------------------------------------
 CcmTpValidMask <- function(N, vec, Tp) {
-  shifted   <- seq_len(N) + Tp
-  inBounds  <- shifted >= 1 & shifted <= N
-  clipped   <- pmin(pmax(shifted, 1), N)
+  shifted  <- seq_len(N) + Tp
+  inBounds <- shifted >= 1 & shifted <= N
+  clipped  <- pmin(pmax(shifted, 1), N)
   inBounds & !is.na(vec[clipped])
 }
 
@@ -200,11 +212,15 @@ CcmTpValidMask <- function(N, vec, Tp) {
 #------------------------------------------------------------------------
 NanSafePearson <- function(pred, act) {
   ok <- !(is.na(pred) | is.na(act))
-  if (sum(ok) < 3) return(NA_real_)
+
+  if (sum(ok) < 3) { return(NA_real_) }
+
   p <- pred[ok]; a <- act[ok]
   pm <- p - mean(p); am <- a - mean(a)
   denom <- sqrt(sum(pm^2) * sum(am^2))
-  if (denom == 0) return(0)
+
+  if (denom == 0) { return(0) }
+
   sum(pm * am) / denom
 }
 
@@ -219,7 +235,7 @@ CcmKnnQuery <- function(libEmbed, queryEmbed, kQuery, backend) {
                    treetype = "kd", searchtype = "standard", eps = 0)
     return(list(idx = r$nn.idx, dist = r$nn.dists))
   }
-  M <- nrow(queryEmbed)
+  M    <- nrow(queryEmbed)
   idx  <- matrix(0L, M, kQuery)
   dist <- matrix(0, M, kQuery)
   libT <- t(libEmbed)
@@ -245,7 +261,7 @@ CcmForLibSize <- function(embed, predVals, timeIndices, L, S, k,
   if (k < 1L) return(rep(NA_real_, S))
 
   kQuery <- k + 1L
-  if (exclusionRadius > 0) kQuery <- kQuery + 2L * exclusionRadius
+  if (exclusionRadius > 0) { kQuery <- kQuery + 2L * exclusionRadius }
   kQuery <- min(kQuery, L)
 
   rhos <- numeric(S)
@@ -263,14 +279,19 @@ CcmForLibSize <- function(embed, predVals, timeIndices, L, S, k,
       nnT    <- matrix(timeIndices[nnGlobal], nrow = M)
       isExcl <- abs(timeIndices[rowM] - nnT) <= exclusionRadius
       mask   <- isSelf | isExcl
-    } else mask <- isSelf
+    }
+    else {
+      mask <- isSelf
+    }
 
     valid <- !mask
     cs    <- RowCumsum(valid)
     firstK       <- valid & (cs <= k)
     totalFound   <- cs[, ncol(cs)]
     insufficient <- totalFound < k
+
     if (all(insufficient)) { rhos[s] <- NA_real_; next }
+
     firstK[insufficient, ] <- FALSE
 
     suf  <- which(!insufficient)
@@ -279,16 +300,19 @@ CcmForLibSize <- function(embed, predVals, timeIndices, L, S, k,
     if (k == 1L) sel <- matrix(sel, ncol = 1L)
 
     rr   <- matrix(suf, length(suf), k)
-    Dsel <- matrix(nnDist[cbind(as.vector(rr), as.vector(sel))],   nrow = length(suf))
-    Gsel <- matrix(nnGlobal[cbind(as.vector(rr), as.vector(sel))], nrow = length(suf))
+    Dsel <- matrix(nnDist[cbind(as.vector(rr), as.vector(sel))],
+                   nrow = length(suf))
+    Gsel <- matrix(nnGlobal[cbind(as.vector(rr), as.vector(sel))],
+                   nrow = length(suf))
 
     # CCM Simplex weighting (no 1e-6 floor)
     dMin   <- Dsel[, 1]
     dMinNz <- ifelse(dMin > 0, dMin, 1)
     W      <- exp(-Dsel / dMinNz)
     zero   <- dMin == 0
-    if (any(zero))
+    if (any(zero)) {
       W[zero, ] <- (Dsel[zero, , drop = FALSE] == 0) * 1
+    }
     wSum <- rowSums(W); wSum <- ifelse(wSum > 0, wSum, 1)
     W    <- W / wSum
 
@@ -305,14 +329,19 @@ CcmForLibSize <- function(embed, predVals, timeIndices, L, S, k,
 #' @noRd
 #------------------------------------------------------------------------
 CcmLibSizes <- function(libSizes, E, nRows) {
-  if (is.character(libSizes))
+  if (is.character(libSizes)) {
     libSizes <- as.integer(strsplit(trimws(libSizes), "\\s+")[[1]])
+  }
   libSizes <- as.integer(libSizes)
+  
   if (length(libSizes) == 3L) {
     start <- libSizes[1]; stop <- libSizes[2]; incr <- libSizes[3]
     if (incr < stop) libSizes <- seq.int(start, stop, by = incr)
   }
-  if (libSizes[length(libSizes)] > nRows)
+
+  if (libSizes[length(libSizes)] > nRows) {
     stop("CCM: maximum libSize exceeds data size.")
+  }
+
   libSizes
 }

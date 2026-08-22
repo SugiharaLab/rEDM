@@ -39,15 +39,19 @@ SMap <- function(dataFrame = NULL, columns, target, lib, pred,
   lib_i  <- idx$lib_i
   pred_i <- idx$pred_i
 
-  originalLibLen   <- length(lib_i)
-  if (knn < 1) knn <- originalLibLen - 1L # SMap default: full library
-  originalKnn      <- knn
+  originalLibLen <- length(lib_i)
+  if (knn < 1) { knn <- originalLibLen - 1L } # SMap default: full library
+  originalKnn <- knn
 
   targetVec <- dataFrame[[target[1]]]
   timeVec   <- if (noTime) seq_len(nRows) else dataFrame[[1]]
 
-  embedding <- if (embedded) as.matrix(dataFrame[, columns, drop = FALSE])
-               else MakeBlock(dataFrame, E, tau, columns)
+  embedding <- if (embedded) {
+                 as.matrix(dataFrame[, columns, drop = FALSE])
+               }
+               else {
+                 MakeBlock(dataFrame, E, tau, columns)
+               }
 
   # Drop rows with NaN in the embedding from the lib and pred index sets.
   rn <- RemoveNan(embedding, lib_i, pred_i, ignoreNan)
@@ -78,7 +82,9 @@ SMap <- function(dataFrame = NULL, columns, target, lib, pred,
                     pred_i, E, Tp, theta, knn, targetVecNan)
 
   timeName = "Time"
-  if (!noTime && !is.null(names(dataFrame))) timeName <- names(dataFrame)[1]
+  if (!noTime && !is.null(names(dataFrame))) {
+    timeName <- names(dataFrame)[1]
+  }
 
   predictions <- FormatProjection(idx$predList, pred_i, idx$pred_i_all,
                                   targetVec, timeVec, pr$projection,
@@ -116,10 +122,16 @@ SMap <- function(dataFrame = NULL, columns, target, lib, pred,
     PlotSmap(result, "", E, Tp)
   }
 
-  internal <- if (isTRUE(includeState))
-    list(knn_neighbors = nb$neighbors, knn_distances = nb$distances,
-         lib_i = lib_i, pred_i = pred_i, targetVec = targetVec,
-         embedding = embedding) else NULL
+  internal <- if (isTRUE(includeState)) {
+                  list(knn_neighbors = nb$neighbors,
+                       knn_distances = nb$distances,
+                       lib_i         = lib_i,
+                       pred_i        = pred_i,
+                       targetVec     = targetVec,
+                       embedding     = embedding)
+              }
+              else { NULL }
+    
     result = EdmFinalize(result, result $ predictions,
                          pathOut, predictFile, parameterList, parameters,
                          includeState = includeState, internal = internal)
@@ -193,7 +205,8 @@ SMapProject <- function(knnNeighbors, knnDistances, embedding, targetVec,
   distRowMean <- ifelse(finiteCnt > 0, distSum / finiteCnt, NaN)
   if (theta == 0) {
     W <- matrix(1, nrow(knnDistances), ncol(knnDistances))
-  } else {
+  }
+  else {
     W <- exp(-(theta / distRowMean) * knnDistances)   # row-scaled
   }
 
@@ -208,23 +221,26 @@ SMapProject <- function(knnNeighbors, knnDistances, embedding, targetVec,
   for (row in seq_len(nPred)) {
     # Empty row : no finite-distance neighbour survived exclusion / validLib.
     # Leave projection / coefficients / variance at their NA defaults.
-    if (is.nan(distRowMean[row])) next
+    if (is.nan(distRowMean[row])) { next }
 
     # Valid slots : finite distance (exclude Inf padding) and, when the
     # target has NA, finite target. Gating on distance finiteness (not the
     # weight) makes padding inert for all theta, so theta == 0 needs no
     # special case (issue #74).
     valid <- is.finite(knnDistances[row, ])
-    if (targetVecNan) valid <- valid & is.finite(B[row, ])
-    if (!any(valid)) next
+    if (targetVecNan) { valid <- valid & is.finite(B[row, ]) }
+    if (!any(valid))  { next }
 
     # Build A over valid slots only : knnNeighbors padding carries the 0
     # sentinel index, which must never index the embedding.
     libRows <- knnNeighbors[row, valid]
     m       <- sum(valid)
-    A <- matrix(NA_real_, m, nDim)
-    A[, 1] <- W[row, valid]
-    for (j in 2:nDim) A[, j] <- W[row, valid] * embedding[libRows, j - 1]
+    A       <- matrix(NA_real_, m, nDim)
+    A[, 1]  <- W[row, valid]
+      
+    for (j in 2:nDim) {
+      A[, j] <- W[row, valid] * embedding[libRows, j - 1]
+    }
     wBrow <- wB[row, valid]
 
     sol <- SMapSolve(A, wBrow)
@@ -232,12 +248,17 @@ SMapProject <- function(knnNeighbors, knnDistances, embedding, targetVec,
     coefficients[row, ]   <- C
     singularValues[row, ] <- c(sol$SV, rep(NA_real_, nDim - length(sol$SV)))
 
-    proj <- if (is.na(C[1])) 0 else C[1]
-    for (e in 2:nDim) proj <- proj + C[e] * embedding[pred_i[row], e - 1]
+    proj <- if (is.na(C[1])) { 0 }
+            else             { C[1] }
+
+    for (e in 2:nDim) {
+      proj <- proj + C[e] * embedding[pred_i[row], e - 1]
+    }
+
     projection[row] <- proj
 
-    wRow     <- W[row, valid]
-    deltaSqr <- (B[row, valid] - proj)^2
+    wRow          <- W[row, valid]
+    deltaSqr      <- (B[row, valid] - proj)^2
     variance[row] <- sum(wRow * deltaSqr) / sum(wRow)
   }
 
