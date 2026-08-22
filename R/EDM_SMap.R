@@ -5,10 +5,7 @@
 #
 # Solver replicates numpy.linalg.lstsq(rcond = None): SVD least squares with
 # singular-value cutoff eps * max(M, N) * s_max (eps = .Machine$double.eps).
-# Theta weighting uses the row MEAN distance (no 1e-6 floor; that floor is
-# Simplex-only).
-#
-# Naming: functions/constants uppercase-first, variables lowercase-first.
+# Theta weighting uses the row MEAN distance (not Simplex 1e-6 floor).
 #------------------------------------------------------------------------
 
 #------------------------------------------------------------------------
@@ -37,13 +34,13 @@ SMap <- function(dataFrame = NULL, columns, target, lib, pred,
   target    <- SplitColumns(target)
   nRows     <- nrow(dataFrame)
 
-  E <- RequireE("SMap", E, embedded, columns)  # required unless embedded
+  E      <- RequireE("SMap", E, embedded, columns) # required unless embedded
   idx    <- CreateIndices(lib, pred, E, tau, Tp, embedded, nRows, "SMap")
   lib_i  <- idx$lib_i
   pred_i <- idx$pred_i
 
   originalLibLen   <- length(lib_i)
-  if (knn < 1) knn <- originalLibLen - 1L          # SMap default: full library
+  if (knn < 1) knn <- originalLibLen - 1L # SMap default: full library
   originalKnn      <- knn
 
   targetVec <- dataFrame[[target[1]]]
@@ -52,19 +49,30 @@ SMap <- function(dataFrame = NULL, columns, target, lib, pred,
   embedding <- if (embedded) as.matrix(dataFrame[, columns, drop = FALSE])
                else MakeBlock(dataFrame, E, tau, columns)
 
+  # Drop rows with NaN in the embedding from the lib and pred index sets.
   rn <- RemoveNan(embedding, lib_i, pred_i, ignoreNan)
-  if (ignoreNan && length(rn$lib_i) < originalLibLen &&
-      originalKnn == originalLibLen - 1L)
-  knn    <- length(rn$lib_i) - 1L                  # track reduced library
+
+  # S-map's default knn is the full library (originalLibLen - 1). If NaN
+  # removal shrank the library, that default is now too large, adjust
+  # to the reduced library. A user-specified knn is left untouched.
+  libraryShrank     <- length(rn$lib_i) < originalLibLen
+  knnWasFullLibrary <- originalKnn == (originalLibLen - 1L)
+
+  if (isTRUE(ignoreNan) && libraryShrank && knnWasFullLibrary) {
+    # re-apply "whole library" to the smaller library
+    knn <- length(rn$lib_i) - 1L
+  }
+
   lib_i  <- rn$lib_i
   pred_i <- rn$pred_i
-
-  targetVecNan <- any(is.na(targetVec))
 
   nb <- FindNeighbors(embedding, lib_i, pred_i, knn,
                       exclusionRadius = exclusionRadius, validLib = validLib,
                       libOverlap = idx$libOverlap, backend = backend,
-                      tieBreak = FALSE, verbose = verbose)   # SMap: no tie-break
+                      tieBreak = FALSE, verbose = verbose) # SMap: no tie-break
+
+  # Flag if nan are present in targetVec for solver filtering
+  targetVecNan <- any(is.na(targetVec))
 
   pr <- SMapProject(nb$neighbors, nb$distances, embedding, targetVec,
                     pred_i, E, Tp, theta, knn, targetVecNan)
@@ -77,10 +85,11 @@ SMap <- function(dataFrame = NULL, columns, target, lib, pred,
                                   pr$variance, Tp, nRows, tau, timeName)
 
   # Coefficients & singular-value frames share the projection layout
-  L <- ProjectionLayout(idx$predList, pred_i, idx$pred_i_all, timeVec,
-                        Tp, nRows, tau)
+  L <- ProjectionLayout(idx$predList, pred_i, idx$pred_i_all,
+                        timeVec, Tp, nRows, tau)
   nDim     <- E + 1
-  embNames <- EmbedColumnNames(if (embedded) columns else columns, E, tau, embedded)
+  embNames <- EmbedColumnNames(if (embedded) columns
+                               else columns, E, tau, embedded)
   coefNames <- paste0("\u2202", target[1], "/\u2202", embNames)
 
   coefOut <- matrix(NA_real_, L$outSize, nDim)
@@ -96,10 +105,17 @@ SMap <- function(dataFrame = NULL, columns, target, lib, pred,
                      stringsAsFactors = FALSE)
   names(svDf) <- c("Time", paste0("C", 0:(nDim - 1)))
 
-  if (showPlot) PlotObsPred(predictions, "", E, Tp)
+  if (showPlot) {
+    PlotObsPred(predictions, "", E, Tp)
+  }
+
   result <- list(predictions = predictions, coefficients = coefDf,
                  singularValues = svDf)
-  if (showPlot) PlotSmap(result, "", E, Tp)
+
+  if (showPlot) {
+    PlotSmap(result, "", E, Tp)
+  }
+
   internal <- if (isTRUE(includeState))
     list(knn_neighbors = nb$neighbors, knn_distances = nb$distances,
          lib_i = lib_i, pred_i = pred_i, targetVec = targetVec,
@@ -110,20 +126,46 @@ SMap <- function(dataFrame = NULL, columns, target, lib, pred,
 }
 
 #------------------------------------------------------------------------
-#' Minimum-norm least squares via SVD, matching numpy.linalg.lstsq(rcond=NULL).
+#' Minimum-norm least squares via truncated SVD.
 #'
 #' @param A design matrix (m x n).
 #' @param b response vector (length m).
 #' @return list(C = coefficients length n, SV = singular values length min(m,n)).
+#' @details matches numpy.linalg.lstsq( rcond=(eps * max(m, n)) )
 #' @keywords internal
 #' @noRd
 #------------------------------------------------------------------------
+#
+# Reference is pyEDM's numpy.linalg.lstsq, a wrapper over LAPACK gelsd() 
+# (SVD-based, singular-value truncation, minimum-norm solution). R has
+# no base equivalent that both solves and returns singular values, so we
+#   First: compute SVD with svd() -- a LAPACK dgesdd call -- and
+#   Next:  reconstruct the least-squares solution by hand.
+# Steps after svd() below are the extra work gelsd does internally.
+#
+# SMap is deliberately ill-conditioned at large theta, where SVD's
+# minimum-norm truncation is what matches gelsd/pyEDM. The cutoff
+# reproduces numpy.linalg.lstsq's default rcond, which is what makes the
+# coefficient and singularValue fixtures agree bit-for-bit. Do not swap the
+# solver or drop the cutoff without re-baselining those fixtures.
+#
+# Returns: C  = fit coefficients (pyEDM 'coefficients')
+#          SV = singular values of A (pyEDM 'singularValues'), raw from LAPACK
+#------------------------------------------------------------------------
 SMapSolve <- function(A, b) {
-  s <- svd(A)                                   # A = u diag(d) t(v)
-  d <- s$d
+  # (1) LAPACK dgesdd: A = u diag(d) t(v). Decomposition only, no solve.
+  s <- svd(A)
+  d <- s$d    # singular values, descending
+
+  # (2) rcond-style threshold ~ numpy lstsq default
   cutoff <- .Machine$double.eps * max(nrow(A), ncol(A)) * d[1]
+
+  # (3) truncated reciprocal: zero below cutoff -> minimum-norm, rank-safe
   dInv <- ifelse(d > cutoff, 1 / d, 0)
-  C <- s$v %*% (dInv * crossprod(s$u, b))       # v diag(dInv) t(u) b
+
+  # (4) reconstruct x = V diag(dInv) t(U) b  (the solve gelsd does internally)
+  C <- s$v %*% (dInv * crossprod(s$u, b))
+
   list(C = as.numeric(C), SV = d)
 }
 
