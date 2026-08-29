@@ -1,8 +1,10 @@
 #### rEDM NEWS
 
-2026-07-27 version 2.0.1 <JosephPark@IEEE.org>
+2026-08-29 version 2.0.2 <JosephPark@IEEE.org>
 
 ---
+##### Version 2.0.2:
+- Version 2.0.2 is a bugfix relase. Parameter `E` is required as in previous releases. `Embed()` returns a `data.frame` with named columns as in previous releases. Neighbor ties in `Simplex` are resolved. 
 
 ##### Version 2.0.1:
 - Version 2.0.1 is a complete refactor of rEDM. Version 1.x dependence on [cppEDM](https://github.com/SugiharaLab/cppEDM#empirical-dynamic-modeling-edm) has been removed, the package is now pure-R. The refactor is based on the reference [pyEDM](https://pypi.org/project/pyEDM/) package. The API remains the same as version 1.
